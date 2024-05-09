@@ -55,47 +55,52 @@ namespace igx.functions.consumption
 						ResourceID = 0,
 						IsAdministrator = true,
 					};
-					var community = new CommunityContext(ConnString, Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-
-					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, ConnString))
+					using (var community = new CommunityContext(ConnString, Cache, Queue, context))
 					{
-						await companyConnection.OpenIfClosed();
+						using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+						{
 
-						var assetTypeID = updateInfo.AssetTypeID;
-						if (updateInfo.ObjectTypeID > 0)
-						{
-							assetTypeID = await companyConnection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
-						}
+							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, ConnString))
+							{
+								await companyConnection.OpenIfClosed();
 
-						//if its an asset call the asset update proc
-						//if its a asset type call the asset type update proc
-						if (updateInfo.AssetID > 0)
-						{
-							await companyConnection.ExecuteAsync("exec GenerateAssetDisplayValue @assetID, null,-1", new { assetID = updateInfo.AssetID }, null, 2400);
-						}
-						else if (assetTypeID > 0)
-						{
-							await companyConnection.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, null, 2400);
-						}
-						else if (updateInfo.RebuildAll)
-						{
-							try
-							{
-								await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
+								var assetTypeID = updateInfo.AssetTypeID;
+								if (updateInfo.ObjectTypeID > 0)
+								{
+									assetTypeID = await companyConnection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
+								}
+
+								//if its an asset call the asset update proc
+								//if its a asset type call the asset type update proc
+								if (updateInfo.AssetID > 0)
+								{
+									await companyConnection.ExecuteAsync("exec GenerateAssetDisplayValue @assetID, null,-1", new { assetID = updateInfo.AssetID }, null, 2400);
+								}
+								else if (assetTypeID > 0)
+								{
+									await companyConnection.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, null, 2400);
+								}
+								else if (updateInfo.RebuildAll)
+								{
+									try
+									{
+										await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
+									}
+									catch (Exception ex)
+									{
+										log.LogError(ex, "Error on display value update processor.");
+									}
+									finally
+									{
+										await company.UpdateRebuildJobStatus(
+											CompanyRebuildJobToken.DisplayValues,
+											CompanyRebuildJobStatusState.Inactive,
+											int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"])
+										);
+									}
+								}
 							}
-							catch (Exception ex)
-							{
-								log.LogError(ex, "Error on display value update processor.");
-							}
-							finally
-							{
-								await company.UpdateRebuildJobStatus(
-									CompanyRebuildJobToken.DisplayValues, 
-									CompanyRebuildJobStatusState.Inactive, 
-									int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"])
-								);
-							}
+
 						}
 					}
 				}

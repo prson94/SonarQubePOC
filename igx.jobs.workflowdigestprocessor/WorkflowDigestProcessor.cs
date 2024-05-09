@@ -2,6 +2,7 @@
 using d360.extensions;
 using d360.extensions.info;
 using d360.model;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -63,36 +64,40 @@ namespace igx.jobs.workflowdigestprocessor
 								ResourceID = 0,
 								IsAdministrator = true
 							};
-							var community = new CommunityContext(ConnString, Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-
-							CompanyDigestExecution lastExecution = community.CompanyDigestExecution.Where(x=> x.CompanyID == c.CompanyID).OrderByDescending(x=>x.LastExecuted).FirstOrDefault();
-
-							//Check if digest was already sent today
-							if (lastExecution != null && lastExecution?.LastExecuted?.DayOfWeek == DateTime.UtcNow.DayOfWeek)
+							using (var community = new CommunityContext(ConnString, Cache, Queue, context))
 							{
-								continue;
-							}
-
-							if (lastExecution == null)
-							{
-								lastExecution = new CompanyDigestExecution
+								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 								{
-									CompanyID = c.CompanyID,
-									InstanceID = executionContext.InvocationId,
-									LastExecuted = DateTime.UtcNow,									
-								};
+									CompanyDigestExecution lastExecution = community.CompanyDigestExecution.Where(x => x.CompanyID == c.CompanyID).OrderByDescending(x => x.LastExecuted).FirstOrDefault();
 
-								community.Add(lastExecution);								
+									//Check if digest was already sent today
+									if (lastExecution != null && lastExecution?.LastExecuted?.DayOfWeek == DateTime.UtcNow.DayOfWeek)
+									{
+										continue;
+									}
+
+									if (lastExecution == null)
+									{
+										lastExecution = new CompanyDigestExecution
+										{
+											CompanyID = c.CompanyID,
+											InstanceID = executionContext.InvocationId,
+											LastExecuted = DateTime.UtcNow,
+										};
+
+										community.Add(lastExecution);
+									}
+									else
+									{
+										lastExecution.LastExecuted = DateTime.UtcNow;
+										lastExecution.InstanceID = executionContext.InvocationId;
+										community.Update(lastExecution);
+									}
+
+									await company.SendDigestEmails(c.EnvironmentLevel);
+								}
 							}
-							else
-							{
-								lastExecution.LastExecuted = DateTime.UtcNow;
-								lastExecution.InstanceID = executionContext.InvocationId;
-								community.Update(lastExecution);
-							}							
-
-							await company.SendDigestEmails(c.EnvironmentLevel);
+							
 						}
 						catch (Exception ex)
 						{

@@ -52,72 +52,76 @@ namespace igx.jobs.workflowsubscriber
 					ResourceID = info.ResourceID,
 					IsAdministrator = true
 				};
-				var community = new CommunityContext(ConnString, Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-				try
+				using(var community = new CommunityContext(ConnString, Cache, Queue, context))
 				{
-					//check if this event already has a open workflow instance
-					if (info.WorkflowItemID <= 0)
+					using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 					{
-						log.LogTrace($"Debug - New [{info.Action}] event received.");
-
-						var sObject = info.Object.ObjectType.ToString();
-
-						List<WorkflowEventRegistration> registrations = null;
-
-						registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == d360.core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x => x.ID).Include(x => x.Type).ToList();
-
-						if (registrations == null)
+						try
 						{
-							return;
+							//check if this event already has a open workflow instance
+							if (info.WorkflowItemID <= 0)
+							{
+								log.LogTrace($"Debug - New [{info.Action}] event received.");
+
+								var sObject = info.Object.ObjectType.ToString();
+
+								List<WorkflowEventRegistration> registrations = null;
+
+								registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == d360.core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x => x.ID).Include(x => x.Type).ToList();
+
+								if (registrations == null)
+								{
+									return;
+								}
+
+								foreach (var registration in registrations)
+								{
+									// if the registration applies fire of the workflow and break if not go to the next one.
+									await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);
+								}
+							}
+							else
+							{
+								//load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
+								// throw an error this section prevents workflows that go on forever and flood the bus with data...
+								log.LogTrace($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
+
+								var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
+
+								if (workflowInstance == null)
+								{
+									throw new MissingRecordException("workflow.Item", info.WorkflowItemID.ToString(), "CANNOT LOAD SPECIFIED WORKFLOW INSTANCE");
+								}
+
+								if (workflowInstance.NumberOfEvents > MAX_NUMBER_OF_WORKFLOW_EVENTS)
+								{
+									throw new InfrastructureException("MAX NUMBER OF EVENT BUS EVENTS PER WORKFLOW EXCEEDED.", "Workflow Service Bus");
+								}
+
+								//increment workflow events and update
+								workflowInstance.NumberOfEvents++;
+								company.SaveChanges();
+
+								if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
+								{
+									log.LogTrace($"Debug - Event is a workflow transition.");
+
+									await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object);
+								}
+								else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
+								{
+									log.LogTrace($"Debug - Event is an item step.");
+
+									await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info);
+								}
+							}
 						}
-
-						foreach (var registration in registrations)
+						catch (Exception ex)
 						{
-							// if the registration applies fire of the workflow and break if not go to the next one.
-							await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);
+							log.LogError(ex, "Error while processing workflow activity.");
 						}
 					}
-					else
-					{
-						//load the workflow instance and check how many events have been generated.  if greater than threashold then stop.  Do not raise more events
-						// throw an error this section prevents workflows that go on forever and flood the bus with data...
-						log.LogTrace($"Debug - New [{info.Action}] event received.  With an open workflow instance.");
-
-						var workflowInstance = company.WorkflowItems.Where(x => x.ID == info.WorkflowItemID).FirstOrDefault();
-
-						if (workflowInstance == null)
-						{
-							throw new MissingRecordException("workflow.Item", info.WorkflowItemID.ToString(), "CANNOT LOAD SPECIFIED WORKFLOW INSTANCE");
-						}
-
-						if (workflowInstance.NumberOfEvents > MAX_NUMBER_OF_WORKFLOW_EVENTS)
-						{
-							throw new InfrastructureException("MAX NUMBER OF EVENT BUS EVENTS PER WORKFLOW EXCEEDED.", "Workflow Service Bus");
-						}
-
-						//increment workflow events and update
-						workflowInstance.NumberOfEvents++;
-						company.SaveChanges();
-
-						if (info.VersionStepTransitionID > 0)  //this event is to evaluate a workflow transition
-						{
-							log.LogTrace($"Debug - Event is a workflow transition.");
-
-							await company.EvaluateWorkflowTransition(info.VersionStepTransitionID, info.WorkflowItemID, info.Object);
-						}
-						else if (info.ItemStepID > 0) // this event is to evauluate a workflow step
-						{
-							log.LogTrace($"Debug - Event is an item step.");
-
-							await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					log.LogError(ex, "Error while processing workflow activity.");
 				}
 			}
 		}
