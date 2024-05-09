@@ -156,7 +156,6 @@ namespace d360.web
                 returnVar = true;
             }
 
-
             return returnVar;
         }
     }
