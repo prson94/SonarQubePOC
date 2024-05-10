@@ -61,11 +61,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
-			RequireAdminPermissions
-		]
+            RequireAdminPermissions
+        ]
         public async Task<IHttpActionResult> GetSurveysResultsAsync(string surveyTypeUid)
         {
-            Guid surveyUid = Guid.Parse(surveyTypeUid);
+            if (!Guid.TryParse(surveyTypeUid, out Guid suid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidFormatSurveyTypeUid)).ConfigureAwait(false);
+            }
+
+            Guid surveyUid = suid;
+
             var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
 
             if (survey == null)
@@ -510,7 +516,12 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> GetSurveysResultsSummaryAsync(string surveyTypeUid)
         {
-            Guid surveyUid = Guid.Parse(surveyTypeUid);
+			if (!Guid.TryParse(surveyTypeUid, out Guid suid))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidFormatSurveyTypeUid)).ConfigureAwait(false);
+			}
+
+			Guid surveyUid = suid;
             var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
 
             if (survey == null)
