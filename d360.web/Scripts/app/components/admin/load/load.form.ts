@@ -167,10 +167,10 @@ export class LoadForm implements OnInit, OnChanges {
 								this.fileInput.nativeElement.value = null;
 							} else {
 								this.onSuccess.emit(null);
+								this.cancel();
 							}
 							this.isSaving = false;
 							this.onComplete.emit(null);
-							this.cancel();
 						}
 					);
 				}
