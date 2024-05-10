@@ -66,7 +66,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Search()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
-			var response = await Catalog.ReadTagsAsync(queryParams);
+			var response = await Catalog.SearchTags(queryParams);
 			return (response.IsSuccess) ? 
 				Ok(response.Data) : 
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
