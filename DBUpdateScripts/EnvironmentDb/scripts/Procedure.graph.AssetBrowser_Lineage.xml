@@ -4,7 +4,7 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="TDuric,PuneetGupta" id="Procedure.graph.AssetBrowser_Lineage-v18">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v17">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -188,7 +188,7 @@ begin
 	-- Get focal asset's ancestry, taking into account whether we should continue past direct parent or not.
 	;with a as (
 		select	C.ID,
-				iif(@ancestry = 1, P.ID, null) as ParentID
+				P.ID as ParentID
 		from	#assetsEditable H--#hopAsset H
 				inner join Asset C on C.Uid = H.Uid--C.ID = H.ID and H.ID = @focalId
 				left join PredicateIntersect I on I.ObjectAssetID = C.ID and I.PredicateType in (3, 4)
