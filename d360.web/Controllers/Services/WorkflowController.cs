@@ -685,8 +685,7 @@ namespace d360.web.Controllers.Services
 				if (isCompleted)
 				{
 					itemStepsModel.CompletedOn = DateTime.UtcNow;
-					itemStepsModel.CompletedBy = Company.CurrentResourceID;
-					itemStepsModel.State = StepState.Complete;
+					itemStepsModel.CompletedBy = Company.CurrentResourceID;					
 				}
 
 				Company.Entry(itemStepsModel).State = EntityState.Modified;
