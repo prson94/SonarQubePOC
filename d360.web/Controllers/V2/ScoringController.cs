@@ -139,7 +139,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
 			}
 
 			if (!allowedClasses.Contains(assetType.Class))
