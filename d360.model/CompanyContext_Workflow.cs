@@ -3970,15 +3970,15 @@ namespace d360.model
 
 					if (events.Count > WorkflowSendBatchSize)
 					{
-						QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
+						QueueSource.CreateMessages(constants.Queue.Workflow, events);
 						events.Clear();
 					}
 				}
 			}
 
 			if (events.Count > 0)
-			{
-				QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
+			{				
+				QueueSource.CreateMessages(constants.Queue.Workflow, events);
 				events.Clear();
 			}
 		}
