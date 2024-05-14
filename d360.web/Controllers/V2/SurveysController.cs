@@ -539,9 +539,14 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
             {
-                Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
+				var auid = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
 
-                var asset = AssetRepository.GetAssetByUID(uid);
+				if (!Guid.TryParse(auid, out Guid uid))
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidFormatAssetUid)).ConfigureAwait(false);
+				}
+
+				var asset = AssetRepository.GetAssetByUID(uid);
 
                 if (asset == null)
                 {

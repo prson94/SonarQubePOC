@@ -120,6 +120,9 @@
   <data name="AssetTypeNotSurvey" xml:space="preserve">
     <value>Asset type does not match with any survey.</value>
   </data>
+  <data name="InvalidFormatAssetUid" xml:space="preserve">
+    <value>Invalid format for [AssetUid]</value>
+  </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
     <value>Invalid format for [surveyTypeUid]</value>
   </data>
