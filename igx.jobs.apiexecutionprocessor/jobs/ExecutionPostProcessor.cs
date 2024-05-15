@@ -1035,6 +1035,18 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_Genera
 					inner join #tempUpdateLookupFieldTable tempF on tempF.ID = f.ID
 					where ft.AllowMultipleValues = 1
 
+				update ft
+					set ft.DefaultFormattedValue = adv.DisplayValue
+				from dbo.FieldType ft
+					inner join dbo.AssetType at on at.Object = concat(ft.LookupObjectType,'Type') and at.ObjectID = ft.LookupObjectID
+					inner join dbo.Asset a on a.AssetTypeID = at.ID and a.ObjectID = ft.DefaultValue
+					inner join dbo.AssetDisplayValue adv on adv.AssetID = a.ID
+				where ft.LookupObjectType = @lookupObject
+					and ft.LookupObjectID = @lookupObjectId 
+					and ft.Type = 'Lookup' 
+					and ft.DefaultValue is not null 
+					and ft.DefaultFormattedValue <> adv.DisplayValue
+
 				drop table if exists #tempUpdateLookupFieldTable
 				drop table if exists #updatedObjectIds;";
 		}
