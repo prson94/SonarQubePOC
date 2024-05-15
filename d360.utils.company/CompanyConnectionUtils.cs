@@ -80,7 +80,8 @@ namespace d360.utils.company
                             ds.EventTopic, 
                             c.EnvironmentLevel,
                             CDS.UrlPrefix,
-                            c.Priority		
+                            c.Priority,
+							ds.[Region]
                     from    company c 
                             inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
                             inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
