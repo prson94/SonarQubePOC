@@ -252,11 +252,6 @@ namespace d360.core.entities.Metric
         public int FieldTypeID { get; set; }
     }
 
-    public class MetricAssetDefinitionDataQualityFilterViewModelValueObject
-    {
-        public string Value { get; set; }
-    }
-
     #endregion
 
     #region Governance Definition Models
@@ -399,37 +394,6 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public Operator Operator { get; set; }
-    }
-
-    #endregion
-
-    #region Perceptual Definition Models
-
-    public class MetricAssetDefinitionPerceptualViewModel
-    {
-        public Guid QuestionTypeUid { get; set; }
-
-        public int NumberOfSurveysToConsider { get; set; }
-    }
-
-    #endregion
-
-    #region Rollup Definition Models
-
-    public class MetricAssetDefinitionRollupViewModel
-    {
-        public MetricRuleResultOperation ResultOperation { get; set; }
-
-        public bool CrossDescendancy { get; set; }
-    }
-
-    #endregion
-
-    #region User Definition Models
-
-    public class MetricAssetDefinitionUserViewModel
-    {
-        public MetricRuleResultOperation ResultOperation { get; set; }
     }
 
     #endregion

@@ -15,13 +15,5 @@ namespace d360.web.Services
         public UnauthorizedBusinessLayerException(string message) : base(message)
         {
         }
-
-        public UnauthorizedBusinessLayerException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected UnauthorizedBusinessLayerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

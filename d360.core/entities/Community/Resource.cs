@@ -9,7 +9,7 @@ using d360.core.entities.Contracts;
 namespace d360.core.entities
 {
     [DataContract]
-    public class Resource : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject
+    public class Resource : BaseIntObject, IIntObject, IFieldsObject
     {
         #region Properties
 
