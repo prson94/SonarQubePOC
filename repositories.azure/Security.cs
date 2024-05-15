@@ -1,0 +1,491 @@
+﻿using d360.core.entities;
+using d360.core.security;
+using Dapper;
+using DocumentFormat.OpenXml.EMMA;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
+using Rule = d360.core.security.Rule;
+using RuleThen = d360.core.security.RuleThen;
+using RuleWhen = d360.core.security.RuleWhen;
+
+namespace repositories.azure
+{
+	public class Security : Repository, ISecurity
+	{
+		public Security(DapperConnectionProvider provider) : base(provider) { }
+
+		public async Task<RepositoryResponse<List<ReadRole>>> CreateRoles(List<CreateRole> models)
+		{
+			RepositoryResponse<List<ReadRole>> response;
+
+			models.ForEach(m => {
+				m.Name = (m.Name ?? "").Trim();
+				if (!string.IsNullOrEmpty(m.Description))
+				{
+					m.Description = m.Description.Trim();
+				}
+			});
+
+			if (models.GroupBy(m => m.Name).Any(m => m.Count() > 1))
+			{
+				return new RepositoryResponse<List<ReadRole>>(400, "Duplicate roles detected.");
+			}
+
+			if (models.Any(m => m.Name.Length < 250))
+			{
+				return new RepositoryResponse<List<ReadRole>>(400, "Name property must be less than 250 characters.");
+			}
+			if (models.Any(m => m.Description.Length < 4000))
+			{
+				return new RepositoryResponse<List<ReadRole>>(400, "Description property must be less than 4000 characters.");
+			}
+
+			if (models.Any(m => string.IsNullOrEmpty(m.Name)))
+			{
+				return new RepositoryResponse<List<ReadRole>>(400, "Name must be populated.");
+			}
+			if (models.Any(m => m.Name.Length < 3))
+			{
+				return new RepositoryResponse<List<ReadRole>>(400, "Name must longer than three characters.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var existingNames = (await connection.QueryAsync<string>(
+					"select Name from [security].[Role] where Name in @names", new { uids = models.Select(x => x.Name) }
+					)).ToList();
+
+				if (existingNames.Any())
+				{
+					return new RepositoryResponse<List<ReadRole>>(400, "One or more roles with the same name already exist.");
+				}
+				else
+				{
+					response = new RepositoryResponse<List<ReadRole>>(new(), 201, true, "");
+
+					models.ForEach(async m => {
+						var role = await connection.QuerySingleAsync<ReadRole>(
+								$@"
+declare @roleId int;
+insert into [security].[Role] ([Uid], [Name], Description, [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn])
+values (@Uid, @Name, @Description, @u, @dt, @u, @dt);
+select @roleId = SCOPE_IDENTITY();
+select * from [security].[Role] where Id = @roleId;",
+						new { Uid = Guid.NewGuid(), m.Name, m.Description, u = CurrentUserId, dt = DateTime.UtcNow });
+
+						response.Data.Add(role);
+					});
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<Rule>> CreateAssignmentOverride(CreateRuleOverride model)
+		{
+			RepositoryResponse<Rule> response = null;
+
+			if (model == null)
+			{
+				return new RepositoryResponse<Rule>(400, "No valid data to create rule.");
+			}
+			if (model.Then == null || (model.Then != null && !model.Then.SecurityUid.HasValue))
+			{
+				return new RepositoryResponse<Rule>(400, "You must apply user/group assignment.");
+			}
+			if (model.When == null || (model.When != null && !model.When.AssetUid.HasValue))
+			{
+				return new RepositoryResponse<Rule>(400, "You must have populated AssetUid.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				Rule rawRule = new() { 
+					ApplyToType = false, IsOverride = true, IsVisible = true, 
+					CreatedBy = CurrentUserId, CreatedOn = DateTime.UtcNow, Name = "", UpdatedBy = CurrentUserId, UpdatedOn = DateTime.UtcNow, 
+					Uid = Guid.NewGuid() 
+				};
+				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
+				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
+
+				// Data for validation.
+				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
+				var securityQuery = rawRule.SecurityType == 'G' ?
+					"select Id from [Group] where Uid = @SecurityUid;" :
+					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
+				var qryData = await connection.QueryMultipleAsync(
+					"select Id from AssetType where Uid = @AssetTypeUid; " +
+					"select Id from [security].[Role] where Uid = @RoleUid; " +
+					"select Id from Asset where Uid = @AssetUid; " +
+					securityQuery,
+					new { model.AssetTypeUid, model.RoleUid, AssetUid = model.When.AssetUid.Value, SecurityUid = model.Then.SecurityUid.Value }
+				);
+				rawRule.AssetTypeId = await qryData.ReadFirstAsync<int>();
+				rawRule.RoleId = await qryData.ReadFirstAsync<int>();
+				rawRuleWhen.AssetId = await qryData.ReadFirstAsync<long>();
+				rawRuleThen.SecurityId = await qryData.ReadFirstAsync<int>();
+
+				if (rawRule.AssetTypeId == 0)
+				{
+					response = new RepositoryResponse<Rule>(404, "Could not find asset type based on AssetTypeUid provided.");
+				}
+
+				if (response == null && rawRule.RoleId == 0)
+				{
+					response = new RepositoryResponse<Rule>(404, "Could not find role based on RoleUid provided.");
+				}
+
+				if (response == null && rawRuleWhen.AssetId == 0)
+				{
+					response = new RepositoryResponse<Rule>(404, "Could not find asset based on AssetUid provided.");
+				}
+
+				if (response == null && rawRuleThen.SecurityId == 0)
+				{
+					if (rawRule.SecurityType == 'G')
+					{
+						response = new RepositoryResponse<Rule>(404, "Could not find group based on SecurityUid provided.");
+					}
+					else
+					{
+						response = new RepositoryResponse<Rule>(404, "Could not find user based on SecurityUid provided.");
+					}
+				}
+
+				if (response == null)
+				{
+					using (var trans = connection.BeginTransaction())
+					{
+						long ruleId = await connection.QuerySingleAsync(
+						"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
+						"values (@Uid, @Name, @RoleId, @SecurityType, @AssetTypeId, @ApplyToType, @IsVisible, @IsOverride, @CreatedBy, @CreatedOn, @UpdatedBy, @UpdatedOn); " +
+						"select SCOPE_IDENTITY();",
+						rawRule, trans);
+
+						await connection.ExecuteAsync(
+							"insert into [security].RuleWhen ([Position], CheckType, [Operator], AssetId) values (@Position, @CheckType, @Operator, @AssetId)",  
+							rawRuleWhen, trans);
+
+						await connection.ExecuteAsync(
+							"insert into [security].RuleThen ([Position], [Operator], SecurityId) values (@Position, @Operator, @SecurityId)", 
+							rawRuleThen, trans);
+
+						trans.Commit();
+					}
+					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "");
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<Rule>> CreateRule(CreateRule model)
+		{
+			RepositoryResponse<Rule> response = null;
+
+			if (model == null)
+			{
+				return new RepositoryResponse<Rule>(400, "No valid data to create rule.");
+			}
+			model.Name = (model.Name ?? "").Trim();
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				return new RepositoryResponse<Rule>(400, "Name must be populated.");
+			}
+			if (model.Name.Length > 3 || model.Name.Length < 250)
+			{
+				return new RepositoryResponse<Rule>(400, "Name must longer than three characters and less than 250 characters.");
+			}
+			if (!model.ApplyToType && (model.When == null || (model.When != null && model.When.Count == 0)))
+			{
+				return new RepositoryResponse<Rule>(400, "If rule does not apply to entire type, then you must apply asset filtering.");
+			}
+			if (model.Then == null || (model.Then != null && model.Then.Count == 0))
+			{
+				return new RepositoryResponse<Rule>(400, "You must apply user/group assignments.");
+			}
+			if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && w.IntersectTypeUid.HasValue))
+			{
+				return new RepositoryResponse<Rule>(400, "Each asset filter may only have a FieldName or an IntersectTypeUid populated, but not both.");
+			}
+			if (model.When != null && model.When.Any(w => w.IntersectTypeUid.HasValue && !w.AssetUid.HasValue))
+			{
+				return new RepositoryResponse<Rule>(400, "Each asset filter that has a populated IntersectTypeUid must also have a populated AssetUid.");
+			}
+			if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && (!w.AssetUid.HasValue && string.IsNullOrEmpty(w.Value))))
+			{
+				return new RepositoryResponse<Rule>(400, "Each asset filter that has a populated FieldName must also have either a populated AssetUid or a Value.");
+			}
+
+			var IntersectTypeUids = model.When.Where(w => w.IntersectTypeUid.HasValue).Select(w => w.IntersectTypeUid.Value).ToList();
+			var AssetUids = model.When.Where(w => w.AssetUid.HasValue).Select(w => w.AssetUid.Value).ToList();
+			var SecurityUids = model.Then.Where(w => w.SecurityUid.HasValue).Select(w => w.SecurityUid.Value).ToList();
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				// Data for validation.
+				var qryData = await connection.QueryMultipleAsync(
+					"select Id from AssetType where Uid = @AssetTypeUid; " +
+					"select Id from [security].[Role] where Uid = @RoleUid; " +
+					"select f.* from FieldType f inner join AssetType a on a.ID = f.AssetTypeID and a.Uid = @AssetTypeUid; " +
+					"select i.* from IntersectType i inner join AssetType a on (a.ID = i.SubjectAssetTypeID or a.ID = i.ObjectAssetTypeID) and a.Uid = @AssetTypeUid and I.Uid in @IntersectTypeUids; " +
+					"select * from FieldType where Object in ('GroupType'); " +
+					"select * from FieldType where Object in ('ResourceType'); " +
+					"select * from Asset where Uid in @AssetUids; " +
+					"select * from [Group] where Uid in @SecurityUids; " +
+					"select * from reporting.Global_Resource where Uid in @SecurityUids;",
+					new { model.AssetTypeUid, model.RoleUid, IntersectTypeUids, AssetUids, SecurityUids }
+				);
+				var assetTypeId = await qryData.ReadFirstAsync<int>();
+				var roleId = await qryData.ReadFirstAsync<int>();
+				var assetTypeFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
+				var intersectTypes = await qryData.ReadAsync<d360.core.entities.IntersectType>();
+				var groupFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
+				var userFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
+				var whenAssets = await qryData.ReadAsync<d360.core.entities.Asset>();
+				var groups = await qryData.ReadAsync<d360.core.entities.Group>();
+				var users = await qryData.ReadAsync<d360.core.entities.GlobalReportingResource>();
+
+				var securityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
+
+				if (assetTypeId == 0)
+				{
+					response = new RepositoryResponse<Rule>(404, "Could not find asset type based on AssetTypeUid provided.");
+				}
+
+				if (response == null && roleId == 0)
+				{
+					response = new RepositoryResponse<Rule>(404, "Could not find role based on RoleUid provided.");
+				}
+				
+				var validFields = new List<string> { "Boolean", "Date", "DateTime", "Number", "Decimal", "Lookup", "Text" };
+
+				var rawWhens = new List<RuleWhen>();
+				if (response == null && model.When.Count > 0)
+				{
+					int position = 0;
+					model.When.ForEach(w =>
+					{
+						position++;
+						if (response == null) // Once we have an error, just stop.
+						{ 
+							var rawWhen = new RuleWhen { Operator = w.Operator, Position = position };
+
+							if (string.IsNullOrEmpty(w.FieldName)) 
+							{
+								// Check intersect type.
+								rawWhen.CheckType = 'R';
+
+								var intersectType = intersectTypes.SingleOrDefault(i => i.uid == w.IntersectTypeUid);
+								if (intersectType != null)
+								{
+									rawWhen.IntersectTypeId = intersectType.ID;
+
+									var targetAssetTypeId = intersectType.SubjectAssetTypeID == assetTypeId ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
+									var whenAsset = whenAssets.SingleOrDefault(a => a.AssetTypeID == targetAssetTypeId && a.uid == w.AssetUid);
+									if (whenAsset != null)
+									{
+										rawWhen.AssetId = whenAsset.ID;
+									}
+									else
+									{
+										response = new RepositoryResponse<Rule>(404, "Could not find target asset in filter conditions based on AssetUid provided.");
+									}
+								}
+								else
+								{
+									response = new RepositoryResponse<Rule>(404, "Could not find intersect type based on IntersectTypeUid provided.");
+								}
+							}
+							else
+							{
+								// Check field.
+								rawWhen.CheckType = 'F';
+
+								var field = assetTypeFields.SingleOrDefault(f => f.Name == w.FieldName);
+								if (field != null)
+								{
+									if (validFields.Contains(field.Type))
+									{
+										rawWhen.FieldTypeId = field.ID;
+										// should we check to see if asset is from valid lookup?
+										if (w.AssetUid.HasValue && field.Type == "Lookup")
+										{
+											var whenAsset = whenAssets.SingleOrDefault(a => a.uid == w.AssetUid);
+											if (whenAsset != null)
+											{
+												rawWhen.AssetId = whenAsset.ID;
+											}
+											else
+											{
+												response = new RepositoryResponse<Rule>(404, "Could not find target asset in filter conditions based on AssetUid provided.");
+											}
+										}
+										else 
+										{
+											rawWhen.Value = w.Value;
+										}
+									}
+									else
+									{
+										response = new RepositoryResponse<Rule>(409, "Selected field not supported in asset filters based on its type.");
+									}
+								}
+								else
+								{
+									response = new RepositoryResponse<Rule>(404, "Could not find field based on FieldName provided.");
+								}
+							}						
+						}
+					});
+				}
+
+				var rawThens = new List<RuleThen>();
+				if (response == null && model.Then.Count > 0)
+				{	
+					int position = 0;
+					model.Then.ForEach(t =>
+					{
+						position++;
+						if (response == null) // Once we have an error, just stop.
+						{
+							var rawThen = new RuleThen { Operator = t.Operator, Position = position };
+
+							if (t.SecurityUid.HasValue)
+							{
+								// Direct security object assignment.
+
+								if (securityType == 'G')
+								{
+									// Check groups
+									var group = groups.SingleOrDefault(g => g.Uid == t.SecurityUid);
+									if (group != null)
+									{
+										rawThen.SecurityId = group.ID;
+									}
+									else
+									{
+										response = new RepositoryResponse<Rule>(404, "Could not find group based on SecurityUid provided.");
+									}
+								}
+								else
+								{
+									// Check users
+									var user = users.SingleOrDefault(u => u.Uid == t.SecurityUid);
+									if (user != null)
+									{
+										rawThen.SecurityId = user.ResourceID;
+									}
+									else
+									{
+										response = new RepositoryResponse<Rule>(404, "Could not find user based on SecurityUid provided.");
+									}
+								}
+							}
+							else
+							{
+								// Filter security object assign (non-direct)
+								FieldType field = null;
+								if (securityType == 'G')
+								{
+									field = groupFields.SingleOrDefault(f => f.Name == t.FieldName);
+								}
+								else
+								{
+									field = userFields.SingleOrDefault(f => f.Name == t.FieldName);
+								}
+								if (field != null)
+								{
+									if (validFields.Contains(field.Type))
+									{
+										rawThen.FieldTypeId = field.ID;
+									}
+									else
+									{
+										response = new RepositoryResponse<Rule>(409, "Selected field not supported in security object filters based on its type.");
+									}
+								}
+								else
+								{
+									response = new RepositoryResponse<Rule>(404, "Could not find field based on FieldName provided.");
+								}
+							}
+						}
+					});
+				}
+
+				if (response == null)
+				{
+					using (var trans = connection.BeginTransaction())
+					{
+						long ruleId = await connection.QuerySingleAsync(
+							"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
+							"values (@Uid, @Name, @roleId, @securityType, @assetTypeId, @ApplyToType, @IsVisible, @IsOverride, @u, @dt, @u, @dt); " +
+							"select SCOPE_IDENTITY();", 
+							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType, assetTypeId, model.ApplyToType, model.IsVisible, IsOverride = false, u = CurrentUserId, dt = DateTime.UtcNow }, 
+							trans);
+
+						rawWhens.ForEach(async w => {
+							await connection.ExecuteAsync(
+								"insert into [security].RuleWhen ([Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
+								"values (@Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)", 
+								w, 
+								trans);
+						});
+
+						rawThens.ForEach(async t => {
+							await connection.ExecuteAsync(
+								"insert into [security].RuleThen ([Position], FieldTypeId, [Operator], [Value], SecurityId) " +
+								"values (@Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
+								t,
+								trans);
+						});
+
+						trans.Commit();
+					}
+					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "");
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRoles()
+		{
+			RepositoryResponse<IEnumerable<ReadRole>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QueryAsync<ReadRole>(
+					"select uid, Name, Description, UpdatedOn from security.[Role] order by Name"
+				);
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadRules()
+		{
+			RepositoryResponse<IEnumerable<ReadRule>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QueryAsync<ReadRule>(@"
+select	ru.Uid,
+		ru.Name, 
+		t.Uid as AssetTypeUid,  
+		ro.Uid as RoleUid,
+		ru.SecurityType,
+		ru.ApplyToType,
+		ru.IsVisible
+from	security.[Rule] ru 
+		inner join AssetType t on t.Id = ru.AssetTypeId 
+order by	ru.Name");
+			}
+
+			return response;
+		}
+	}
+}

@@ -215,10 +215,14 @@ namespace d360.web
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.RegisterType<repositories.azure.Security>().As<ISecurity>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
 				builder.RegisterType<repositories.azure.Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
-
 						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.WorkspaceId = "";
