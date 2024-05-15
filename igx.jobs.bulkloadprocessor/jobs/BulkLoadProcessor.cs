@@ -73,231 +73,233 @@ namespace igx.jobs.bulkloadprocessor
 						CompanyPrefix = _c.UrlPrefix,
 						IsAdministrator = true
 					};
-					var community = new CommunityContext(ConnString, Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-					var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
-					var tagRepository = new TagRepository(company, FeatureFlags, Queue);
-					var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
-
-					#endregion
-				
-					try
+					using (var community = new CommunityContext(ConnString, Cache, Queue, context))
 					{
-						var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID, ConnString);
-
-						#region Create Load Items from Load file
-
-						load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
-
-						companyConnection.Open();
-						var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
-						companyConnection.Close();
-
-						if (loadItemRowCount <= 0)
+						using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 						{
-							SLDocument xls = null;
-							if (load.File == null)
-							{
-								using (MemoryStream stream = new MemoryStream())
-								{
-									await Storage.GetFileStream("bulk-loads", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
-
-									xls = new SLDocument(stream);
-								}
-							}
-							else
-							{
-								var memoryStream = new MemoryStream(load.File);
-								xls = new SLDocument(memoryStream);
-							}
-
-							var stats = xls.GetWorksheetStatistics();
-
-							var rowIndex = stats.StartRowIndex + 1;
-							var numberOfColumns = load.LoadColumns.Count;
-
-							var loadItems = new List<LoadItem>();
-							var loadItemColumns = new List<LoadItemColumn>();
-							var loadColumns = company.GetLoadColumns(load.Action, load.Object, load.ObjectID, true);
-
-							while (rowIndex <= stats.EndRowIndex)
-							{
-								// Empty row validation.
-								var numberOfEmptyColumns = 0;
-								foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-								{
-									var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-									if (string.IsNullOrEmpty(testValue))
-									{
-										numberOfEmptyColumns++;
-									}
-								}
-
-								// Empty row check.
-								if (numberOfEmptyColumns < numberOfColumns)
-								{
-									var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
-									loadItems.Add(loadItem);
-
-									foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-									{
-										var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
-										var isDate = false;
-
-										if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
-											format.Contains("[$-F400]") || format.Contains("[$-409]"))
-										{
-											isDate = true;
-										}
-
-										var loadValue = string.Empty;
-
-										if (isDate)
-										{
-											loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
-										}
-										else
-										{
-											loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-										}
-
-										loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = null });
-									}
-								}
-								rowIndex++;
-							}
-
-							companyConnection.Open();
-
-							#region Bulk LoadItems
-
-							using (var trans = companyConnection.BeginTransaction())
-							{
-								using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
-								{
-									bulkCopy.BatchSize = SqlBulkBatchSize;
-									bulkCopy.DestinationTableName = "dbo.LoadItem";
-									bulkCopy.BulkCopyTimeout = 3600;
-
-									var table = new System.Data.DataTable();
-									var columnName = "LoadID";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									columnName = "RowIndex";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									foreach (var item in loadItems)
-									{
-										var row = table.NewRow();
-
-										row["LoadID"] = item.LoadID;
-										row["RowIndex"] = item.RowIndex;
-
-										table.Rows.Add(row);
-									}
-
-									bulkCopy.WriteToServer(table);
-								}
-								trans.Commit();
-							}
+							var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
+							var tagRepository = new TagRepository(company, FeatureFlags, Queue);
+							var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
 
 							#endregion
 
-							#region Bulk LoadItemColumns
-
-							using (var trans = companyConnection.BeginTransaction())
+							try
 							{
-								using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+								var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID, ConnString);
+
+								#region Create Load Items from Load file
+
+								load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
+
+								companyConnection.Open();
+								var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
+								companyConnection.Close();
+
+								if (loadItemRowCount <= 0)
 								{
-									bulkCopy.BatchSize = SqlBulkBatchSize;
-									bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
-									bulkCopy.BulkCopyTimeout = 3600;
-
-									var table = new System.Data.DataTable();
-									var columnName = "LoadID";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									columnName = "RowIndex";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									columnName = "ColumnIndex";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									columnName = "Value";
-									table.Columns.Add(columnName, typeof(string));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									columnName = "LookupObjectID";
-									table.Columns.Add(columnName, typeof(int));
-									bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-									foreach (var item in loadItemColumns)
+									SLDocument xls = null;
+									if (load.File == null)
 									{
-										var row = table.NewRow();
-
-										row["LoadID"] = item.LoadID;
-										row["RowIndex"] = item.RowIndex;
-										row["ColumnIndex"] = item.ColumnIndex;
-										if (string.IsNullOrEmpty(item.Value))
+										using (MemoryStream stream = new MemoryStream())
 										{
-											row["Value"] = DBNull.Value;
-										}
-										else
-										{
-											row["Value"] = item.Value;
-										}
+											await Storage.GetFileStream("bulk-loads", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
 
-										if (item.LookupObjectID == null)
-										{ 
-											row["LookupObjectID"] = DBNull.Value;
+											xls = new SLDocument(stream);
 										}
-										else
-										{
-											row["LookupObjectID"] = item.LookupObjectID;
-										}
-
-										table.Rows.Add(row);
+									}
+									else
+									{
+										var memoryStream = new MemoryStream(load.File);
+										xls = new SLDocument(memoryStream);
 									}
 
-									bulkCopy.WriteToServer(table);
-								}
-								trans.Commit();
-							}
+									var stats = xls.GetWorksheetStatistics();
 
-							#endregion
+									var rowIndex = stats.StartRowIndex + 1;
+									var numberOfColumns = load.LoadColumns.Count;
 
-							#region Update Lookup Values
+									var loadItems = new List<LoadItem>();
+									var loadItemColumns = new List<LoadItemColumn>();
+									var loadColumns = company.GetLoadColumns(load.Action, load.Object, load.ObjectID, true);
 
-							var lookupColumns = loadColumns.Where(l => l.IsLookup);
-
-							if (lookupColumns.Any())
-							{
-								using (var trans = companyConnection.BeginTransaction())
-								{
-									List<dynamic> tempLookupColumns = new List<dynamic>();
-
-									foreach (var col in lookupColumns)
+									while (rowIndex <= stats.EndRowIndex)
 									{
-										var loadCol = load.LoadColumns.FirstOrDefault(l => l.Name == col.Name);
-
-										if (loadCol != null && col.FieldTypeId != null)
+										// Empty row validation.
+										var numberOfEmptyColumns = 0;
+										foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
 										{
-											tempLookupColumns.Add(new
+											var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+											if (string.IsNullOrEmpty(testValue))
 											{
-												LoadID = load.ID,
-												loadCol.ColumnIndex,
-												col.Name,
-												FieldTypeID = col.FieldTypeId
-											});
+												numberOfEmptyColumns++;
+											}
 										}
+
+										// Empty row check.
+										if (numberOfEmptyColumns < numberOfColumns)
+										{
+											var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
+											loadItems.Add(loadItem);
+
+											foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
+											{
+												var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
+												var isDate = false;
+
+												if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
+													format.Contains("[$-F400]") || format.Contains("[$-409]"))
+												{
+													isDate = true;
+												}
+
+												var loadValue = string.Empty;
+
+												if (isDate)
+												{
+													loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
+												}
+												else
+												{
+													loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+												}
+
+												loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = null });
+											}
+										}
+										rowIndex++;
 									}
 
-									companyConnection.Execute(@"drop table if exists #tempLookupColumns;
+									companyConnection.Open();
+
+									#region Bulk LoadItems
+
+									using (var trans = companyConnection.BeginTransaction())
+									{
+										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+										{
+											bulkCopy.BatchSize = SqlBulkBatchSize;
+											bulkCopy.DestinationTableName = "dbo.LoadItem";
+											bulkCopy.BulkCopyTimeout = 3600;
+
+											var table = new System.Data.DataTable();
+											var columnName = "LoadID";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											columnName = "RowIndex";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											foreach (var item in loadItems)
+											{
+												var row = table.NewRow();
+
+												row["LoadID"] = item.LoadID;
+												row["RowIndex"] = item.RowIndex;
+
+												table.Rows.Add(row);
+											}
+
+											bulkCopy.WriteToServer(table);
+										}
+										trans.Commit();
+									}
+
+									#endregion
+
+									#region Bulk LoadItemColumns
+
+									using (var trans = companyConnection.BeginTransaction())
+									{
+										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+										{
+											bulkCopy.BatchSize = SqlBulkBatchSize;
+											bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
+											bulkCopy.BulkCopyTimeout = 3600;
+
+											var table = new System.Data.DataTable();
+											var columnName = "LoadID";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											columnName = "RowIndex";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											columnName = "ColumnIndex";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											columnName = "Value";
+											table.Columns.Add(columnName, typeof(string));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											columnName = "LookupObjectID";
+											table.Columns.Add(columnName, typeof(int));
+											bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+											foreach (var item in loadItemColumns)
+											{
+												var row = table.NewRow();
+
+												row["LoadID"] = item.LoadID;
+												row["RowIndex"] = item.RowIndex;
+												row["ColumnIndex"] = item.ColumnIndex;
+												if (string.IsNullOrEmpty(item.Value))
+												{
+													row["Value"] = DBNull.Value;
+												}
+												else
+												{
+													row["Value"] = item.Value;
+												}
+
+												if (item.LookupObjectID == null)
+												{
+													row["LookupObjectID"] = DBNull.Value;
+												}
+												else
+												{
+													row["LookupObjectID"] = item.LookupObjectID;
+												}
+
+												table.Rows.Add(row);
+											}
+
+											bulkCopy.WriteToServer(table);
+										}
+										trans.Commit();
+									}
+
+									#endregion
+
+									#region Update Lookup Values
+
+									var lookupColumns = loadColumns.Where(l => l.IsLookup);
+
+									if (lookupColumns.Any())
+									{
+										using (var trans = companyConnection.BeginTransaction())
+										{
+											List<dynamic> tempLookupColumns = new List<dynamic>();
+
+											foreach (var col in lookupColumns)
+											{
+												var loadCol = load.LoadColumns.FirstOrDefault(l => l.Name == col.Name);
+
+												if (loadCol != null && col.FieldTypeId != null)
+												{
+													tempLookupColumns.Add(new
+													{
+														LoadID = load.ID,
+														loadCol.ColumnIndex,
+														col.Name,
+														FieldTypeID = col.FieldTypeId
+													});
+												}
+											}
+
+											companyConnection.Execute(@"drop table if exists #tempLookupColumns;
 								create table #tempLookupColumns (
 									LoadID int,
 									Name nvarchar(max),
@@ -307,47 +309,47 @@ namespace igx.jobs.bulkloadprocessor
 
 
 
-									using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
-									{
+											using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+											{
 
-										bulkCopy.BatchSize = SqlBulkBatchSize;
-										bulkCopy.DestinationTableName = "#tempLookupColumns";
-										bulkCopy.BulkCopyTimeout = 3600;
+												bulkCopy.BatchSize = SqlBulkBatchSize;
+												bulkCopy.DestinationTableName = "#tempLookupColumns";
+												bulkCopy.BulkCopyTimeout = 3600;
 
-										var table = new System.Data.DataTable();
-										var columnName = "LoadID";
-										table.Columns.Add(columnName, typeof(int));
-										bulkCopy.ColumnMappings.Add(columnName, columnName);
+												var table = new System.Data.DataTable();
+												var columnName = "LoadID";
+												table.Columns.Add(columnName, typeof(int));
+												bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-										columnName = "Name";
-										table.Columns.Add(columnName, typeof(string));
-										bulkCopy.ColumnMappings.Add(columnName, columnName);
+												columnName = "Name";
+												table.Columns.Add(columnName, typeof(string));
+												bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-										columnName = "ColumnIndex";
-										table.Columns.Add(columnName, typeof(int));
-										bulkCopy.ColumnMappings.Add(columnName, columnName);
+												columnName = "ColumnIndex";
+												table.Columns.Add(columnName, typeof(int));
+												bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-										columnName = "FieldTypeID";
-										table.Columns.Add(columnName, typeof(int));
-										bulkCopy.ColumnMappings.Add(columnName, columnName);
+												columnName = "FieldTypeID";
+												table.Columns.Add(columnName, typeof(int));
+												bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-										foreach (var item in tempLookupColumns)
-										{
-											var row = table.NewRow();
+												foreach (var item in tempLookupColumns)
+												{
+													var row = table.NewRow();
 
-											row["LoadID"] = item.LoadID;
-											row["Name"] = item.Name;
-											row["ColumnIndex"] = item.ColumnIndex;
-											row["FieldTypeID"] = item.FieldTypeID;
+													row["LoadID"] = item.LoadID;
+													row["Name"] = item.Name;
+													row["ColumnIndex"] = item.ColumnIndex;
+													row["FieldTypeID"] = item.FieldTypeID;
 
-											table.Rows.Add(row);
-										}
+													table.Rows.Add(row);
+												}
 
-										bulkCopy.WriteToServer(table);
-									}
+												bulkCopy.WriteToServer(table);
+											}
 
 
-									companyConnection.Execute(@"
+											companyConnection.Execute(@"
 									declare @maxlen int = 0;
 
 									drop table if exists #TempBulkLookupValues;
@@ -377,64 +379,67 @@ namespace igx.jobs.bulkloadprocessor
 
 									", transaction: trans, commandTimeout: 3600);
 
-									trans.Commit();
+											trans.Commit();
+										}
+									}
+
+									#endregion
+
+									companyConnection.Close();
 								}
+
+								log.LogTrace($"Load Item RowCount: {loadItemRowCount}");
+
+								#endregion
+
+								companyConnection.Open();
+
+								switch (load.Action)
+								{
+									case "M":
+										if (load.ObjectID == 0)
+										{
+											BulkLoadMembership(companyConnection, load.ID);
+										}
+										else
+										{
+											BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
+										}
+										break;
+									case "O":
+										await BulkLoadOwnership(company, load.ID);
+										break;
+									case "P":   // Promotions
+										await BulkLoadAssets(company, assetRepository, tagRepository, load);
+										company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
+										break;
+									case "R":   // Relations    
+										await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Relate);
+										break;
+									case "U":   // Unrelate
+										await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
+										break;
+									default:
+										break;
+								}
+
+								companyConnection.Close();
+
+								load.DateCompleted = DateTime.UtcNow;
+								company.Update(load);
 							}
-
-							#endregion
-
-							companyConnection.Close();
-						}
-
-						log.LogTrace($"Load Item RowCount: {loadItemRowCount}");
-
-						#endregion
-
-						companyConnection.Open();
-
-						switch (load.Action)
-						{
-							case "M":
-								if (load.ObjectID == 0)
+							catch (Exception ex)
+							{
+								if (load != null)
 								{
-									BulkLoadMembership(companyConnection, load.ID);
+									load.DateCompleted = DateTime.UtcNow;
+									company.Update(load);
 								}
-								else
-								{
-									BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
-								}
-								break;
-							case "O":
-								await BulkLoadOwnership(company, load.ID);
-								break;
-							case "P":   // Promotions
-								await BulkLoadAssets(company, assetRepository, tagRepository, load);
-								company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
-								break;
-							case "R":   // Relations    
-								await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Relate);
-								break;
-							case "U":   // Unrelate
-								await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
-								break;
-							default:
-								break;
+								log.LogError(ex, "Error occured while processing load");
+							}
 						}
-
-						companyConnection.Close();
-
-						load.DateCompleted = DateTime.UtcNow;
-						company.Update(load);
 					}
-					catch (Exception ex)
-					{
-						if (load != null)
-						{
-							load.DateCompleted = DateTime.UtcNow;
-							company.Update(load);
-						}
-						log.LogError(ex, "Error occured while processing load");
-					}
+
 				}
 				catch (Exception ex)
 				{

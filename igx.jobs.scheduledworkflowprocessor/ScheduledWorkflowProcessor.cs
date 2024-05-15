@@ -66,22 +66,26 @@ namespace igx.jobs.scheduledworkflowprocessor
 								ResourceID = 0,
 								IsAdministrator = true
 							};
-							var community = new CommunityContext(ConnString, Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-							// Load all workflows of type schedule.
-							var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
-							
-							foreach (var registration in scheduledWorkflows)
+							using (var community = new CommunityContext(ConnString, Cache, Queue, context))
 							{
-								// If the registration applies fire of the workflow and break if not go to the next one.
-								if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
+								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 								{
-									break;
+									// Load all workflows of type schedule.
+									var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
+
+									foreach (var registration in scheduledWorkflows)
+									{
+										// If the registration applies fire of the workflow and break if not go to the next one.
+										if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
+										{
+											break;
+										}
+									}
+
+									company.ExecuteTimerSteps();
 								}
 							}
-
-							company.ExecuteTimerSteps();
 						}
 						catch (Exception ex)
 						{

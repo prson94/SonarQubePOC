@@ -57,25 +57,29 @@ namespace igx.jobs.responsibilityruleprocessor
 								ResourceID = 0,
 								IsAdministrator = true
 							};
-							var community = new CommunityContext(ConnString, Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-							try
+							using (var community = new CommunityContext(ConnString, Cache, Queue, context))
 							{
-								company.ClearInvalidRelationRuleResults();
-							}
-							catch (Exception dex)
-							{
-								log.LogError(dex, "Error while clearing relation rules results.");
-							}
+								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+								{
+									try
+									{
+										company.ClearInvalidRelationRuleResults();
+									}
+									catch (Exception dex)
+									{
+										log.LogError(dex, "Error while clearing relation rules results.");
+									}
 
-							try
-							{
-								await company.ProcessResponsibilityRelationRules();
-							}
-							catch (Exception ex)
-							{
-								log.LogError(ex, "Error while processing responsibility rules.");
+									try
+									{
+										await company.ProcessResponsibilityRelationRules();
+									}
+									catch (Exception ex)
+									{
+										log.LogError(ex, "Error while processing responsibility rules.");
+									}
+								}
 							}
 						}
 						catch (Exception ex)

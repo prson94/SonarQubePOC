@@ -58,13 +58,17 @@ namespace igx.functions.consumption
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-						var community = new CommunityContext(ConnString, Cache, Queue, context);
-						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-
-						var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
-						if (rs.StatusCode == System.Net.HttpStatusCode.OK)
+						
+						using(var community = new CommunityContext(ConnString, Cache, Queue, context))
 						{
-							await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
+							using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+							{
+								var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
+								if (rs.StatusCode == System.Net.HttpStatusCode.OK)
+								{
+									await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
+								}
+							}
 						}
 					}
 					catch (Exception ex)
