@@ -34,6 +34,7 @@ export class AuthenticationService {
             }));
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	getSessionTimeout(): Observable<any> {
 		return this.http
 			.get(
@@ -45,14 +46,14 @@ export class AuthenticationService {
 			}));
 	}
 
-	resetSessionTimeout(): Observable<any> {
+	resetSessionTimeout(): Observable<boolean> {
 		return this.http
 			.post(
 				"/api/cookie/expiration/refresh", {
 				context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
 			})
-			.pipe(map((res) => {
-				return res
+			.pipe(map(() => {
+				return true
 			}));
 	}
 

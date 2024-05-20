@@ -13,6 +13,8 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	modalPopupTimeInSeconds: number = 30;
 
 	intervalCheckTime: number = 1000;
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	sessionTimeoutCheckInterval: any;
 
 	isModalVisible: boolean = false;
