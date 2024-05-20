@@ -32,6 +32,17 @@ export class AuthenticationService {
                 this._isAdmin = (res as string[]).some((x) => x === "Administrator");
                 return this._isAdmin;
             }));
-    }
+	}
+
+	getSessionTimeout(): Observable<any> {
+		return this.http
+			.get(
+				"/api/cookie/expiration", {
+				context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
+			})
+			.pipe(map((res) => {
+				return res
+			}));
+	}
 
 }
