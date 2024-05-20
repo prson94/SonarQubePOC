@@ -10,7 +10,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 })
 export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	sessionExpiresOn: Date = null;
-	modalPopupTimeInSeconds: number = 30;
+	modalPopupTimeInSeconds: number = 60;
 
 	intervalCheckTime: number = 1000;
 
