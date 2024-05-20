@@ -1,0 +1,22 @@
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog session-modal"
+		   i18n-title
+		   [title]="'Session Timeout Warning'"
+		   [appendToBody]="true"
+		   (onClose)="isModalVisible = false"
+		   [isVisible]="isModalVisible">
+	<div class="content" *ngIf="isModalVisible">
+		<span i18n>Your session is about to expire in {{(timeUntilLogout > 0 ? timeUntilLogout : 0)}} seconds. Please choose an option</span>: <br /> <br />
+
+		<strong>Stay Logged In</strong>: <span i18n>Refreshes your session and extends the time you remain logged in.</span> <br />
+		<strong>Log Out</strong>: <span i18n>Ends your session and logs you out immediately.</span> <br />
+		<strong>Do Nothing</strong>: <span i18n> If no action is taken, your session will automatically expire, and you will be logged out.</span> <br />
+
+		<div class="buttons">
+			<button igButton igAutoFocus class="ig-button-secondary" i18n-label label="Close" (click)="doNothing()"></button>
+			<div class="flex-grow"></div>
+			<button igButton igAutoFocus i18n-label label="Log Out" (click)="signOut()"></button>
+			<div class="button-spacer"></div>
+			<button igButton class="ig-button-primary" igAutoFocus i18n-label label="Stay Logged In" (click)="extendSession()"></button>
+		</div>
+	</div>
+</d3s-modal>

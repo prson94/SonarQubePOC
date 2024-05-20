@@ -45,4 +45,15 @@ export class AuthenticationService {
 			}));
 	}
 
+	resetSessionTimeout(): Observable<any> {
+		return this.http
+			.post(
+				"/api/cookie/expiration/refresh", {
+				context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
+			})
+			.pipe(map((res) => {
+				return res
+			}));
+	}
+
 }

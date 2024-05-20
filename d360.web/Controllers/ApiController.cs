@@ -5871,7 +5871,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		}
 
 		[Route("cookie/expiration/refresh")]
-		[HttpGet]
+		[HttpPost]
 		public async Task<HttpResponseMessage> SessionExpirationDateRefresh()
 		{
 			var sessionLengthMinutes = await GetCachedSettingValueById<double>(Setting.SessionTimeout);

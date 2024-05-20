@@ -25,8 +25,6 @@ import { TableModule } from 'primeng/table';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
-import { SessionTimeoutModalComponent } from './session-timeout-modal/session-timeout-modal.component';
-import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 
 @NgModule({
@@ -53,15 +51,13 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         TilesModule,
         SharedGridPagingInfoModule, 
         ShortcutDisplayModule,
-		DashboardModule,
-		SiteModalModule
+		DashboardModule
     ],
     declarations: [
         ActivityDetailsTile,
         ActivityTile,
         BoardTile,
-        HomeComponent,
-        SessionTimeoutModalComponent,
+        HomeComponent
     ],
     providers: [
 

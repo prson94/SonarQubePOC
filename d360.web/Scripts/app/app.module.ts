@@ -22,6 +22,7 @@ import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 import { AngularSplitModule } from 'angular-split';
 import { FeatureFlagsInitService } from './services/feature-flags-init.service';
 import { forkJoin } from "rxjs";
+import { SessionTimeoutModalModule } from './components/session-timeout-modal/session-timeout-modal.module';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -85,7 +86,8 @@ export function localeInitializer(localeId: string) {
 		//d3s modules                                            
 		RightSidebarComponent,
         SiteMenuModule,
-        HeaderModule,
+		HeaderModule,
+		SessionTimeoutModalModule
     ],
     bootstrap: [AppComponent],
     providers: [
