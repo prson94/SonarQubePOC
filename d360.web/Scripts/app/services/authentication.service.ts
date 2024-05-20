@@ -32,6 +32,29 @@ export class AuthenticationService {
                 this._isAdmin = (res as string[]).some((x) => x === "Administrator");
                 return this._isAdmin;
             }));
-    }
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	getSessionTimeout(): Observable<any> {
+		return this.http
+			.get(
+				"/api/cookie/expiration", {
+				context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
+			})
+			.pipe(map((res) => {
+				return res
+			}));
+	}
+
+	resetSessionTimeout(): Observable<boolean> {
+		return this.http
+			.post(
+				"/api/cookie/expiration/refresh", {
+				context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
+			})
+			.pipe(map(() => {
+				return true
+			}));
+	}
 
 }

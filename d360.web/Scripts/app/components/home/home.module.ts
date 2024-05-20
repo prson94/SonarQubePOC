@@ -51,14 +51,13 @@ import { SharedAssignmentsModule } from '../shared/assignments/shared-assignment
         TilesModule,
         SharedGridPagingInfoModule, 
         ShortcutDisplayModule,
-        DashboardModule,
-
+		DashboardModule
     ],
     declarations: [
         ActivityDetailsTile,
         ActivityTile,
         BoardTile,
-        HomeComponent,
+        HomeComponent
     ],
     providers: [
 
