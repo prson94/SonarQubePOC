@@ -13,6 +13,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using d360.web.Services;
 using Dapper;
+using DocumentFormat.OpenXml.Packaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -971,268 +972,274 @@ order by Sort, title";
 
 				using (var stream = new MemoryStream(byteArray))
 				{
-					if (extension == ".xlsx")
+					if (extension != ".xlsx")
 					{
-						var typeInfo = model.Type.Split('|');
-						var typeParams = new { @object = typeInfo[0], objectID = int.Parse(typeInfo[1]) };
+						return jsonException("Incorrect file type", HttpStatusCode.BadRequest);
+					}
 
-						var assetTypeUid = Company.Query<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", typeParams).FirstOrDefault();
-						var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @object = 'IntersectType'", typeParams).FirstOrDefault();
 
-						load = new Load
-						{
-							File = stream.ToArray(),
-							Action = model.LoadAction,
-							Extension = extension,
-							Notes = model.Notes,
-							Object = typeParams.@object,
-							ObjectID = typeParams.objectID,
-							DateStarted = DateTime.UtcNow,
-							UpdatedBy = Company.CurrentResourceID,
-							AssetTypeUid = assetTypeUid,
-							IntersectTypeUid = intersectTypeUid
-						};
+					var typeInfo = model.Type.Split('|');
+					var typeParams = new { @object = typeInfo[0], objectID = int.Parse(typeInfo[1]) };
 
+					var assetTypeUid = Company.Query<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", typeParams).FirstOrDefault();
+					var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @object = 'IntersectType'", typeParams).FirstOrDefault();
+
+					load = new Load
+					{
+						File = stream.ToArray(),
+						Action = model.LoadAction,
+						Extension = extension,
+						Notes = model.Notes,
+						Object = typeParams.@object,
+						ObjectID = typeParams.objectID,
+						DateStarted = DateTime.UtcNow,
+						UpdatedBy = Company.CurrentResourceID,
+						AssetTypeUid = assetTypeUid,
+						IntersectTypeUid = intersectTypeUid
+					};
+
+					try
+					{
 						xls = new SLDocument(stream);
+					}
+					catch (OpenXmlPackageException e)
+					{
+						return jsonException($"Error opening Excel file: {e.InnerException.Message}", HttpStatusCode.BadRequest);
+					}
 
-						var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
+					var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
 
-						var stats = xls.GetWorksheetStatistics();
-						if (stats != null && stats.NumberOfRows > 100000)
+					var stats = xls.GetWorksheetStatistics();
+					if (stats != null && stats.NumberOfRows > 100000)
+					{
+						return jsonException(
+							$"Please reduce the number of rows from {stats.NumberOfRows} to less than 100000",
+							HttpStatusCode.BadRequest);
+					}
+
+					var NumberOfColumns = stats.NumberOfColumns;
+
+					// below check added ticket GOV-32536
+					// User add and drop extra column added to fill excel sheet.
+					// Some reason not identified Number of column return more than 16k
+					// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
+					if (stats.NumberOfColumns == MAX_NUMBER_OF_COLUMNS)
+					{
+						NumberOfColumns = CountNumberOfColumnsManually(stats,xls);
+					}
+
+					int columnCount = 0;
+
+					for (int i = 1; i <= NumberOfColumns; i++)
+					{
+						var testValue = xls.GetCellValueAsString(1, i);
+
+						if (string.IsNullOrEmpty(testValue))
 						{
-							return jsonException(
-								$"Please reduce the number of rows from {stats.NumberOfRows} to less than 100000",
-								HttpStatusCode.BadRequest);
+							errorMessages.Add($"Invalid column header in column {i}.");
 						}
-
-						var NumberOfColumns = stats.NumberOfColumns;
-
-						// below check added ticket GOV-32536
-						// User add and drop extra column added to fill excel sheet.
-						// Some reason not identified Number of column return more than 16k
-						// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
-						if (stats.NumberOfColumns == MAX_NUMBER_OF_COLUMNS)
+						else
 						{
-							NumberOfColumns = CountNumberOfColumnsManually(stats,xls);
+							columnCount++;
 						}
+					}
 
-						int columnCount = 0;
+					var currentWorksheet = xls.GetCurrentWorksheetName();
 
-						for (int i = 1; i <= NumberOfColumns; i++)
+					//validate each cell for formula errors
+					foreach (var sheet in xls.GetSheetNames())
+					{
+						xls.SelectWorksheet(sheet);
+						var allCells = xls.GetCells();
+
+						foreach (var rowKey in allCells.Keys)
 						{
-							var testValue = xls.GetCellValueAsString(1, i);
-
-							if (string.IsNullOrEmpty(testValue))
+							var rowCells = allCells[rowKey];
+							foreach (var cellKey in rowCells.Keys)
 							{
-								errorMessages.Add($"Invalid column header in column {i}.");
-							}
-							else
-							{
-								columnCount++;
-							}
-						}
-
-						var currentWorksheet = xls.GetCurrentWorksheetName();
-
-						//validate each cell for formula errors
-						foreach (var sheet in xls.GetSheetNames())
-						{
-							xls.SelectWorksheet(sheet);
-							var allCells = xls.GetCells();
-
-							foreach (var rowKey in allCells.Keys)
-							{
-								var rowCells = allCells[rowKey];
-								foreach (var cellKey in rowCells.Keys)
+								var cell = rowCells[cellKey];
+								if (cell.DataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.Error)
 								{
-									var cell = rowCells[cellKey];
-									if (cell.DataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.Error)
+									if (cell.CellFormula != null)
 									{
-										if (cell.CellFormula != null)
-										{
-											errorMessages.Add($"Invalid cell value or macro present in row: {rowKey}, column:{cellKey}.");
-										}
-										else
-										{
-											errorMessages.Add($"Invalid cell value in row: {rowKey}, column:{cellKey}.");
-										}
-									}
-								}
-							}
-						}
-
-						xls.SelectWorksheet(currentWorksheet);
-						if (errorMessages.Count == 0)
-						{
-							// Spreadsheet should not have more columns than the type has, but it can have less.
-							// Spreadsheet should only contain columns that the type has.
-							if (columnCount <= fieldTypeNames.Count)
-							{
-								load.LoadColumns = new List<LoadColumn>();
-
-								#region Loop through spreadsheet columns and make sure type has that column defined.
-								for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
-								{
-									var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
-
-									if (string.IsNullOrEmpty(columnName))
-									{
-										continue;
-									}
-
-									if (!fieldTypeNames.Any(x => x.Name == columnName))
-									{
-										errorMessages.Add($"Unexpected column found [{columnName}]");
+										errorMessages.Add($"Invalid cell value or macro present in row: {rowKey}, column:{cellKey}.");
 									}
 									else
 									{
-
-										if (load.Action == "P" && load.LoadColumns.Any(l => l.Name == columnName))
-										{
-											errorMessages.Add($"Duplicate column found [{columnName}]");
-										}
-										else
-										{
-											load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
-										}
+										errorMessages.Add($"Invalid cell value in row: {rowKey}, column:{cellKey}.");
 									}
 								}
-								#endregion
-
-								Func<int, bool> allColumnRowsHaveValue = delegate (int columnIndex)
-								{
-									bool returnValue = true;
-
-									if (columnIndex >= 0)
-									{
-										returnValue = stats.EndRowIndex > stats.StartRowIndex; // If there is only header row, this fails.
-
-										for (var i = stats.StartRowIndex + 1; i <= stats.EndRowIndex; i++)
-										{
-											if (returnValue) // Continue checking ONLY if we are still set to TRUE.
-											{
-												var rowValue = (xls.GetCellValueAsString(i, columnIndex) ?? string.Empty).Trim();
-
-												if (string.IsNullOrEmpty(rowValue))
-												{
-													returnValue = false;
-												}
-											}
-										}
-									}
-									else
-									{
-										returnValue = false;
-									}
-
-									return returnValue;
-								};
-
-								// This is where we do our key check, split by ordered Level.
-								var levelFields = (
-												  from fl in fieldTypeNames
-												  select new LevelField
-												  {
-													  Level = fl.Level,
-													  Name = fl.Name,
-													  PartOfKey = fl.PartOfKey,
-													  Required = fl.Required,
-													  ColumnIndex = load.LoadColumns.Any(lc => lc.Name == fl.Name) ? load.LoadColumns.First(lc => lc.Name == fl.Name).ColumnIndex : -1
-												  }
-												  ).OrderBy(i => i.Level).ToList();
-
-								// Determine which key/required columns are fully loaded.
-								foreach (var lf in levelFields.Where(f => f.PartOfKey || f.Required))
-								{
-									lf.DataLoaded = allColumnRowsHaveValue(lf.ColumnIndex);
-								}
-
-								var requiredLevels = levelFields
-									.Select(i => new LoadLevelStatus
-									{
-										Level = i.Level,
-										Required = false
-									})
-									.Distinct(new LoadLevelStatusComparer())
-									.OrderByDescending(l => l.Level)
-									.ToList();
-
-								// Determine which levels are required.
-								requiredLevels.ForEach(l =>
-								{
-									l.DataLoaded = !levelFields.Any(f => f.Level == l.Level && (f.PartOfKey || f.Required) && !f.DataLoaded);
-
-									if (l.Level == 1)
-									{
-										// Level 1 is always required.
-										l.Required = true;
-									}
-									else
-									{
-										if (requiredLevels.Any(p => p.Level == l.Level + 1 && p.DataLoaded))
-										{
-											l.Required = true; // Since level below CURRENT is data-populated, then CURRENT is required.
-										}
-										else
-										{
-											l.Required = l.DataLoaded;
-										}
-									}
-								});
-
-								List<string> invalidKeyFields = new List<string>();
-								List<string> invalidRequiredFields = new List<string>();
-
-								// Log missing required column messages.
-								requiredLevels.ForEach(l =>
-								{
-									if (l.Required)
-									{
-										// Log any missing key field errors.
-										errorMessages.AddRange(
-											levelFields
-											.Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
-											.Select(f => $"Key column not provided [{f.Name}]")
-										);
-
-										// Log any missing required, non-key field errors.
-										errorMessages.AddRange(
-											levelFields
-											.Where(f => f.Level == l.Level && f.Required && !f.PartOfKey && f.ColumnIndex == -1)
-											.Select(f => $"Required column not provided [{f.Name}]")
-										);
-
-										// Get any key columns that do not have data populated for this level.
-										invalidKeyFields.AddRange(
-											levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.Required && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
-										);
-
-										// Get any required, non-key columns that do not have data populated for this level.
-										invalidRequiredFields.AddRange(
-											levelFields.Where(lf => lf.Level == l.Level && lf.Required && !lf.PartOfKey && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
-										);
-									}
-								});
-
-								if (invalidKeyFields.Count > 0)
-								{
-									errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
-								}
-
-								if (invalidRequiredFields.Count > 0)
-								{
-									errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]");
-								}
-							}
-							else
-							{
-								errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type.");
 							}
 						}
 					}
-					else
+
+					xls.SelectWorksheet(currentWorksheet);
+					if (errorMessages.Count == 0)
 					{
-						errorMessages.Add("Incorrect file type");
+						// Spreadsheet should not have more columns than the type has, but it can have less.
+						// Spreadsheet should only contain columns that the type has.
+						if (columnCount <= fieldTypeNames.Count)
+						{
+							load.LoadColumns = new List<LoadColumn>();
+
+							#region Loop through spreadsheet columns and make sure type has that column defined.
+							for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
+							{
+								var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
+
+								if (string.IsNullOrEmpty(columnName))
+								{
+									continue;
+								}
+
+								if (!fieldTypeNames.Any(x => x.Name == columnName))
+								{
+									errorMessages.Add($"Unexpected column found [{columnName}]");
+								}
+								else
+								{
+
+									if (load.Action == "P" && load.LoadColumns.Any(l => l.Name == columnName))
+									{
+										errorMessages.Add($"Duplicate column found [{columnName}]");
+									}
+									else
+									{
+										load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
+									}
+								}
+							}
+							#endregion
+
+							Func<int, bool> allColumnRowsHaveValue = delegate (int columnIndex)
+							{
+								bool returnValue = true;
+
+								if (columnIndex >= 0)
+								{
+									returnValue = stats.EndRowIndex > stats.StartRowIndex; // If there is only header row, this fails.
+
+									for (var i = stats.StartRowIndex + 1; i <= stats.EndRowIndex; i++)
+									{
+										if (returnValue) // Continue checking ONLY if we are still set to TRUE.
+										{
+											var rowValue = (xls.GetCellValueAsString(i, columnIndex) ?? string.Empty).Trim();
+
+											if (string.IsNullOrEmpty(rowValue))
+											{
+												returnValue = false;
+											}
+										}
+									}
+								}
+								else
+								{
+									returnValue = false;
+								}
+
+								return returnValue;
+							};
+
+							// This is where we do our key check, split by ordered Level.
+							var levelFields = (
+												from fl in fieldTypeNames
+												select new LevelField
+												{
+													Level = fl.Level,
+													Name = fl.Name,
+													PartOfKey = fl.PartOfKey,
+													Required = fl.Required,
+													ColumnIndex = load.LoadColumns.Any(lc => lc.Name == fl.Name) ? load.LoadColumns.First(lc => lc.Name == fl.Name).ColumnIndex : -1
+												}
+												).OrderBy(i => i.Level).ToList();
+
+							// Determine which key/required columns are fully loaded.
+							foreach (var lf in levelFields.Where(f => f.PartOfKey || f.Required))
+							{
+								lf.DataLoaded = allColumnRowsHaveValue(lf.ColumnIndex);
+							}
+
+							var requiredLevels = levelFields
+								.Select(i => new LoadLevelStatus
+								{
+									Level = i.Level,
+									Required = false
+								})
+								.Distinct(new LoadLevelStatusComparer())
+								.OrderByDescending(l => l.Level)
+								.ToList();
+
+							// Determine which levels are required.
+							requiredLevels.ForEach(l =>
+							{
+								l.DataLoaded = !levelFields.Any(f => f.Level == l.Level && (f.PartOfKey || f.Required) && !f.DataLoaded);
+
+								if (l.Level == 1)
+								{
+									// Level 1 is always required.
+									l.Required = true;
+								}
+								else
+								{
+									if (requiredLevels.Any(p => p.Level == l.Level + 1 && p.DataLoaded))
+									{
+										l.Required = true; // Since level below CURRENT is data-populated, then CURRENT is required.
+									}
+									else
+									{
+										l.Required = l.DataLoaded;
+									}
+								}
+							});
+
+							List<string> invalidKeyFields = new List<string>();
+							List<string> invalidRequiredFields = new List<string>();
+
+							// Log missing required column messages.
+							requiredLevels.ForEach(l =>
+							{
+								if (l.Required)
+								{
+									// Log any missing key field errors.
+									errorMessages.AddRange(
+										levelFields
+										.Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
+										.Select(f => $"Key column not provided [{f.Name}]")
+									);
+
+									// Log any missing required, non-key field errors.
+									errorMessages.AddRange(
+										levelFields
+										.Where(f => f.Level == l.Level && f.Required && !f.PartOfKey && f.ColumnIndex == -1)
+										.Select(f => $"Required column not provided [{f.Name}]")
+									);
+
+									// Get any key columns that do not have data populated for this level.
+									invalidKeyFields.AddRange(
+										levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.Required && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+									);
+
+									// Get any required, non-key columns that do not have data populated for this level.
+									invalidRequiredFields.AddRange(
+										levelFields.Where(lf => lf.Level == l.Level && lf.Required && !lf.PartOfKey && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+									);
+								}
+							});
+
+							if (invalidKeyFields.Count > 0)
+							{
+								errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
+							}
+
+							if (invalidRequiredFields.Count > 0)
+							{
+								errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]");
+							}
+						}
+						else
+						{
+							errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type.");
+						}
 					}
 				}
 
