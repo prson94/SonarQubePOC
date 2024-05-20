@@ -430,9 +430,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     showRemoveTag() {
         if (this.isEditable) {
-            if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
+            if (!this.auth.isAdmin)
                 {this.showDeleteOption = false;}
-            if (this.auth.isAdmin || this.hasModifyAssetPermissions())
+            else
                 {this.showDeleteOption = true;}
             if (!this.showDeleteOption) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
