@@ -165,7 +165,7 @@ namespace d360.model
 			}
 			else
 			{
-				deleted = deleted.Where(x => x.IntersectTypeID == intersectTypeId && x.SubjectAssetID == assetId);
+				deleted = deleted.Where(x => x.IntersectTypeID == intersectTypeId && x.ObjectAssetID == assetId);
 			}
 
 			var intersectIds = deleted.Select(x => x.ID).ToList();
