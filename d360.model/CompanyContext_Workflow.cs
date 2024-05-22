@@ -1646,7 +1646,7 @@ namespace d360.model
 		{
 			try
 			{
-				int objectVersion = Audits.Where(x => x.Object == intersectDetail.Object && x.ObjectID == intersectDetail.ObjectID).OrderByDescending(x => x.Version).FirstOrDefault()?.Version ?? 1;
+				int subjectVersion = Audits.Where(x => x.Object == intersectDetail.Object && x.ObjectID == intersectDetail.ObjectID).OrderByDescending(x => x.Version).FirstOrDefault()?.Version ?? 1;
 				Audits.Add(new Audit
 				{
 					Object = intersectDetail.Subject,
@@ -1660,10 +1660,10 @@ namespace d360.model
 					ActionObjectTypeName = intersectDetail.SubjectTypeName,
 					ActionObjectName = intersectDetail.SubjectName,
 					ActionDescription = $"This relationship has been {action.ToLowerInvariant()} by workflow.",
-					Version = objectVersion
+					Version = subjectVersion
 				});
 
-				int subjectVersion = Audits.Where(x => x.Object == intersectDetail.Subject && x.ObjectID == intersectDetail.SubjectID).OrderByDescending(x => x.Version).FirstOrDefault()?.Version ?? 1;
+				int objectVersion = Audits.Where(x => x.Object == intersectDetail.Subject && x.ObjectID == intersectDetail.SubjectID).OrderByDescending(x => x.Version).FirstOrDefault()?.Version ?? 1;
 
 				Audits.Add(new Audit
 				{
@@ -1677,10 +1677,11 @@ namespace d360.model
 					ActionObjectID = intersectDetail.ID,
 					ActionObjectTypeName = intersectDetail.ObjectTypeName,
 					ActionObjectName = intersectDetail.ObjectName,
-					ActionDescription = "This relationship has been created by workflow."
+					ActionDescription = "This relationship has been created by workflow.",
+					Version = objectVersion
 				});
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				Log.LogError(exception: ex, "AddChangeLogsForIntersect");
 			}
