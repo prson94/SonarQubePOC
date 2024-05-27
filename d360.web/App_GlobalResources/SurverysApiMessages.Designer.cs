@@ -70,6 +70,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid format for [AssetUid].
+        /// </summary>
+        public static string InvalidFormatAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidFormatAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid format for [surveyTypeUid].
         /// </summary>
         public static string InvalidFormatSurveyTypeUid {

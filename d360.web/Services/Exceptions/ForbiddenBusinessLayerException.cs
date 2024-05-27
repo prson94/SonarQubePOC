@@ -15,13 +15,5 @@ namespace d360.web.Services
         public ForbiddenBusinessLayerException(string message) : base(message)
         {
         }
-
-        public ForbiddenBusinessLayerException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected ForbiddenBusinessLayerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

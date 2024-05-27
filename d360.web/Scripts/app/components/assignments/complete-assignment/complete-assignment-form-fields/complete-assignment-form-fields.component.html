@@ -78,6 +78,9 @@
 							   [(ngModel)]="field.Value"
 							   [required]="field?.Required"
 							   placeholder="{{(field.Required ? 'Value required' : '')}}"
+							   appendTo="body"
+			                   [overlayOptions]="overlayOpts"
+							   scrollHeight="150px"
 							   display="chip">
 					<ng-template pTemplate="selectedItems" let-items>
 						<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
@@ -135,6 +138,9 @@
 							   [(ngModel)]="field.Value"
 							   [required]="field?.Required"
 							   placeholder="{{(field.Required ? 'Value required' : '')}}"
+							   appendTo="body"
+			                   [overlayOptions]="overlayOpts"
+							   scrollHeight="150px"
 							   display="chip">
 					<ng-template pTemplate="selectedItems" let-items>
 						<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">

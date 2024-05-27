@@ -18,10 +18,6 @@ namespace d360.web.Services
 		{
 		}
 
-		protected NotFoundBusinessLayerException(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-		}
-
 		private static string CreateMessage(string message = null)
 		{
 			return message ?? "Entity not found";

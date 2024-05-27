@@ -1194,4 +1194,21 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+    <changeSet author="TDuric" id="Data.Corrections.GOV-32801">
+	<comment>Finds all lookup field types which has a default value and checks if FormattedValue matches Asset Display Value</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			update ft
+			set ft.DefaultFormattedValue = adv.DisplayValue
+			from dbo.FieldType ft
+			inner join dbo.AssetType at on at.Object = concat(ft.LookupObjectType,'Type') and at.ObjectID = ft.LookupObjectID
+			inner join dbo.Asset a on a.AssetTypeID = at.ID and a.ObjectID = ft.DefaultValue
+			inner join dbo.AssetDisplayValue adv on adv.AssetID = a.ID
+			where ft.Type = 'Lookup' and ft.DefaultValue is not null and ft.DefaultFormattedValue <> adv.DisplayValue
+		]]>
+    </sql>
+  </changeSet>
 </databaseChangeLog>

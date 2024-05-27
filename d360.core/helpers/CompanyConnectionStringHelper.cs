@@ -25,7 +25,7 @@
                 throw new System.Exception("Please specify a valid database username to generate a Govern connection string for.");
             }
 
-            return $"server={server};Database={GOVERN_ENVIRONMENT_DATABASE_NAME_PREFIX}_{id};User ID={username};Password={password};MultipleActiveResultSets={CONNECTION_ENABLE_MARS};ConnectRetryCount={CONNECTION_RETRY_COUNT};ConnectRetryInterval={CONNECTION_RETRY_INTERVAL};Connection Timeout={CONNECTION_TIMEOUT};";
+            return $"server={server};Database={GOVERN_ENVIRONMENT_DATABASE_NAME_PREFIX}_{id};User ID={username};Password={password};MultipleActiveResultSets={CONNECTION_ENABLE_MARS};ConnectRetryCount={CONNECTION_RETRY_COUNT};ConnectRetryInterval={CONNECTION_RETRY_INTERVAL};Connection Timeout={CONNECTION_TIMEOUT};Max Pool Size=2500;";
         }
     }
 }

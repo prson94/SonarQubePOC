@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 namespace d360.core.entities
 {
     [DataContract]
-    public class QuestionType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
+    public class QuestionType : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember, StringLength(500)]
         public string Name { get; set; }

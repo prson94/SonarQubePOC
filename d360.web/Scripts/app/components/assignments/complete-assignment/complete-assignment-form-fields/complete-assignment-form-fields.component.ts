@@ -3,6 +3,7 @@ import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/wor
 import { ControlContainer, NgForm } from '@angular/forms';
 import { unset } from 'lodash-es';
 import { FormHelpers } from '../../../../static/form-helpers';
+import { OverlayOptions } from 'primeng/api';
 
 @Component({
 	selector: 'd3s-complete-assignment-form-fields',
@@ -18,6 +19,10 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	@Output() discardForm: EventEmitter<boolean> = new EventEmitter<boolean>();
 
 	fieldType = WorkflowFormFieldType;
+
+	public overlayOpts: OverlayOptions = {
+		contentStyleClass: "bodymultiselectoverlay",
+	}
 
 	ngOnInit(): void {
 		this.setValidators();

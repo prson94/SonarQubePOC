@@ -26,8 +26,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.Web.Security;
 using System.Xml.Linq;
 
 namespace d360.web.Controllers
@@ -5140,7 +5142,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			fieldTypes.ForEach(f =>
 			{
 				fields.Add(getGridFieldForColumn(f));
-				columns.Add(getGridColumnForColumn(hideData3SixtyUsers ,f, 100, false, false));
+				columns.Add(getGridColumnForColumn(hideData3SixtyUsers, f, 100, false, false));
 			});
 
 			fields.Add(new GridField { name = "ID", type = "number" });
@@ -5841,6 +5843,68 @@ where v.id = {0}", id)).FirstOrDefault();
 			return items;
 		}
 
+		#endregion
+
+		#region Session
+
+		[Route("cookie/expiration")]
+		[HttpGet]
+		public async Task<HttpResponseMessage> SessionExpirationDate()
+		{
+			var sessionLengthMinutes = await GetCachedSettingValueById<double>(Setting.SessionTimeout);
+
+			if (sessionLengthMinutes > 0)
+			{
+				var authCookie = Request.Headers.GetCookies(FormsAuthentication.FormsCookieName).FirstOrDefault();
+				if (authCookie != null)
+				{
+					var value = authCookie[FormsAuthentication.FormsCookieName].Value;
+					FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(value);
+					if (ticket != null)
+					{
+						return Request.CreateResponse(HttpStatusCode.OK, ticket.Expiration.ToUniversalTime());
+					}
+				}
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, DateTime.MaxValue);
+		}
+
+		[Route("cookie/expiration/refresh")]
+		[HttpPost]
+		public async Task<HttpResponseMessage> SessionExpirationDateRefresh()
+		{
+			var sessionLengthMinutes = await GetCachedSettingValueById<double>(Setting.SessionTimeout);
+
+			var authCookie = Request.Headers.GetCookies(FormsAuthentication.FormsCookieName).FirstOrDefault();
+			if (authCookie != null)
+			{
+				var value = authCookie[FormsAuthentication.FormsCookieName].Value;
+				FormsAuthenticationTicket oldTicket = FormsAuthentication.Decrypt(value);
+
+				FormsAuthenticationTicket newTicket = new FormsAuthenticationTicket(
+					   oldTicket.Version,
+					   oldTicket.Name,
+					   DateTime.Now,
+					   DateTime.Now.AddMinutes(sessionLengthMinutes), // Set the new expiration time
+					   oldTicket.IsPersistent,
+					   oldTicket.UserData,
+					   oldTicket.CookiePath
+				   );
+
+				var encryptedTicket = FormsAuthentication.Encrypt(newTicket);
+				var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+				{
+					HttpOnly = true,
+					Secure = FormsAuthentication.RequireSSL,
+					Path = FormsAuthentication.FormsCookiePath,
+					Domain = FormsAuthentication.CookieDomain
+				};
+
+				HttpContext.Current.Response.Cookies.Set(cookie);
+			}
+			return Request.CreateResponse(HttpStatusCode.OK, true);
+		}
 		#endregion
 	}
 }

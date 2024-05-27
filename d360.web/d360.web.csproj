@@ -1155,13 +1155,9 @@
     <Compile Include="Services\Exceptions\BusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\ForbiddenBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\NotFoundBusinessLayerException.cs" />
-    <Compile Include="Services\Exceptions\RecoverableBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\UnauthorizedBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\UnrecoverableBusinessLayerException.cs" />
-    <Compile Include="Utilities\ApplicationUriProvider.cs" />
     <Compile Include="Utilities\Condition.cs" />
-    <Compile Include="Utilities\ExceptionFactory.cs" />
-    <Compile Include="Utilities\IApplicationUriProvider.cs" />
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
     <Compile Include="Utilities\IRequestValidator.cs" />
     <Compile Include="Utilities\RequestValidator.cs" />

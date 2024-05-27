@@ -1,16 +1,14 @@
-﻿using System;
+﻿using d360.core.entities.Contracts;
+using d360.core.queue;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
-using d360.core.entities.Contracts;
-using d360.core.queue;
-
 namespace d360.core.entities
 {
-    [DataContract]
-    public class SurveyType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
+	[DataContract]
+    public class SurveyType : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]
         public string Name { get; set; }
