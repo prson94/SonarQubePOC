@@ -1193,7 +1193,7 @@ namespace d360.model
 
 			bool isAssetEdited = false;
 			//check if the field exists
-			Field field = null;
+			Field field = null;			
 			if (objectType == SystemObjects.Issue.ToString())
 			{
 				field = Fields.Where(x => x.IssueID == objectId && x.FieldTypeID == fieldType.ID).FirstOrDefault();
@@ -2277,19 +2277,20 @@ namespace d360.model
 				};
 
 				WorkflowItemStepTransitions.Add(trans);
-				SaveChanges();
-
+				
 				// remove NoValidTransitions error if a previous transition from this step set it
 				if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
-				{
-					fromItemStep.State = StepState.Complete;
+				{						
 					var itemStateDetail = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions).FirstOrDefault();
 					if (itemStateDetail != null)
 					{
 						WorkflowItemStepStateDetails.Remove(itemStateDetail);
 					}
-					SaveChanges();
 				}
+
+				fromItemStep.State = StepState.Complete;
+
+				SaveChanges();
 
 				EventInfo startEvent = new EventInfo
 				{
@@ -2311,7 +2312,8 @@ namespace d360.model
 
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
-				if (!WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID))
+				//Only mark as failed if it is not marked complete.
+				if (fromItemStep != null && !WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID) && fromItemStep.State != StepState.Complete)
 				{
 					fromItemStep.State = StepState.NoValidTransitions;
 
@@ -2761,9 +2763,8 @@ namespace d360.model
 
 				if (transitions.Count > 0)
 				{
-					transitionCount = transitions.Count;
-					itemStep.State = (itemStep.State == StepState.Pending || itemStep.State == null) ? StepState.Complete : itemStep.State;
-					await StartTransitions(transitions, itemID, objectInfo);
+					transitionCount = transitions.Count;					
+					await StartTransitions(transitions, itemID, objectInfo);					
 				}
 				else
 				{
