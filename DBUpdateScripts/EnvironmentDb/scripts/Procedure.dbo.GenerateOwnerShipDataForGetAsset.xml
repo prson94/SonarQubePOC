@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GenerateOwnerShipDataForGetAsset-v1.1">
-  <comment>GOV-32617</comment>
+  <changeSet author="TKlok,PuneetGupta" id="Procedure.dbo.GenerateOwnerShipDataForGetAsset-v2">
+  <comment>GOV-32617,GOV-33080</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -72,7 +72,7 @@ BEGIN
 						rresource.SecurityAssetID,
 						RES.uid as SecurityAssetUid
 				from	AssetRule rasset
-						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID and r.IsVisible = 1)
 						inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 						inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 						inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
@@ -90,7 +90,7 @@ BEGIN
 						rresource.SecurityAssetID,
 						secasset.uid as SecurityAssetUid
 				from	AssetRule rasset
-						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID and r.IsVisible = 1)
 						inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 						inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 						inner join dbo.[Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
