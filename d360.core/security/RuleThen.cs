@@ -22,9 +22,16 @@ namespace d360.core.security
 	/// </summary>
 	public class CreateRuleThen
 	{
+		[JsonProperty("fieldName")]
 		public string? FieldName { get; set; }
+		
+		[JsonProperty("operator")]
 		public string Operator { get; set; }
+
+		[JsonProperty("value")]
 		public string? Value { get; set; }
+
+		[JsonProperty("securityUid")]
 		public Guid? SecurityUid { get; set; }
 	}
 
@@ -33,6 +40,7 @@ namespace d360.core.security
 	/// </summary>
 	public class CreateRuleThenOverride
 	{
+		[JsonProperty("securityUid")]
 		public Guid? SecurityUid { get; set; }
 	}
 }

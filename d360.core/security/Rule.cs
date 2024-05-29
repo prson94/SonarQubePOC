@@ -60,8 +60,8 @@ namespace d360.core.security
 	/// </summary>
 	public class CreateRuleOverride
 	{
-		[JsonProperty("assetTypeUid")]
-		public Guid AssetTypeUid { get; set; }
+		[JsonProperty("assetUid")]
+		public Guid AssetUid { get; set; }
 
 		[JsonProperty("roleUid")]
 		public Guid RoleUid { get; set; }
@@ -69,11 +69,8 @@ namespace d360.core.security
 		[JsonProperty("securityType")]
 		public RuleSecurityType SecurityType { get; set; }
 
-		[JsonProperty("when")]
-		public CreateRuleWhenOverride When { get; set; }
-
-		[JsonProperty("then")]
-		public CreateRuleThenOverride Then { get; set; }
+		[JsonProperty("securityUid")]
+		public Guid SecurityUid { get; set; }
 	}
 
 	/// <summary>
@@ -89,6 +86,9 @@ namespace d360.core.security
 
 		[JsonProperty("assetTypeUid")]
 		public Guid AssetTypeUid { get; set; }
+
+		[JsonProperty("assetTypeName")]
+		public string AssetTypeName { get; set; }
 
 		[JsonProperty("roleUid")]
 		public Guid RoleUid { get; set; }

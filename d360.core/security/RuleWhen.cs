@@ -24,10 +24,19 @@ namespace d360.core.security
 	/// </summary>
 	public class CreateRuleWhen
 	{
+		[JsonProperty("fieldName")]
 		public string? FieldName { get; set; }
+
+		[JsonProperty("intersectTypeUid")]
 		public Guid? IntersectTypeUid { get; set; }
+
+		[JsonProperty("operator")]
 		public string Operator { get; set; }
+
+		[JsonProperty("value")]
 		public string? Value { get; set; }
+
+		[JsonProperty("assetUid")]
 		public Guid? AssetUid { get; set; }
 	}
 
@@ -36,6 +45,7 @@ namespace d360.core.security
 	/// </summary>
 	public class CreateRuleWhenOverride
 	{
+		[JsonProperty("assetUid")]
 		public Guid? AssetUid { get; set; }
 	}
 }

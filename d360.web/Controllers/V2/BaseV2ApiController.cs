@@ -9,6 +9,7 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using Resources;
 using SpreadsheetLight;
 using System;
@@ -1009,6 +1010,13 @@ namespace d360.web.Controllers.V2
 			result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
 			return ResponseMessage(result);
+		}
+
+		internal IHttpActionResult sendRepositoryResponse<T>(RepositoryResponse<T> result) 
+		{
+			return result.IsSuccess ?
+				Ok(result.Data) :
+				errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
 		}
 
 		internal async Task<IHttpActionResult> sendConflictNotAccessible()

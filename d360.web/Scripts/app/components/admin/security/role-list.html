@@ -1,0 +1,89 @@
+﻿<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+			<ig-search-field [debounce]="600"
+							 [(ngModel)]="simpleFilterValue"
+							 (onSearch)="dt.filterGlobal($event, 'contains')"
+							 mode="Keypress">
+			</ig-search-field>
+		</div>
+		<div class="grid-action-buttons">
+			<button [igDataCy]="'Role_Add'"
+					(click)="add()"
+					igButton
+					pTooltip="Add Role"
+					i18n-pTooltip
+					tooltipPosition="top"
+					tooltipStyleClass="ig-tooltip"
+					class="ig-button-primary"
+					icon="fa-plus">
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="grid-wrapper">
+	<p-table #dt [value]="roles"
+			 selectionMode="single"
+			 [metaKeySelection]="true"
+			 [globalFilterFields]="['name','description', 'uid']"
+			 [pageLinks]="3"
+			 [paginator]="true"
+			 [(first)]="first"
+			 [rows]="rowsPerPage"
+			 [rowsPerPageOptions]="defaultPagingOptions"
+			 [selection]="selected"
+			 (selectionChange)="selectRow($event)"
+			 [stateStorage]="gridStateStorage"
+			 stateKey="{{gridStorageKey}}"
+			 [loading]="isLoading"
+			 [loadingIcon]="'fa fa-spinner fa-spin'">
+		<ng-template pTemplate="header">
+			<tr>
+				<th [pSortableColumn]="'name'">
+					<ng-container i18n>Name</ng-container>
+					<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'description'">
+					<ng-container i18n>Description</ng-container>
+					<d3s-sortIcon [field]="'description'"></d3s-sortIcon>
+				</th>
+				<th style="width: 40px"></th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body" let-item>
+			<tr #tableRow (click)="selected=item;selectedChange.emit(selected);"
+				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;"
+				(dblclick)="open(item.Uid)"
+				[pSelectableRow]="item"
+				style="position:relative;"
+				[attr.data-uid]="item.Uid">
+				<td>
+					{{item.name}}
+				</td>				
+				<td>
+					{{item.description}}
+				</td>
+				<td #assetGridTools>
+					<div class="token-popup-menu" *ngIf="item.MenuItems">
+						<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+						<ig-popup-menu [items]="item.MenuItems"
+									   #tokenMenu
+									   [tabIndex]="1"></ig-popup-menu>
+					</div>
+
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu [items]="item.MenuItems" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
+				</td>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="summary">
+			<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		</ng-template>
+	</p-table>
+</div>
+
+<role-delete [item]="selected" [isModalVisible]="showDelete" (onCancel)="showDelete=false" (onDelete)="deleteItem($event)"></role-delete>
+<role-editor [item]="selected" [isModalVisible]="showEditor" (onCancel)="closeEditor()" (onSave)="onSave($event)"></role-editor>

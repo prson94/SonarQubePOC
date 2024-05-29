@@ -2,7 +2,6 @@
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
-using d360.core.security;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
@@ -36,17 +35,14 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository AssetRepository;
 		private readonly IResponsibilityRepository ResponsibilityRepository;
 		private readonly IResourceRepository ResourceRepository;
-		private readonly ISecurity Security;
 
 		public ResponsibilitiesController(ICoreComponentSet set,
 			IAssetRepository assetRepository,
 			IResponsibilityRepository responsibilityRepository,
-			IResourceRepository resourceRepository,
-			ISecurity security
+			IResourceRepository resourceRepository
 			)
 			: base(set)
 		{
-			Security = security;
 			ResponsibilityRepository = responsibilityRepository;
 			ResourceRepository = resourceRepository;
 			AssetRepository = assetRepository;
@@ -67,10 +63,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetResponsibilityTypesAsync()
 		{
-			var roles = await Security.ReadRoles();
-			return Ok(roles.Data);
-			//var responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypes();
-			//return Ok(responsibilityTypes);
+			var responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypes();
+
+			return Ok(responsibilityTypes);
 		}
 
 		/// <summary>
@@ -93,14 +88,17 @@ namespace d360.web.Controllers.V2
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
 			}
 
 			dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
 
-			return (responsibilityTypes == null) ? 
-				errorMessageNotFoundResponse(string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, uid.ToString())) :
-				Ok(new { data = responsibilityTypes });
+			if (responsibilityTypes == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, uid.ToString()));
+			}
+
+			return Ok(new { data = responsibilityTypes });
 		}
 
 		/// <summary>
@@ -117,6 +115,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetClaimsAsync()
 		{
 			var claims = await ResponsibilityRepository.GetClaimsAsync();
+
 			return Ok(claims);
 		}
 
@@ -140,15 +139,15 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString())));
 			}
 
 			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
 			{
-				return errorMessageForbiddenResponse(ApiMessages.AccessDenied);
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
 			}
 
-			var responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
+			IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
 			return Ok(responsibilityTypes);
 		}
 
@@ -169,6 +168,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
 		{
 			IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocations(responsibilityTypeUid);
+
 			return Ok(responsibilityTypeAllocations);
 		}
 
@@ -189,6 +189,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
 		{
 			IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocationsByAsset(assetTypeUid);
+
 			return Ok(responsibilityTypeAllocations);
 		}
 
@@ -627,41 +628,77 @@ namespace d360.web.Controllers.V2
 		/// <summary>
 		/// Inserts responsibility types of a given responsibility types list.
 		/// </summary>
-		/// <param name="models">The list of responsibility types for insertion.</param>
+		/// <param name="responsibilityTypes">The list of responsibility types for insertion.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
 			HttpPost,
 			RequireAdminPermissions,
 			MapToApiVersion("2.0"),
 			Route("types"),
-			Route("roles"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeUpsertResult>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add responsibility types.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility types.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> InsertRolesAsync(List<CreateRole> models)
+		public IHttpActionResult InsertResponsibilityTypes(List<ResponsibilityTypeInsertModel> responsibilityTypes)
 		{
-			if (models == null)
+			if (responsibilityTypes == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeInsertModel>>(Request, true).Result;
 			}
 
-			if (models.Count == 0)
+			if (responsibilityTypes == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(ApiMessages.JSONValidMessage);
 			}
 
-			if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			if (responsibilityTypes.Count == 0)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				throw new ArgumentException(RelationshipsApiMessages.PredicateRequired);
 			}
 
-			var result = await Security.CreateRoles(models);
-			return (result.IsSuccess) ?
-				Ok(result.Data) :
-				errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
+			if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				throw new ArgumentException(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			foreach (var type in responsibilityTypes)
+			{
+				if (type.Name?.Trim().Length > 250)
+				{
+					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				}
+
+				if (type.Description?.Trim().Length > 4000)
+				{
+					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
+				}
+			}
+
+			var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+
+			if (existingUids.Any())
+			{
+				string errorMessage = string.Format(ResponsibilityApiMessages.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
+
+				throw new ArgumentException(errorMessage);
+			}
+
+			var execution = getApiExecution(responsibilityTypes.Count, action: ApiExecutionAction.PostResponsibilityTypes);
+
+			var upserts = new List<ResponsibilityTypeUpsertModel>();
+			upserts = responsibilityTypes.ConvertAll(x => new ResponsibilityTypeUpsertModel()
+			{
+				Name = x.Name,
+				Description = x.Description,
+				Uid = x.Uid,
+				IsNew = true
+			});
+
+			List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -959,8 +996,9 @@ namespace d360.web.Controllers.V2
 
 			ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-			return Ok(new ConfirmResponse { 
-				title = ApiMessages.Success, 
+			return Ok(new ConfirmResponse
+			{
+				title = ApiMessages.Success,
 				message = ResponsibilityApiMessages.ResponsibilitySuccessAddMessage
 			});
 		}

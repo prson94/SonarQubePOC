@@ -1,4 +1,5 @@
 ﻿using d360.core.security;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,14 +9,26 @@ namespace repositories
 	{
 		Platform Platform { get; }
 
-		Task<RepositoryResponse<List<ReadRole>>> CreateRoles(List<CreateRole> models);
+		Task<RepositoryResponse<Rule>> CreatePolicyAsync(CreateRule model);
 
-		Task<RepositoryResponse<Rule>> CreateRule(CreateRule model);
+		Task<RepositoryResponse<ReadRuleOverride>> CreatePolicyOverrideAsync(CreateRuleOverride model);
 
-		Task<RepositoryResponse<Rule>> CreateAssignmentOverride(CreateRuleOverride model);
+		Task<RepositoryResponse<ReadRole>> CreateRoleAsync(CreateRole model);
 
-		Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRoles();
+		Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadPoliciesAsync();
 
-		Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadRules();
+		Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRolesAsync();
+
+		Task<RepositoryResponse<bool>> RemovePolicyAsync(Guid uid);
+
+		Task<RepositoryResponse<bool>> RemovePolicyOverrideAsync(Guid uid);
+
+		Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid);
+
+		Task<RepositoryResponse<ReadRule>> UpdatePolicyAsync(Guid uid, ReadRule model);
+
+		Task<RepositoryResponse<ReadRuleOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateRuleOverride model);
+
+		Task<RepositoryResponse<ReadRole>> UpdateRoleAsync(Guid uid, CreateRole model);
 	}
 }

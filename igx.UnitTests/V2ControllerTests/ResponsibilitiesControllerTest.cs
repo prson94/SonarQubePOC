@@ -215,7 +215,7 @@ namespace igx.UnitTests.V2ControllerTests
 			List<ResponsibilityTypeInsertModel> responsibilityTypeInsertModels = new List<ResponsibilityTypeInsertModel>();
 			responsibilityTypeInsertModels.Add(new ResponsibilityTypeInsertModel() { Uid = uid });
 
-			var result = ResponsibilitiesController.InsertRoles(responsibilityTypeInsertModels);
+			var result = ResponsibilitiesController.InsertResponsibilityTypes(responsibilityTypeInsertModels);
 
 			result.ShouldBeOKContent<List<ResponsibilityTypeUpsertResult>>();
 		}

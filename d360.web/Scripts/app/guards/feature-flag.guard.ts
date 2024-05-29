@@ -28,6 +28,12 @@ export class FeatureFlagGuard  {
 			if (!this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			}
+        }
+
+		if (state.url.endsWith('/security/roles') || state.url.endsWith('/security/policies')) {
+			if (!this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel)) {
+				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+			}
 		}
 
 		return true;

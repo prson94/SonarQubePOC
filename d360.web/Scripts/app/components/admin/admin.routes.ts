@@ -22,6 +22,7 @@ const routes: Routes = [
 			{ path: "scoring/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'scoring', loadChildren: () => import('./scoring/admin-scoring.module').then((m) => m.AdminScoringModule) },
 			{ path: 'dashboard', loadChildren: () => import('./dashboards/admin-dashboards.module').then((m) => m.AdminDashboardsModule), canActivate: [FeatureFlagGuard] },            
+			{ path: 'security', loadChildren: () => import('./security/security.module').then((m) => m.AdminSecurityModule) }, //, canActivate: [FeatureFlagGuard]
 			{ path: 'responsibilities', loadChildren: () => import('./responsibilities/admin-responsibilities.module').then((m) => m.AdminResponsibilitiesModule) },
 			{ path: "responsibilities/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
             { path: 'resources', loadChildren: () => import('./resources/admin-resources.module').then( (m) => m.AdminResourcesModule) },
@@ -34,7 +35,6 @@ const routes: Routes = [
             { path: 'exporttemplates', loadChildren: () => import('./exporttemplates/admin-export-templates.module').then((m) => m.AdminExportTemplatesModule) },
             { path: 'tags', loadChildren: () => import('./tags/admin-tags.module').then((m) => m.AdminTagsModule) },
 			{ path: 'branding', loadChildren: () => import('./branding/admin-branding.module').then((m) => m.AdminBrandingModule) },
-
         ]
     }
 ];

@@ -16,173 +16,8 @@ namespace repositories.azure
 	public class Security : Repository, ISecurity
 	{
 		public Security(DapperConnectionProvider provider) : base(provider) { }
-
-		public async Task<RepositoryResponse<List<ReadRole>>> CreateRoles(List<CreateRole> models)
-		{
-			RepositoryResponse<List<ReadRole>> response;
-
-			models.ForEach(m => {
-				m.Name = (m.Name ?? "").Trim();
-				if (!string.IsNullOrEmpty(m.Description))
-				{
-					m.Description = m.Description.Trim();
-				}
-			});
-
-			if (models.GroupBy(m => m.Name).Any(m => m.Count() > 1))
-			{
-				return new RepositoryResponse<List<ReadRole>>(400, "Duplicate roles detected.");
-			}
-
-			if (models.Any(m => m.Name.Length < 250))
-			{
-				return new RepositoryResponse<List<ReadRole>>(400, "Name property must be less than 250 characters.");
-			}
-			if (models.Any(m => m.Description.Length < 4000))
-			{
-				return new RepositoryResponse<List<ReadRole>>(400, "Description property must be less than 4000 characters.");
-			}
-
-			if (models.Any(m => string.IsNullOrEmpty(m.Name)))
-			{
-				return new RepositoryResponse<List<ReadRole>>(400, "Name must be populated.");
-			}
-			if (models.Any(m => m.Name.Length < 3))
-			{
-				return new RepositoryResponse<List<ReadRole>>(400, "Name must longer than three characters.");
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				var existingNames = (await connection.QueryAsync<string>(
-					"select Name from [security].[Role] where Name in @names", new { uids = models.Select(x => x.Name) }
-					)).ToList();
-
-				if (existingNames.Any())
-				{
-					return new RepositoryResponse<List<ReadRole>>(400, "One or more roles with the same name already exist.");
-				}
-				else
-				{
-					response = new RepositoryResponse<List<ReadRole>>(new(), 201, true, "");
-
-					models.ForEach(async m => {
-						var role = await connection.QuerySingleAsync<ReadRole>(
-								$@"
-declare @roleId int;
-insert into [security].[Role] ([Uid], [Name], Description, [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn])
-values (@Uid, @Name, @Description, @u, @dt, @u, @dt);
-select @roleId = SCOPE_IDENTITY();
-select * from [security].[Role] where Id = @roleId;",
-						new { Uid = Guid.NewGuid(), m.Name, m.Description, u = CurrentUserId, dt = DateTime.UtcNow });
-
-						response.Data.Add(role);
-					});
-				}
-			}
-
-			return response;
-		}
-
-		public async Task<RepositoryResponse<Rule>> CreateAssignmentOverride(CreateRuleOverride model)
-		{
-			RepositoryResponse<Rule> response = null;
-
-			if (model == null)
-			{
-				return new RepositoryResponse<Rule>(400, "No valid data to create rule.");
-			}
-			if (model.Then == null || (model.Then != null && !model.Then.SecurityUid.HasValue))
-			{
-				return new RepositoryResponse<Rule>(400, "You must apply user/group assignment.");
-			}
-			if (model.When == null || (model.When != null && !model.When.AssetUid.HasValue))
-			{
-				return new RepositoryResponse<Rule>(400, "You must have populated AssetUid.");
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				Rule rawRule = new() { 
-					ApplyToType = false, IsOverride = true, IsVisible = true, 
-					CreatedBy = CurrentUserId, CreatedOn = DateTime.UtcNow, Name = "", UpdatedBy = CurrentUserId, UpdatedOn = DateTime.UtcNow, 
-					Uid = Guid.NewGuid() 
-				};
-				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
-				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
-
-				// Data for validation.
-				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
-				var securityQuery = rawRule.SecurityType == 'G' ?
-					"select Id from [Group] where Uid = @SecurityUid;" :
-					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
-				var qryData = await connection.QueryMultipleAsync(
-					"select Id from AssetType where Uid = @AssetTypeUid; " +
-					"select Id from [security].[Role] where Uid = @RoleUid; " +
-					"select Id from Asset where Uid = @AssetUid; " +
-					securityQuery,
-					new { model.AssetTypeUid, model.RoleUid, AssetUid = model.When.AssetUid.Value, SecurityUid = model.Then.SecurityUid.Value }
-				);
-				rawRule.AssetTypeId = await qryData.ReadFirstAsync<int>();
-				rawRule.RoleId = await qryData.ReadFirstAsync<int>();
-				rawRuleWhen.AssetId = await qryData.ReadFirstAsync<long>();
-				rawRuleThen.SecurityId = await qryData.ReadFirstAsync<int>();
-
-				if (rawRule.AssetTypeId == 0)
-				{
-					response = new RepositoryResponse<Rule>(404, "Could not find asset type based on AssetTypeUid provided.");
-				}
-
-				if (response == null && rawRule.RoleId == 0)
-				{
-					response = new RepositoryResponse<Rule>(404, "Could not find role based on RoleUid provided.");
-				}
-
-				if (response == null && rawRuleWhen.AssetId == 0)
-				{
-					response = new RepositoryResponse<Rule>(404, "Could not find asset based on AssetUid provided.");
-				}
-
-				if (response == null && rawRuleThen.SecurityId == 0)
-				{
-					if (rawRule.SecurityType == 'G')
-					{
-						response = new RepositoryResponse<Rule>(404, "Could not find group based on SecurityUid provided.");
-					}
-					else
-					{
-						response = new RepositoryResponse<Rule>(404, "Could not find user based on SecurityUid provided.");
-					}
-				}
-
-				if (response == null)
-				{
-					using (var trans = connection.BeginTransaction())
-					{
-						long ruleId = await connection.QuerySingleAsync(
-						"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
-						"values (@Uid, @Name, @RoleId, @SecurityType, @AssetTypeId, @ApplyToType, @IsVisible, @IsOverride, @CreatedBy, @CreatedOn, @UpdatedBy, @UpdatedOn); " +
-						"select SCOPE_IDENTITY();",
-						rawRule, trans);
-
-						await connection.ExecuteAsync(
-							"insert into [security].RuleWhen ([Position], CheckType, [Operator], AssetId) values (@Position, @CheckType, @Operator, @AssetId)",  
-							rawRuleWhen, trans);
-
-						await connection.ExecuteAsync(
-							"insert into [security].RuleThen ([Position], [Operator], SecurityId) values (@Position, @Operator, @SecurityId)", 
-							rawRuleThen, trans);
-
-						trans.Commit();
-					}
-					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "");
-				}
-			}
-
-			return response;
-		}
-
-		public async Task<RepositoryResponse<Rule>> CreateRule(CreateRule model)
+		
+		public async Task<RepositoryResponse<Rule>> CreatePolicyAsync(CreateRule model)
 		{
 			RepositoryResponse<Rule> response = null;
 
@@ -195,7 +30,7 @@ select * from [security].[Role] where Id = @roleId;",
 			{
 				return new RepositoryResponse<Rule>(400, "Name must be populated.");
 			}
-			if (model.Name.Length > 3 || model.Name.Length < 250)
+			if (model.Name.Length < 3 || model.Name.Length > 250)
 			{
 				return new RepositoryResponse<Rule>(400, "Name must longer than three characters and less than 250 characters.");
 			}
@@ -234,7 +69,7 @@ select * from [security].[Role] where Id = @roleId;",
 					"select * from FieldType where Object in ('GroupType'); " +
 					"select * from FieldType where Object in ('ResourceType'); " +
 					"select * from Asset where Uid in @AssetUids; " +
-					"select * from [Group] where Uid in @SecurityUids; " +
+					"select * from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID and a.Uid in @SecurityUids; " +
 					"select * from reporting.Global_Resource where Uid in @SecurityUids;",
 					new { model.AssetTypeUid, model.RoleUid, IntersectTypeUids, AssetUids, SecurityUids }
 				);
@@ -418,13 +253,14 @@ select * from [security].[Role] where Id = @roleId;",
 
 				if (response == null)
 				{
+					await connection.OpenAsync();
 					using (var trans = connection.BeginTransaction())
 					{
-						long ruleId = await connection.QuerySingleAsync(
+						long ruleId = await connection.QuerySingleAsync<long>(
 							"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
 							"values (@Uid, @Name, @roleId, @securityType, @assetTypeId, @ApplyToType, @IsVisible, @IsOverride, @u, @dt, @u, @dt); " +
 							"select SCOPE_IDENTITY();", 
-							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType, assetTypeId, model.ApplyToType, model.IsVisible, IsOverride = false, u = CurrentUserId, dt = DateTime.UtcNow }, 
+							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType = (int)((securityType == 'G') ? RuleSecurityType.Group : RuleSecurityType.User), assetTypeId, model.ApplyToType, model.IsVisible, IsOverride = false, u = CurrentUserId, dt = DateTime.UtcNow }, 
 							trans);
 
 						rawWhens.ForEach(async w => {
@@ -452,7 +288,186 @@ select * from [security].[Role] where Id = @roleId;",
 			return response;
 		}
 
-		public async Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRoles()
+		public async Task<RepositoryResponse<ReadRuleOverride>> CreatePolicyOverrideAsync(CreateRuleOverride model)
+		{
+			RepositoryResponse<ReadRuleOverride> response = null;
+
+			if (model == null)
+			{
+				return new(400, "No valid data to create rule.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				Rule rawRule = new() { 
+					ApplyToType = false, IsOverride = true, IsVisible = true, 
+					CreatedBy = CurrentUserId, CreatedOn = DateTime.UtcNow, Name = "", UpdatedBy = CurrentUserId, UpdatedOn = DateTime.UtcNow, 
+					Uid = Guid.NewGuid() 
+				};
+				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
+				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
+
+				// Data for validation.
+				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
+				var securityQuery = rawRule.SecurityType == 'G' ?
+					"select Id from [Group] where Uid = @SecurityUid;" :
+					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
+				var qryData = await connection.QueryMultipleAsync(
+					"select AssetTypeId from Asset where Uid = @AssetUid; " +
+					"select Id from [security].[Role] where Uid = @RoleUid; " +
+					"select Id from Asset where Uid = @AssetUid; " +
+					securityQuery,
+					new { model.RoleUid, model.AssetUid, model.SecurityUid }
+				);
+				rawRule.AssetTypeId = await qryData.ReadFirstAsync<int>();
+				rawRule.RoleId = await qryData.ReadFirstAsync<int>();
+				rawRuleWhen.AssetId = await qryData.ReadFirstAsync<long>();
+				rawRuleThen.SecurityId = await qryData.ReadFirstAsync<int>();
+
+				if (rawRule.AssetTypeId == 0)
+				{
+					response = new(404, "Could not find asset type based on AssetTypeUid provided.");
+				}
+
+				if (response == null && rawRule.RoleId == 0)
+				{
+					response = new(404, "Could not find role based on RoleUid provided.");
+				}
+
+				if (response == null && rawRuleWhen.AssetId == 0)
+				{
+					response = new(404, "Could not find asset based on AssetUid provided.");
+				}
+
+				if (response == null && rawRuleThen.SecurityId == 0)
+				{
+					if (rawRule.SecurityType == 'G')
+					{
+						response = new(404, "Could not find group based on SecurityUid provided.");
+					}
+					else
+					{
+						response = new(404, "Could not find user based on SecurityUid provided.");
+					}
+				}
+
+				if (response == null)
+				{
+					using (var trans = connection.BeginTransaction())
+					{
+						long ruleId = await connection.QuerySingleAsync(
+						"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
+						"values (@Uid, @Name, @RoleId, @SecurityType, @AssetTypeId, @ApplyToType, @IsVisible, @IsOverride, @CreatedBy, @CreatedOn, @UpdatedBy, @UpdatedOn); " +
+						"select SCOPE_IDENTITY();",
+						rawRule, trans);
+
+						await connection.ExecuteAsync(
+							"insert into [security].RuleWhen ([Position], CheckType, [Operator], AssetId) values (@Position, @CheckType, @Operator, @AssetId)",  
+							rawRuleWhen, trans);
+
+						await connection.ExecuteAsync(
+							"insert into [security].RuleThen ([Position], [Operator], SecurityId) values (@Position, @Operator, @SecurityId)", 
+							rawRuleThen, trans);
+
+						trans.Commit();
+					}
+					
+					response = new RepositoryResponse<ReadRuleOverride>(
+						new ReadRuleOverride { 
+							AssetUid = model.AssetUid, 
+							RoleUid = model.RoleUid, 
+							SecurityType = model.SecurityType, 
+							SecurityUid = model.SecurityUid, 
+							Uid = rawRule.Uid 
+						}, 
+						201, true);
+				}
+			}
+
+			return response;
+		}
+		
+		public async Task<RepositoryResponse<ReadRole>> CreateRoleAsync(CreateRole model)
+		{
+			RepositoryResponse<ReadRole> response;
+
+			model.Name = (model.Name ?? "").Trim();
+			if (!string.IsNullOrEmpty(model.Description))
+			{
+				model.Description = model.Description.Trim();
+			}
+
+			if (model.Name.Length < 250)
+			{
+				return new(400, "Name property must be less than 250 characters.");
+			}
+			if (model.Description.Length < 4000)
+			{
+				return new(400, "Description property must be less than 4000 characters.");
+			}
+
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				return new(400, "Name must be populated.");
+			}
+			if (model.Name.Length < 3)
+			{
+				return new(400, "Name must longer than three characters.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var existingCount = await connection.QueryFirstAsync<int>(
+					"select count(1) from [security].[Role] where Name = @Name", new { model.Name }
+				);
+
+				if (existingCount > 0)
+				{
+					return new(400, "A role with the same name already exists.");
+				}
+
+				response = new(new(), 201, true, "");
+
+				var role = await connection.QuerySingleAsync<ReadRole>(
+						$@"
+declare @roleId int;
+insert into [security].[Role] ([Uid], [Name], Description, [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn])
+values (@Uid, @Name, @Description, @u, @dt, @u, @dt);
+select @roleId = SCOPE_IDENTITY();
+select * from [security].[Role] where Id = @roleId;",
+				new { Uid = Guid.NewGuid(), model.Name, model.Description, u = CurrentUserId, dt = DateTime.UtcNow });
+
+				response.Data = role;
+			}
+
+			return response;
+		}
+		
+		public async Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadPoliciesAsync()
+		{
+			RepositoryResponse<IEnumerable<ReadRule>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QueryAsync<ReadRule>(@"
+select	ru.Uid,
+		ru.Name, 
+		t.Uid as AssetTypeUid,  
+		t.Name as AssetTypeName,
+		ro.Uid as RoleUid,
+		iif(ru.SecurityType = 'G', 1, 2) as SecurityType,
+		ru.ApplyToType,
+		ru.IsVisible
+from	security.[Rule] ru 
+		inner join [security].[Role] ro on ro.Id = ru.RoleId and ru.IsOverride = 0
+		inner join AssetType t on t.Id = ru.AssetTypeId 
+order by	ru.Name");
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRolesAsync()
 		{
 			RepositoryResponse<IEnumerable<ReadRole>> response = new(200);
 
@@ -466,23 +481,343 @@ select * from [security].[Role] where Id = @roleId;",
 			return response;
 		}
 
-		public async Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadRules()
+		public async Task<RepositoryResponse<bool>> RemovePolicyAsync(Guid uid)
 		{
-			RepositoryResponse<IEnumerable<ReadRule>> response = new(200);
+			RepositoryResponse<bool> response;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				response.Data = await connection.QueryAsync<ReadRule>(@"
-select	ru.Uid,
-		ru.Name, 
-		t.Uid as AssetTypeUid,  
-		ro.Uid as RoleUid,
-		ru.SecurityType,
-		ru.ApplyToType,
-		ru.IsVisible
-from	security.[Rule] ru 
-		inner join AssetType t on t.Id = ru.AssetTypeId 
-order by	ru.Name");
+				var ruleId = await connection.QueryFirstAsync<int>(
+					"declare @id int; " +
+					"select @id = Id from [security].[Rule] where Uid = @uid;", new { uid }
+					);
+
+				if (ruleId == 0)
+				{
+					return new(404, "No matching rule found based on uid.");
+				}
+
+				response = new(true, 200, true, "");
+
+				await connection.ExecuteAsync(
+					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete [security].[Rule] where RoleId = @ruleId; ",
+					new { ruleId }
+				);
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemovePolicyOverrideAsync(Guid uid)
+		{
+			RepositoryResponse<bool> response;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var ruleId = await connection.QueryFirstAsync<int>(
+					"declare @id int; " +
+					"select @id = Id from [security].[Rule] where IsOverride = 1 and Uid = @uid;", new { uid }
+					);
+
+				if (ruleId == 0)
+				{
+					return new(404, "No matching rule found based on uid.");
+				}
+
+				response = new(true, 200, true, "");
+
+				await connection.ExecuteAsync(
+					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete [security].[Rule] where RoleId = @ruleId; ",
+					new { ruleId }
+				);
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid)
+		{
+			RepositoryResponse<bool> response;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var roleId = await connection.QueryFirstAsync<int>(
+					"declare @id int; " +
+					"select @id = Id from [security].[Role] where Uid = @uid;", new { uid }
+					);
+
+				if (roleId == 0)
+				{
+					return new(404, "No matching role found based on uid.");
+				}
+
+				response = new(true, 200, true, "");
+
+				await connection.ExecuteAsync(
+					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.RoleId = @roleId; " +
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on on r.Id = o.Id and r.RoleId = @roleId; " + 
+					"delete [security].[Rule] where RoleId = @roleId; " +
+					"delete [security].[Role] where Id = @roleId; ",
+					new { roleId }
+				);
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<ReadRule>> UpdatePolicyAsync(Guid uid, ReadRule model)
+		{
+			RepositoryResponse<ReadRule> response;
+
+			model.Name = (model.Name ?? "").Trim();
+			if (model.Name.Length < 250)
+			{
+				return new(400, "Name property must be less than 250 characters.");
+			}
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				return new(400, "Name must be populated.");
+			}
+			if (model.Name.Length < 3)
+			{
+				return new(400, "Name must longer than three characters.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryMultipleAsync(
+					"declare @id int, @roleId int, @assetTypeId int; " +
+					"select @id = Id from [security].[Rule] where Uid = @uid; " +
+					"select @roleId = Id from [security].[Role] where Uid = @RoleUid; " +
+					"select @assetTypeId = Id from AssetType where Uid = @AssetTypeUid; " +
+					"select @id; select @roleId; select @assetTypeId; " +
+					"select count(1) from [security].[Rule] where Id <> @id and RoleId = @roleId and Name = @Name; ", new { uid, model.RoleUid, model.AssetTypeUid, model.Name }
+					);
+				int ruleId = await query.ReadSingleAsync<int>();
+				int roleId = await query.ReadSingleAsync<int>();
+				int assetTypeId = await query.ReadSingleAsync<int>();
+				int matchingAlternateRuleCount = await query.ReadSingleAsync<int>();
+
+				if (ruleId == 0)
+				{
+					return new(404, "No matching rule found based on uid.");
+				}
+
+				if (roleId == 0)
+				{
+					return new(404, "No matching role found based on uid.");
+				}
+
+				if (assetTypeId == 0)
+				{
+					return new(404, "No matching asset type found based on uid.");
+				}
+
+				if (matchingAlternateRuleCount > 0)
+				{
+					return new(409, "Another rule found with this name and role.");
+				}
+
+				response = new(new(), 200, true, "");
+
+				var dt = DateTime.UtcNow;
+				await connection.ExecuteAsync(
+					"update [security].[Rule] set Name = @Name, RoleId = @roleId, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
+					new { roleId, model.Name, ruleId, assetTypeId, u = CurrentUserId, dt }
+				);
+
+				response.Data = model;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<ReadRuleOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateRuleOverride model)
+		{
+			RepositoryResponse<ReadRuleOverride> response = null;
+
+			if (uid == Guid.Empty)
+			{
+				return new(400, "Uid is invalid.");
+			}
+
+			if (model == null)
+			{
+				return new(400, "No valid data to create rule.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				Rule rawRule = new()
+				{
+					ApplyToType = false,
+					IsOverride = true,
+					IsVisible = true,
+					CreatedBy = CurrentUserId,
+					CreatedOn = DateTime.UtcNow,
+					Name = "",
+					UpdatedBy = CurrentUserId,
+					UpdatedOn = DateTime.UtcNow,
+					Uid = Guid.NewGuid()
+				};
+				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
+				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
+
+				// Data for validation.
+				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
+				var securityQuery = rawRule.SecurityType == 'G' ?
+					"select Id from [Group] where Uid = @SecurityUid;" :
+					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
+				var qryData = await connection.QueryMultipleAsync(
+					"select Id from [security].[Rule] where IsOverride = 1 and Uid = @uid; " +
+					"select AssetTypeId from Asset where Uid = @AssetUid; " +
+					"select Id from [security].[Role] where Uid = @RoleUid; " +
+					"select Id from Asset where Uid = @AssetUid; " +
+					securityQuery,
+					new { uid, model.RoleUid, model.AssetUid, model.SecurityUid }
+				);
+				rawRule.Id = await qryData.ReadFirstAsync<int>();
+				rawRule.Uid = uid;
+				rawRule.AssetTypeId = await qryData.ReadFirstAsync<int>();
+				rawRule.RoleId = await qryData.ReadFirstAsync<int>();
+				rawRuleWhen.AssetId = await qryData.ReadFirstAsync<long>();
+				rawRuleThen.SecurityId = await qryData.ReadFirstAsync<int>();
+
+				if (rawRule.Id == 0)
+				{
+					response = new(404, "Could not find assignment based on Uid provided.");
+				}
+
+				if (rawRule.AssetTypeId == 0)
+				{
+					response = new(404, "Could not find asset type based on AssetTypeUid provided.");
+				}
+
+				if (response == null && rawRule.RoleId == 0)
+				{
+					response = new(404, "Could not find role based on RoleUid provided.");
+				}
+
+				if (response == null && rawRuleWhen.AssetId == 0)
+				{
+					response = new(404, "Could not find asset based on AssetUid provided.");
+				}
+
+				if (response == null && rawRuleThen.SecurityId == 0)
+				{
+					if (rawRule.SecurityType == 'G')
+					{
+						response = new(404, "Could not find group based on SecurityUid provided.");
+					}
+					else
+					{
+						response = new(404, "Could not find user based on SecurityUid provided.");
+					}
+				}
+
+				if (response == null)
+				{
+					using (var trans = connection.BeginTransaction())
+					{
+						await connection.QuerySingleAsync(
+						"update [security].[Rule] " +
+						"set RoleId = @RoleId, SecurityType = @SecurityType, AssetTypeId = @AssetTypeId, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn " +
+						"where Id = @Id; ",
+						rawRule, trans);
+
+						rawRuleWhen.Id = rawRule.Id;
+						await connection.ExecuteAsync(
+							"delete [security].RuleWhen where Id = @Id; " +
+							"insert into [security].RuleWhen (Id, [Position], CheckType, [Operator], AssetId) values (@Id, @Position, @CheckType, @Operator, @AssetId)",
+							rawRuleWhen, trans);
+
+						rawRuleThen.Id = rawRule.Id;
+						await connection.ExecuteAsync(
+							"delete [security].RuleThen where Id = @Id; " +
+							"insert into [security].RuleThen (Id, [Position], [Operator], SecurityId) values (@Id, @Position, @Operator, @SecurityId)",
+							rawRuleThen, trans);
+
+						trans.Commit();
+					}
+
+					response = new RepositoryResponse<ReadRuleOverride>(
+						new ReadRuleOverride
+						{
+							AssetUid = model.AssetUid,
+							RoleUid = model.RoleUid,
+							SecurityType = model.SecurityType,
+							SecurityUid = model.SecurityUid,
+							Uid = rawRule.Uid
+						},
+						200, true);
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<ReadRole>> UpdateRoleAsync(Guid uid, CreateRole model)
+		{
+			RepositoryResponse<ReadRole> response;
+			
+			model.Name = (model.Name ?? "").Trim();
+			if (!string.IsNullOrEmpty(model.Description))
+			{
+				model.Description = model.Description.Trim();
+			}
+
+			if (model.Name.Length < 250)
+			{
+				return new(400, "Name property must be less than 250 characters.");
+			}
+			if (model.Description.Length < 4000)
+			{
+				return new(400, "Description property must be less than 4000 characters.");
+			}
+
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				return new(400, "Name must be populated.");
+			}
+			if (model.Name.Length < 3)
+			{
+				return new(400, "Name must longer than three characters.");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryMultipleAsync(
+					"declare @id int; " +
+					"select @id = Id from [security].[Role] where Uid = @uid; " +
+					"select @id; " +
+					"select count(1) from [security].[Role] where Id <> @id and Name = @Name; ", new { uid, model.Name }
+					);
+				int roleId = await query.ReadSingleAsync<int>();
+				int matchingAlternateRoleCount = await query.ReadSingleAsync<int>();
+
+				if (roleId == 0)
+				{
+					return new(404, "No matching role found based on uid.");
+				}
+
+				if (matchingAlternateRoleCount > 0)
+				{
+					return new(409, "Another role found with this name.");
+				}
+
+				response = new(new(), 200, true, "");
+
+				var dt = DateTime.UtcNow;
+				await connection.ExecuteAsync(
+					"update [security].[Role] set Name = @Name, Description = @Description, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @roleId;",
+					new { roleId, model.Name, model.Description, u = CurrentUserId, dt }
+				);
+
+				response.Data = new() { Description = model.Description, Name = model.Name, Uid = uid, UpdatedOn = dt };
 			}
 
 			return response;
