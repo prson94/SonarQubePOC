@@ -791,12 +791,11 @@ and AssetUid is not null
 group by AssetUid
 having count(1) > 1;
 
-select @DuplicateRow = STRING_AGG('[' + RowIndex + ']','#')
+select @DuplicateRow = substring(STRING_AGG('[' + cast(RowIndex as nvarchar(max)) + ']','#'),1,400)
 from (
-select tt.AssetUid,STRING_AGG(lt.RowIndex,',') RowIndex
+select tt.AssetUid,substring(STRING_AGG(cast(lt.RowIndex as nvarchar(max)),','),1,400) RowIndex
 from #tempdupassetuid tt
-inner join LoadItem lt on loadid =  @ID and tt.AssetUid = lt.AssetUid
-and lt.AssetUid is not null
+cross apply (select top 20 rowindex from LoadItem lt1 where lt1.loadid =  @ID and tt.AssetUid = lt1.AssetUid and lt1.AssetUid is not null) lt
 group by tt.AssetUid) a;
 
 if (@DuplicateRow is not null)
@@ -805,7 +804,7 @@ begin
 
 	update lt
 	set status = 0,
-	StatusMessage =  substring(@errormessage,1,1000)
+	StatusMessage =  substring(@errormessage,1,500)
 	from LoadItem lt
 	where lt.loadid =  @ID and lt.AssetUid is not null;
 
