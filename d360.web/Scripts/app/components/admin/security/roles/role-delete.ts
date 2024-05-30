@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ReadRole } from '../../../models/security.model';
-import { SecurityService } from '../../../services/security.service';
+import { ReadRole } from '../../../../models/security.model';
+import { SecurityService } from '../../../../services/security.service';
 
 @Component({
 	selector: 'role-delete',

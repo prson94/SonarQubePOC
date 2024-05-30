@@ -1,77 +1,92 @@
 ﻿import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { TooltipModule } from "primeng/tooltip";
 import { PipesModule } from "../../../pipes/pipes.module";
 import { CoreModule } from "../../shared/core.module";
-//import { SharedDeleteFormModule } from "../../shared/delete.form";
-//import { SharedDynamicGridEditorModule } from "../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module";
-//import { SharedFieldDefinitionModule } from "../../shared/fielddefinition/shared-field-definition.module";
-//import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
-//import { TilesModule } from "../../shared/tiles/tiles.module";
+
+import { Policies } from "./policies";
 import { Roles } from "./roles";
-import { AdminSecurityRoutingModule } from "./security.routes";
-import { RolesSidePanelWrapperComponent } from "./roles-sidepanel-wrapper";
-import { RoleDelete } from "./role-delete";
-import { RoleEditor } from "./role-editor";
-import { RoleList } from "./role-list";
+
+import { PoliciesSidePanelWrapperComponent } from "./policies/policies-sidepanel-wrapper";
+import { PolicyList } from "./policies/policy-list";
+import { PolicyForm } from "./policies/policy.form";
+
+import { RoleDelete } from "./roles/role-delete";
+import { RoleDetail } from "./roles/role-detail";
+import { RoleEditor } from "./roles/role-editor";
+import { RoleList } from "./roles/role-list";
+import { RoleForm } from "./roles/role.form";
+import { RolesSidePanelWrapperComponent } from "./roles/roles-sidepanel-wrapper";
+
+import { AngularSplitModule } from "angular-split";
+import { SharedModule } from "primeng/api";
+import { ButtonModule } from "primeng/button";
+import { DropdownModule } from "primeng/dropdown";
+import { InputTextModule } from "primeng/inputtext";
 import { FormFeedbackBadgesModule } from "../../shared/controls/form-feedback-badges/form-feedback-badges.component";
 import { IgMessageBoxModule } from "../../shared/controls/message-box/message-box.module";
-import { SiteModalModule } from "../../shared/modal/gov-modal.module";
-import { RoleDetail } from "./role-detail";
+import { PropertyGroupModule } from "../../shared/controls/property-group/property-group.component";
 import { SearchFieldModule } from "../../shared/controls/search-field/search-field.component";
-import { AngularSplitModule } from "angular-split";
+import { SiteModalModule } from "../../shared/modal/gov-modal.module";
 import { SidePanelModule } from "../../shared/sidepanel/side-panel.module";
-//import { InputTextModule } from "primeng/inputtext";
-//import { ButtonModule } from "primeng/button";
-//import { SpinnerModule } from "primeng/spinner";
-//import { SliderModule } from "primeng/slider";
+import { SharedDynamicGridEditorModule } from "../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module";
+import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
+import { TilesModule } from "../../shared/tiles/tiles.module";
+import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
+import { AdminSecurityRoutingModule } from "./security.routes";
+import { CheckboxModule } from "primeng/checkbox";
+import { SelectButtonModule } from "primeng/selectbutton";
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
 
-		AdminSecurityRoutingModule,
-
-        //prime
-		//SharedModule,
-//		ButtonModule,
-//		SpinnerModule,
-//		SliderModule,
-        TooltipModule,
+		// prime
+		ButtonModule,
+		CheckboxModule,
+		DropdownModule,
+		InputTextModule,
+		SharedModule,
         TableModule,
-//		InputTextModule,
-		//		InputTextModule,
-		AngularSplitModule,
+		TooltipModule,
+		//AngularSplitModule,
 
-		//d3s
-        CoreModule,
-		PipesModule,
+		CoreModule,
+		SharedDynamicGridEditorModule,
+		SharedGridPagingInfoModule,
+		TilesModule,
+		SearchFieldModule,
+		PopupMenuModule,
 		SiteModalModule,
 		IgMessageBoxModule,
-		SearchFieldModule,
+		PropertyGroupModule,
 		FormFeedbackBadgesModule,
+		ReactiveFormsModule,
 		SidePanelModule,
-
-//		SharedDeleteFormModule,
-//		SharedDynamicGridEditorModule,
-//		SharedFieldDefinitionModule,
-//		SharedGridPagingInfoModule,
-//		TilesModule
+		AngularSplitModule,
+		AdminSecurityRoutingModule
     ],
 	declarations: [
+		Policies,
+		PolicyForm,
+		PolicyList,
+		PoliciesSidePanelWrapperComponent,
+
 		Roles,
-		RolesSidePanelWrapperComponent,
-		RoleDelete,
 		RoleDetail,
+		RoleDelete,
 		RoleEditor,
+		RoleForm,
 		RoleList,
+		RolesSidePanelWrapperComponent
     ],
     providers: [
 	],
 	exports: [
+		Policies,
 		Roles
 	]
 })

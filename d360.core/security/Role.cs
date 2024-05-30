@@ -12,6 +12,7 @@ namespace d360.core.security
 		public Guid Uid { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public int Permissions { get; set; }
 		public int CreatedBy { get; set; }
 		public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 		public int UpdatedBy { get; set; }
@@ -25,6 +26,9 @@ namespace d360.core.security
 
 		[JsonProperty("description")]
 		public string Description { get; set; }
+
+		[JsonProperty("permissions")]
+		public int Permissions { get; set; }
 	}
 
 	public class ReadRole: CreateRole

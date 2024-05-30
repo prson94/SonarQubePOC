@@ -281,7 +281,7 @@ namespace repositories.azure
 
 						trans.Commit();
 					}
-					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "");
+					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "Policy created successfully.");
 				}
 			}
 
@@ -380,7 +380,7 @@ namespace repositories.azure
 							SecurityUid = model.SecurityUid, 
 							Uid = rawRule.Uid 
 						}, 
-						201, true);
+						201, true, "Role assignment created successfully.");
 				}
 			}
 
@@ -397,22 +397,10 @@ namespace repositories.azure
 				model.Description = model.Description.Trim();
 			}
 
-			if (model.Name.Length < 250)
+			response = validateRole(model);
+			if (response != null)
 			{
-				return new(400, "Name property must be less than 250 characters.");
-			}
-			if (model.Description.Length < 4000)
-			{
-				return new(400, "Description property must be less than 4000 characters.");
-			}
-
-			if (string.IsNullOrEmpty(model.Name))
-			{
-				return new(400, "Name must be populated.");
-			}
-			if (model.Name.Length < 3)
-			{
-				return new(400, "Name must longer than three characters.");
+				return response;
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -426,16 +414,16 @@ namespace repositories.azure
 					return new(400, "A role with the same name already exists.");
 				}
 
-				response = new(new(), 201, true, "");
+				response = new(new(), 201, true, "Role created successfully.");
 
 				var role = await connection.QuerySingleAsync<ReadRole>(
 						$@"
 declare @roleId int;
-insert into [security].[Role] ([Uid], [Name], Description, [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn])
-values (@Uid, @Name, @Description, @u, @dt, @u, @dt);
+insert into [security].[Role] ([Uid], [Name], Description, [Permissions], [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn])
+values (@Uid, @Name, @Description, @Permissions, @u, @dt, @u, @dt);
 select @roleId = SCOPE_IDENTITY();
 select * from [security].[Role] where Id = @roleId;",
-				new { Uid = Guid.NewGuid(), model.Name, model.Description, u = CurrentUserId, dt = DateTime.UtcNow });
+				new { Uid = Guid.NewGuid(), model.Name, model.Description, model.Permissions, u = CurrentUserId, dt = DateTime.UtcNow });
 
 				response.Data = role;
 			}
@@ -455,6 +443,7 @@ select	ru.Uid,
 		t.Uid as AssetTypeUid,  
 		t.Name as AssetTypeName,
 		ro.Uid as RoleUid,
+		ro.Name as RoleName,
 		iif(ru.SecurityType = 'G', 1, 2) as SecurityType,
 		ru.ApplyToType,
 		ru.IsVisible
@@ -474,7 +463,7 @@ order by	ru.Name");
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				response.Data = await connection.QueryAsync<ReadRole>(
-					"select uid, Name, Description, UpdatedOn from security.[Role] order by Name"
+					"select uid, Name, Description, [Permissions], UpdatedOn from security.[Role] order by Name"
 				);
 			}
 
@@ -497,7 +486,7 @@ order by	ru.Name");
 					return new(404, "No matching rule found based on uid.");
 				}
 
-				response = new(true, 200, true, "");
+				response = new(true, 200, true, "Policy removed successfully.");
 
 				await connection.ExecuteAsync(
 					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
@@ -526,7 +515,7 @@ order by	ru.Name");
 					return new(404, "No matching rule found based on uid.");
 				}
 
-				response = new(true, 200, true, "");
+				response = new(true, 200, true, "Role assignment removed successfully.");
 
 				await connection.ExecuteAsync(
 					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
@@ -546,8 +535,7 @@ order by	ru.Name");
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var roleId = await connection.QueryFirstAsync<int>(
-					"declare @id int; " +
-					"select @id = Id from [security].[Role] where Uid = @uid;", new { uid }
+					"select Id from [security].[Role] where Uid = @uid;", new { uid }
 					);
 
 				if (roleId == 0)
@@ -555,11 +543,11 @@ order by	ru.Name");
 					return new(404, "No matching role found based on uid.");
 				}
 
-				response = new(true, 200, true, "");
+				response = new(true, 200, true, "Role removed successfully.");
 
 				await connection.ExecuteAsync(
-					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.RoleId = @roleId; " +
-					"delete o from [security].RuleThen o inner join [security].[Rule] r on on r.Id = o.Id and r.RoleId = @roleId; " + 
+					"delete o from [security].RuleWhen o inner join [security].[Rule] r on r.Id = o.Id and r.RoleId = @roleId; " +
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on r.Id = o.Id and r.RoleId = @roleId; " + 
 					"delete [security].[Rule] where RoleId = @roleId; " +
 					"delete [security].[Role] where Id = @roleId; ",
 					new { roleId }
@@ -622,7 +610,7 @@ order by	ru.Name");
 					return new(409, "Another rule found with this name and role.");
 				}
 
-				response = new(new(), 200, true, "");
+				response = new(new(), 200, true, "Policy updated successfully.");
 
 				var dt = DateTime.UtcNow;
 				await connection.ExecuteAsync(
@@ -753,7 +741,7 @@ order by	ru.Name");
 							SecurityUid = model.SecurityUid,
 							Uid = rawRule.Uid
 						},
-						200, true);
+						200, true, "Role assignment updated successfully.");
 				}
 			}
 
@@ -770,22 +758,10 @@ order by	ru.Name");
 				model.Description = model.Description.Trim();
 			}
 
-			if (model.Name.Length < 250)
+			response = validateRole(model);
+			if (response != null)
 			{
-				return new(400, "Name property must be less than 250 characters.");
-			}
-			if (model.Description.Length < 4000)
-			{
-				return new(400, "Description property must be less than 4000 characters.");
-			}
-
-			if (string.IsNullOrEmpty(model.Name))
-			{
-				return new(400, "Name must be populated.");
-			}
-			if (model.Name.Length < 3)
-			{
-				return new(400, "Name must longer than three characters.");
+				return response;
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -809,18 +785,46 @@ order by	ru.Name");
 					return new(409, "Another role found with this name.");
 				}
 
-				response = new(new(), 200, true, "");
+				response = new(new(), 200, true, "Role updated successfully.");
 
 				var dt = DateTime.UtcNow;
 				await connection.ExecuteAsync(
-					"update [security].[Role] set Name = @Name, Description = @Description, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @roleId;",
-					new { roleId, model.Name, model.Description, u = CurrentUserId, dt }
+					"update [security].[Role] " +
+					"set Name = @Name, Description = @Description, [Permissions] = @Permissions, [UpdatedBy] = @u, [UpdatedOn] = @dt " +
+					"where Id = @roleId;",
+					new { roleId, model.Name, model.Description, model.Permissions, u = CurrentUserId, dt }
 				);
 
 				response.Data = new() { Description = model.Description, Name = model.Name, Uid = uid, UpdatedOn = dt };
 			}
 
 			return response;
+		}
+
+		RepositoryResponse<ReadRole> validateRole(CreateRole model)
+		{
+			if (model.Permissions <= 0)
+			{
+				return new(400, "Permissions must have a value greater than 0.");
+			}
+			if (model.Name.Length > 250)
+			{
+				return new(400, "Name property must be less than 250 characters.");
+			}
+			if (model.Description.Length > 4000)
+			{
+				return new(400, "Description property must be less than 4000 characters.");
+			}
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				return new(400, "Name must be populated.");
+			}
+			if (model.Name.Length < 3)
+			{
+				return new(400, "Name must longer than three characters.");
+			}
+
+			return null;
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿<div class="row">
-    <!--<roles-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey" [selectedItem]="selected">
-        <roles-list (selectedChange)="selectedItemChange($event)"></roles-list>
-    </roles-sidepanel-wrapper>-->
+    <roles-sidepanel-wrapper [selectedItem]="selected" [sidePanelStorageKey]="sidePanelStorageKey">
+        <role-list (selectedChange)="selectedItemChange($event)"></role-list>
+    </roles-sidepanel-wrapper>
 </div>
 

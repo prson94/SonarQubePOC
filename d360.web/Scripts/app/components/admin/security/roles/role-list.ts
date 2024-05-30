@@ -1,18 +1,18 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { Table } from "primeng/table";
-import { ReadRole } from '../../../models/security.model';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { SecurityService } from '../../../services/security.service';
-import { CompanySettingsService } from '../../../services/settings.service';
-import { SidePanelService } from '../../../services/side-panel.service';
-import { AppConstants } from '../../../static/constants';
-import { BaseComponent } from '../../shared/base.component';
-import { PopupMenu } from '../../shared/controls/popup-menu/popup-menu.component';
+import { ReadRole } from '../../../../models/security.model';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
+import { SecurityService } from '../../../../services/security.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { SidePanelService } from '../../../../services/side-panel.service';
+import { AppConstants } from '../../../../static/constants';
+import { BaseComponent } from '../../../shared/base.component';
+import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
+import { ApiResult } from '../../../../models/apiresult.model';
 
 @Component({
 	selector: 'role-list',
-	providers: [RelationshipsService],
+	providers: [SecurityService],
 	templateUrl: 'role-list.html',
 	styleUrls: ['role-list.less'],
 	encapsulation: ViewEncapsulation.None
@@ -74,6 +74,28 @@ export class RoleList extends BaseComponent implements OnChanges {
 
 		obs.subscribe((result) => {
 			this.roles = [];
+			result.forEach((r) => {
+				const menuItems = [
+					{ title: "Edit", callback: () => { this.edit(r); } },
+					{ title: "Remove", callback: () => { this.showDelete = true; } }
+				];
+				r.MenuItems = menuItems;
+
+/*
+				const menuItems = [];
+				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
+				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
+				// false poisitve fs.open eslint error
+				// eslint-disable-next-line
+				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
+
+				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled, tooltip: this.getEditDisabledTooltip(rel) });
+				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
+				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
+				rel.MenuItems = menuItems;
+*/
+			});
+
 			this.roles = result;
 
 			this.isLoading = false;
@@ -98,20 +120,37 @@ export class RoleList extends BaseComponent implements OnChanges {
 	}
 
 	deleteItem($event) {
-		this.showMessageForApiResult(this.messagesService, $event);
+
+		var response: ApiResult = new ApiResult();
+		response.Success = true;
+		response.Message = "Removed role successfully.";
+		this.showMessageForApiResult(this.messagesService, response);
 		this.showDelete = false;
 
-		if ($event.Success === true) {
-			this.selected = this.roles.length > 0 ? this.roles[0] : null;
-			this.getData();
+		const deletedIndex = this.roles.findIndex(r => r.uid == this.selected.uid)
+		if (deletedIndex >= 0) {
+			this.roles.splice(deletedIndex, 1);
 		}
+		this.selected = this.roles.length > 0 ? this.roles[0] : null;
+		this.getData();
 	}
 
 	onSave(result) {
-		result = result[0];
-		this.showMessageForApiResult(this.messagesService, result);
+		if (result) {
+			var response: ApiResult = new ApiResult();
+			response.Success = true;
 
-		if (result.Success === true) {
+			if (result.uid) {
+				var updateIx = this.roles.findIndex(r => { return r.uid === result.uid; });
+				if (updateIx >= 0) {
+					response.Message = "Updated role successfully.";
+				}
+				else {
+					response.Message = "Created role successfully.";
+				}
+			}
+			this.showMessageForApiResult(this.messagesService, response);
+
 			this.getData();
 			this.showEditor = false;
 			this.sidePanelService.refreshSidePanel();

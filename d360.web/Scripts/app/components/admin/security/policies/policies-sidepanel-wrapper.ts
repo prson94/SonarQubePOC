@@ -1,17 +1,20 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
-import { TreeNode } from "primeng/api";
-import { SidePanelService } from "../../../services/side-panel.service";
-
+import { ReadSecurityPolicy } from "../../../../models/security.model";
+import { SidePanelService } from "../../../../services/side-panel.service";
 
 @Component({
-	selector: "roles-sidepanel-wrapper",
-	templateUrl: './roles-sidepanel-wrapper.html',
-	styleUrls: ['./roles-sidepanel-wrapper.less']
+	selector: "policies-sidepanel-wrapper",
+	templateUrl: './policies-sidepanel-wrapper.html',
+	styles: [`
+		.main-panel {
+			display: flex;
+			flex- direction: column;
+		}`]
 })
-export class RolesSidePanelWrapperComponent implements OnChanges {
+export class PoliciesSidePanelWrapperComponent implements OnChanges {
 	@Input() sidePanelStorageKey: string;
-	@Input() selectedItem: TreeNode;
+	@Input() selectedItem: ReadSecurityPolicy;
 	@Output() onEditClick = new EventEmitter();
 
 	sidePanelOpen = false;
@@ -42,10 +45,10 @@ export class RolesSidePanelWrapperComponent implements OnChanges {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
-	onResourceLinkClick($event) {
-		this.selectedItem = null;
-		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
-	}
+	//onResourceLinkClick($event) {
+	//	this.selectedItem = null;
+	//	this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
+	//}
 
 	get anySelectedItem(): unknown {
 		if (this.selectedItem) {

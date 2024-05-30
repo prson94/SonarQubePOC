@@ -1,4 +1,7 @@
-﻿export enum Permission {
+﻿import { MenuItem } from "primeng/api";
+import { Operator } from "./operator.model";
+
+export enum Permission {
     ReadAsset = 1,
     AddAsset = 2,
     DeleteAsset = 4,
@@ -15,40 +18,76 @@
     EditRelationships = 8192,
 }
 
-//export class RolePermission {
-//    Value: number;
-//    ID: string;
-//    Category: string;
-//    Name: string;
-//    Description: number;
-//    Selected: boolean;
-
-//	static hasPermission(permissions: RolePermission[], p: Permission): boolean {
-
-//        const index = permissions.findIndex((i) => i.Value === p);
-
-//        if (index >= 0 && index < permissions.length) {
-//            return true;
-//        }
-
-//        return false;
-//    }
-//}
-
 export class CreateRole {
 	name: string;
 	description: string;
+	permissions: number;
 }
 
 export class ReadRole {
     name: string;
     description: string;
-    updatedOn: string;
-    uid: string;
+	permissions: number;
+	updatedOn: string;
+	uid: string;
+
+	MenuItems: MenuItem[];
 }
 
-export class ReadSecurityPolicy {
+export enum SecurityPolicyType {
+	Group = 1,
+	User = 2
+}
+
+export class SecurityPolicyThen {
+	fieldName?: string;
+	operator: Operator;
+	value?: string;
+	securityUid?: string;
+}
+
+export class SecurityPolicyWhen {
+	fieldName?: string;
+	intersectTypeUid?: string;
+	operator: Operator;
+	value?: string;
+	assetUid?: string;
+}
+
+abstract class SecurityPolicy {
 	name: string;
+	assetTypeUid: string;
+	roleUid: string;
+	securityType: SecurityPolicyType;
+	applyToType: boolean;
+	isVisible: boolean;
+
+	then: SecurityPolicyThen[];
+	when: SecurityPolicyWhen[];
+}
+
+export class CreateSecurityPolicy extends SecurityPolicy {
+
+}
+
+export class ReadSecurityPolicy extends SecurityPolicy {
+	uid: string;
+	assetTypeName: string;
+	roleName: string;
+
+	MenuItems: MenuItem[];
+}
+
+abstract class SecurityPolicyOverride {
+	assetUid: string;
+	roleUid: string;
+	securityType: SecurityPolicyType;
+	securityUid: string;
+}
+
+export class CreateSecurityPolicyOverride extends SecurityPolicyOverride {
+}
+
+export class ReadSecurityPolicyOverride extends SecurityPolicyOverride {
 	uid: string;
 }
-

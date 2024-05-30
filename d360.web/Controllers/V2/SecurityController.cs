@@ -125,7 +125,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add roles.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> CreateRoleAsync(CreateRole model)
+		public async Task<IHttpActionResult> CreateRoleAsync([FromBody]CreateRole model)
 		{
 			if (model == null)
 			{

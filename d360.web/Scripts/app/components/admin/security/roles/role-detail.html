@@ -1,0 +1,116 @@
+<div class="asset-detail side-panel-detail no-padding">
+	<div class="asset-detail-header">
+		<div class="asset-name">{{item.name}}</div>
+		<div class="class-name" i18n>Role</div>
+	</div>
+
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Name</label>
+						<span>
+							{{item.name}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Description</label>
+						<span>{{item.description ?? "---"}}</span>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group i18n-title title="Permissions">
+			<div inputs>
+				<div class="form-group">
+
+					<div class="row">
+						<label class="ig-label" i18n>Asset</label>
+						<div class="ig-value">
+							<span class="bump">
+								<i [class]="getPermissionIcon(1)"></i>
+								<ng-container i18n>Read</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(2)"></i>
+								<ng-container i18n>Create</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(8)"></i>
+								<ng-container i18n>Modify</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(4)"></i>
+								<ng-container i18n>Remove</ng-container>
+							</span>
+						</div>
+					</div>
+
+					<div class="row">
+						<label class="ig-label" i18n>Owners</label>
+						<div class="ig-value">
+							<span class="bump">
+								<i [class]="getPermissionIcon(32)"></i>
+								<ng-container i18n>Read</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(64)"></i>
+								<ng-container i18n>Create</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(256)"></i>
+								<ng-container i18n>Modify</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(128)"></i>
+								<ng-container i18n>Remove</ng-container>
+							</span>
+						</div>
+					</div>
+
+					<div class="row">
+						<label class="ig-label" i18n>Relations</label>
+						<div class="ig-value">
+							<span class="bump">
+								<i [class]="getPermissionIcon(1024)"></i>
+								<ng-container i18n>Read</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(2048)"></i>
+								<ng-container i18n>Create</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(8192)"></i>
+								<ng-container i18n>Modify</ng-container>
+							</span>
+							<span class="bump">
+								<i [class]="getPermissionIcon(4096)"></i>
+								<ng-container i18n>Remove</ng-container>
+							</span>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="item.uid"></i>
+						</label>
+						<div>
+							{{item.uid}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+
+</div>

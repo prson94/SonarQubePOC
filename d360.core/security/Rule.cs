@@ -93,6 +93,9 @@ namespace d360.core.security
 		[JsonProperty("roleUid")]
 		public Guid RoleUid { get; set; }
 
+		[JsonProperty("roleName")]
+		public string RoleName { get; set; }
+
 		[JsonProperty("securityType")]
 		public RuleSecurityType SecurityType { get; set; }
 
