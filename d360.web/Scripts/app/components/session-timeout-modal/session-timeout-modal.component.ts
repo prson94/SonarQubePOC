@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { AuthenticationService } from '../../services/authentication.service';
+import { LastCallTimeService } from "../../services/lastCallTime.service";
+import { throttleTime } from 'rxjs';
 
 @Component({
 	selector: 'd3s-session-timeout-modal',
@@ -16,14 +18,18 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	sessionTimeoutCheckInterval: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	apiTimeoutCheck: any;
 
 	isModalVisible: boolean = false;
 	constructor(private cdRef: ChangeDetectorRef,
-		private authService: AuthenticationService) {
+		private authService: AuthenticationService,
+		private lastCallService: LastCallTimeService) {
 	}
 
 	ngOnInit() {
 		this.initializeWatch();
+		this.initializeAPIWatch();
 	}
 
 
@@ -42,6 +48,16 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 				console.info("Session expiration:", this.sessionExpiresOn)
 			}
 		})
+
+	}
+
+	initializeAPIWatch() {
+		this.lastCallService.lastAPICall$.pipe(throttleTime(this.modalPopupTimeInSeconds * 500, null, { leading: true, trailing: true})).subscribe(() => {
+			if (this.apiTimeoutCheck) {
+				clearTimeout(this.apiTimeoutCheck)
+			}
+			this.apiTimeoutCheck = setTimeout(() => this.extendSession(), 500);
+		})
 	}
 
 	clearWatch = () => {
@@ -52,9 +68,15 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 
 	ngOnDestroy() {
 		this.clearWatch();
+		if (this.apiTimeoutCheck) {
+			clearTimeout(this.apiTimeoutCheck)
+		}
 	}
 
 	checkSessionTimeout() {
+		if (this.timeUntilLogout <= 0) {
+			this.signOut();
+		}
 		if (this.timeUntilLogout < this.modalPopupTimeInSeconds) {
 			this.isModalVisible = true;
 			this.cdRef.markForCheck();

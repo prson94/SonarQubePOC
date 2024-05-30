@@ -2,6 +2,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CancelOnPageChangeInterceptor } from './cancelOnPageChange.interceptor';
 import { GovernRequestInterceptor } from "./govern-request.interceptor";
 import { ReuseInterceptor } from "./reuse.interceptor";
+import { LastCallTimeInterceptor } from "./lastCallTime.interceptor"
 
 export const governHttpInterceptorProviders = [
     {
@@ -19,7 +20,12 @@ export const governHttpInterceptorProviders = [
         useFactory: (instance: ReuseInterceptor) => instance,
         deps: [ReuseInterceptor],
         multi: true
-    },
+	},
+	{
+		provide: HTTP_INTERCEPTORS,
+		useClass: LastCallTimeInterceptor,
+		multi: true
+	},
 ];
 
 export { ROUTE_INDEPENDENT_QUERY } from './routeIndependentQuery';
