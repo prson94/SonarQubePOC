@@ -8,8 +8,14 @@ export class LastCallTimeInterceptor implements HttpInterceptor {
 
 	constructor(private lastCallService: LastCallTimeService) { }
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-		this.lastCallService.updateLastCall();
+
+		//Exclude calls regarding session
+		if (!req.url.startsWith("/api/cookie/expiration")) {
+			this.lastCallService.updateLastCall();
+		}
+
 		return next.handle(req);
 	}
 }
