@@ -22,6 +22,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	apiTimeoutCheck: any;
 
 	isModalVisible: boolean = false;
+	isModalSupressed: boolean = false;
 	constructor(private cdRef: ChangeDetectorRef,
 		private authService: AuthenticationService,
 		private lastCallService: LastCallTimeService) {
@@ -77,7 +78,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 		if (this.timeUntilLogout <= 0) {
 			this.signOut();
 		}
-		if (this.timeUntilLogout < this.modalPopupTimeInSeconds) {
+		if (this.timeUntilLogout < this.modalPopupTimeInSeconds && !this.isModalSupressed) {
 			this.isModalVisible = true;
 			this.cdRef.markForCheck();
 		}
@@ -89,7 +90,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 
 	doNothing() {
 		this.isModalVisible = false;
-		this.clearWatch();
+		this.isModalSupressed = true;
 		this.cdRef.markForCheck();
 	}
 
