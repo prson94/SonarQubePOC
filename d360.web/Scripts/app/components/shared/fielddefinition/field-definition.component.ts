@@ -260,7 +260,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 						return displayField;
 					});
-					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
+					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder >= b.ColumnOrder ? 1 : -1);
 					this.updateMenuItems();
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 					if (this.tableEl) {
