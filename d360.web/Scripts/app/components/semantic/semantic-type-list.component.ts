@@ -32,7 +32,8 @@ import { IOutputData } from 'angular-split';
     selector: 'd3s-semantic-list',
     templateUrl: './semantic-type-list.component.html',
     styleUrls: ["semanticTypes.less"],
-    providers: [DataProfileService],
+	providers: [DataProfileService],
+	styles: [`.checkbox-container { display: flex; flex-direction: row-reverse; padding: 14px 10px 6px 0; }`]
 })
 
 export class SemanticTypeListComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
