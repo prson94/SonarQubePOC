@@ -4883,31 +4883,37 @@ where v.id = {0}", id)).FirstOrDefault();
 				//once there are load items and put / post execution are both null
 				var loadInfo = Company.Loads.FirstOrDefault(x => x.ID == load.ID);
 				//once a post / put uid is in place
-				if (loadInfo != null && (loadInfo.PostExecutionID.HasValue || loadInfo.PutExecutionID.HasValue))
+				if (loadInfo != null)
 				{
-					status = "Submitted requests waiting processing...";
-					//check if post / put uid is started
-					if (loadInfo.PostExecutionID.HasValue)
+					if (loadInfo.PostExecutionID.HasValue || loadInfo.PutExecutionID.HasValue)
 					{
-						var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
-
-						if (post != null && post.ProcessingStartedOn.HasValue)
+						status = "Submitted requests waiting processing...";
+						//check if post / put uid is started
+						if (loadInfo.PostExecutionID.HasValue)
 						{
-							status = "Submitted requests processing data...";
+							var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
+
+							if (post != null && post.ProcessingStartedOn.HasValue)
+							{
+								status = "Submitted requests processing data...";
+							}
 						}
-						else
+						else if (loadInfo.PutExecutionID.HasValue)
 						{
 							var put = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PutExecutionID.Value);
 
-							if (put != null && post.ProcessingStartedOn.HasValue)
+							if (put != null && put.ProcessingStartedOn.HasValue)
 							{
 								status = "Submitted requests processing data...";
 							}
 						}
 					}
+					else if (loadInfo.DateCompleted != null)
+					{
+						status = "Stop processing due to error or nothing to process...";
+					}
 				}
 			}
-
 			return status;
 		}
 

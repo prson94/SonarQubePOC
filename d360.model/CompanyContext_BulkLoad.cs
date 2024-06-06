@@ -305,6 +305,8 @@ end
 											L.DateCompleted
 										when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
 											L.DateCompleted
+										when (L.Action = 'P' and L.PutExecutionId is null  and L.PostExecutionId is null and L.DateCompleted is not null) then
+											L.DateCompleted
 										when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
 											EE.CompletedOn
 										else
@@ -1552,7 +1554,9 @@ inner join AssetPath P on P.ID = A.ID
 				";
 			}
 
-			return Query<LoadDetail>(LoadDetailBaseSql(countSql, id, getLoadErrorMessage) + " where L.ID = " + id).SingleOrDefault();
+			var sqlstr = LoadDetailBaseSql(countSql, id, getLoadErrorMessage) + " where L.ID = " + id;
+
+			return Query<LoadDetail>(sqlstr).SingleOrDefault();
 		}
 
 		public IEnumerable<dynamic> GetLoadColumnDetails(int id)
