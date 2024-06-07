@@ -638,7 +638,7 @@ namespace d360.model.DataAccessLayer.repositories
 									select top 1 al.Uid
 									from assettype att
 									inner join metrics.Allocation Al on Al.assettypeuid = att.uid and Al.ScoreType = {f.ScoreType} and Al.OverrideName is null
-									where att.id = @AssetTypeID
+									where att.id = cast(@AssetTypeID as int)
 								 ";
 						 AllocationUID = CompanyContext.Query<Guid?>(sql, new { f.AssetTypeID }, ApiTimeout).FirstOrDefault();
 					 }
