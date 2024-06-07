@@ -1014,7 +1014,6 @@ from    api.ExecutionAsset T
 		private void ValidateDeleteRelationshipTypes(ApiExecution execution, int timeout = 3600)
 		{
 			List<PredicateTypeInfo> predicateTypeInfo = new PredicateType().GetAsList();
-			List<int> disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
 
 			Connection.Execute(@"
 								Update ER
@@ -1026,7 +1025,7 @@ from    api.ExecutionAsset T
 								and not exists (select 1 from IntersectType where Uid = ER.[UID])
 						", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
-			Connection.Execute(@"
+			Connection.Execute(@$"
 								Update ER
 								Set Success=0,
 								Message='Relationship type not allowed to delete' 
@@ -1035,8 +1034,10 @@ from    api.ExecutionAsset T
 								ER.Success is null
 								and  exists (select 1 from IntersectType I
 													inner join [Predicate] P on P.ID = I.PredicateID
-												where I.Uid = ER.[UID] and P.[TYPE]  in @disallowEditIds)
-						", new { executionID = execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
+											where I.Uid = ER.[UID] 
+											and ((P.[TYPE] = {(int)PredicateType.InterTypeHierarchy} and (I.SubjectClass in ({(int)AssetTypeClass.BusinessAsset},{(int)AssetTypeClass.TechnicalAsset}) and I.ObjectClass in ({(int)AssetTypeClass.BusinessAsset},{(int)AssetTypeClass.TechnicalAsset}))) 
+											or (P.[TYPE] = {(int)PredicateType.IntraTypeHierarchy} and (I.ObjectClass in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy}) and I.ObjectClass in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy})))))
+						", new { executionID = execution.ExecutionID}, commandTimeout: timeout);
 
 			//Check for diagram relationships
 			Connection.Execute($@"
