@@ -161,7 +161,10 @@ namespace d360.model.DataAccessLayer
 						into #tempADPS
 						from AssetDataProfile ADP
 						inner join rs_Data ids on ids.ID = ADP.ID
-						inner join AssetDataProfileSample adps on adps.AssetDataProfileId = ADP.ID;";
+						inner join AssetDataProfileSample adps on adps.AssetDataProfileId = ADP.ID;
+
+						create clustered index cx_tempADPS on #tempADPS(AssetDataProfileId);
+						";
 
 			}
 

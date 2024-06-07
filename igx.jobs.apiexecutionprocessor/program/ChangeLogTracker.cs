@@ -283,7 +283,8 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 		private string GetLastVersionSQL(bool useOnlyObjectCheck = false)
 		{
 			return $@"
-				drop table if exists #changelogs
+				drop table if exists #changelogs;
+				drop table if exists #FieldMaxVersion;
 
 				select gfa.FieldName, gfa.Value, ga.Version
 				into #changelogs
@@ -291,9 +292,18 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
 				where Object = @object and ObjectID = @objectId {(useOnlyObjectCheck ? "" : "and ActionObject = @object and ActionObjectID = @objectId")}
 
-				select * from #changelogs logs
-				outer apply (select max(version) from #changelogs where fieldname = logs.FieldName)L(MaxVersion)
-				where logs.Version = l.MaxVersion;";
+				create clustered index cx_changelogs on #changelogs (FieldName,[Version]);
+
+				select fieldname,max(version) MaxVersion
+				into #FieldMaxVersion
+				from #changelogs
+				group by fieldname;
+
+				create clustered index cx_FieldMaxVersion on #FieldMaxVersion (FieldName);
+
+				select logs.*,l.MaxVersion
+				from #changelogs logs
+				inner join #FieldMaxVersion l on l.fieldname = logs.FieldName and logs.Version = l.MaxVersion;";
 		}
 	}
 

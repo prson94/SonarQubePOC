@@ -1331,7 +1331,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 							sb.AppendLine(@"
 								drop table if exists #filtered_parents_simple_filter
-								create table #filtered_parents_simple_filter(AssetId bigint)");
+								create table #filtered_parents_simple_filter(AssetId bigint)
+								create clustered index cix_filtered_parents_simple_filter on #filtered_parents_simple_filter (AssetId);");
 
 							List<string> filtersPerField = new List<string>();
 							foreach (var uid in assetTypeUids)
@@ -1357,20 +1358,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								}
 							}
 
+							List<string> targetJoins = new List<string> { "I1.SubjectAssetID" };
+
 							sb.AppendLine(@"insert into #TempFilteredAssets
 											select a.id
 											from asset a
 											left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
-											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
+											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships_simple_filter) 
+											and I1.SubjectAssetID IN (select AssetId from #filtered_parents_simple_filter)");
 							for (int i = 2; i <= levels; i++)
 							{
-								sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
-							}
-							List<string> targetJoins = new List<string>();
-							for (int i = 1; i <= levels; i++)
-							{
-								targetJoins.Add($"ATarget{i}.ID");
-								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents_simple_filter)");
+								targetJoins.Add($"I{i}.SubjectAssetID");
+								sb.AppendLine($@"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships_simple_filter) 
+												 and I{i}.SubjectAssetID IN (select AssetId from #filtered_parents_simple_filter)");
 							}
 							if (targetJoins.Count == 1)
 							{
