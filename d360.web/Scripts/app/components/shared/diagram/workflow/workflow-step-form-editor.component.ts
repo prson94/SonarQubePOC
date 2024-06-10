@@ -291,7 +291,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.step.fields.form.field[this.selectedIndex + offset] = item;
 
         this.selectedIndex += offset;
-        this.select(this.selectedIndex);
+		this.select(this.selectedIndex);
+		this.stepChange.emit(this.step);
     }
 
     moveTop() {
@@ -301,7 +302,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.step.fields.form.field.unshift(first);
         this.step.fields.form.field.unshift(item);
 
-        this.select(0);
+		this.select(0);
+		this.stepChange.emit(this.step);
     }
 
     moveBottom() {
@@ -309,7 +311,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         const item = this.step.fields.form.field.splice(this.selectedIndex, 1)[0];
 
         this.step.fields.form.field.push(item);
-        this.select(lastIndex);
+		this.select(lastIndex);
+		this.stepChange.emit(this.step);
     }
 
     confirmDelete() {
