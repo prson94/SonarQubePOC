@@ -20,9 +20,9 @@ import { CompanySettingsService } from '../services/settings.service';
 })
 export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChecked {
 	@Input() isOpenDefault: boolean = false;
+	@Input() hoverTooltipWidth: number = 350;
     contextElement: HTMLDivElement;
     hoverElement: HTMLDivElement;
-    hoverTooltipWidth: number = 350;
 
     private isTagTooltip: boolean = false;
     isAdmin: boolean = false;

@@ -25,7 +25,7 @@
             </a>
         </ng-container>
         <ng-container *ngIf="interceptLinkClick">
-            <a context-link (click)="openTagPage($event, tag)"
+            <a context-link [hoverTooltipWidth] =  "550" (click)="openTagPage($event, tag)"
                [attr.data-tooltip]="tooltipValue"
                (mouseenter)="enter(tag, $event.target)"
                [attr.target]="'_blank'"
