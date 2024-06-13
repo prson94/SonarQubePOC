@@ -1,0 +1,237 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GenerageDisplayValuesByTempAssetTable-v1">
+  <comment>If logical is changed, this also needs to be updated in GetAssetDisplayValueById</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+Create or Alter Procedure [dbo].[GenerageDisplayValuesByTempAssetTable]
+(
+	@AssetTypeID int,
+	@AssetClass int
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	declare @ReferenceItemType int = 9,
+	@GroupType int =12,
+	@ResourceType int = 11,
+	@FieldTypeID int;
+
+	if (OBJECT_ID('tempdb..#tempassetDV') IS NOT NULL)
+	begin
+		if exists(select 1 from #tempassetDV)
+		begin
+			drop table if exists #TempClassAssetTypeIDs;
+
+			create table #TempClassAssetTypeIDs 
+			(AssetTypeID int,TFINDEX int,TLINDEX int,[value] nvarchar(max),FieldTypeID int,CounterPrefix nvarchar(50),
+			[Type] [varchar](25),IsOnlyCode Bit Default 0,ISOnlyName Bit Default 0
+			, index idx_tempdispvalue clustered(AssetTypeID));
+
+			insert into #TempClassAssetTypeIDs
+			select 
+			Att.ID, TF.[index] TFINDEX, TL.[index] TLINDEX, TL.[value], FT.ID FieldTypeID,
+			isnull(FT.CounterPrefix,'') CounterPrefix,FT.Type,
+			case when Att.DisplayFormat = '{code}' then 1 else 0 end,
+			case when Att.DisplayFormat = '{name}' then 1 else 0 end
+			from AssetType Att
+			cross apply [utility].[OrderedSplit](replace(Att.DisplayFormat, '{', '|'), '|') TF
+			cross apply [utility].[OrderedSplit](replace(TF.[value], '}', '|'), '|') TL
+			left join FieldType FT on FT.AssetTypeID = Att.ID and FT.Name like TL.Value
+			where att.ID = @AssetTypeID and  RTRIM(TF.value) <> ''	
+			and RTRIM(TL.value) <> ''
+			ORDER BY 1,2,3
+			option (recompile);
+
+			drop table if exists #tempassetDisplayValue;
+
+			create table #tempassetDisplayValue (AssetId Bigint,DisplayValueHash [nvarchar](50) NULL,DisplayValue [nvarchar](Max) NULL)
+			if (exists (select 1 from #TempClassAssetTypeIDs))
+			begin
+				if (@AssetClass = @ReferenceItemType)
+					begin
+						if exists(select 1 from #TempClassAssetTypeIDs TL where TL.IsOnlyCode = 1 and RTRIM(TL.value) <> '')
+							BEGIN
+								insert into #tempassetDisplayValue
+								select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', A.Code),2)  DisplayValueHash,A.Code DisplayValue
+								from #tempassetDV A 
+								left join AssetDisplayValue adv on adv.AssetID = a.AssetID 
+								Where  A.Code is not null and coalesce(adv.DisplayValue,'') != A.Code
+								option (recompile);
+							end
+						else
+							BEGIN
+								insert into #tempassetDisplayValue
+								select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
+								from #tempassetDV a 
+								CROSS APPLY (
+								select 
+								string_agg(results.[value],'') as DisplayValue
+								from
+								(select	top 100
+								coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
+								from (
+								select	case when TL.FieldTypeID is null then TL.value else '---' end as value,
+								coalesce(F.FormattedValue, case when TL.Value = 'Code' then A.Code else null end) as FormattedValue,
+								CounterField.FormattedValue as CounterFormattedValue,
+								TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
+								from #TempClassAssetTypeIDs TL
+								left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.AssetID and TL.FieldTypeID is not null
+								outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+											 from FieldCounterValue FCV 
+											 where FCV.AssetId = A.AssetID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
+								where TL.AssetTypeID = @AssetTypeID
+								and RTRIM(TL.value) <> ''
+								) D
+								order by D.TokenIndex,D.TokenIndexL) results ) ADV
+								Where  ADV.DisplayValue is not null
+								option (recompile);
+							end
+					end
+				else if (@AssetClass = @GroupType)
+					begin
+						insert into #tempassetDisplayValue
+						select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
+						from #tempassetDV A 
+						CROSS APPLY (
+						select 
+						string_agg(results.[value],'') as DisplayValue
+						from
+						(select	top 100
+						coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
+						from (
+						select case when TL.FieldTypeID is null then TL.value else '---' end as value,				
+						coalesce(F.FormattedValue, G.Name) as FormattedValue,
+						CounterField.FormattedValue as CounterFormattedValue,
+						TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
+						from	#TempClassAssetTypeIDs TL
+						left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.AssetID and TL.FieldTypeID is not null
+						left join [Group] G on TL.Value = 'Name' and A.Object = 'Group' and G.ID = A.ObjectID
+						outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+									 from FieldCounterValue FCV 
+									 where FCV.AssetId = A.AssetID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
+						where TL.AssetTypeID = @AssetTypeID and RTRIM(TL.value) <> ''
+						) D
+						order by D.TokenIndex,D.TokenIndexL) results ) ADV
+						Where ADV.DisplayValue is not null
+						option (recompile);
+					end
+				else if (@AssetClass = @ResourceType)
+					begin
+						insert into #tempassetDisplayValue
+						select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
+						from #tempassetDV A
+						CROSS APPLY (
+						select 
+							string_agg(results.[value],'') as DisplayValue
+							from
+							(select	top 100
+							coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
+							from (
+							select case when TL.FieldTypeID is null then TL.value else '---' end as value,				
+							coalesce(case when TL.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end,F.FormattedValue) as FormattedValue,
+							CounterField.FormattedValue as CounterFormattedValue,
+							TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
+							from	#TempClassAssetTypeIDs TL
+							left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.AssetID and TL.FieldTypeID is not null
+							left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+							outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+										 from FieldCounterValue FCV 
+										 where FCV.AssetId = A.AssetID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
+							where TL.AssetTypeID = @AssetTypeID
+							and RTRIM(TL.value) <> ''
+						) D
+						order by D.TokenIndex,D.TokenIndexL) results ) ADV
+						Where  ADV.DisplayValue is not null
+						option (recompile);
+					end
+				else 
+					BEGIN
+						if exists(select 1 from #TempClassAssetTypeIDs TL where TL.ISOnlyName = 1 and RTRIM(TL.value) <> '' and TL.FieldTypeID is not null)
+							BEGIN
+								select @FieldTypeID =  TL.FieldTypeID
+								from #TempClassAssetTypeIDs TL 
+								where TL.ISOnlyName = 1 and RTRIM(TL.value) <> '' and TL.FieldTypeID is not null;
+								
+								
+								insert into #tempassetDisplayValue
+								select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', F.FormattedValue),2)  DisplayValueHash,F.FormattedValue DisplayValue
+								from #tempassetDV A
+								inner join Field F on F.FieldTypeID = @FieldTypeID and F.AssetID = A.AssetID and F.AssetID is not null
+								left join AssetDisplayValue adv on adv.AssetID = A.AssetID 
+								Where  F.FormattedValue is not null and coalesce(adv.DisplayValue,'') != F.FormattedValue
+								option (recompile);
+							end
+						else
+							BEGIN
+								insert into #tempassetDisplayValue
+								select A.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
+								from #tempassetDV A
+								CROSS APPLY (
+								select 
+								string_agg(results.[value],'') as DisplayValue
+								from
+								(select	top 100
+								coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
+								from (
+								select case when TL.FieldTypeID is null then TL.value else '---' end as value,					
+								F.FormattedValue as FormattedValue,
+								CounterField.FormattedValue as CounterFormattedValue,
+								TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
+								from	#TempClassAssetTypeIDs TL
+								left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.AssetID and TL.FieldTypeID is not null and F.AssetID is not null
+								outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+											 from FieldCounterValue FCV 
+											 where FCV.AssetId = A.AssetID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
+								where TL.AssetTypeID = @AssetTypeID
+								and RTRIM(TL.value) <> ''
+								) D
+								order by D.TokenIndex,D.TokenIndexL) results ) ADV
+								Where ADV.DisplayValue is not null
+								option (recompile);
+							end
+					end
+				
+				create index idx_TempDispValue on #tempassetDisplayValue(AssetId) include (DisplayValueHash, DisplayValue);
+
+				update	T
+				set		T.DisplayValue = ADV.DisplayValue,
+						T.DisplayValueHash = ADV.DisplayValueHash,
+						T.DisplayValuePrefix = SUBSTRING(ADV.DisplayValue, 1, 250),
+						T.UpdatedOn = getutcdate()
+				from	[AssetDisplayValue] T
+						inner join #tempassetDisplayValue ADV on ADV.AssetID = T.AssetID
+				where	T.DisplayValueHash <> ADV.DisplayValueHash
+				option (recompile);
+
+				insert into [AssetDisplayValue] (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+				select	adv.AssetId,
+				ADV.DisplayValue,
+				ADV.DisplayValueHash,
+				SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
+				getutcdate()
+				from #tempassetDisplayValue ADV 
+				where not exists ( select 1 from [AssetDisplayValue] ad where ad.assetid = adv.AssetId)
+				option (recompile);
+			end
+		end
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
