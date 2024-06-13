@@ -17,7 +17,6 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using Dapper;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Newtonsoft.Json;
 
 namespace d360.model
