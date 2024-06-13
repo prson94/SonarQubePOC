@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.api.ParseAssetPaths-v5">
-    <comment>GOV-28603</comment>
+  <changeSet author="TDuric,Puneet" id="Procedure.api.ParseAssetPaths-v6">
+    <comment>GOV-28603,GOV-33181</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[ParseAssetPaths]
@@ -16,7 +16,6 @@ begin
 	
 	-- Comes from higher-level procedure
 	--#tbl ( GroupID bigint, AssetTypeID int, ID bigint, [Level] int, [Position] decimal(5,3), ParentID bigint, ParentLevel int, ParentPosition decimal(5,3), ColumnOrder int, FormattedValue nvarchar(max) )
-	--#ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
 
 	drop table if exists #tblgrp
 	drop table if exists #illegalxml
@@ -25,20 +24,29 @@ begin
 		
 	if exists (select 1 from #tbl where [Level] < 1)
 	begin
+		drop table if exists #temptbl;
+		
+		select GroupID,abs(min([Level]))+1 [LevelUp]
+		into #temptbl
+		from #tbl
+		group by GroupID;
+		
+		create clustered index cx_temptbl on #temptbl(GroupID);
+		
 		update	T
 		set		[Level] = [Level] + S.[LevelUp],
 				[ParentLevel] = [ParentLevel] + S.[LevelUp]
 		from	#tbl T
-				cross apply (
-					select abs(min([Level]))+1 as [LevelUp] from #tbl where GroupID = T.GroupID
-				) S 
+		inner join #temptbl S on S.GroupID = T.GroupID 
+
+		drop table if exists #temptbl;
 	end
 
-	insert into #ids (GroupID, ID, ParentID)
-		select GroupID, ID, ParentID from #tbl group by GroupID, ID, ParentID;
 
-	create nonclustered index CIX_TempIds on #ids (ID,GroupID)
+	create table #tblgrp (GroupId bigint,XMLData NVARCHAR(max) NULL,KeyPathHash nvarchar(32))
+	create clustered index CIX_tblgrp on #tblgrp (GroupID)
 
+	insert into #tblgrp (GroupId, XMLData)
 	select s.groupid,(select	t.[Level] as '@level',
 						t.ColumnOrder as '@position',
 						t.AssetTypeID as '@assetTypeId',
@@ -47,13 +55,10 @@ begin
 				from	#tbl t
 				where	t.GroupID = S.GroupID
 				order by t.Position
-				for xml path('segment'), root('path')) XMLData,
-	cast(null as nvarchar(32)) KeyPathHash
-	into #tblgrp
+				for xml path('segment'), root('path')) XMLData
 	from #tbl s
 	group by s.groupid;
 
-	create nonclustered index CIX_tblgrp on #tblgrp (GroupID)
 		
 	--The XML parser throws an 'illegal xml character' error when converting #tblgrp.XMLData to AssetNode.Segments
 	--if XMLData contains escaped ASCII control characters such as Bell(x07), Device Control 3(x13) or File Seperator (x1C)
@@ -126,11 +131,8 @@ begin
 		from	#tblgrp s;
 	end
 				
-	--Queue Search index updates to path, except when this procedure is called for an entire asset type
-	insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		select	'ObjectIndex', 'Path', a.Object, a.ObjectID, S.ID
-		FROM	[dbo].[asset] a
-				inner join #ids S on S.ID = a.ID and S.GroupID = S.ID;
+	drop table if exists #tblgrp
+	drop table if exists #illegalxml
 end
 ]]>
     </sql>

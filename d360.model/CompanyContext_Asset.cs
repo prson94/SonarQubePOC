@@ -702,58 +702,30 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, AssetType at, int timeout = 3600, bool isInsert = false)
 		{
 			string jointablesql = " ";
-			string DisplayValuesql;
+			string fieldcode = "Null Code ";
 
 			if (at.Class == AssetTypeClass.Reference)
 			{
 				jointablesql = $@" left join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' ";
-				DisplayValuesql = $@" cross apply GetAssetDisplayValueById(A.AssetID)ADV ";
-			}
-			else
-			{
-				DisplayValuesql = $@" cross apply GetAssetDisplayValueById(A.AssetID)ADV ";
+				fieldcode = "substring(C.FieldValue,1,250) Code";
 			}
 
-			string fieldsSelectSql = $@"
-				select  A.AssetID as ID,
-							ADV.DisplayValue,
-							CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
-							SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+			Connection.Execute($@"
+					drop table if exists #tempassetDV;
+					Create table #tempassetDV (AssetID bigint,Object varchar(50), objectid int, Code nvarchar(250));
+					create clustered index cix_tempassetDV on #tempassetDV (AssetID);
+					
+					insert into #tempassetDV (AssetID, object, objectid,code) 
+					select  A.AssetID,A.Object,A.ObjectID,{fieldcode}
 					from    api.ExecutionAsset A
 							{jointablesql}
-							{DisplayValuesql}
 					where   A.ExecutionID = @executionID
 							and A.ItemNumber between @beginItemNumber and @endItemNumber 
-							and A.Success is null 
-							and ADV.DisplayValue is not null";
+							and A.Success is null;
 
-			if (isInsert)
-			{
-				Connection.Execute($@"
-					insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
-						{fieldsSelectSql}
-				",
-				new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
-			}
-			else
-			{
-				Connection.Execute($@"
-									merge       AssetDisplayValue as T
-									using       (
-													{fieldsSelectSql}
-												) as S 
-									on          ( T.AssetID = S.ID )
-									when		matched then
-									update		set
-													T.DisplayValue = S.DisplayValue,
-													T.DisplayValueHash = S.DisplayValueHash,
-													T.[DisplayValuePrefix] = S.DisplayValuePrefix,
-													T.UpdatedOn = @dt
-									when		not matched by target then
-									insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
-									values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-				new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
-			}
+					exec [GenerageDisplayValuesByTempAssetTable] @AssetTypeID,@AssetClass
+					",
+				new { executionID, beginItemNumber, endItemNumber, AssetTypeID = at.ID, AssetClass = at.Class}, transaction: trans, commandTimeout: timeout);
 		}
 
 		private void MergeGroupAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600, bool isInsert = false)
@@ -1895,7 +1867,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										sw.Restart();
 										addMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop} > Begin", 0, ++step);
 
-										DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+										DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, at, trans, beginItemNumber, endItemNumber, timeout);
 										addMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
