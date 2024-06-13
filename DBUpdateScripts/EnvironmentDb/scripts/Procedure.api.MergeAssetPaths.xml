@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.api.MergeAssetPaths-v10">
+  <changeSet author="TDuric,Puneet" id="Procedure.api.MergeAssetPaths-v11">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -23,7 +23,6 @@ begin
 	drop table if exists #hierarchy
 	drop table if exists #tbl
 	drop table if exists #incoming
-	drop table if exists #ids
 
 	create table #hierarchy (
 		GroupID bigint,
@@ -52,7 +51,6 @@ begin
 
 	create table #incoming (ID bigint)
 
-	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
 
 	insert into #incoming 
 		select	AssetID
@@ -85,24 +83,32 @@ begin
 			where AT.uid = @assetTypeUid
 	end 
 
+	
+	drop table if exists #TempIntersectTypeIDs;
+	create table #TempIntersectTypeIDs(IntersectTypeID int);
+	create clustered index cx_TempIntersectTypeIDs on #TempIntersectTypeIDs (IntersectTypeID);
+	
+	insert into #TempIntersectTypeIDs
+	select IT.ID IntersectTypeID 
+	From [IntersectType] IT
+	inner join [Predicate] P on IT.PredicateID = P.ID and P.Type in (3,4);
+	
+
 	if exists (select top 1 * from #incoming)
 	begin
 		with descendants as (
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	#incoming O
-					inner join Asset A on O.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.SubjectAssetID = O.ID
-					inner join Asset C on C.ID = I.ObjectAssetID
+					inner join [Intersect] I on I.SubjectAssetID = O.ID and I.IntersectTypeID in (select IntersectTypeID from #TempIntersectTypeIDs)
 			union all
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	descendants c
-					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.SubjectAssetID = c.ObjectAssetID
-					inner join Asset A on A.ID = I.ObjectAssetID
+					inner join [Intersect] I on I.SubjectAssetID = c.ObjectAssetID  and I.IntersectTypeID in (select IntersectTypeID from #TempIntersectTypeIDs)
 		)
 		insert into #incoming
-			select ObjectAssetID from descendants;
+			select distinct ObjectAssetID from descendants;
 
 		create clustered index CIX_TempIncoming on #incoming (ID)
 
@@ -149,41 +155,38 @@ begin
 		else
 		begin
 			with hierarchy as (
-				select	A.ID as GroupID,
-						A.AssetTypeID,
-						A.ID,
+				select	O.ID as GroupID,
+						O.ID,
 						I.ObjectAssetID,
 						I.SubjectAssetID as ParentObjectAssetID,
-						A.Code,
 						0 as [Level]
-				from	Asset A
-						left join PredicateIntersect I on I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
-						inner join #incoming O on O.ID = A.ID
+				from	#incoming O
+				left join [Intersect] I on I.ObjectAssetID = O.ID and I.IntersectTypeID in (select IntersectTypeID from #TempIntersectTypeIDs)
 				union all
 				select	c.GroupID,
-						A.AssetTypeID,
-						A.ID,
-						A.ID ObjectAssetID,
+						c.ParentObjectAssetID ID,
+						c.ParentObjectAssetID ObjectAssetID,
 						I.SubjectAssetID as ParentObjectAssetID,
-						A.Code,
 						c.[Level]-1 as [Level]
 				from	hierarchy c
-						inner join Asset A on c.ParentObjectAssetID = A.ID
 						outer apply (
 							select	I.SubjectAssetID
-							from	PredicateIntersect I 
-							where	I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
+							from	[Intersect] I 
+							where	I.ObjectAssetID = c.ParentObjectAssetID
+							and I.IntersectTypeID in (select IntersectTypeID from #TempIntersectTypeIDs)
 						) I
+				where c.ParentObjectAssetID is not null
 			)
 
 			insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
 				select	A.GroupID,
-						A.AssetTypeID,
+						ad.AssetTypeID,
 						A.ID,
 						A.[Level],
 						P.ID,
-						A.Code
+						ad.Code
 				from	hierarchy A
+						inner join asset ad on ad.id = a.id
 						left join Asset P on P.ID = A.ParentObjectAssetID;
 		end
 
@@ -242,6 +245,23 @@ begin
 		end
 		else
 		begin
+			drop table if exists #tempfldtype;
+			With RS as (Select distinct AssetTypeID
+						From #hierarchy
+						)
+			select	FT.ID,
+					FT.ColumnOrder,
+					FT.DefaultFormattedValue,
+					FT.AssetTypeID,
+					FT.Type,
+					FT.CounterPrefix
+			into #tempfldtype
+			from	RS A
+					inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1;
+			
+			create clustered index cx_tempfldtype on #tempfldtype(AssetTypeID,ID);
+					
+		
 			create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
 
 			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
@@ -256,10 +276,12 @@ begin
 						FT.ColumnOrder,
 						coalesce(F.FormattedValue, FT.DefaultFormattedValue) as FormattedValue
 				from	#hierarchy A
-						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+						inner join #tempfldtype FT on FT.AssetTypeID = A.AssetTypeID
 						left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
 				where 	coalesce(F.FormattedValue, FT.DefaultFormattedValue) is not null
 			--handle counter fields
+			if exists(select 1 from #tempfldtype FT where FT.Type = 'Counter')
+				Begin
 			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	distinct
 						A.GroupID, 
@@ -272,13 +294,19 @@ begin
 						FT.ColumnOrder,
 						coalesce(FT.CounterPrefix,'')+ cast(FCV.Value as nvarchar(20)) as FormattedValue
 				from	#hierarchy A
-						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1 and FT.Type = 'Counter'
+								inner join #tempfldtype FT on FT.AssetTypeID = A.AssetTypeID and FT.Type = 'Counter'
 						inner join FieldCounterValue FCV on FCV.AssetId = A.Id and FCV.FieldTypeId = FT.Id
 		end
+		end
+		drop table if exists #hierarchy;
+		drop table if exists #incoming;
+		drop table if exists #TempIntersectTypeIDs;
+		drop table if exists #tempfldtype;
 
 		create clustered index CIX_TempTbl on #tbl (GroupID);
 
 		exec api.ParseAssetPaths;
+		drop table if exists #tbl;
 	end
 end
 ]]>

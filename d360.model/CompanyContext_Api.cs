@@ -126,18 +126,41 @@ namespace d360.model
                                     new { executionID }, commandTimeout: timeout, transaction: trans);
         }
 
-		private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+		private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, AssetType at, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
-            Connection.Execute(@"delete F from Field F
-									inner join api.ExecutionAsset EA on EA.ExecutionID = @executionUid
-									inner join FieldType FT on F.FieldTypeID = FT.ID
-									where 
-										FT.[Type] = 'Lookup'
-									  and F.AssetId = EA.AssetID
-									  and EA.ItemNumber between @beginItemNumber and @endItemNumber
-									  and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-        }
-                
+			Connection.Execute(@$"
+									drop table if exists #tempfieldlist;
+									drop table if exists #tempdelempty;
+
+									select FT.ID FieldTypeID
+									into #tempfieldlist
+									from FieldType FT
+									where AssetTypeID = @AssetTypeID
+									and FT.[Type] = 'Lookup';
+
+									if exists (select 1 from #tempfieldlist)
+									begin
+
+										select Ft.FieldTypeID,EA.AssetID
+										into #tempdelempty 
+										from api.ExecutionAsset EA 
+										cross join #tempfieldlist ft
+										where EA.ExecutionID = @executionUid
+										and EA.ItemNumber between @beginItemNumber and @endItemNumber
+										and EA.AssetID is not null;
+
+										create clustered index cx_tempdelempty on #tempdelempty(FieldTypeID,AssetID)
+
+										delete F 
+										from Field F
+										inner join #tempdelempty t on F.FieldTypeID = t.FieldTypeID and F.AssetId = t.AssetID and F.Value = ''
+
+										drop table if exists #tempfieldlist;
+										drop table if exists #tempdelempty;
+									end
+								", new { executionUid, beginItemNumber, endItemNumber, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
+		}
+
 		private PredicateType? DeterminePredicateType(string obj)
         {
             PredicateType? predicateType = null;

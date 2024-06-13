@@ -2260,6 +2260,8 @@ namespace d360.web.Controllers.V2
 				string refListOrder = "";
 				bool onlyCount = false;
 
+				List<string> FieldLookupValueList = new List<string> { "v.text", "v.value" };
+
 				if (skip != null && take != null)
 				{
 					if (skip < 0)
@@ -2825,6 +2827,8 @@ namespace d360.web.Controllers.V2
 				}
 				if (hasColor)
 				{
+					FieldLookupValueList.Add("v.LookupObjectType");
+
 					colorjoin = $@"
 										outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
 													from Asset A 
@@ -2854,16 +2858,18 @@ namespace d360.web.Controllers.V2
 					}
 					else
 					{
+						string flvlist = string.Join(", ", FieldLookupValueList);
+
 						query = $@"
 								drop table if exists #tempResults
-								select V.*
+								select {(string.IsNullOrWhiteSpace(flvlist) ? "v.*" : flvlist)}
 								into #tempResults
 								from FieldLookupValue V
 								{parentFieldJoins}
 								{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
 								where @fieldTypeId = v.FieldTypeID
 								{whereQuery}
-								order by text asc
+								order by cast(text as nvarchar(200)) asc
 								{pagingQuery};
 
 								select {selectStatement} from #tempResults V {colorjoin};";
