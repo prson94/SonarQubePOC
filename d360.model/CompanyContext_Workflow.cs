@@ -1979,7 +1979,7 @@ namespace d360.model
 				return true;
 			}
 
-			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID, State = StepState.Complete };
+			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
 
 			WorkflowItemSteps.Add(firstItemStep);
 			SaveChanges();
@@ -2768,7 +2768,7 @@ namespace d360.model
 				}
 				else
 				{
-					itemStep.State = StepState.NoValidTransitions;
+					itemStep.State = StepState.NoValidTransitions;  
 
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
