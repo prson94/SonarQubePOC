@@ -32,12 +32,14 @@ import { Group } from '../../../models/group.model';
 import { StringConstants } from '../../../static/string-constants';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { mergeMap } from "rxjs/operators";
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../../services/feature-flags.enum';
 
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
 	styleUrls: ['./asset-detail.component.less'],
-    providers: [ObjectDetailService, AssetService, ProcessService],
+	providers: [ObjectDetailService, AssetService, ProcessService],
     host: {
         "(document:click)": "clickedOutside($event)",
     },
@@ -106,6 +108,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
     isAdmin: boolean = false;
 
+	newSecurityEnabledFeatureFlag: boolean = true;
+
     constructor(
         private router: Router,
         private objectDetailService: ObjectDetailService,
@@ -116,9 +120,11 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 		protected settingsService: CompanySettingsService,
         private groupService: GroupService,
         private linkClickInterceptor: LinkClickInterceptor,
-        private authService: AuthenticationService,
+		private authService: AuthenticationService,
+		private featureFlagService: LaunchDarklyService,
         private cdRef: ChangeDetectorRef) {
-        this.authService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+		this.authService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+		this.newSecurityEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

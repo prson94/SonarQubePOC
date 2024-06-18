@@ -13,7 +13,7 @@ namespace d360.core.security
 		public Guid Uid { get; set; }
 		public string Name { get; set; }
 		public int RoleId { get; set; }
-		public char SecurityType { get; set; } // G, U
+		public RuleSecurityType SecurityType { get; set; } // 1 = G, 2 = U
 		public int AssetTypeId { get; set; }
 		public bool ApplyToType { get; set; }
 		public bool IsVisible { get; set; }
@@ -24,10 +24,22 @@ namespace d360.core.security
 		public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
 	}
 
+	public interface ISecurityPolicy
+	{
+		string Name { get; set; }
+		Guid AssetTypeUid { get; set; }
+		Guid RoleUid { get; set; }
+		RuleSecurityType SecurityType { get; set; }
+		bool ApplyToType { get; set; }
+		bool IsVisible { get; set; }
+		List<SecurityPolicyWhen> When { get; set; }
+		List<SecurityPolicyThen> Then { get; set; }
+	}
+
 	/// <summary>
 	/// The public facing model to create a rule.
 	/// </summary>
-	public class CreateRule
+	public class CreateSecurityPolicy: ISecurityPolicy
 	{
 		[JsonProperty("name")]
 		public string Name { get; set; }
@@ -47,18 +59,17 @@ namespace d360.core.security
 		[JsonProperty("visible")]
 		public bool IsVisible { get; set; }
 
-		[JsonProperty("when")]
-		public List<CreateRuleWhen> When { get; set; }
+		[JsonProperty("whenConditions")]
+		public List<SecurityPolicyWhen> When { get; set; }
 
-		[JsonProperty("then")]
-		public List<CreateRuleThen> Then { get; set; }
+		[JsonProperty("thenConditions")]
+		public List<SecurityPolicyThen> Then { get; set; }
 	}
-
 
 	/// <summary>
 	/// The public facing model to read a rule.
 	/// </summary>
-	public class CreateRuleOverride
+	public class CreateSecurityPolicyOverride
 	{
 		[JsonProperty("assetUid")]
 		public Guid AssetUid { get; set; }
@@ -76,40 +87,22 @@ namespace d360.core.security
 	/// <summary>
 	/// The public facing model to read a rule.
 	/// </summary>
-	public class ReadRule
+	public class ReadSecurityPolicy: CreateSecurityPolicy, ISecurityPolicy
 	{
 		[JsonProperty("uid")]
 		public Guid Uid { get; set; }
 
-		[JsonProperty("name")]
-		public string Name { get; set; }
-
-		[JsonProperty("assetTypeUid")]
-		public Guid AssetTypeUid { get; set; }
-
 		[JsonProperty("assetTypeName")]
 		public string AssetTypeName { get; set; }
 
-		[JsonProperty("roleUid")]
-		public Guid RoleUid { get; set; }
-
 		[JsonProperty("roleName")]
 		public string RoleName { get; set; }
-
-		[JsonProperty("securityType")]
-		public RuleSecurityType SecurityType { get; set; }
-
-		[JsonProperty("applyToType")]
-		public bool ApplyToType { get; set; }
-
-		[JsonProperty("visible")]
-		public bool IsVisible { get; set; }
 	}
 
 	/// <summary>
 	/// The public facing model to read a rule override.
 	/// </summary>
-	public class ReadRuleOverride : CreateRuleOverride
+	public class ReadSecurityPolicyOverride : CreateSecurityPolicyOverride
 	{
 		[JsonProperty("uid")]
 		public Guid Uid { get; set; }

@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.security;
@@ -17,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using System.Web.Http.Results;
 
 namespace d360.web.Controllers.V2
@@ -82,7 +84,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> CreatePolicyAsync(CreateRule model)
+		public async Task<IHttpActionResult> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
 			var result = await Security.CreatePolicyAsync(model);
 			return sendRepositoryResponse(result);
@@ -103,7 +105,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> CreatePolicyOverrideAsync(CreateRuleOverride model)
+		public async Task<IHttpActionResult> CreatePolicyOverrideAsync(CreateSecurityPolicyOverride model)
 		{
 			var result = await Security.CreatePolicyOverrideAsync(model);
 			return sendRepositoryResponse(result);
@@ -214,6 +216,27 @@ namespace d360.web.Controllers.V2
 
 
 		/// <summary>
+		/// Retrieves a list of all owners for a given asset.
+		/// </summary>
+		/// <returns>A list of owners.</returns>
+		[
+			HttpGet,
+			Route("{assetUid:Guid}/owners"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of owners.", typeof(IEnumerable<ReadRole>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden"),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> ReadOwnersByAssetAsync(Guid assetUid)
+		{
+			// TODO: Put permission check in here.
+			var result = await Security.ReadVisibleOwnersByAssetAsync(assetUid);
+			return Ok(result.Data);
+		}
+
+
+		/// <summary>
 		/// Retrieves a list of all policies.
 		/// </summary>
 		/// <returns>A list of roles.</returns>
@@ -223,11 +246,78 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of roles.", typeof(IEnumerable<ReadRole>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden")
+			SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden"), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> ReadPoliciesAsync()
 		{
 			var result = await Security.ReadPoliciesAsync();
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all lookups required for the Security Policy Editor.</returns>
+		[ HttpGet, Route("policy-editor/options"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditOptionsAsync()
+		{
+			var result = await Security.ReadPolicyEditOptionsAsync();
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all lookups required for the Security Policy Editor after selecting an asset type. Items like fields and intersect types.</returns>
+		[HttpGet, Route("policy-editor/options/asset-type/{assetTypeUid:Guid}"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditAssetTypeOptionsAsync(Guid assetTypeUid)
+		{
+			var result = await Security.ReadPolicyEditAssetTypeOptionsAsync(assetTypeUid);
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all groups for the Security Policy Editor after selecting an asset type.</returns>
+		[HttpGet, Route("policy-editor/options/group"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditGroupOptionsAsync()
+		{
+			var result = await Security.ReadPolicyEditGroupOptionsAsync();
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all users for the Security Policy Editor after selecting an asset type.</returns>
+		[HttpGet, Route("policy-editor/options/user"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditUserOptionsAsync()
+		{
+			var result = await Security.ReadPolicyEditUserOptionsAsync();
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all lookup options for the Security Policy Editor after selecting an asset type.</returns>
+		[HttpGet, Route("policy-editor/options/{assetTypeUid:Guid}/{fieldName}/field-lookup"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditFieldLookupOptionsAsync(Guid assetTypeUid, string fieldName)
+		{
+			var result = await Security.ReadPolicyEditFieldLookupOptionsAsync(assetTypeUid, fieldName);
+			return Ok(result.Data);
+		}
+
+		/// <summary>
+		/// BFF-style endpoint that is used internally and hidden from Swagger.
+		/// </summary>
+		/// <returns>An object with all related asset options for the Security Policy Editor after selecting an asset type.</returns>
+		[HttpGet, Route("policy-editor/options/{intersectTypeUid:Guid}/{assetTypeUid:Guid}/relation-lookup"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		public async Task<IHttpActionResult> ReadPolicyEditRelationLookupOptionsAsync(Guid intersectTypeUid, Guid assetTypeUid)
+		{
+			var result = await Security.ReadPolicyEditRelationLookupOptionsAsync(intersectTypeUid, assetTypeUid);
 			return Ok(result.Data);
 		}
 
@@ -290,7 +380,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> UpdatePolicyAsync(Guid uid, ReadRule model)
+		public async Task<IHttpActionResult> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model)
 		{
 			var result = await Security.UpdatePolicyAsync(uid, model);
 			return sendRepositoryResponse(result);
@@ -313,7 +403,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> UpdatePolicyOverrideAsync(Guid uid, CreateRuleOverride model)
+		public async Task<IHttpActionResult> UpdatePolicyOverrideAsync(Guid uid, CreateSecurityPolicyOverride model)
 		{
 			var result = await Security.UpdatePolicyOverrideAsync(uid, model);
 			return sendRepositoryResponse(result);

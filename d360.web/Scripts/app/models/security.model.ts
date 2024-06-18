@@ -1,21 +1,32 @@
 ﻿import { MenuItem } from "primeng/api";
 import { Operator } from "./operator.model";
 
-export enum Permission {
-    ReadAsset = 1,
-    AddAsset = 2,
-    DeleteAsset = 4,
-    EditAsset = 8,
+export enum PolicySecurityType {
+	Group = 1,
+	User = 2
+}
 
-    ReadResponsibilities = 32,
-    AddResponsibilities = 64,
-    DeleteResponsibilities = 128,
-    EditResponsibilities = 256,
+export class AssetOwnerModel {
+	ruleUid: string;
+	roleUid: string;
+	roleName: string;
+	securityType: PolicySecurityType;
+	securityUid: string;
+	securityName: string;
+	isOverride: boolean;
 
-    ReadRelationships = 1024,
-    AddRelationships = 2048,
-    DeleteRelationships = 4096,
-    EditRelationships = 8192,
+	// Used by UI.
+	MenuItems: MenuItem[];
+}
+
+export class PolicyEditOptionsModel {
+	assetTypes: any[];
+	roles: any[];
+}
+
+export class PolicyEditAssetTypeOptionsModel {
+	fields: any[];
+	intersectTypes: any[];
 }
 
 export class CreateRole {
@@ -34,11 +45,6 @@ export class ReadRole {
 	MenuItems: MenuItem[];
 }
 
-export enum SecurityPolicyType {
-	Group = 1,
-	User = 2
-}
-
 export class SecurityPolicyThen {
 	fieldName?: string;
 	operator: Operator;
@@ -47,6 +53,7 @@ export class SecurityPolicyThen {
 }
 
 export class SecurityPolicyWhen {
+	checkType: string;
 	fieldName?: string;
 	intersectTypeUid?: string;
 	operator: Operator;
@@ -58,12 +65,12 @@ abstract class SecurityPolicy {
 	name: string;
 	assetTypeUid: string;
 	roleUid: string;
-	securityType: SecurityPolicyType;
+	securityType: PolicySecurityType;
 	applyToType: boolean;
-	isVisible: boolean;
-
-	then: SecurityPolicyThen[];
-	when: SecurityPolicyWhen[];
+	visible: boolean;
+	 
+	thenConditions: SecurityPolicyThen[];
+	whenConditions: SecurityPolicyWhen[];
 }
 
 export class CreateSecurityPolicy extends SecurityPolicy {
@@ -81,7 +88,7 @@ export class ReadSecurityPolicy extends SecurityPolicy {
 abstract class SecurityPolicyOverride {
 	assetUid: string;
 	roleUid: string;
-	securityType: SecurityPolicyType;
+	securityType: PolicySecurityType;
 	securityUid: string;
 }
 

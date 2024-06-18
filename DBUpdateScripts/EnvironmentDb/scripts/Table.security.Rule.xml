@@ -1,0 +1,45 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.security.Rule-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'Rule')
+BEGIN
+	create table [security].[Rule] (
+		Id bigint identity not null,
+		[Uid] uniqueidentifier not null,
+		[Name] nvarchar(250) not null,
+		RoleId int not null,
+		SecurityType int not null,
+		AssetTypeId int not null,
+		ApplyToType bit not null,
+		IsVisible bit not null,
+		IsOverride bit not null,
+		CreatedBy int not null,
+		CreatedOn datetime not null,
+		UpdatedBy int not null,
+		UpdatedOn datetime not null,
+		constraint [PK_Security_Rule] primary key clustered ( Id )
+	) 
+END
+
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Security_Rule_Uid_Include')
+BEGIN
+	create nonclustered index [IX_Security_Rule_Uid_Include] on [security].[Rule] ( [Uid] ) include (RoleId, AssetTypeId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Security_Rule_AssetTypeId_Include')
+BEGIN
+	create nonclustered index [IX_Security_Rule_AssetTypeId_Include] on [security].[Rule] ( [Uid] ) include (RoleId)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

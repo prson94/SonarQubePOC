@@ -86,5 +86,12 @@
 	</p-table>
 </div>
 
-<role-delete [item]="selected" [isModalVisible]="showDelete" (onCancel)="showDelete=false" (onDelete)="deleteItem($event)"></role-delete>
-<role-editor [item]="selected" [isModalVisible]="showEditor" (onCancel)="closeEditor()" (onSave)="onSave($event)"></role-editor>
+<policy-delete [item]="selected" 
+			   [isModalVisible]="showDelete" 
+			   (onCancel)="showDelete=false" 
+			   (onDelete)="deleteItem($event)"></policy-delete>
+<policy-editor [item]="selected" 
+			   [options]="options" 
+			   [isModalVisible]="showEditor" 
+			   (onCancel)="closeEditor()" 
+			   (onSave)="onSave($event)"></policy-editor>

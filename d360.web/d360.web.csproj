@@ -1782,14 +1782,21 @@
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-delete.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-editor.html" />
     <Content Include="Scripts\app\components\admin\security\roles\role-delete.html" />
     <Content Include="Scripts\app\components\admin\security\roles\role-detail.html" />
     <Content Include="Scripts\app\components\admin\security\roles\role-editor.html" />
     <Content Include="Scripts\app\components\admin\security\policies\policy-list.html" />
     <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role.form.html" />
     <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
     <Content Include="Scripts\app\components\admin\security\roles.html" />
+    <Content Include="Scripts\app\components\shared\security\owner-list.html" />
+    <Content Include="Scripts\app\components\shared\security\modals\owner-form.html" />
+    <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
+    <Content Include="Scripts\app\components\shared\security\components\owner-detail.html" />
+    <Content Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.html" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\**\*.js" />
@@ -1990,6 +1997,8 @@
     <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
     <Content Include="Views\Slo\OidcLogout.cshtml" />
     <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
+    <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1997,6 +2006,9 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-delete.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-detail.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-editor.ts" />
@@ -2005,6 +2017,12 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\owner-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owner-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -2144,7 +2162,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.table.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\policies.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />

@@ -4,7 +4,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { CreateRole, CreateSecurityPolicy, CreateSecurityPolicyOverride, ReadRole, ReadSecurityPolicy, ReadSecurityPolicyOverride } from '../models/security.model';
+import { AssetOwnerModel, CreateRole, CreateSecurityPolicy, CreateSecurityPolicyOverride, PolicyEditAssetTypeOptionsModel, PolicyEditOptionsModel, ReadRole, ReadSecurityPolicy, ReadSecurityPolicyOverride } from '../models/security.model';
 
 @Injectable({
     providedIn: 'root'
@@ -70,6 +70,63 @@ export class SecurityService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
     }
+
+	public getOwnersByAsset(assetUid: string): Observable<AssetOwnerModel[]> {
+		//ReadOwnersByAssetAsync
+		return this.http.get(`${this.baseUri}/${assetUid}/owners`)
+			.pipe(
+				map((response) => <AssetOwnerModel[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditOptions(): Observable<PolicyEditOptionsModel> {
+		return this.http.get(`${this.baseUri}/policy-editor/options`)
+			.pipe(
+				map((response) => <PolicyEditOptionsModel>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditAssetTypeOptions(assetTypeUid: string): Observable<PolicyEditAssetTypeOptionsModel> {
+		return this.http.get(`${this.baseUri}/policy-editor/options/asset-type/${assetTypeUid}`)
+			.pipe(
+				map((response) => <PolicyEditAssetTypeOptionsModel>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditFieldLookupOptions(assetTypeUid: string, fieldName: string): Observable<any[]> {
+		return this.http.get(`${this.baseUri}/policy-editor/options/${assetTypeUid}/${fieldName}/field-lookup`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditGroupOptions(): Observable<any[]> {
+		return this.http.get(`${this.baseUri}/policy-editor/options/group`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditRelationLookupOptions(intersectTypeUid: string, startingAssetTypeUid: string): Observable<any[]> {
+		return this.http.get(`${this.baseUri}/policy-editor/options/${intersectTypeUid}/${startingAssetTypeUid}/relation-lookup`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getPolicyEditUserOptions(): Observable<any[]> {
+		return this.http.get(`${this.baseUri}/policy-editor/options/user`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getPolicies(): Observable<ReadSecurityPolicy[]> {
 		return this.http.get(`${this.baseUri}/policies`)

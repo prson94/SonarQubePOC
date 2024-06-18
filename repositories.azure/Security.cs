@@ -1,13 +1,16 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
 using d360.core.security;
 using Dapper;
 using DocumentFormat.OpenXml.EMMA;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Rule = d360.core.security.Rule;
+using ReadSecurityPolicy = d360.core.security.ReadSecurityPolicy;
 using RuleThen = d360.core.security.RuleThen;
 using RuleWhen = d360.core.security.RuleWhen;
 
@@ -15,45 +18,20 @@ namespace repositories.azure
 {
 	public class Security : Repository, ISecurity
 	{
-		public Security(DapperConnectionProvider provider) : base(provider) { }
-		
-		public async Task<RepositoryResponse<Rule>> CreatePolicyAsync(CreateRule model)
-		{
-			RepositoryResponse<Rule> response = null;
+		List<string> VALID_FIELDS = new List<string> { "Boolean", "Date", "DateTime", "Number", "Decimal", "Lookup", "Text" };
 
-			if (model == null)
+		public Security(DapperConnectionProvider provider) : base(provider) { }
+
+		public async Task<RepositoryResponse<ReadSecurityPolicy>> CreatePolicyAsync(CreateSecurityPolicy model)
+		{
+			RepositoryResponse<ReadSecurityPolicy> response = null;
+
+			response = validatePolicy(model);
+			if (response != null)
 			{
-				return new RepositoryResponse<Rule>(400, "No valid data to create rule.");
+				return response;
 			}
 			model.Name = (model.Name ?? "").Trim();
-			if (string.IsNullOrEmpty(model.Name))
-			{
-				return new RepositoryResponse<Rule>(400, "Name must be populated.");
-			}
-			if (model.Name.Length < 3 || model.Name.Length > 250)
-			{
-				return new RepositoryResponse<Rule>(400, "Name must longer than three characters and less than 250 characters.");
-			}
-			if (!model.ApplyToType && (model.When == null || (model.When != null && model.When.Count == 0)))
-			{
-				return new RepositoryResponse<Rule>(400, "If rule does not apply to entire type, then you must apply asset filtering.");
-			}
-			if (model.Then == null || (model.Then != null && model.Then.Count == 0))
-			{
-				return new RepositoryResponse<Rule>(400, "You must apply user/group assignments.");
-			}
-			if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && w.IntersectTypeUid.HasValue))
-			{
-				return new RepositoryResponse<Rule>(400, "Each asset filter may only have a FieldName or an IntersectTypeUid populated, but not both.");
-			}
-			if (model.When != null && model.When.Any(w => w.IntersectTypeUid.HasValue && !w.AssetUid.HasValue))
-			{
-				return new RepositoryResponse<Rule>(400, "Each asset filter that has a populated IntersectTypeUid must also have a populated AssetUid.");
-			}
-			if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && (!w.AssetUid.HasValue && string.IsNullOrEmpty(w.Value))))
-			{
-				return new RepositoryResponse<Rule>(400, "Each asset filter that has a populated FieldName must also have either a populated AssetUid or a Value.");
-			}
 
 			var IntersectTypeUids = model.When.Where(w => w.IntersectTypeUid.HasValue).Select(w => w.IntersectTypeUid.Value).ToList();
 			var AssetUids = model.When.Where(w => w.AssetUid.HasValue).Select(w => w.AssetUid.Value).ToList();
@@ -75,180 +53,36 @@ namespace repositories.azure
 				);
 				var assetTypeId = await qryData.ReadFirstAsync<int>();
 				var roleId = await qryData.ReadFirstAsync<int>();
-				var assetTypeFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
-				var intersectTypes = await qryData.ReadAsync<d360.core.entities.IntersectType>();
-				var groupFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
-				var userFields = await qryData.ReadAsync<d360.core.entities.FieldType>();
-				var whenAssets = await qryData.ReadAsync<d360.core.entities.Asset>();
+				var assetTypeFields = await qryData.ReadAsync<FieldType>();
+				var intersectTypes = await qryData.ReadAsync<IntersectType>();
+				var groupFields = await qryData.ReadAsync<FieldType>();
+				var userFields = await qryData.ReadAsync<FieldType>();
+				var whenAssets = await qryData.ReadAsync<Asset>();
 				var groups = await qryData.ReadAsync<d360.core.entities.Group>();
-				var users = await qryData.ReadAsync<d360.core.entities.GlobalReportingResource>();
+				var users = await qryData.ReadAsync<GlobalReportingResource>();
 
-				var securityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
+				var securityType = model.SecurityType;
 
 				if (assetTypeId == 0)
 				{
-					response = new RepositoryResponse<Rule>(404, "Could not find asset type based on AssetTypeUid provided.");
+					response = new(404, "Could not find asset type based on AssetTypeUid provided.");
 				}
 
 				if (response == null && roleId == 0)
 				{
-					response = new RepositoryResponse<Rule>(404, "Could not find role based on RoleUid provided.");
+					response = new(404, "Could not find role based on RoleUid provided.");
 				}
 				
-				var validFields = new List<string> { "Boolean", "Date", "DateTime", "Number", "Decimal", "Lookup", "Text" };
-
 				var rawWhens = new List<RuleWhen>();
 				if (response == null && model.When.Count > 0)
 				{
-					int position = 0;
-					model.When.ForEach(w =>
-					{
-						position++;
-						if (response == null) // Once we have an error, just stop.
-						{ 
-							var rawWhen = new RuleWhen { Operator = w.Operator, Position = position };
-
-							if (string.IsNullOrEmpty(w.FieldName)) 
-							{
-								// Check intersect type.
-								rawWhen.CheckType = 'R';
-
-								var intersectType = intersectTypes.SingleOrDefault(i => i.uid == w.IntersectTypeUid);
-								if (intersectType != null)
-								{
-									rawWhen.IntersectTypeId = intersectType.ID;
-
-									var targetAssetTypeId = intersectType.SubjectAssetTypeID == assetTypeId ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
-									var whenAsset = whenAssets.SingleOrDefault(a => a.AssetTypeID == targetAssetTypeId && a.uid == w.AssetUid);
-									if (whenAsset != null)
-									{
-										rawWhen.AssetId = whenAsset.ID;
-									}
-									else
-									{
-										response = new RepositoryResponse<Rule>(404, "Could not find target asset in filter conditions based on AssetUid provided.");
-									}
-								}
-								else
-								{
-									response = new RepositoryResponse<Rule>(404, "Could not find intersect type based on IntersectTypeUid provided.");
-								}
-							}
-							else
-							{
-								// Check field.
-								rawWhen.CheckType = 'F';
-
-								var field = assetTypeFields.SingleOrDefault(f => f.Name == w.FieldName);
-								if (field != null)
-								{
-									if (validFields.Contains(field.Type))
-									{
-										rawWhen.FieldTypeId = field.ID;
-										// should we check to see if asset is from valid lookup?
-										if (w.AssetUid.HasValue && field.Type == "Lookup")
-										{
-											var whenAsset = whenAssets.SingleOrDefault(a => a.uid == w.AssetUid);
-											if (whenAsset != null)
-											{
-												rawWhen.AssetId = whenAsset.ID;
-											}
-											else
-											{
-												response = new RepositoryResponse<Rule>(404, "Could not find target asset in filter conditions based on AssetUid provided.");
-											}
-										}
-										else 
-										{
-											rawWhen.Value = w.Value;
-										}
-									}
-									else
-									{
-										response = new RepositoryResponse<Rule>(409, "Selected field not supported in asset filters based on its type.");
-									}
-								}
-								else
-								{
-									response = new RepositoryResponse<Rule>(404, "Could not find field based on FieldName provided.");
-								}
-							}						
-						}
-					});
+					(rawWhens, response) = validatePolicyWhenConditions(model.When, assetTypeId, intersectTypes, assetTypeFields, whenAssets);
 				}
 
 				var rawThens = new List<RuleThen>();
 				if (response == null && model.Then.Count > 0)
-				{	
-					int position = 0;
-					model.Then.ForEach(t =>
-					{
-						position++;
-						if (response == null) // Once we have an error, just stop.
-						{
-							var rawThen = new RuleThen { Operator = t.Operator, Position = position };
-
-							if (t.SecurityUid.HasValue)
-							{
-								// Direct security object assignment.
-
-								if (securityType == 'G')
-								{
-									// Check groups
-									var group = groups.SingleOrDefault(g => g.Uid == t.SecurityUid);
-									if (group != null)
-									{
-										rawThen.SecurityId = group.ID;
-									}
-									else
-									{
-										response = new RepositoryResponse<Rule>(404, "Could not find group based on SecurityUid provided.");
-									}
-								}
-								else
-								{
-									// Check users
-									var user = users.SingleOrDefault(u => u.Uid == t.SecurityUid);
-									if (user != null)
-									{
-										rawThen.SecurityId = user.ResourceID;
-									}
-									else
-									{
-										response = new RepositoryResponse<Rule>(404, "Could not find user based on SecurityUid provided.");
-									}
-								}
-							}
-							else
-							{
-								// Filter security object assign (non-direct)
-								FieldType field = null;
-								if (securityType == 'G')
-								{
-									field = groupFields.SingleOrDefault(f => f.Name == t.FieldName);
-								}
-								else
-								{
-									field = userFields.SingleOrDefault(f => f.Name == t.FieldName);
-								}
-								if (field != null)
-								{
-									if (validFields.Contains(field.Type))
-									{
-										rawThen.FieldTypeId = field.ID;
-									}
-									else
-									{
-										response = new RepositoryResponse<Rule>(409, "Selected field not supported in security object filters based on its type.");
-									}
-								}
-								else
-								{
-									response = new RepositoryResponse<Rule>(404, "Could not find field based on FieldName provided.");
-								}
-							}
-						}
-					});
+				{
+					(rawThens, response) = validatePolicyThenConditions(model.Then, securityType, groups, groupFields, users, userFields);
 				}
 
 				if (response == null)
@@ -256,41 +90,43 @@ namespace repositories.azure
 					await connection.OpenAsync();
 					using (var trans = connection.BeginTransaction())
 					{
-						long ruleId = await connection.QuerySingleAsync<long>(
+						long ruleId = connection.QuerySingle<long>(
 							"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
 							"values (@Uid, @Name, @roleId, @securityType, @assetTypeId, @ApplyToType, @IsVisible, @IsOverride, @u, @dt, @u, @dt); " +
 							"select SCOPE_IDENTITY();", 
-							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType = (int)((securityType == 'G') ? RuleSecurityType.Group : RuleSecurityType.User), assetTypeId, model.ApplyToType, model.IsVisible, IsOverride = false, u = CurrentUserId, dt = DateTime.UtcNow }, 
+							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType = (int)securityType, assetTypeId, model.ApplyToType, model.IsVisible, IsOverride = false, u = CurrentUserId, dt = DateTime.UtcNow }, 
 							trans);
 
-						rawWhens.ForEach(async w => {
-							await connection.ExecuteAsync(
-								"insert into [security].RuleWhen ([Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
-								"values (@Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)", 
-								w, 
+						rawWhens.ForEach(w => {
+							w.Id = ruleId;
+							connection.Execute(
+								"insert into [security].RuleWhen (Id, [Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
+								"values (@Id, @Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)", 
+								new { w.Id, w.Position, w.CheckType, w.FieldTypeId, w.IntersectTypeId, Operator = (int)w.Operator, w.Value, w.AssetId }, 
 								trans);
 						});
 
-						rawThens.ForEach(async t => {
-							await connection.ExecuteAsync(
-								"insert into [security].RuleThen ([Position], FieldTypeId, [Operator], [Value], SecurityId) " +
-								"values (@Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
-								t,
+						rawThens.ForEach(t => {
+							t.Id = ruleId;
+							connection.Execute(
+								"insert into [security].RuleThen (ID, [Position], FieldTypeId, [Operator], [Value], SecurityId) " +
+								"values (@Id, @Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
+								new { t.Id, t.Position, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
 								trans);
 						});
 
 						trans.Commit();
 					}
-					response = new RepositoryResponse<Rule>(new Rule(), 201, true, "Policy created successfully.");
+					response = new(new ReadSecurityPolicy(), 201, true, "Policy created successfully.");
 				}
 			}
 
 			return response;
 		}
 
-		public async Task<RepositoryResponse<ReadRuleOverride>> CreatePolicyOverrideAsync(CreateRuleOverride model)
+		public async Task<RepositoryResponse<ReadSecurityPolicyOverride>> CreatePolicyOverrideAsync(CreateSecurityPolicyOverride model)
 		{
-			RepositoryResponse<ReadRuleOverride> response = null;
+			RepositoryResponse<ReadSecurityPolicyOverride> response = null;
 
 			if (model == null)
 			{
@@ -304,13 +140,13 @@ namespace repositories.azure
 					CreatedBy = CurrentUserId, CreatedOn = DateTime.UtcNow, Name = "", UpdatedBy = CurrentUserId, UpdatedOn = DateTime.UtcNow, 
 					Uid = Guid.NewGuid() 
 				};
-				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
-				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
+				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = Operator.Equals, Position = 1 };
+				RuleThen rawRuleThen = new() { Operator = Operator.Equals, Position = 1 };
 
 				// Data for validation.
-				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
-				var securityQuery = rawRule.SecurityType == 'G' ?
-					"select Id from [Group] where Uid = @SecurityUid;" :
+				rawRule.SecurityType = model.SecurityType;
+				var securityQuery = rawRule.SecurityType == RuleSecurityType.Group ?
+					"select g.Id from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID where a.Uid = @SecurityUid;" :
 					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
 				var qryData = await connection.QueryMultipleAsync(
 					"select AssetTypeId from Asset where Uid = @AssetUid; " +
@@ -319,10 +155,10 @@ namespace repositories.azure
 					securityQuery,
 					new { model.RoleUid, model.AssetUid, model.SecurityUid }
 				);
-				rawRule.AssetTypeId = await qryData.ReadFirstAsync<int>();
-				rawRule.RoleId = await qryData.ReadFirstAsync<int>();
-				rawRuleWhen.AssetId = await qryData.ReadFirstAsync<long>();
-				rawRuleThen.SecurityId = await qryData.ReadFirstAsync<int>();
+				rawRule.AssetTypeId = await qryData.ReadFirstOrDefaultAsync<int>();
+				rawRule.RoleId = await qryData.ReadFirstOrDefaultAsync<int>();
+				rawRuleWhen.AssetId = await qryData.ReadFirstOrDefaultAsync<long>();
+				rawRuleThen.SecurityId = await qryData.ReadFirstOrDefaultAsync<int>();
 
 				if (rawRule.AssetTypeId == 0)
 				{
@@ -341,7 +177,7 @@ namespace repositories.azure
 
 				if (response == null && rawRuleThen.SecurityId == 0)
 				{
-					if (rawRule.SecurityType == 'G')
+					if (rawRule.SecurityType == RuleSecurityType.Group)
 					{
 						response = new(404, "Could not find group based on SecurityUid provided.");
 					}
@@ -353,27 +189,33 @@ namespace repositories.azure
 
 				if (response == null)
 				{
+					await connection.OpenAsync();
 					using (var trans = connection.BeginTransaction())
 					{
-						long ruleId = await connection.QuerySingleAsync(
+						long ruleId = connection.QuerySingle<long>(
 						"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
 						"values (@Uid, @Name, @RoleId, @SecurityType, @AssetTypeId, @ApplyToType, @IsVisible, @IsOverride, @CreatedBy, @CreatedOn, @UpdatedBy, @UpdatedOn); " +
 						"select SCOPE_IDENTITY();",
-						rawRule, trans);
+						rawRule, 
+						trans);
 
-						await connection.ExecuteAsync(
-							"insert into [security].RuleWhen ([Position], CheckType, [Operator], AssetId) values (@Position, @CheckType, @Operator, @AssetId)",  
-							rawRuleWhen, trans);
+						rawRuleWhen.Id = ruleId;
+						connection.Execute(
+							"insert into [security].RuleWhen (Id, [Position], CheckType, [Operator], AssetId) values (@Id, @Position, @CheckType, @Operator, @AssetId)",
+							new { rawRuleWhen.Id, rawRuleWhen.Position, rawRuleWhen.CheckType, Operator = (int)rawRuleWhen.Operator, rawRuleWhen.AssetId }, 
+							trans);
 
-						await connection.ExecuteAsync(
-							"insert into [security].RuleThen ([Position], [Operator], SecurityId) values (@Position, @Operator, @SecurityId)", 
-							rawRuleThen, trans);
+						rawRuleThen.Id = ruleId;
+						connection.Execute(
+							"insert into [security].RuleThen (Id, [Position], [Operator], SecurityId) values (@Id, @Position, @Operator, @SecurityId)",
+							new { rawRuleThen.Id, rawRuleThen.Position, Operator = (int)rawRuleThen.Operator, rawRuleThen.SecurityId }, 
+							trans);
 
 						trans.Commit();
 					}
 					
-					response = new RepositoryResponse<ReadRuleOverride>(
-						new ReadRuleOverride { 
+					response = new RepositoryResponse<ReadSecurityPolicyOverride>(
+						new ReadSecurityPolicyOverride { 
 							AssetUid = model.AssetUid, 
 							RoleUid = model.RoleUid, 
 							SecurityType = model.SecurityType, 
@@ -430,27 +272,326 @@ select * from [security].[Role] where Id = @roleId;",
 
 			return response;
 		}
-		
-		public async Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadPoliciesAsync()
+
+		public async Task<RepositoryResponse<IEnumerable<PermissionInfo>>> ReadPermissionsByAssetAsync(Guid assetUid)
 		{
-			RepositoryResponse<IEnumerable<ReadRule>> response = new(200);
+			RepositoryResponse<IEnumerable<PermissionInfo>> response = new(200);
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				response.Data = await connection.QueryAsync<ReadRule>(@"
-select	ru.Uid,
-		ru.Name, 
-		t.Uid as AssetTypeUid,  
-		t.Name as AssetTypeName,
-		ro.Uid as RoleUid,
-		ro.Name as RoleName,
-		iif(ru.SecurityType = 'G', 1, 2) as SecurityType,
-		ru.ApplyToType,
-		ru.IsVisible
+				var sql = @"
+declare @assetTypeId int, @assetId bigint, @DefaultPermissions int, @Permissions int
+select @assetTypeId = AssetTypeID, @assetId = ID from Asset where Uid = @assetUid
+select @DefaultPermissions = [DefaultPermissions] from AssetType where ID = @assetTypeId;
+
+select	@Permissions = max([Permissions])
+from	(
+		select	o.[Permissions]
+		from	[security].Owners o
+				inner join [Group] g on g.Id = o.SecurityId and o.SecurityType = 1
+				inner join ResourceGroup rg on rg.GroupId = g.Id and rg.ResourceID = @CurrentUserId and AssetId = @assetId
+		union
+		select	[Permissions]
+		from	[security].Owners o
+		where	SecurityType = 2 and SecurityId = @CurrentUserId and AssetId = @assetId
+		union
+		select	o.[Permissions]
+		from	[security].TypeLevelOwners o
+				inner join [Group] g on g.Id = o.SecurityId and o.SecurityType = 1
+				inner join ResourceGroup rg on rg.GroupId = g.Id and rg.ResourceID = @CurrentUserId and AssetTypeId = @assetTypeId
+		union
+		select	[Permissions]
+		from	[security].TypeLevelOwners o
+		where	SecurityType = 2 and SecurityId = @CurrentUserId and AssetTypeId = @assetTypeId
+		) p;
+
+if @Permissions is null
+begin
+	set @permissions = @DefaultPermissions
+end
+
+select @Permissions";
+				var permission = await connection.QueryFirstAsync<int>(sql, new { assetUid, CurrentUserId });
+
+				var list = Permission.AddRelationships.GetList();
+				list.ForEach(p => {
+					p.Selected = ((permission & p.Value) == p.Value);
+				});
+
+				response.Data = list;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<PermissionInfo>>> ReadPermissionsByAssetTypeAsync(Guid assetTypeUid)
+		{
+			RepositoryResponse<IEnumerable<PermissionInfo>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+declare @assetTypeId int, @DefaultPermissions int, @Permissions int;
+select @assetTypeId = ID, @DefaultPermissions = [DefaultPermissions] from AssetType where Uid = @assetTypeUid;
+
+select	@Permissions = max([Permissions])
+from	(
+		select	o.[Permissions]
+		from	[security].TypeLevelOwners o
+				inner join [Group] g on g.Id = o.SecurityId and o.SecurityType = 1
+				inner join ResourceGroup rg on rg.GroupId = g.Id and rg.ResourceID = @CurrentUserId and AssetTypeId = @assetTypeId
+		union
+		select	[Permissions]
+		from	[security].TypeLevelOwners o
+		where	SecurityType = 2 and SecurityId = @CurrentUserId and AssetTypeId = @assetTypeId
+		) p;
+
+if @Permissions is null
+begin
+	set @permissions = @DefaultPermissions
+end
+
+select @Permissions";
+				var permission = await connection.QueryFirstAsync<int>(sql, new { assetTypeUid, CurrentUserId });
+
+				var list = Permission.AddRelationships.GetList();
+				list.ForEach(p => {
+					p.Selected = ((permission & p.Value) == p.Value);
+				});
+
+				response.Data = list;
+			}
+
+			return response;
+		}
+
+
+		public async Task<RepositoryResponse<IEnumerable<AssetOwnerModel>>> ReadVisibleOwnersByAssetAsync(Guid assetUid) 
+		{
+			RepositoryResponse<IEnumerable<AssetOwnerModel>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+declare @assetTypeId int, @assetId bigint
+select @assetTypeId = AssetTypeID, @assetId = ID from Asset where Uid = @assetUid
+
+select	o.RuleUid,
+		o.RoleUid,
+		o.RoleName,
+		o.SecurityType,
+		coalesce(u.Uid, u.Uid) as SecurityUid,
+		coalesce(g.Name, u.FirstName + ' ' + u.LastName) as SecurityName,
+		o.IsVisible,
+		o.IsOverride
+from	[security].Owners o
+		left join [Group] g on g.Id = o.SecurityId and o.SecurityType = 1
+		left join reporting.Global_Resource u on u.ResourceId = o.SecurityId and o.SecurityType = 2
+where	AssetId = @assetId and o.IsVisible = 1
+union
+select	o.RuleUid,
+		o.RoleUid,
+		o.RoleName,
+		o.SecurityType,
+		coalesce(u.Uid, u.Uid) as SecurityUid,
+		coalesce(g.Name, u.FirstName + ' ' + u.LastName) as SecurityName,
+		o.IsVisible,
+		o.IsOverride
+from	[security].TypeLevelOwners o
+		left join [Group] g on g.Id = o.SecurityId and o.SecurityType = 1
+		left join reporting.Global_Resource u on u.ResourceId = o.SecurityId and o.SecurityType = 2
+where	AssetTypeId = @assetTypeId and o.IsVisible = 1";
+				response.Data = await connection.QueryAsync<AssetOwnerModel>(sql, new { assetUid });
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<ReadSecurityPolicy>>> ReadPoliciesAsync()
+		{
+			RepositoryResponse<IEnumerable<ReadSecurityPolicy>> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+select	ru.uid,
+		ru.name, 
+		t.Uid as assetTypeUid,  
+		t.Name as assetTypeName,
+		ro.Uid as roleUid,
+		ro.Name as roleName,
+		ru.securityType,
+		ru.applyToType,
+		ru.IsVisible as visible,
+		rw.Whens as whenConditions,
+		rt.Thens as thenConditions
 from	security.[Rule] ru 
 		inner join [security].[Role] ro on ro.Id = ru.RoleId and ru.IsOverride = 0
-		inner join AssetType t on t.Id = ru.AssetTypeId 
-order by	ru.Name");
+		inner join AssetType t on t.Id = ru.AssetTypeId
+		cross apply (
+			select	(
+					select		w.checkType,
+								ft.Name as FieldName,
+								it.Uid as IntersectTypeUid,
+								w.[Operator],
+								w.[Value],
+								a.Uid as AssetUid
+					from		[security].RuleWhen w
+								left join FieldType ft on ft.ID = w.FieldTypeId
+								left join IntersectType it on it.ID = w.IntersectTypeId
+								left join Asset a on a.Id = w.AssetId
+					where		w.Id = ru.Id
+					order by	w.Position
+					for json path
+					) as Whens
+		) rw
+		cross apply (
+			select	(
+					select		ft.Name as FieldName,
+								t.[Operator],
+								t.[Value],
+								coalesce(ga.Uid, r.Uid) as SecurityUid
+					from		[security].RuleThen t
+								left join FieldType ft on ft.ID = t.FieldTypeId
+								left join [Group] g on g.Id = t.SecurityId and ru.SecurityType = 1
+								left join Asset ga on ga.Object = 'Group' and ga.ObjectId = g.Id and ru.SecurityType = 1
+								left join reporting.Global_Resource r on r.ResourceId = t.SecurityId and ru.SecurityType = 2
+					where		t.Id = ru.Id
+					order by	t.Position
+					for json path
+					) as Thens
+		) rt
+order by	ru.Name
+for json path;";
+
+				var jsons = await connection.QueryAsync<string>(sql);
+				var jsonPayload = string.Concat(jsons);
+
+				var policies = JsonConvert.DeserializeObject<IEnumerable<ReadSecurityPolicy>>(jsonPayload);
+
+				response.Data = policies;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditOptionsAsync()
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryMultipleAsync(
+					"select uid as [value], Name as [label] from security.[Role]; " +
+					"select uid as [value], case t.[Class] when 1 then 'Business' when 2 then 'Model' when 6 then 'Policy' when 7 then 'Rule' else 'Technical' end + ': ' + p.[Path] as [label] from AssetType t cross apply dbo.GetAssetTypeTextPathById(t.Id, ' / ') p where [Class] in @classes; ",
+					new { 
+						classes = new List<int> { 
+							(int)AssetTypeClass.BusinessAsset, 
+							(int)AssetTypeClass.Model, 
+							(int)AssetTypeClass.Policy, 
+							(int)AssetTypeClass.Rule,
+							(int)AssetTypeClass.TechnicalAsset
+						}
+					}
+				);
+				var roles = await query.ReadAsync<dynamic>();
+				var assetTypes = await query.ReadAsync<dynamic>();
+				response.Data = new { roles, assetTypes };
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditAssetTypeOptionsAsync(Guid assetTypeUid)
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryMultipleAsync(
+					"declare @id int; select @id = Id from AssetType where Uid = @assetTypeUid; " +
+					"select Name as [value], FriendlyName as [label], [type] from FieldType where AssetTypeID = @id and [Type] in ('Boolean', 'Number', 'Decimal', 'Text', 'Lookup'); " +
+					"select uid as [value], ObjectName + ' (' + PredicateName + ')' as [label] from IntersectTypeDetail where SubjectAssetTypeID = @id union " +
+					"select uid as [value], SubjectName + ' (' + PredicateInverse + ')' as [label] from IntersectTypeDetail where ObjectAssetTypeID = @id; ",
+					new { assetTypeUid }
+				);
+				var fields = await query.ReadAsync<dynamic>();
+				var intersectTypes = await query.ReadAsync<dynamic>();
+				response.Data = new { fields, intersectTypes };
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditFieldLookupOptionsAsync(Guid assetTypeUid, string fieldName)
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryAsync<dynamic>(
+					@"
+select	ta.Uid as [value],
+		tap.DisplayPath as [label]
+from	AssetType a
+		inner join FieldType f on f.AssetTypeID = a.ID
+		inner join AssetType tat on tat.Object = f.LookupObjectType + 'Type' and tat.ObjectID = f.LookupObjectID
+		inner join Asset ta on ta.AssetTypeID = tat.ID
+		inner join AssetPath tap on tap.ID = ta.ID
+where	a.Uid = @assetTypeUid and f.Name = @fieldName
+order by tap.DisplayPath",
+					new { assetTypeUid, fieldName }
+				);
+				response.Data = query;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditRelationLookupOptionsAsync(Guid intersectTypeUid, Guid startingAssetTypeUid)
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryAsync<dynamic>(
+					@"
+declare @id int, @sId int, @oId int;
+select @id = Id from AssetType where Uid = @startingAssetTypeUid;
+select @sId = SubjectAssetTypeID, @oId = ObjectAssetTypeID from IntersectType where Uid = @intersectTypeUid;
+select @id = iif(@id = @sId, @oId, @sId)
+select	a.Uid as [value], p.DisplayPath as [label]
+from	Asset a inner join AssetPath p on p.ID = a.ID and a.AssetTypeID = @id
+order by p.DisplayPath",
+					new { intersectTypeUid, startingAssetTypeUid }
+				);
+				response.Data = query;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditGroupOptionsAsync()
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryAsync<dynamic>("select a.uid as [value], g.Name as [label] from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID order by g.Name");
+				response.Data = query;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<dynamic>> ReadPolicyEditUserOptionsAsync()
+		{
+			RepositoryResponse<dynamic> response = new(200);
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var query = await connection.QueryAsync<dynamic>("select uid as [value], FirstName + ' ' + LastName + ' (' + Email + ')' as [label] from reporting.Global_Resource where State = 1 order by LastName, FirstName, Email");
+				response.Data = query;
 			}
 
 			return response;
@@ -506,8 +647,7 @@ order by	ru.Name");
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var ruleId = await connection.QueryFirstAsync<int>(
-					"declare @id int; " +
-					"select @id = Id from [security].[Rule] where IsOverride = 1 and Uid = @uid;", new { uid }
+					"select Id from [security].[Rule] where IsOverride = 1 and Uid = @uid;", new { uid }
 					);
 
 				if (ruleId == 0)
@@ -518,9 +658,9 @@ order by	ru.Name");
 				response = new(true, 200, true, "Role assignment removed successfully.");
 
 				await connection.ExecuteAsync(
-					"delete o from [security].RuleWhen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
-					"delete o from [security].RuleThen o inner join [security].[Rule] r on on r.Id = o.Id and r.Id = @ruleId; " +
-					"delete [security].[Rule] where RoleId = @ruleId; ",
+					"delete o from [security].RuleWhen o inner join [security].[Rule] r on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on r.Id = o.Id and r.Id = @ruleId; " +
+					"delete [security].[Rule] where Id = @ruleId; ",
 					new { ruleId }
 				);
 			}
@@ -557,38 +697,50 @@ order by	ru.Name");
 			return response;
 		}
 
-		public async Task<RepositoryResponse<ReadRule>> UpdatePolicyAsync(Guid uid, ReadRule model)
+		public async Task<RepositoryResponse<ReadSecurityPolicy>> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model)
 		{
-			RepositoryResponse<ReadRule> response;
+			RepositoryResponse<ReadSecurityPolicy> response;
 
+			response = validatePolicy(model);
+			if (response != null)
+			{
+				return response;
+			}
 			model.Name = (model.Name ?? "").Trim();
-			if (model.Name.Length < 250)
-			{
-				return new(400, "Name property must be less than 250 characters.");
-			}
-			if (string.IsNullOrEmpty(model.Name))
-			{
-				return new(400, "Name must be populated.");
-			}
-			if (model.Name.Length < 3)
-			{
-				return new(400, "Name must longer than three characters.");
-			}
 
+			var IntersectTypeUids = model.When.Where(w => w.IntersectTypeUid.HasValue).Select(w => w.IntersectTypeUid.Value).ToList();
+			var AssetUids = model.When.Where(w => w.AssetUid.HasValue).Select(w => w.AssetUid.Value).ToList();
+			var SecurityUids = model.Then.Where(w => w.SecurityUid.HasValue).Select(w => w.SecurityUid.Value).ToList();
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var query = await connection.QueryMultipleAsync(
 					"declare @id int, @roleId int, @assetTypeId int; " +
+					"select @assetTypeId = Id from AssetType where Uid = @AssetTypeUid; " +
 					"select @id = Id from [security].[Rule] where Uid = @uid; " +
 					"select @roleId = Id from [security].[Role] where Uid = @RoleUid; " +
-					"select @assetTypeId = Id from AssetType where Uid = @AssetTypeUid; " +
-					"select @id; select @roleId; select @assetTypeId; " +
-					"select count(1) from [security].[Rule] where Id <> @id and RoleId = @roleId and Name = @Name; ", new { uid, model.RoleUid, model.AssetTypeUid, model.Name }
+					"select @assetTypeId; select @id; select @roleId; " +
+					"select count(1) from [security].[Rule] where Id <> @id and RoleId = @roleId and Name = @Name; " +
+					"select f.* from FieldType f inner join AssetType a on a.ID = f.AssetTypeID and a.Uid = @AssetTypeUid; " +
+					"select i.* from IntersectType i inner join AssetType a on (a.ID = i.SubjectAssetTypeID or a.ID = i.ObjectAssetTypeID) and a.Uid = @AssetTypeUid and I.Uid in @IntersectTypeUids; " +
+					"select * from FieldType where Object in ('GroupType'); " +
+					"select * from FieldType where Object in ('ResourceType'); " +
+					"select * from Asset where Uid in @AssetUids; " +
+					"select * from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID and a.Uid in @SecurityUids; " +
+					"select * from reporting.Global_Resource where Uid in @SecurityUids;", new { uid, model.RoleUid, model.AssetTypeUid, model.Name, IntersectTypeUids, AssetUids, SecurityUids }
 					);
+				int assetTypeId = await query.ReadSingleAsync<int>();
 				int ruleId = await query.ReadSingleAsync<int>();
 				int roleId = await query.ReadSingleAsync<int>();
-				int assetTypeId = await query.ReadSingleAsync<int>();
 				int matchingAlternateRuleCount = await query.ReadSingleAsync<int>();
+				var assetTypeFields = await query.ReadAsync<FieldType>();
+				var intersectTypes = await query.ReadAsync<IntersectType>();
+				var groupFields = await query.ReadAsync<FieldType>();
+				var userFields = await query.ReadAsync<FieldType>();
+				var whenAssets = await query.ReadAsync<Asset>();
+				var groups = await query.ReadAsync<d360.core.entities.Group>();
+				var users = await query.ReadAsync<GlobalReportingResource>();
+
+				var securityType = model.SecurityType;
 
 				if (ruleId == 0)
 				{
@@ -610,23 +762,65 @@ order by	ru.Name");
 					return new(409, "Another rule found with this name and role.");
 				}
 
-				response = new(new(), 200, true, "Policy updated successfully.");
+				var rawWhens = new List<RuleWhen>();
+				if (response == null && model.When.Count > 0)
+				{
+					(rawWhens, response) = validatePolicyWhenConditions(model.When, assetTypeId, intersectTypes, assetTypeFields, whenAssets);
+				}
 
-				var dt = DateTime.UtcNow;
-				await connection.ExecuteAsync(
-					"update [security].[Rule] set Name = @Name, RoleId = @roleId, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
-					new { roleId, model.Name, ruleId, assetTypeId, u = CurrentUserId, dt }
-				);
+				var rawThens = new List<RuleThen>();
+				if (response == null && model.Then.Count > 0)
+				{
+					(rawThens, response) = validatePolicyThenConditions(model.Then, securityType, groups, groupFields, users, userFields);
+				}
 
-				response.Data = model;
+				if (response == null)
+				{
+					response = new(new(), 200, true, "Policy updated successfully.");
+					var dt = DateTime.UtcNow;
+
+					await connection.OpenAsync();
+					using (var trans = connection.BeginTransaction())
+					{ 
+						connection.Execute(
+							"update [security].[Rule] set Name = @Name, RoleId = @roleId, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
+							new { roleId, model.Name, ruleId, assetTypeId, u = CurrentUserId, dt }, 
+							transaction: trans
+						);
+
+						connection.Execute("delete [security].RuleWhen where Id = @ruleId; ", new { ruleId }, transaction: trans);
+						rawWhens.ForEach(w => {
+							w.Id = ruleId;
+							connection.Execute(
+								"insert into [security].RuleWhen (Id, [Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
+								"values (@Id, @Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)",
+								new { w.Id, w.Position, w.CheckType, w.FieldTypeId, w.IntersectTypeId, Operator = (int)w.Operator, w.Value, w.AssetId },
+								transaction: trans);
+						});
+
+						connection.Execute("delete [security].RuleThen where Id = @ruleId; ", new { ruleId }, transaction: trans);
+						rawThens.ForEach(t => {
+							t.Id = ruleId;
+							connection.Execute(
+								"insert into [security].RuleThen (Id, [Position], FieldTypeId, [Operator], [Value], SecurityId) " +
+								"values (@Id, @Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
+								new { t.Id, t.Position, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
+								transaction: trans);
+						});
+
+						trans.Commit();
+					}
+
+					response.Data = model;				
+				}
 			}
 
 			return response;
 		}
 
-		public async Task<RepositoryResponse<ReadRuleOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateRuleOverride model)
+		public async Task<RepositoryResponse<ReadSecurityPolicyOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateSecurityPolicyOverride model)
 		{
-			RepositoryResponse<ReadRuleOverride> response = null;
+			RepositoryResponse<ReadSecurityPolicyOverride> response = null;
 
 			if (uid == Guid.Empty)
 			{
@@ -652,13 +846,13 @@ order by	ru.Name");
 					UpdatedOn = DateTime.UtcNow,
 					Uid = Guid.NewGuid()
 				};
-				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = "Eq", Position = 1 };
-				RuleThen rawRuleThen = new() { Operator = "Eq", Position = 1 };
+				RuleWhen rawRuleWhen = new() { CheckType = 'S', Operator = Operator.Equals, Position = 1 };
+				RuleThen rawRuleThen = new() { Operator = Operator.Equals, Position = 1 };
 
 				// Data for validation.
-				rawRule.SecurityType = (model.SecurityType == RuleSecurityType.Group ? 'G' : 'U');
-				var securityQuery = rawRule.SecurityType == 'G' ?
-					"select Id from [Group] where Uid = @SecurityUid;" :
+				rawRule.SecurityType = model.SecurityType;
+				var securityQuery = rawRule.SecurityType == RuleSecurityType.Group ?
+					"select g.Id from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID and a.Uid = @SecurityUid;" :
 					"select ResourceId from reporting.Global_Resource where Uid = @SecurityUid;";
 				var qryData = await connection.QueryMultipleAsync(
 					"select Id from [security].[Rule] where IsOverride = 1 and Uid = @uid; " +
@@ -697,7 +891,7 @@ order by	ru.Name");
 
 				if (response == null && rawRuleThen.SecurityId == 0)
 				{
-					if (rawRule.SecurityType == 'G')
+					if (rawRule.SecurityType == RuleSecurityType.Group)
 					{
 						response = new(404, "Could not find group based on SecurityUid provided.");
 					}
@@ -709,31 +903,35 @@ order by	ru.Name");
 
 				if (response == null)
 				{
+					await connection.OpenAsync();
 					using (var trans = connection.BeginTransaction())
 					{
-						await connection.QuerySingleAsync(
-						"update [security].[Rule] " +
-						"set RoleId = @RoleId, SecurityType = @SecurityType, AssetTypeId = @AssetTypeId, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn " +
-						"where Id = @Id; ",
-						rawRule, trans);
+						connection.Execute(
+							"update [security].[Rule] " +
+							"set RoleId = @RoleId, SecurityType = @SecurityType, AssetTypeId = @AssetTypeId, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn " +
+							"where Id = @Id; ",
+							rawRule, 
+							trans);
 
 						rawRuleWhen.Id = rawRule.Id;
-						await connection.ExecuteAsync(
+						connection.Execute(
 							"delete [security].RuleWhen where Id = @Id; " +
 							"insert into [security].RuleWhen (Id, [Position], CheckType, [Operator], AssetId) values (@Id, @Position, @CheckType, @Operator, @AssetId)",
-							rawRuleWhen, trans);
+							new { rawRuleWhen.Id, rawRuleWhen.Position, rawRuleWhen.CheckType, Operator = (int)rawRuleWhen.Operator, rawRuleWhen.AssetId }, 
+							trans);
 
 						rawRuleThen.Id = rawRule.Id;
-						await connection.ExecuteAsync(
+						connection.Execute(
 							"delete [security].RuleThen where Id = @Id; " +
 							"insert into [security].RuleThen (Id, [Position], [Operator], SecurityId) values (@Id, @Position, @Operator, @SecurityId)",
-							rawRuleThen, trans);
+							new { rawRuleThen.Id, rawRuleThen.Position, Operator = (int)rawRuleThen.Operator, rawRuleThen.SecurityId }, 
+							trans);
 
 						trans.Commit();
 					}
 
-					response = new RepositoryResponse<ReadRuleOverride>(
-						new ReadRuleOverride
+					response = new RepositoryResponse<ReadSecurityPolicyOverride>(
+						new ReadSecurityPolicyOverride
 						{
 							AssetUid = model.AssetUid,
 							RoleUid = model.RoleUid,
@@ -801,6 +999,264 @@ order by	ru.Name");
 			return response;
 		}
 
+
+		RepositoryResponse<ReadSecurityPolicy> validatePolicy(ISecurityPolicy model)
+		{
+			RepositoryResponse<ReadSecurityPolicy> result = null;
+
+			if (model == null)
+			{
+				result = new(400, "No valid data to create security policy.");
+			}
+
+			if (result != null)
+			{
+				model.Name = (model.Name ?? "").Trim();
+				if (string.IsNullOrEmpty(model.Name))
+				{
+					result = new(400, "Name must be populated.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (model.Name.Length < 3 || model.Name.Length > 250)
+				{
+					result = new(400, "Name must longer than three characters and less than 250 characters.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (!model.ApplyToType && (model.When == null || (model.When != null && model.When.Count == 0)))
+				{
+					result = new(400, "If rule does not apply to entire type, then you must apply asset filtering.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (model.Then == null || (model.Then != null && model.Then.Count == 0))
+				{
+					result = new(400, "You must apply user/group assignments.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && w.IntersectTypeUid.HasValue))
+				{
+					result = new(400, "Each asset filter may only have a FieldName or an IntersectTypeUid populated, but not both.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (model.When != null && model.When.Any(w => w.IntersectTypeUid.HasValue && !w.AssetUid.HasValue))
+				{
+					result = new(400, "Each asset filter that has a populated IntersectTypeUid must also have a populated AssetUid.");
+				}
+			}
+
+			if (result != null)
+			{
+				if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && (!w.AssetUid.HasValue && string.IsNullOrEmpty(w.Value))))
+				{
+					result = new(400, "Each asset filter that has a populated FieldName must also have either a populated AssetUid or a Value.");
+				}
+			}
+
+			return result;
+		}
+
+		(List<RuleThen>, RepositoryResponse<ReadSecurityPolicy>) validatePolicyThenConditions(List<SecurityPolicyThen> conditions,
+			RuleSecurityType securityType,
+			IEnumerable<d360.core.entities.Group> groups,
+			IEnumerable<FieldType> groupFields,
+			IEnumerable<GlobalReportingResource> users,
+			IEnumerable<FieldType> userFields)
+		{
+			RepositoryResponse<ReadSecurityPolicy> response = null;
+			var rawThens = new List<RuleThen>();
+
+			if (conditions.Count > 0)
+			{
+				int position = 0;
+				conditions.ForEach((Action<SecurityPolicyThen>)(t =>
+				{
+					position++;
+					if (response == null) // Once we have an error, just stop.
+					{
+						var rawThen = new RuleThen { Operator = t.Operator, Position = position };
+
+						if (t.SecurityUid.HasValue)
+						{
+							// Direct security object assignment.
+
+							if (securityType == RuleSecurityType.Group)
+							{
+								// Check groups
+								var group = groups.SingleOrDefault(g => g.Uid == t.SecurityUid);
+								if (group != null)
+								{
+									rawThen.SecurityId = group.ID;
+								}
+								else
+								{
+									response = new(404, "Could not find group based on SecurityUid provided.");
+								}
+							}
+							else
+							{
+								// Check users
+								var user = users.SingleOrDefault(u => u.Uid == t.SecurityUid);
+								if (user != null)
+								{
+									rawThen.SecurityId = user.ResourceID;
+								}
+								else
+								{
+									response = new(404, "Could not find user based on SecurityUid provided.");
+								}
+							}
+						}
+						else
+						{
+							// Filter security object assign (non-direct)
+							FieldType field = null;
+							if (securityType == RuleSecurityType.Group)
+							{
+								field = groupFields.SingleOrDefault(f => f.Name == t.FieldName);
+							}
+							else
+							{
+								field = userFields.SingleOrDefault(f => f.Name == t.FieldName);
+							}
+							if (field != null)
+							{
+								if (VALID_FIELDS.Contains(field.Type))
+								{
+									rawThen.FieldTypeId = field.ID;
+								}
+								else
+								{
+									response = new(409, "Selected field not supported in security object filters based on its type.");
+								}
+							}
+							else
+							{
+								response = new(404, "Could not find field based on FieldName provided.");
+							}
+						}
+
+						if (response == null)
+						{
+							rawThens.Add(rawThen);
+						}
+					}
+				}));
+			}
+
+			return (rawThens, response);
+		}
+
+		(List<RuleWhen>, RepositoryResponse<ReadSecurityPolicy>) validatePolicyWhenConditions(List<SecurityPolicyWhen> conditions,
+			int policyAssetTypeId,
+			IEnumerable<IntersectType> intersectTypes,
+			IEnumerable<FieldType> assetTypeFields,
+			IEnumerable<Asset> whenAssets)
+		{
+			RepositoryResponse<ReadSecurityPolicy> response = null;
+			var rawWhens = new List<RuleWhen>();
+
+			if (conditions.Count > 0)
+			{
+				int position = 0;
+				conditions.ForEach(w =>
+				{
+					position++;
+					if (response == null) // Once we have an error, just stop.
+					{
+						var rawWhen = new RuleWhen { CheckType = w.CheckType[0], Operator = w.Operator, Position = position };
+
+						if (string.IsNullOrEmpty(w.FieldName))
+						{
+							// Check intersect type.
+							rawWhen.CheckType = 'R';
+
+							var intersectType = intersectTypes.SingleOrDefault(i => i.uid == w.IntersectTypeUid);
+							if (intersectType != null)
+							{
+								rawWhen.IntersectTypeId = intersectType.ID;
+
+								var targetAssetTypeId = intersectType.SubjectAssetTypeID == policyAssetTypeId ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
+								var whenAsset = whenAssets.SingleOrDefault(a => a.AssetTypeID == targetAssetTypeId && a.uid == w.AssetUid);
+								if (whenAsset != null)
+								{
+									rawWhen.AssetId = whenAsset.ID;
+								}
+								else
+								{
+									response = new(404, "Could not find target asset in filter conditions based on AssetUid provided.");
+								}
+							}
+							else
+							{
+								response = new(404, "Could not find intersect type based on IntersectTypeUid provided.");
+							}
+						}
+						else
+						{
+							// Check field.
+							rawWhen.CheckType = 'F';
+
+							var field = assetTypeFields.SingleOrDefault(f => f.Name == w.FieldName);
+							if (field != null)
+							{
+								if (VALID_FIELDS.Contains(field.Type))
+								{
+									rawWhen.FieldTypeId = field.ID;
+									// should we check to see if asset is from valid lookup?
+									if (w.AssetUid.HasValue && field.Type == "Lookup")
+									{
+										var whenAsset = whenAssets.SingleOrDefault(a => a.uid == w.AssetUid);
+										if (whenAsset != null)
+										{
+											rawWhen.AssetId = whenAsset.ID;
+										}
+										else
+										{
+											response = new(404, "Could not find target asset in filter conditions based on AssetUid provided.");
+										}
+									}
+									else
+									{
+										rawWhen.Value = w.Value;
+									}
+								}
+								else
+								{
+									response = new(409, "Selected field not supported in asset filters based on its type.");
+								}
+							}
+							else
+							{
+								response = new(404, "Could not find field based on FieldName provided.");
+							}
+						}
+
+						// Add to the list of when if no errors found.
+						if (response == null)
+						{
+							rawWhens.Add(rawWhen);
+						}
+					}
+				});
+			}
+
+			return (rawWhens, response);
+		}
+
 		RepositoryResponse<ReadRole> validateRole(CreateRole model)
 		{
 			if (model.Permissions <= 0)
@@ -811,7 +1267,7 @@ order by	ru.Name");
 			{
 				return new(400, "Name property must be less than 250 characters.");
 			}
-			if (model.Description.Length > 4000)
+			if ((model.Description??"").Length > 4000)
 			{
 				return new(400, "Description property must be less than 4000 characters.");
 			}

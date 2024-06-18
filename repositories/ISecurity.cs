@@ -1,4 +1,5 @@
-﻿using d360.core.security;
+﻿using d360.core.enums;
+using d360.core.security;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,13 +10,31 @@ namespace repositories
 	{
 		Platform Platform { get; }
 
-		Task<RepositoryResponse<Rule>> CreatePolicyAsync(CreateRule model);
+		Task<RepositoryResponse<ReadSecurityPolicy>> CreatePolicyAsync(CreateSecurityPolicy model);
 
-		Task<RepositoryResponse<ReadRuleOverride>> CreatePolicyOverrideAsync(CreateRuleOverride model);
+		Task<RepositoryResponse<ReadSecurityPolicyOverride>> CreatePolicyOverrideAsync(CreateSecurityPolicyOverride model);
 
 		Task<RepositoryResponse<ReadRole>> CreateRoleAsync(CreateRole model);
 
-		Task<RepositoryResponse<IEnumerable<ReadRule>>> ReadPoliciesAsync();
+		Task<RepositoryResponse<IEnumerable<PermissionInfo>>> ReadPermissionsByAssetAsync(Guid assetUid);
+
+		Task<RepositoryResponse<IEnumerable<PermissionInfo>>> ReadPermissionsByAssetTypeAsync(Guid assetTypeUid);
+
+		Task<RepositoryResponse<IEnumerable<AssetOwnerModel>>> ReadVisibleOwnersByAssetAsync(Guid assetUid);
+
+		Task<RepositoryResponse<IEnumerable<ReadSecurityPolicy>>> ReadPoliciesAsync();
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditOptionsAsync();
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditAssetTypeOptionsAsync(Guid assetTypeUid);
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditGroupOptionsAsync();
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditUserOptionsAsync();
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditFieldLookupOptionsAsync(Guid assetTypeUid, string fieldName);
+
+		Task<RepositoryResponse<dynamic>> ReadPolicyEditRelationLookupOptionsAsync(Guid intersectTypeUid, Guid startingAssetTypeUid);
 
 		Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRolesAsync();
 
@@ -25,9 +44,9 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid);
 
-		Task<RepositoryResponse<ReadRule>> UpdatePolicyAsync(Guid uid, ReadRule model);
+		Task<RepositoryResponse<ReadSecurityPolicy>> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model);
 
-		Task<RepositoryResponse<ReadRuleOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateRuleOverride model);
+		Task<RepositoryResponse<ReadSecurityPolicyOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateSecurityPolicyOverride model);
 
 		Task<RepositoryResponse<ReadRole>> UpdateRoleAsync(Guid uid, CreateRole model);
 	}

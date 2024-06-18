@@ -12,7 +12,7 @@ import { SidePanelComponent } from "./side-panel.component";
                 
         ButtonModule,
         PopupMenuModule,
-        DirectivesModule,
+		DirectivesModule
     ],
     declarations: [
         SidePanelComponent,        

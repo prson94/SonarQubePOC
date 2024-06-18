@@ -255,17 +255,6 @@ export class BaseComponent {
 
 	}
 
-	loadPermissionsById(
-		permissionsService: PermissionsService,
-		assetID: number
-	) {
-
-		return permissionsService.getPermissionsById(assetID).toPromise().then((result) => {
-			this.permissions = result;
-		});
-
-	}
-
 	hasPermission(permission: number | Permission) {
 		//permissions coming from v2 api
 		//in future this will replace ResponsibilityTypeRelationPermission

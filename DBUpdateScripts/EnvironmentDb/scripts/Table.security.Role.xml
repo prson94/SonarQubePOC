@@ -1,0 +1,31 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.security.Role-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'Role')
+BEGIN
+	create table [security].[Role] (
+		Id int identity not null,
+		Uid uniqueidentifier not null,
+		Name nvarchar(250) not null,
+		Description nvarchar(4000) null,
+		[Permissions] int not null,
+		CreatedBy int not null,
+		CreatedOn datetime not null,
+		UpdatedBy int null,
+		UpdatedOn datetime null,
+		constraint [PK_Security_Role] primary key clustered ( Id ASC ),
+		constraint [UC_Security_Role_Uid] unique nonclustered ( [Uid] ASC )
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

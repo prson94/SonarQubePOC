@@ -80,20 +80,6 @@ export class RoleList extends BaseComponent implements OnChanges {
 					{ title: "Remove", callback: () => { this.showDelete = true; } }
 				];
 				r.MenuItems = menuItems;
-
-/*
-				const menuItems = [];
-				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
-				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
-				// false poisitve fs.open eslint error
-				// eslint-disable-next-line
-				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
-
-				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled, tooltip: this.getEditDisabledTooltip(rel) });
-				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
-				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
-				rel.MenuItems = menuItems;
-*/
 			});
 
 			this.roles = result;
@@ -120,7 +106,6 @@ export class RoleList extends BaseComponent implements OnChanges {
 	}
 
 	deleteItem($event) {
-
 		var response: ApiResult = new ApiResult();
 		response.Success = true;
 		response.Message = "Removed role successfully.";

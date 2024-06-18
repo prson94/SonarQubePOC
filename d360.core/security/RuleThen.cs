@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 
 namespace d360.core.security
 {
@@ -12,7 +12,7 @@ namespace d360.core.security
 		public long Id { get; set; }
 		public int Position { get; set; }
 		public int? FieldTypeId { get; set; }
-		public string Operator { get; set; }
+		public Operator Operator { get; set; }
 		public string? Value { get; set; }
 		public int? SecurityId { get; set; }
 	}
@@ -20,13 +20,13 @@ namespace d360.core.security
 	/// <summary>
 	/// The public facing model to create a rule then conditions.
 	/// </summary>
-	public class CreateRuleThen
+	public class SecurityPolicyThen
 	{
 		[JsonProperty("fieldName")]
 		public string? FieldName { get; set; }
 		
 		[JsonProperty("operator")]
-		public string Operator { get; set; }
+		public Operator Operator { get; set; }
 
 		[JsonProperty("value")]
 		public string? Value { get; set; }
@@ -38,7 +38,7 @@ namespace d360.core.security
 	/// <summary>
 	/// The public facing model to create a rule then override.
 	/// </summary>
-	public class CreateRuleThenOverride
+	public class SecurityPolicyThenOverride
 	{
 		[JsonProperty("securityUid")]
 		public Guid? SecurityUid { get; set; }

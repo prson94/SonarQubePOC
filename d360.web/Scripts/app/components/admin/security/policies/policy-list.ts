@@ -1,6 +1,6 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { Table } from "primeng/table";
-import { ReadSecurityPolicy } from '../../../../models/security.model';
+import { PolicyEditOptionsModel, ReadRole, ReadSecurityPolicy } from '../../../../models/security.model';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { SecurityService } from '../../../../services/security.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
@@ -8,6 +8,7 @@ import { SidePanelService } from '../../../../services/side-panel.service';
 import { AppConstants } from '../../../../static/constants';
 import { BaseComponent } from '../../../shared/base.component';
 import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
+import { ApiResult } from '../../../../models/apiresult.model';
 
 @Component({
 	selector: 'policy-list',
@@ -27,6 +28,8 @@ export class PolicyList extends BaseComponent implements OnChanges {
 
 	selected: ReadSecurityPolicy;
 	@Output() selectedChange = new EventEmitter();
+
+	options: PolicyEditOptionsModel;
 
 	first: number = 0;
 
@@ -59,6 +62,16 @@ export class PolicyList extends BaseComponent implements OnChanges {
 
 	ngOnInit() {
 		this.getData();
+		this.loadEditOptions();
+	}
+
+	loadEditOptions() {
+		// Pre-populate common lists. 
+		this.securityService.getPolicyEditOptions().subscribe((o) => {
+			//o.assetTypes = o.assetTypes.sort((a, b) => (a.label < b.label ? -1 : 1));
+			//o.roles = o.roles.sort((a, b) => (a.label < b.label ? -1 : 1));
+			this.options = o;
+		});
 	}
 
 	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -75,24 +88,10 @@ export class PolicyList extends BaseComponent implements OnChanges {
 			this.items = [];
 			result.forEach((r) => {
 				const menuItems = [
-					{ title: "Edit", callback: () => { } },
-					{ title: "Remove", callback: () => { } }
+					{ title: "Edit", callback: () => { this.edit(r); } },
+					{ title: "Remove", callback: () => { this.showDelete = true; } }
 				];
 				r.MenuItems = menuItems;
-
-/*
-				const menuItems = [];
-				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
-				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
-				// false poisitve fs.open eslint error
-				// eslint-disable-next-line
-				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
-
-				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled, tooltip: this.getEditDisabledTooltip(rel) });
-				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
-				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
-				rel.MenuItems = menuItems;
-*/
 			});
 
 			this.items = result;
@@ -119,20 +118,36 @@ export class PolicyList extends BaseComponent implements OnChanges {
 	}
 
 	deleteItem($event) {
-		this.showMessageForApiResult(this.messagesService, $event);
+		var response: ApiResult = new ApiResult();
+		response.Success = true;
+		response.Message = "Removed policy successfully.";
+		this.showMessageForApiResult(this.messagesService, response);
 		this.showDelete = false;
 
-		if ($event.Success === true) {
-			this.selected = this.items.length > 0 ? this.items[0] : null;
-			this.getData();
+		const deletedIndex = this.items.findIndex(i => i.uid == this.selected.uid)
+		if (deletedIndex >= 0) {
+			this.items.splice(deletedIndex, 1);
 		}
+		this.selected = this.items.length > 0 ? this.items[0] : null;
+		this.getData();
 	}
 
 	onSave(result) {
-		result = result[0];
-		this.showMessageForApiResult(this.messagesService, result);
+		if (result) {
+			var response: ApiResult = new ApiResult();
+			response.Success = true;
 
-		if (result.Success === true) {
+			if (result.uid) {
+				var updateIx = this.items.findIndex(i => { return i.uid === result.uid; });
+				if (updateIx >= 0) {
+					response.Message = "Updated policy successfully.";
+				}
+				else {
+					response.Message = "Created policy successfully.";
+				}
+			}
+			this.showMessageForApiResult(this.messagesService, response);
+
 			this.getData();
 			this.showEditor = false;
 			this.sidePanelService.refreshSidePanel();
