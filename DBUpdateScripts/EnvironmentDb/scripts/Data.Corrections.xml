@@ -1211,4 +1211,49 @@ end
 		]]>
     </sql>
   </changeSet>
+  <changeSet author="PuneetGupta" id="Data.Corrections.GOV-32843">
+	<comment>Remove relationshiptype whose predicate type is IntraTypeHierarchy on Business and techinical AssetType, If not reference found</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			drop table if exists #tempdata;
+
+			select I.ID
+			into #tempdata
+			from intersecttype I
+			inner join [Predicate] P on P.ID = I.PredicateID 
+			and (P.[TYPE] = 4  and (I.SubjectClass not in (2,6) or I.ObjectClass not in (2,6)));
+			
+			if exists (select 1 from  #tempdata)
+			begin
+				delete t
+				from #tempdata t
+				inner join [Intersect] I on I.intersecttypeid = T.ID;
+
+				delete t
+				from #tempdata t
+				inner join FieldType FT on FT.intersecttypeid = T.ID;
+
+				delete t
+				from #tempdata t
+				inner join FieldType FT on FT.LookupObjectID = T.ID and FT.Type='Relationship'
+
+				delete t
+				from #tempdata t
+				inner join FieldType FT on FT.LookupObjectID = T.ID and FT.Type='RefListRelationship'
+
+				delete t
+				from #tempdata t
+				inner join FieldType FT on FT.LookupObjectID = T.ID and FT.Type='FieldFromRelationship'
+
+				delete it
+				from IntersectType IT
+				inner join #tempdata t on IT.ID = T.ID;
+			end
+		]]>
+    </sql>
+  </changeSet>
+  
 </databaseChangeLog>
