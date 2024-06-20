@@ -479,25 +479,6 @@ namespace d360.web.Controllers
 					},
 					JsonRequestBehavior.AllowGet);
 				}
-
-				if (objectType == "QuestionType")
-				{
-					var question = Company.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
-
-					return Json(
-					new
-					{
-						ShowTooltip = true,
-						AssetID = -1,
-						UID = uid,
-						DisplayName = question?.Name,
-						TypeName = "Question Type",
-						Url = "",
-						Description = question?.Description
-
-					},
-					JsonRequestBehavior.AllowGet);
-				}
 			}
 
 
@@ -747,17 +728,6 @@ namespace d360.web.Controllers
 						dispName = null;
 						typeName = null;
 
-					}
-					else if (objectType == "QuestionType")
-					{
-						var sql = @"select Name, Description, Uid 
-									from questiontype
-									where ID = @id";
-						var qType = Company.Query<dynamic>(sql, new { id = objectID }).FirstOrDefault();
-						typeName = "QuestionType";
-						uid = qType.Uid.ToString();
-						desc = qType.Description ?? "";
-						dispName = qType.Name.ToString();
 					}
 					else if (objectType == "Tag")
 					{

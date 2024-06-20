@@ -71,7 +71,6 @@ export class SiteUrlHelpers {
 
     static SITE_URL_ADMIN_BRANDING = 'branding';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
-    static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_TAGS = 'tags';
     static SITE_URL_ADMIN_SCORING = 'scoring';
     static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
