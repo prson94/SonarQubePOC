@@ -32,7 +32,6 @@ export class HeaderActionsComponent {
 	public notTopArtifact: boolean = true;
 
 	public hasRaiseIssueButton: boolean = false;
-	public showShoppingCart: boolean = false;
 
 	private routerSub;
 	private subObjectChange: any;
@@ -192,8 +191,6 @@ export class HeaderActionsComponent {
 				}
 			);
 		});
-
-		this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
 		this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
 			if (typeof x.showFollow !== "undefined") {

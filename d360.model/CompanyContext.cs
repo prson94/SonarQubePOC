@@ -172,12 +172,6 @@ namespace d360.model
 
 		public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
 
-		public DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }
-
-		public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-
-		public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
-
 		public DbSet<Shortcut> Shortcuts { get; set; }
 
 		public DbSet<Survey> Surveys { get; set; }

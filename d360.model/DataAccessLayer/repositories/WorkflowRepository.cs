@@ -125,8 +125,6 @@ namespace d360.model.DataAccessLayer
 						'Action'
 					when e.[Object] = 'IntersectType' then
 						'Relationship'
-					when e.[Object] = 'ShoppingCartType' then
-						'Shopping Cart'
 					when e.[Object] = 'ReferenceItemType' then
 					'Reference List'
 					else
@@ -952,7 +950,7 @@ namespace d360.model.DataAccessLayer
 				case when item.[Object] = 'Issue' then iss.uid
 				ELSE NULL END as ActionUid ,
 				case when item.[Object] = 'Artifact' or item.[Object] = 'Rule' or item.[Object] = 'Policy'
-				or item.[Object] = 'Taxonomy' or item.[Object] = 'ShoppingCart' or  item.[Object] = 'ReferenceItem' then D.uid
+				or item.[Object] = 'Taxonomy' or item.[Object] = 'ReferenceItem' then D.uid
 				ELSE NULL END as AssetUid,
 				case when item.[Object] = 'Intersect' then inter.uid
 				ELSE NULL END as RelationshipUid,

@@ -30,7 +30,6 @@ const routes: Routes = [
 	{ path: "search", loadChildren: () => import("./components/search/search.module").then((m) => m.SearchModule) },
 	{ path: "workflow", loadChildren: () => import("./components/workflow/workflow.module").then((m) => m.WorkflowModule) },
 	{ path: "dashboard", loadChildren: () => import("./components/sidebar/dashboard/dashboard.module").then((m) => m.DashboardModule) },
-	{ path: "cart", loadChildren: () => import("./components/shoppingcart/shopping-cart.module").then((m) => m.ShoppingCartModule) },
 	{ path: "sidebar/itemfollow", loadChildren: () => import("./components/sidebar/itemfollow/itemfollow.module").then((m) => m.ItemFollowModule) },
 	{ path: "sidebar/itemown", loadChildren: () => import("./components/sidebar/itemown/itemown.module").then((m) => m.ItemOwnModule) },
 	{ path: "users", loadChildren: () => import("./components/resource/resource.module").then((m) => m.ResourceModule) },

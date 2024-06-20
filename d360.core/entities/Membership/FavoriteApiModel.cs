@@ -13,7 +13,6 @@ namespace d360.core.entities.Membership
         DashboardPage,
         CommunityPage,
         WorkflowPage,
-        CartPage,
         Unknown,
         SemanticTypePage
     }

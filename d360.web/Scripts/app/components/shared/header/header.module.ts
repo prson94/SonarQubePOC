@@ -22,7 +22,6 @@ import { HeaderFavoritesComponent } from './header-favorites.component';
 import { HeaderFollowComponent } from './header-follow.component';
 import { HeaderHelpComponent } from './header-help.component';
 import { HeaderComponent } from './header.component';
-import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
 import { HeaderMiniMenuComponent } from './header-mini-menu-component';
@@ -76,7 +75,6 @@ import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.modul
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderComponent,
-        HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
         HeaderMiniMenuComponent,

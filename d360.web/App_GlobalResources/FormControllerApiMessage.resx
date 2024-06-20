@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnErrorOccurMorethan1OpenCart" xml:space="preserve">
-    <value>An error occurred - there are more than 1 open carts for this user</value>
-  </data>
   <data name="ApiEndPointUriRemoved" xml:space="preserve">
     <value>Api endpoint uri successfully removed.</value>
   </data>
@@ -315,12 +312,6 @@
   <data name="Item" xml:space="preserve">
     <value>Item</value>
   </data>
-  <data name="ItemAddedCart" xml:space="preserve">
-    <value>The item has been added to your cart</value>
-  </data>
-  <data name="ItemAlreadyInCart" xml:space="preserve">
-    <value>This item is already in your cart</value>
-  </data>
   <data name="ItemCannotRelateItself" xml:space="preserve">
     <value>The item cannot be related to itself.</value>
   </data>
@@ -375,20 +366,11 @@
   <data name="NoPermissionToDoThis" xml:space="preserve">
     <value>You do not have permission to do this</value>
   </data>
-  <data name="NoPremissionAddItemInCart" xml:space="preserve">
-    <value>You do not have permission to add items to this cart</value>
-  </data>
-  <data name="NoPremissionClearCart" xml:space="preserve">
-    <value>You do not have permission to clear this cart.</value>
-  </data>
   <data name="NoPremissionEditShortCuts" xml:space="preserve">
     <value>You do not have permission to edit shortcuts.</value>
   </data>
   <data name="NoPremissionRemoveItem" xml:space="preserve">
     <value>You do not have permission to remove this item</value>
-  </data>
-  <data name="NoPremissionRequestCart" xml:space="preserve">
-    <value>You do not have permission to request this shopping cart.</value>
   </data>
   <data name="NoSelectedItems" xml:space="preserve">
     <value>No selected items</value>
@@ -401,9 +383,6 @@
   </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Cannot find the specified service to edit</value>
-  </data>
-  <data name="NotFoundShoppingCart" xml:space="preserve">
-    <value>Could not find the shopping cart specified.</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Please specify a valid username and password.</value>
@@ -465,15 +444,6 @@
   <data name="ServiceEndpointCreated" xml:space="preserve">
     <value>Service endpoint successfully created.</value>
   </data>
-  <data name="ShoppingCartCleared" xml:space="preserve">
-    <value>Shopping cart cleared successfully</value>
-  </data>
-  <data name="ShoppingCartNotFound" xml:space="preserve">
-    <value>Shopping cart item could not be found</value>
-  </data>
-  <data name="ShoppingCartRemoved" xml:space="preserve">
-    <value>Shopping cart item removed successfully</value>
-  </data>
   <data name="ShortcutAdded" xml:space="preserve">
     <value>Shortcut added successfully</value>
   </data>
@@ -509,9 +479,6 @@
   </data>
   <data name="SiteNavNotFound" xml:space="preserve">
     <value>The site nav specified was not found</value>
-  </data>
-  <data name="SpecificCartNotFound" xml:space="preserve">
-    <value>The specified cart could not be found</value>
   </data>
   <data name="Synonym" xml:space="preserve">
     <value>Synonym</value>

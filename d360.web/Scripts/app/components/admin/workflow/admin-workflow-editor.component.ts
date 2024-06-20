@@ -51,7 +51,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private isValid = false;
     errorMessage = "";
     warningMessage = "";
-    private hideShoppingCart = true;
 
     WorkflowChangeType = WorkflowChangeType;
     EmailTaskRecipientType = EmailTaskRecipientType;
@@ -78,8 +77,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     ngOnInit() {
-        this.hideShoppingCart = !this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
-
         this.defaultWorkflowObject.label = "";
         this.defaultWorkflowObject.value = "";
 
@@ -172,9 +169,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 .pipe(
                     map((r) => {
                         this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
-                        if (this.hideShoppingCart) {
-                            this.workflowObjectTypes = this.workflowObjectTypes.filter((w) => w.type !== 'ShoppingCartType');
-                        }
 
                         this.model.Event.IssueObject = '';
                         if (this.objectType === 'IssueType') {
@@ -248,12 +242,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map((r) => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
-                map(() => {
-                    if (this.hideShoppingCart) {
-                        this.workflowObjectTypes = this.workflowObjectTypes.filter((w) => w.type !== 'ShoppingCartType');
-                    }
-                })).subscribe();
+				map((r) => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
+		).subscribe();
     }
 
     changeTypeChanged(event) {
