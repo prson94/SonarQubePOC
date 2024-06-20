@@ -278,23 +278,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#endregion
 
-			#region Delete surveys
-
-			Connection.Execute($@"
-				delete q
-				from dbo.Question q
-					left join dbo.Survey survey
-						on q.SurveyID = survey.ID
-					left join api.ExecutionDeletedAsset S
-						on S.AssetID = survey.AssetID
-				where {querySuffix};",
-			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-			addMeasurement(metrics, $"remove from surveys >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-			sw.Restart();
-
-			#endregion
-
 			#region Asset table
 
 			Connection.Execute(

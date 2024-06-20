@@ -282,15 +282,6 @@
   <data name="OperatorStartsWith" xml:space="preserve">
     <value>starts with</value>
   </data>
-  <data name="QuestionDisplayStyle_Check" xml:space="preserve">
-    <value>Check List</value>
-  </data>
-  <data name="QuestionDisplayStyle_Radio" xml:space="preserve">
-    <value>Radio List</value>
-  </data>
-  <data name="QuestionDisplayStyle_Rating" xml:space="preserve">
-    <value>Rating</value>
-  </data>
   <data name="ScoreType_DataQuality" xml:space="preserve">
     <value>Data Quality Score</value>
   </data>

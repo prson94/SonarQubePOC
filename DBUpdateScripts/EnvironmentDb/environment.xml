@@ -107,12 +107,6 @@
 	<include file="scripts/Table.dbo.Shortcut.xml"/>
 	<include file="scripts/Table.dbo.SiteNav.xml"/>
 	<include file="scripts/Table.dbo.SiteNavPermission.xml"/>
-	<include file="scripts/Table.dbo.SurveyType.xml"/>
-	<include file="scripts/Table.dbo.Survey.xml"/>
-	<include file="scripts/Table.dbo.QuestionType.xml"/>
-	<include file="scripts/Table.dbo.QuestionTypeOption.xml"/>
-	<include file="scripts/Table.dbo.Question.xml"/>
-	<include file="scripts/Table.dbo.QuestionOption.xml"/>
 	<include file="scripts/Table.dbo.TagType.xml"/>
 	<include file="scripts/Table.dbo.Tag.xml"/>
 	<include file="scripts/Table.dbo.AssetTag.xml"/>

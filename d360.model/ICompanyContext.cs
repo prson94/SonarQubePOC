@@ -76,12 +76,6 @@ namespace d360.model
         
         DbSet<Predicate> Predicates { get; set; }
         
-        DbSet<Question> Questions { get; set; }
-        
-        DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
-        
-        DbSet<QuestionType> QuestionTypes { get; set; }
-        
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
 		DbSet<ResourceSetting> ResourceSettings { get; set; }
@@ -102,10 +96,6 @@ namespace d360.model
         
         DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
         
-        DbSet<Survey> Surveys { get; set; }
-        
-        DbSet<SurveyType> SurveyTypes { get; set; }
-
 		DbSet<Tag> Tags { get; set; }
 
 		DbSet<TagType> TagTypes { get; set; }

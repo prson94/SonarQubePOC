@@ -556,33 +556,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Check List.
-        /// </summary>
-        public static string QuestionDisplayStyle_Check {
-            get {
-                return ResourceManager.GetString("QuestionDisplayStyle_Check", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Radio List.
-        /// </summary>
-        public static string QuestionDisplayStyle_Radio {
-            get {
-                return ResourceManager.GetString("QuestionDisplayStyle_Radio", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Rating.
-        /// </summary>
-        public static string QuestionDisplayStyle_Rating {
-            get {
-                return ResourceManager.GetString("QuestionDisplayStyle_Rating", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Data Quality Score.
         /// </summary>
         public static string ScoreType_DataQuality {
