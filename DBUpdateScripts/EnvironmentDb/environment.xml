@@ -101,9 +101,6 @@
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
 	<include file="scripts/Table.dbo.Semantic.xml"/>
 	<include file="scripts/Table.dbo.Setting.xml"/>
-	<include file="scripts/Table.dbo.ShoppingCartType.xml"/>
-	<include file="scripts/Table.dbo.ShoppingCart.xml"/>
-	<include file="scripts/Table.dbo.ShoppingCartItem.xml"/>
 	<include file="scripts/Table.dbo.Shortcut.xml"/>
 	<include file="scripts/Table.dbo.SiteNav.xml"/>
 	<include file="scripts/Table.dbo.SiteNavPermission.xml"/>
