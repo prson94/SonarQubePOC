@@ -288,20 +288,6 @@ namespace d360.model
 									) S
 				where	T.Uid = @assetTypeUid";
 
-		public static readonly string ShoppingCartItemList = @"
-				select 
-					i.Object, 
-					i.ObjectID, 
-					d.[DisplayValue] as [Name],
-					coalesce(d.TypeName, case when i.[Object] = 'ReferenceItemType' then 'Reference List' else null end) as ObjectTypeName,
-					u.Url  
-				from
-					Shoppingcartitem i
-				left join assetdetail d on d.id = i.[Objectid]                
-				cross apply getasseturlbyid(d.ID) u
-				where 
-					i.ShoppingCartID = @id";
-
 		public static readonly string SiteNavPermissions = @"
 			select p.SiteNavID, p.Object, p.ObjectID, 
 			CASE p.Object WHEN 'Resource' then 'User' ELSE p.Object END
@@ -379,8 +365,6 @@ namespace d360.model
 						'{CommonNames.AssetTypeClass_ReferenceList}'
 					when T.[Class] = 2 then
 						'{CommonNames.AssetTypeClass_ModelType}'
-					when T.[object] = 'ShoppingCartType' then
-						'Shopping Cart'
 					else
 						''
 					end + ' :: ' + coalesce(P.[Path], T.[Name]) as label, 
@@ -394,7 +378,7 @@ namespace d360.model
 							where A.AssetTypeID = T.ID
 					) assetCount
 				where
-					T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ShoppingCartType','ReferenceItemType')
+					T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ReferenceItemType')
 				union all
 				select 'IntersectType|' + cast(id as varchar) as value, id, 'IntersectType' as [type], '{CommonNames.AssetTypeClass_Relationship} :: ' + Name as [label], 1 as [count] 
 				from IntersectTypeDetail
@@ -418,32 +402,22 @@ namespace d360.model
 					,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
 					,e.ChangeType
-					,coalesce(d.Name, ITN.Name, it_t.Name, st.Name) as TypeName,
+					,coalesce(d.Name, ITN.Name, it_t.Name) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
 						'Unpublished'
 					end as Published,
-					case when e.[Object] = 'ArtifactType' and D.[Class] = 1 then
-						'Business Asset'
-					when e.[Object] = 'ArtifactType' and D.[Class] = 8 then
-						'Technical Asset'
-					when e.[Object] = 'RuleType' then
-						'Rule'
-					when e.[Object] = 'PolicyType' then
-						'Policy'
-					when e.[Object] = 'TaxonomyType' then
-						'Model'
-					when e.[Object] = 'IssueType' then
-						'Action'
-					when e.[Object] = 'IntersectType' then
-						'Relationship'
-					when e.[Object] = 'ShoppingCartType' then
-						'Shopping Cart'
-					when e.[Object] = 'ReferenceItemType' then
-					'Reference List'
-					else
-						''
+					case 
+					when e.[Object] = 'ArtifactType' and D.[Class] = 1 then 'Business Asset'
+					when e.[Object] = 'ArtifactType' and D.[Class] = 8 then 'Technical Asset'
+					when e.[Object] = 'RuleType' then 'Rule'
+					when e.[Object] = 'PolicyType' then 'Policy'
+					when e.[Object] = 'TaxonomyType' then 'Model'
+					when e.[Object] = 'IssueType' then 'Action'
+					when e.[Object] = 'IntersectType' then 'Relationship'
+					when e.[Object] = 'ReferenceItemType' then 'Reference List'
+					else ''
 					end as [Type],
 					t.State as State,
 					t.uid as WorkflowTypeUid
@@ -453,7 +427,6 @@ namespace d360.model
 				left join issuetype it_t on e.IssueTypeID = it_t.id 
 				left join IntersectType IT on e.IntersectTypeID = IT.ID
 				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
-				left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy

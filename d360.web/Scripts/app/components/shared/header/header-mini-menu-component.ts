@@ -30,14 +30,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                         <div class="separator"></div>       
                                     </div>
                                 </li>
-                                <li *ngIf="showShoppingCart" routerLink="/cart" class="header-item">
-                                    <div class="mini-menu-line">
-                                        <div class="check-gutter">
-                                        </div>
-                                        <div class="text" i18n>Shopping Cart</div>
-                                        <div class="expand-gutter right"></div>            
-                                    </div>
-                                </li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [homePageItem]="homePageItem"></d3s-header-favorites></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
@@ -57,7 +49,6 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
 	public testuri: string[] = [];
     public hasRaiseIssueButton: boolean = false;
-    public showShoppingCart: boolean = false;
 
     public active: boolean = false;
     private hideHandle: number = 0;
@@ -130,8 +121,6 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
                 }
             );
         });
-
-        this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
         this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
             this.headerActionsService.showFollow = x.showFollow;

@@ -160,16 +160,6 @@ namespace igx.UnitTests
             var fieldsMock = CreateDbSetMock(fields);
             mock.Setup(x => x.Fields).Returns(fieldsMock.Object);
 
-            IList<ShoppingCart> shoppingCarts = new List<ShoppingCart>() {
-                new ShoppingCart(){ ID=1 }
-            };
-
-            var shopCartMock = CreateDbSetMock(shoppingCarts);
-            mock.Setup(x => x.ShoppingCarts).Returns(shopCartMock.Object);
-
-            mock.Setup(x => x.GetById<ShoppingCart>(It.IsAny<int>()))
-                .Returns((int id) => id > 0 ? new ShoppingCart() { ID = id, RequestedOn = new DateTime(2000, 1, 1) } : null);
-
             mock.Setup(x => x.GetFieldLookupValue(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
                 .Returns((string type, int objId, int ftId, string value) => value == "validlookupvalue" ? 1 : 0);			
 

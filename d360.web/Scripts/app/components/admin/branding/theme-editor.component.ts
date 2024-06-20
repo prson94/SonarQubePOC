@@ -223,7 +223,6 @@ export class ThemeEditorComponent implements OnChanges {
         var contrastClass = "contrast-" + this.lightOrDark(color);
 
         return `<div class='headerBackColor-template ${contrastClass}'>
-<i class="fa fa-shopping-cart" style="background-color:${color};"></i>
 <i class="fa fa-star" style="background-color:${color};"></i>
 <i class="fa fa-home selected" style="background-color:${color};"></i>
 <i class="fa fa-question-circle" style="background-color:${color};"></i>

@@ -12,19 +12,17 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult, SearchResultFieldDisplay, SearchSelection } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { DatePipe } from '@angular/common';
 import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 import { CompanySettingsService } from '../../services/settings.service';
-import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
 	selector: 'd3s-search-result-item',
 	templateUrl: './search-result-item.component.html',
 	styleUrls: ["search-result-item.component.less"],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	providers: [ShoppingCartService, DatePipe]
+	providers: [DatePipe]
 })
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
@@ -41,7 +39,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 	@ViewChild('cardmenu', { static: false }) cardmenu: PopupMenu;
 
 	constructor(private router: Router,
-		private shoppingCartService: ShoppingCartService,
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService,
 		private elementRef: ElementRef,
@@ -50,11 +47,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		const showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
-		if (showCart) {
-			this.menuitems.push({ title: $localize`Add to Cart` });
-		}
-
 		this.loadDetails();
 	}
 
@@ -108,8 +100,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 	private add() {
 		var type = this.result.ID.toString().split('|')[0];
 		var id = this.result.ID.toString().split('|')[1];
-		this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
-			.subscribe((r) => this.showMessageForResult(this.messagesService, r));
 	}
 
 	formatPathAsString(): string {
