@@ -146,12 +146,6 @@ namespace d360.core
         
         [Description("Score Type Metric"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
         ScoreTypeMetric = 51,
-
-        [Description("Shopping Cart Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
-        ShoppingCartType = 56,
-        
-        [Description("Shopping Cart"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
-        ShoppingCart = 57,
         
         [Description("Export Template"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
         ExportTemplate = 59,

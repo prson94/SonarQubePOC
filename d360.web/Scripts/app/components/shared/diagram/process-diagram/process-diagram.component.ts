@@ -403,7 +403,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			this.headerActionService.showNotifications = false;
 			this.headerActionService.showRaiseIssue = false;
 			this.headerActionService.showSearch = false;
-			this.headerActionService.showShoppingCart = false;
 		}
 		else {
 			this.headerActionService.showFavorite = this.initialActions.showFavorite;
@@ -412,7 +411,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			this.headerActionService.showNotifications = this.initialActions.showNotifications;
 			this.headerActionService.showRaiseIssue = this.initialActions.showRaiseIssue;
 			this.headerActionService.showSearch = this.initialActions.showSearch;
-			this.headerActionService.showShoppingCart = this.initialActions.showShoppingCart;
 		}
 	}
 
@@ -610,7 +608,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 		this.initialActions.showNotifications = this.headerActionService.showNotifications;
 		this.initialActions.showRaiseIssue = this.headerActionService.showRaiseIssue;
 		this.initialActions.showSearch = this.headerActionService.showSearch;
-		this.initialActions.showShoppingCart = this.headerActionService.showShoppingCart;
 
 		//load current asset diagram
 		this.load();

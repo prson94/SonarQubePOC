@@ -17,7 +17,6 @@ namespace igx.UnitTests.HtmlHelperTests
         public void CheckStringExistance()
         {
             Assert.True(!string.IsNullOrEmpty(QueryConstants.HighLevelTypeCaseStatement));
-            Assert.True(!string.IsNullOrEmpty(QueryConstants.ShoppingCartItemList));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.GroupResourceInfoList));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.InformationCatalogDiagramData));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.LookupAllocations));
@@ -26,7 +25,6 @@ namespace igx.UnitTests.HtmlHelperTests
             Assert.True(!string.IsNullOrEmpty(QueryConstants.ObjectRelationshipTypeIDs));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.PolicySettingsItem));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.RuleSettingsItem));
-            Assert.True(!string.IsNullOrEmpty(QueryConstants.ShoppingCartItemList));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.SiteNavPermissions));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.SynonymOptions));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.SynonymsByObjectList));

@@ -61,15 +61,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred - there are more than 1 open carts for this user.
-        /// </summary>
-        public static string AnErrorOccurMorethan1OpenCart {
-            get {
-                return ResourceManager.GetString("AnErrorOccurMorethan1OpenCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Api endpoint uri successfully removed..
         /// </summary>
         public static string ApiEndPointUriRemoved {
@@ -655,24 +646,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The item has been added to your cart.
-        /// </summary>
-        public static string ItemAddedCart {
-            get {
-                return ResourceManager.GetString("ItemAddedCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This item is already in your cart.
-        /// </summary>
-        public static string ItemAlreadyInCart {
-            get {
-                return ResourceManager.GetString("ItemAlreadyInCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The item cannot be related to itself..
         /// </summary>
         public static string ItemCannotRelateItself {
@@ -835,24 +808,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You do not have permission to add items to this cart.
-        /// </summary>
-        public static string NoPremissionAddItemInCart {
-            get {
-                return ResourceManager.GetString("NoPremissionAddItemInCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You do not have permission to clear this cart..
-        /// </summary>
-        public static string NoPremissionClearCart {
-            get {
-                return ResourceManager.GetString("NoPremissionClearCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You do not have permission to edit shortcuts..
         /// </summary>
         public static string NoPremissionEditShortCuts {
@@ -867,15 +822,6 @@ namespace Resources {
         public static string NoPremissionRemoveItem {
             get {
                 return ResourceManager.GetString("NoPremissionRemoveItem", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You do not have permission to request this shopping cart..
-        /// </summary>
-        public static string NoPremissionRequestCart {
-            get {
-                return ResourceManager.GetString("NoPremissionRequestCart", resourceCulture);
             }
         }
         
@@ -912,15 +858,6 @@ namespace Resources {
         public static string NotFoundServiceEdit {
             get {
                 return ResourceManager.GetString("NotFoundServiceEdit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not find the shopping cart specified..
-        /// </summary>
-        public static string NotFoundShoppingCart {
-            get {
-                return ResourceManager.GetString("NotFoundShoppingCart", resourceCulture);
             }
         }
         
@@ -1105,33 +1042,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shopping cart cleared successfully.
-        /// </summary>
-        public static string ShoppingCartCleared {
-            get {
-                return ResourceManager.GetString("ShoppingCartCleared", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shopping cart item could not be found.
-        /// </summary>
-        public static string ShoppingCartNotFound {
-            get {
-                return ResourceManager.GetString("ShoppingCartNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shopping cart item removed successfully.
-        /// </summary>
-        public static string ShoppingCartRemoved {
-            get {
-                return ResourceManager.GetString("ShoppingCartRemoved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Shortcut added successfully.
         /// </summary>
         public static string ShortcutAdded {
@@ -1236,15 +1146,6 @@ namespace Resources {
         public static string SiteNavNotFound {
             get {
                 return ResourceManager.GetString("SiteNavNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The specified cart could not be found.
-        /// </summary>
-        public static string SpecificCartNotFound {
-            get {
-                return ResourceManager.GetString("SpecificCartNotFound", resourceCulture);
             }
         }
         

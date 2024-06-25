@@ -167,16 +167,6 @@ namespace d360.model.workflow
                     }
                 }
             }
-            else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
-            {
-
-                DateTime? requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
-                
-                if (!item.IsValueMatch(requestedOn.ToString()))
-                {
-                    return false;
-                }
-            }
             else if ((item.ContextualFieldID ?? "").ToLower() == "name")
             {
                 string name = context.GetObjectDetail(@object, objectId).Name;

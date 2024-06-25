@@ -5,7 +5,6 @@
     showSearch: boolean;
     showRaiseIssue: boolean;
     showFollow: boolean;
-    showShoppingCart: boolean;
     showHomePage: boolean;
  
 }

@@ -29,7 +29,6 @@ export class SiteMenuFavoriteItemComponent {
             [FavoritePageType.HomePage, 'home'],
             [FavoritePageType.CommunityPage, 'group'],
             [FavoritePageType.WorkflowPage, 'usb'],
-            [FavoritePageType.CartPage, 'shopping-cart'],
             [FavoritePageType.SemanticTypePage, 'tags']
         ]);
 

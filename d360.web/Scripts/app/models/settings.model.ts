@@ -16,7 +16,6 @@ export class CompanySettings {
     DiagramMaxAvoidNodesLinkCount: number;
     DisableCommunityPosting: boolean;
     DisableIssueManagement: boolean;
-    EnableShoppingCart: boolean;
     FramingDomains: string;
     HideData3SixtyUsers: boolean;
     HideHeaderBarControls: boolean;
@@ -98,7 +97,6 @@ export enum CompanySettingEnum {
     HideData3SixtyUsers = 9,
     DefaultSearchTypes = 13,
     DisableIssueManagement = 17,
-    EnableShoppingCart = 20,
     EnableSagacity = 21,
     DefaultRoute = 22,
     CustomCSSLocation = 24,

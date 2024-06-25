@@ -97,15 +97,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cart.
-        /// </summary>
-        public static string CartPage {
-            get {
-                return ResourceManager.GetString("CartPage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Change Log.
         /// </summary>
         public static string ChangeLogTab {

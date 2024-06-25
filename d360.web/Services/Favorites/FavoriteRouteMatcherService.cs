@@ -478,12 +478,6 @@ namespace d360.web.Services.Favorites
                 PageType = FavoritePageType.WorkflowPage,
                 GetName = FixedName(() => PageNames.WorkflowPage),
             },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "cart",
-                PageType = FavoritePageType.CartPage,
-                GetName = FixedName(() => PageNames.CartPage),
-            },
 
             // search results page
             new FavoriteRouteMatcher

@@ -1419,8 +1419,6 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 				case "resource":
 				case "resource/list":
 					return "Resource";
-				case "cart":
-					return "ShoppingCart";
 				case "group":
 				case "groups":
 					return "Group";

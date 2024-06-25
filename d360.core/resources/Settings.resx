@@ -237,12 +237,6 @@
   <data name="EnableSagacity_Name" xml:space="preserve">
     <value>Enable DQ+ Dashboards</value>
   </data>
-  <data name="EnableShoppingCart_Desc" xml:space="preserve">
-    <value>Enables the use of the shopping cart feature.</value>
-  </data>
-  <data name="EnableShoppingCart_Name" xml:space="preserve">
-    <value>Enable Shopping Cart</value>
-  </data>
   <data name="FramingDomains_Desc" xml:space="preserve">
     <value>Specify a comma separated list of allowed domains</value>
   </data>
