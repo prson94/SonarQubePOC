@@ -24,7 +24,6 @@ export enum FavoritePageType {
     WorkflowPage = 'WorkflowPage',
     HomePage = 'HomePage',
     ResourceListPage = 'ResourceListPage',
-    CartPage = 'CartPage',
     SemanticTypePage = 'SemanticTypePage'
 }
 

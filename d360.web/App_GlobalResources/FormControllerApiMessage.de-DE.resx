@@ -1,5 +1,6 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<root>   <!-- 
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -57,46 +58,47 @@
     value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
-    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -115,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnErrorOccurMorethan1OpenCart" xml:space="preserve">
-    <value>Fehler – mehr als 1 offener Warenkorb für diesen Benutzer</value>
-  </data>
   <data name="ApiEndPointUriRemoved" xml:space="preserve">
     <value>API-Endpunkt-URI entfernt.</value>
   </data>
@@ -313,12 +312,6 @@
   <data name="Item" xml:space="preserve">
     <value>Element</value>
   </data>
-  <data name="ItemAddedCart" xml:space="preserve">
-    <value>Das Element wurde zu Ihrem Warenkorb hinzugefügt.</value>
-  </data>
-  <data name="ItemAlreadyInCart" xml:space="preserve">
-    <value>Das Element befindet sich bereits in Ihrem Warenkorb.</value>
-  </data>
   <data name="ItemCannotRelateItself" xml:space="preserve">
     <value>Das Element kann nicht mit sich selbst verknüpft werden.</value>
   </data>
@@ -373,20 +366,11 @@
   <data name="NoPermissionToDoThis" xml:space="preserve">
     <value>Sie verfügen nicht über die Berechtigung für diese Aktion</value>
   </data>
-  <data name="NoPremissionAddItemInCart" xml:space="preserve">
-    <value>Sie verfügen nicht über die Berechtigung, Elemente zu diesem Warenkorb hinzuzufügen.</value>
-  </data>
-  <data name="NoPremissionClearCart" xml:space="preserve">
-    <value>Sie verfügen nicht über die Berechtigung, diesen Warenkorb zu löschen.</value>
-  </data>
   <data name="NoPremissionEditShortCuts" xml:space="preserve">
     <value>Sie verfügen nicht über die Berechtigung, Tastenkombinationen zu bearbeiten.</value>
   </data>
   <data name="NoPremissionRemoveItem" xml:space="preserve">
     <value>Sie verfügen nicht über die Berechtigung, dieses Element zu entfernen.</value>
-  </data>
-  <data name="NoPremissionRequestCart" xml:space="preserve">
-    <value>Sie verfügen nicht über die Berechtigung, diesen Warenkorb anzufordern.</value>
   </data>
   <data name="NoSelectedItems" xml:space="preserve">
     <value>Keine ausgewählten Elemente</value>
@@ -399,9 +383,6 @@
   </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Angegebener zu bearbeitender Dienst wurde nicht gefunden</value>
-  </data>
-  <data name="NotFoundShoppingCart" xml:space="preserve">
-    <value>Angegebener Warenkorb wurde nicht gefunden</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Geben Sie einen gültigen Benutzernamen und das zugehörige Passwort an.</value>
@@ -463,15 +444,6 @@
   <data name="ServiceEndpointCreated" xml:space="preserve">
     <value>Dienstendpunkt erstellt.</value>
   </data>
-  <data name="ShoppingCartCleared" xml:space="preserve">
-    <value>Warenkorb gelöscht</value>
-  </data>
-  <data name="ShoppingCartNotFound" xml:space="preserve">
-    <value>Warenkorbelement wurde nicht gefunden</value>
-  </data>
-  <data name="ShoppingCartRemoved" xml:space="preserve">
-    <value>Warenkorbelement gelöscht</value>
-  </data>
   <data name="ShortcutAdded" xml:space="preserve">
     <value>Tastenkombination hinzugefügt</value>
   </data>
@@ -507,9 +479,6 @@
   </data>
   <data name="SiteNavNotFound" xml:space="preserve">
     <value>Angegebene Websitenavigation wurde nicht gefunden</value>
-  </data>
-  <data name="SpecificCartNotFound" xml:space="preserve">
-    <value>Angegebener Warenkorb wurde nicht gefunden</value>
   </data>
   <data name="Synonym" xml:space="preserve">
     <value>Synonym</value>

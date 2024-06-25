@@ -421,24 +421,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enables the use of the shopping cart feature..
-        /// </summary>
-        internal static string EnableShoppingCart_Desc {
-            get {
-                return ResourceManager.GetString("EnableShoppingCart_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Shopping Cart.
-        /// </summary>
-        internal static string EnableShoppingCart_Name {
-            get {
-                return ResourceManager.GetString("EnableShoppingCart_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specify a comma separated list of allowed domains.
         /// </summary>
         internal static string FramingDomains_Desc {

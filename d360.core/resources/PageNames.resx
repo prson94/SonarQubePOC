@@ -129,9 +129,6 @@
   <data name="BusinessAssetsPageTabTitle" xml:space="preserve">
     <value>Business Asset Types</value>
   </data>
-  <data name="CartPage" xml:space="preserve">
-    <value>Cart</value>
-  </data>
   <data name="ChangeLogTab" xml:space="preserve">
     <value>Change Log</value>
   </data>

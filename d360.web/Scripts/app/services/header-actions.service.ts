@@ -10,7 +10,6 @@ export class HeaderActionsService {
     showSearch: boolean = true;
     showRaiseIssue: boolean = true;
     showFollow: boolean = false;
-    showShoppingCart: boolean = true;
     showHomePage: boolean = true;
     forceTakeActionHidden: boolean = false;
 
@@ -37,7 +36,6 @@ export class HeaderActionsService {
         this.showSearch = true;
         this.showRaiseIssue = true;
         this.showFollow = showFollow;
-        this.showShoppingCart = true;
         this.showHomePage = true;
         this.forceTakeActionHidden = false;
     }

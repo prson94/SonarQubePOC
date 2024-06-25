@@ -62,15 +62,6 @@ export class WorkflowFieldsService {
                 this.conditionOperators.splice(ix, 1);
             }
         }
-
-        if (this.objectType === 'ShoppingCartType') {
-            this.contextualFields.push({
-                value: 'Contextual|RequestedOn',
-                label: 'Requested On',
-                type: 'date'
-            });
-        }
-
     }
 
     getConditionOperators() {

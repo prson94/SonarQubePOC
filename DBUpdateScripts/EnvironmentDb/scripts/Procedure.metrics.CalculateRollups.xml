@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok,Puneet" id="Procedure.metrics.CalculateRollups-v6">
+  <changeSet author="TKlok" id="Procedure.metrics.CalculateRollups-v5.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -41,7 +41,6 @@ begin
 
 	drop table if exists #types
 	create table #types (ID int, Class int)
-	create clustered index IX_types_ID on #types (ID)
 	insert into #types (ID, Class)
 		select ID, Class from AssetType where Class in (1,2,6,7,8,9)
 
@@ -95,20 +94,8 @@ begin
 		set @count = @count + 1
 	end
 
-	--Temporary data for table
-	drop table if exists #temp_pos;
-	select		F.RowUid,
-				abs(min(P.SubjectPosition))+1 as Pos
-	into #temp_pos
-	from		#final F
-				cross apply openjson(F.PathData) with (SubjectPosition int '$.Sp') P
-	group by	F.RowUid
-
-	create clustered index IX_temp_pos_RowUid on #temp_pos (RowUid)
-	
 	drop table if exists #raw
 	create table #raw (RowUid uniqueidentifier, AssetTypeID int, PathHash varchar(50), [Path] nvarchar(max), IntersectTypeID int, SubjectAssetTypeID int, SubjectPosition int, ObjectAssetTypeID int, ObjectPosition int)
-	create clustered index IX_raw on #raw (PathHash)
 
 	insert into #raw
 		select	F.RowUid, --F.ID, F.Name, F.Class, 
@@ -126,18 +113,20 @@ begin
 							select STRING_AGG(IntersectTypeID, '|') as PathHashRaw 
 							from	openjson(F.PathData) with (IntersectTypeID int '$.I')
 							) H
-				inner join	#temp_pos M on F.RowUid = M.RowUid
+				inner join	(
+							select		F.RowUid,
+										abs(min(P.SubjectPosition))+1 as Pos
+							from		#final F
+										cross apply openjson(F.PathData) with (SubjectPosition int '$.Sp') P
+							group by	F.RowUid
+							) M on F.RowUid = M.RowUid
 		order by F.RowUid
 
 	drop table if exists #segments
-	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int);
-	create clustered index CX_segments on #segments (PathHash);
-	create index IX_segments_RowUid on #segments (RowUid,Position);
-	
+	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int)
 
 	drop table if exists #links
 	create table #links (RowUid uniqueidentifier, PathHash varchar(50), IntersectTypeID int, StartPosition int, EndPosition int)
-	create clustered index CX_links on #links(PathHash);
 
 	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
 		select	RowUid,
@@ -149,8 +138,8 @@ begin
 	insert into #segments (RowUid, PathHash, Position, AssetTypeID)
 		select	R.RowUid,
 				R.PathHash,
-				R.ObjectPosition,
-				R.ObjectAssetTypeID
+				ObjectPosition,
+				ObjectAssetTypeID
 		from	#raw R
 				left join #segments E on E.RowUid = R.RowUid and E.Position = R.ObjectPosition
 		where	E.RowUid is null
@@ -163,72 +152,42 @@ begin
 				ObjectPosition
 		from	#raw;
 
-	delete r
-	from #raw r
-	where not exists (select 1 from AssetType att where att.id = r.AssetTypeID);
-
-	drop table if exists #tempRollupPath;
-	create table #tempRollupPath([Uid] [uniqueidentifier] NOT NULL,[PathHash] [varchar](50) NOT NULL);
-	create clustered index IX_tempRollupPath on #tempRollupPath (PathHash);
-	
-	insert into #tempRollupPath
-	select uid,PathHash
-	from metrics.RollupPath;
-
 	declare @retry int = 5;
 
 	while @retry > 0
 	begin
 		begin try
-		
-			Update T
-			Set State = 3
-			from metrics.RollupPath as T
-			where not exists (select 1 from #raw r where r.PathHash = T.PathHash);
-		
 			merge	metrics.RollupPath as T
 			using	(
 					select	distinct 
-							tp.Uid,
-							r.PathHash,
-							r.AssetTypeID
-					from	#raw r
-					inner join #tempRollupPath tp on r.PathHash = tp.PathHash
+							2 as ScoreType, --DataQuality
+							1 as [State],
+							PathHash,
+							AssetTypeID
+					from	#raw
+					where	AssetTypeID in (select ID from AssetType)
 					) as S
-			on		(T.Uid = S.Uid)
+			on		(T.PathHash = S.PathHash)
 			when	not matched by target then
 			insert	(Uid, AssetTypeID, ScoreType, State, PathHash)
-			values	(newid(), S.AssetTypeID, 2, 1, S.PathHash);
-
-			drop table if exists #tempRollupPath;
-			
+			values	(newid(), S.AssetTypeID, S.ScoreType, S.State, S.PathHash)
+			when	not matched by source then
+			update	set
+					T.State = 3;
 
 			update	T
 			set		T.State = 1,
 					T.AssetTypeID = S.AssetTypeID
 			from	metrics.RollupPath T
-					inner join #raw S on S.PathHash = T.PathHash;
-
-			
-			drop table if exists #tempuids;
-			create table #tempuids ([Uid] [uniqueidentifier]);
-			create clustered index IX_tempuids on #tempuids (Uid);
-			
-			insert into #tempuids
-			select uid
-			from metrics.RollupPath
-			where state = 3;
+					inner join #raw S on S.PathHash = T.PathHash and S.AssetTypeID in (select ID from AssetType);
 
 			delete	T
 			from	metrics.RollupPathSegment T
-					inner join #tempuids S on S.Uid = T.RollupPathUid;
+					inner join metrics.RollupPath S on S.Uid = T.RollupPathUid and S.[State] = 3;
 
 			delete	T
 			from	metrics.RollupPathLink T
-					inner join #tempuids S on S.Uid = T.RollupPathUid;
-					
-					
-			drop table if exists #tempuids;
+					inner join metrics.RollupPath S on S.Uid = T.RollupPathUid and S.[State] = 3;
 
 			set @retry = 0;
 		end try
@@ -250,15 +209,6 @@ begin
 		end catch
 	end
 
-	drop table if exists #tempRollupPath_B;
-	create table #tempRollupPath_B([Uid] [uniqueidentifier] NOT NULL,[PathHash] [varchar](50) NOT NULL);
-	create clustered index IX_tempRollupPath on #tempRollupPath_B (PathHash);
-	
-	insert into #tempRollupPath_B
-	select uid,PathHash
-	from metrics.RollupPath;
-
-
 	set @retry = 5;
 	while @retry > 0
 	begin
@@ -270,7 +220,7 @@ begin
 								S.Position,
 								S.AssetTypeID
 					from		#segments S
-								inner join #tempRollupPath_B P on P.PathHash = S.PathHash
+								inner join metrics.RollupPath P on P.PathHash = S.PathHash
 					where		S.AssetTypeID in (select ID from AssetType)
 					) as S
 			on		(T.RollupPathUid = S.RollupPathUid and T.Position = S.Position)
@@ -313,7 +263,7 @@ begin
 								S.EndPosition,
 								S.IntersectTypeID
 					from		#links S
-								inner join #tempRollupPath_B P on P.PathHash = S.PathHash
+								inner join metrics.RollupPath P on P.PathHash = S.PathHash
 					where		S.IntersectTypeID in (select ID from IntersectType)
 					) as S
 			on		(T.RollupPathUid = S.RollupPathUid and T.StartPosition = S.StartPosition)
@@ -344,37 +294,23 @@ begin
 		end catch
 	end
 
-	drop table if exists #tempRollupPath_B;
-	drop table if exists #temprpuids;
-	create table #temprpuids ([Uid] [uniqueidentifier]);
-	create clustered index IX_tempuids on #temprpuids (Uid);
-	
-	insert into #temprpuids
-	select P.Uid
-	From metrics.RollupPath P 
-	left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
-	where P.[State] = 3 and V.Uid is null;
-	
-
 	delete	L
 	from	[metrics].[RollupPathLink] L
-			inner join #temprpuids P on P.Uid = L.RollupPathUid;
+			inner join metrics.RollupPath P on P.Uid = L.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
 
 	delete	S
 	from	[metrics].[RollupPathSegment] S
-			inner join #temprpuids P on P.Uid = S.RollupPathUid;
+			inner join metrics.RollupPath P on P.Uid = S.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
 
-	delete	R
-	from	metrics.RollupPath R
-			inner join #temprpuids P on P.Uid = R.Uid;
+	delete	P
+	from	metrics.RollupPath P
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
 
-	drop table if exists #temprpuids;
-	drop table if exists #edge;
-	drop table if exists #final;
-	drop table if exists #types;
-	drop table if exists #raw;
-	drop table if exists #segments;
-	drop table if exists #links;
 
 /*	select * from [metrics].[RollupPath]
 	select * from [metrics].[RollupPathLink]
@@ -505,9 +441,7 @@ begin
 		order by F.RowUid
 
 	drop table if exists #segments
-	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int);
-	create clustered index IX_segments on #segments (RowUid,Position);
-
+	create table #segments (RowUid uniqueidentifier, PathHash varchar(50), Position int, AssetTypeID int)
 
 	drop table if exists #links
 	create table #links (RowUid uniqueidentifier, PathHash varchar(50), IntersectTypeID int, StartPosition int, EndPosition int)

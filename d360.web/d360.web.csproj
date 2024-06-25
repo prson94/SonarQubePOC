@@ -1439,6 +1439,7 @@
     <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.de-DE.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>FormControllerApiMessage.de-DE.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.es-ES.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>

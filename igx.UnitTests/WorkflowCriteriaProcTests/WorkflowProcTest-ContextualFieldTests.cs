@@ -101,18 +101,5 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
-
-        [Fact]
-        public void ContextualFieldRequestedonTest_Fail()
-        {
-            string condition = "<Conditions>" +
-                "<Condition ValueType =\"DT\" Value=\"1\" Operator=\"=\" ContextualFieldID=\"RequestedOn\" Connector=\"AND\" />" +
-                "</Conditions>";
-            bool? res = null;
-            List<int> changedFields = new List<int> { };
-
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
-            Assert.False(res, "Invalid evaluation result!");
-        }
     }
 }
