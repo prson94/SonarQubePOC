@@ -1148,7 +1148,7 @@ namespace d360.web.Controllers.V2
 			List<DatabaseBulkRelationshipResult> results = null;
 			try
 			{
-				results = RelationshipRepository.PostRelationships(intersectType, execution, relationships, lookupFieldsPassedByValue);
+				results = RelationshipRepository.PostRelationships(intersectType, execution, relationships, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 			}
 			catch (Exception ex)
 			{

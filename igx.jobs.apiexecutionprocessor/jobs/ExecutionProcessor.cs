@@ -186,7 +186,7 @@ namespace igx.jobs.apiexecutionprocessor
 												var postRelationships = await Storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(info.StorageFolder, info.RequestFileName);
 
 												log.LogTrace($"PostRelationships: {DateTime.UtcNow:hh:mm:ss}");
-												relationshipRepository.PostRelationships(intersectType, dbExecutionItem, postRelationships);
+												relationshipRepository.PostRelationships(intersectType, dbExecutionItem, postRelationships, sendWorkflowEvents: info.SendWorkflowEvents);
 												resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
 											}
 											else

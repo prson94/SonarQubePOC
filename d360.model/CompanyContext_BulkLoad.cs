@@ -1239,6 +1239,8 @@ inner join AssetPath P on P.ID = A.ID
 
 			if (operation == BulkRelationshipOperation.Relate)
 			{
+				bool triggerWorkflow = load.ShouldTriggerWorkflow.HasValue ? load.ShouldTriggerWorkflow.Value : false;
+
 				RelationshipInserts upserts = new RelationshipInserts();
 				foreach (LoadItem item in loadItems)
 				{
@@ -1303,7 +1305,7 @@ inner join AssetPath P on P.ID = A.ID
 				if (upserts.Any())
 				{
 					ApiExecution execution = getRelateApiExecution(load, upserts.Count);
-					ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
+					ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, triggerWorkflow);
 					load.PostExecutionID = executionInfo.ExecutionID;
 				}
 			}
