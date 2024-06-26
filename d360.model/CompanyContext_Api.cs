@@ -56,8 +56,8 @@ namespace d360.model
 
 		Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);
 
-		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool lookupFieldsPassedByValue = false);
-		
+		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
+
 		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
@@ -2781,7 +2781,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			}			
 		}
 
-		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportRelationships";
@@ -2806,6 +2806,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			{
 				checkSemanticRelation = true;
 			}
+
+			//check if trigger workflows is set to true and there are actually no workflows
+			sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(null, rt.ID, null, null);
 
 			import.ForEach(rel =>
 			{
@@ -3900,9 +3903,12 @@ from	#tempexecurelat e
 					Connection.Close();
 					
 					sw.Restart();
-					QueryID = "-Q10000017";
-					SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
-					addMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+					if (sendWorkflowEvents)
+					{
+						QueryID = "-Q10000017";
+						SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
+						addMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+					}
 				}
 			}
 			QueryID = " ";

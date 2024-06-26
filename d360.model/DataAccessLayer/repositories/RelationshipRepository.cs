@@ -1765,9 +1765,9 @@ from	IntersectType I
 			return executionInfo;
 		}
 
-		public List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
 		{
-			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
+			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, sendWorkflowEvents, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
 			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
@@ -1792,7 +1792,7 @@ from	IntersectType I
 
 		public List<DatabaseBulkRelationshipUpdateResult> PutRelationships(IntersectType intersectType, ApiExecution execution, RelationshipUpdates relations, bool lookupFieldsPassedByValue = false)
 		{
-			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
+			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
 			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });

@@ -29,7 +29,7 @@ namespace repositories
                
         Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool sendWorkflow = false);
 
-		List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool lookupFieldsPassedByValue = false);
+		List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
 		Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false);
 
