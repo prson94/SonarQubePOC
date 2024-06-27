@@ -1999,6 +1999,7 @@
     <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
     <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
+    <Content Include="Scripts\app\components\admin\security\policy.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -2023,6 +2024,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owner-detail.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -2172,11 +2174,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-delete-dialog.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-folder-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.ts" />
@@ -2854,13 +2851,11 @@
     <TypeScriptCompile Include="Scripts\app\models\semantic-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shared.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\side-panel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\survey.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tag.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\third-party-license-model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
@@ -2954,14 +2949,12 @@
     <TypeScriptCompile Include="Scripts\app\services\select-asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings\default-table-settings.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\side-panel.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\title-and-tabs.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip-singleton.service.ts" />
@@ -3076,9 +3069,6 @@
     <None Include="Scripts\app\components\admin\settings\admin-site-menu-delete-dialog.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-site-menu-folder-editor.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
-    <None Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
-    <None Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
-    <None Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags.component.html" />

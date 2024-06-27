@@ -11,52 +11,52 @@
 <![CDATA[
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'api' )
 BEGIN
-	CREATE SCHEMA [api]
+	exec('CREATE SCHEMA [api]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'bulkload' )
 BEGIN
-	CREATE SCHEMA [bulkload]
+	exec('CREATE SCHEMA [bulkload]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'graph' )
 BEGIN
-	CREATE SCHEMA [graph]
+	exec('CREATE SCHEMA [graph]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'metrics' )
 BEGIN
-	CREATE SCHEMA [metrics]
+	exec('CREATE SCHEMA [metrics]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'queue' )
 BEGIN
-	CREATE SCHEMA [queue]
+	exec('CREATE SCHEMA [queue]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'reporting' )
 BEGIN
-	CREATE SCHEMA [reporting]
+	exec('CREATE SCHEMA [reporting]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'security' )
 BEGIN
-	CREATE SCHEMA [security]
+	exec('CREATE SCHEMA [security]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'usage' )
 BEGIN
-	CREATE SCHEMA [usage]
+	exec('CREATE SCHEMA [usage]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'utility' )
 BEGIN
-	CREATE SCHEMA [utility]
+	exec('CREATE SCHEMA [utility]')
 END
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'workflow' )
 BEGIN
-	CREATE SCHEMA [workflow]
+	exec('CREATE SCHEMA [workflow]')
 END
 ]]>
   </sql>

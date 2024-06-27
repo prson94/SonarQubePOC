@@ -1,6 +1,6 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { PolicyEditAssetTypeOptionsModel, PolicyEditOptionsModel, PolicySecurityType, ReadSecurityPolicy, SecurityPolicyWhen } from '../../../../models/security.model';
 import { SecurityService } from '../../../../services/security.service';
 import { Operator } from '../../../../models/operator.model';
@@ -159,7 +159,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 			assetTypeUid: [null, { validators: [Validators.required] }],
 			roleUid: [null, { validators: [Validators.required] }],
 			securityTypeBool: [true],
-			securityType: [PolicySecurityType.Group, { validators: [Validators.required] }],
+			securityType: ["Group", { validators: [Validators.required] }],
 			applyToType: [false],
 			visible: [true],
 			whenConditions: this.fb.array([]),
@@ -191,36 +191,45 @@ export class PolicyEditor implements OnChanges, OnInit {
 	}
 
 	addWhen(type: string, condition: SecurityPolicyWhen): void {
-		let group: FormGroup;
+		let group: FormGroup = this.fb.group({
+			checkType: [type, Validators.required],
+			fieldName: ['',],
+			intersectTypeUid: ['',],
+			operator: ['', Validators.required],
+			value: ['',],
+			assetUid: ['',]
+		});
 
-		if (condition) {
-			group = this.fb.group({
-				checkType: [type, Validators.required],
-				fieldName: [condition.fieldName,],
-				intersectTypeUid: [condition.intersectTypeUid,],
-				operator: [Operator[condition.operator], Validators.required],
-				value: [condition.value,],
-				assetUid: [condition.assetUid,]
-			});
-			if (condition.checkType === "F") {
-				this.loadWhenValuesForField(group, "fieldName");
+		if (!condition) {
+			condition = new SecurityPolicyWhen();
+			condition.checkType = type;
+			if (type == "F") {
+				const fieldName = this.selectedAssetTypeOptions?.fields[0].value;
+				condition.fieldName = fieldName;
 			}
 			else {
-				this.loadWhenValuesForRelation(group);
+				const intersectTypeUid = this.selectedAssetTypeOptions?.intersectTypes[0].value;
+				condition.intersectTypeUid = intersectTypeUid;
 			}
 		}
-		else { 
-			group = this.fb.group({
-				checkType: [type, Validators.required],
-				fieldName: ['',],
-				intersectTypeUid: ['',],
-				operator: ['', Validators.required],
-				value: ['',],
-				assetUid: ['',]
-			});
+
+		group.patchValue(condition);
+
+		let obs: Observable<boolean>;
+		if (condition.checkType === "F") {
+			obs = this.loadWhenValuesForField(group);
+		}
+		else {
+			obs = this.loadWhenValuesForRelation(group);
 		}
 
-		this.whenConditions.push(group);
+		obs.subscribe((o) => {
+			this.whenConditions.push(group);
+		});
+	}
+
+	deleteWhenCondition(ix: number) {
+		this.whenConditions.removeAt(ix);
 	}
 
 	async cancel() {
@@ -271,62 +280,75 @@ export class PolicyEditor implements OnChanges, OnInit {
 		//return false;
 	}
 
-	async loadForm() {
+	loadForm() {
 
 		this.clearConditions();
 
-		if (this.item && this.item.uid) {
+		const isEdit = (this.item && this.item.uid);
+
+		//Set UI labels.
+		if (isEdit) {
 			this.saveLabel = $localize`Save Changes`;
 			this.cancelLabel = $localize`Close`;
 			this.title = $localize`Edit Policy`;
-
-
-			if (this.item.securityType === PolicySecurityType.Group) {
-				this.securityService.getPolicyEditGroupOptions().subscribe((o) => {
-					this.securityGroups = o;
-					this.loadThenOptions();
-				});
-			}
-			else {
-				this.securityService.getPolicyEditUserOptions().subscribe((o) => {
-					this.securityUsers = o;
-					this.loadThenOptions();
-				});
-			}
-
-			this.policyForm.get('securityTypeBool').setValue(
-				this.item.securityType === PolicySecurityType.Group
-			);
-
-
 		}
 		else {
+			this.title = $localize`Add Policy`;
+			this.saveLabel = this.title;
+			this.cancelLabel = $localize`Cancel`;
+		}
+
+		if (!isEdit) {
 			this.item = {
 				applyToType: false,
 				assetTypeName: '', assetTypeUid: '',
 				MenuItems: [],
 				name: '',
 				roleName: '', roleUid: '',
-				securityType: PolicySecurityType.Group,
+				securityType: "Group",
 				thenConditions: [], visible: true, whenConditions: [],
 				uid: null
 			};
-			this.title = $localize`Add Policy`;
-			this.saveLabel = this.title;
-			this.cancelLabel = $localize`Cancel`;
+		}
 
+		const isGroup: boolean = (this.item.securityType == "Group");
+		this.policyForm.get('securityTypeBool').setValue(isGroup);
+
+		const loadFormValues = () => {
+			this.policyForm.patchValue(this.item);
+			if (this.item && this.item.whenConditions) {
+				this.item.whenConditions.forEach((wC) => {
+					this.addWhen(wC.checkType, wC);
+				})
+			}
+			if (this.item && this.item.thenConditions && this.thenConditions) {
+				if (this.item.thenConditions.length > 0 && this.thenConditions.length > 0) {
+					const securityUid = this.item.thenConditions[0].securityUid;
+					this.thenConditions.clear();
+					this.thenConditions.push(
+						this.fb.group({
+							operator: [Operator.Equals],
+							securityUid: [securityUid, Validators.required]
+						})
+					);
+				}
+			}
+		};
+
+		if (isGroup) {
 			this.securityService.getPolicyEditGroupOptions().subscribe((o) => {
 				this.securityGroups = o;
+				this.loadThenOptions();
+				loadFormValues();
 			});
 		}
-
-		this.policyForm.patchValue(this.item);
-		if (this.item && this.item.whenConditions) {
-			this.item.whenConditions.forEach((wC) => {
-				this.addWhen(wC.checkType, wC);
-			})
+		else {
+			this.securityService.getPolicyEditUserOptions().subscribe((o) => {
+				this.securityUsers = o;
+				this.loadThenOptions();
+				loadFormValues();
+			});
 		}
-		//this.whenConditions.patchValue(this.item.whenConditions);
 	}
 
 	loadSelectedAssetTypeOptions(assetTypeUid: string) {
@@ -336,59 +358,89 @@ export class PolicyEditor implements OnChanges, OnInit {
 			});
 	}
 
-	loadWhenValuesForField(item: FormGroup, formFieldName: string) {
-
-		const formFieldValue: string = item.get(formFieldName).value;
-		(item as any).operators = this.fieldLookupOperators;
-
-		let selectedFieldType = this.selectedAssetTypeOptions.fields.find((f) => f.value === formFieldValue);
-		if (selectedFieldType) {
-			switch (selectedFieldType.type) {
-				case "Lookup":
-					(item as any).operators = this.fieldLookupOperators;
-					this.securityService.getPolicyEditFieldLookupOptions(this.item.assetTypeUid, formFieldValue).subscribe((results) => {
-						(item as any).options = results;
-						this.cdRef.detectChanges();
-					});
-					break;
-				case "Boolean":
-					(item as any).operators = this.fieldBooleanOperators;
-					(item as any).options = [{ label: "Yes", value: "true" }, { label: "No", value: "false" }];
-					this.cdRef.detectChanges();
-					break;
-				case "Decimal":
-				case "Number":
-					(item as any).operators = this.fieldNumericOperators;
-					(item as any).options = null;
-					this.cdRef.detectChanges();
-					break;
-				default:
-					(item as any).operators = this.fieldTextOperators;
-					(item as any).options = null;
-					this.cdRef.detectChanges();
-					break;
-			}
+	loadWhenValues(item: FormGroup, type: string) {
+		if (type === 'F') {
+			this.loadWhenValuesForField(item).subscribe((o) => { });
 		}
 		else {
-			(item as any).options = [];
-			this.cdRef.detectChanges();
+			this.loadWhenValuesForRelation(item).subscribe((o) => { });
 		}
 	}
 
-	loadWhenValuesForRelation(item: FormGroup) {
+	loadWhenValuesForField(item: FormGroup): Observable<boolean> {
 
-		const selectedIntersectType: string = item.get("intersectTypeUid").value;
-		(item as any).operators = this.relationshipOperators;
+		return new Observable<boolean>(obs => {
+			if (!item) {
+				obs.next();
+				return;
+			} 
 
-		(item as any).options = [];
-		if (selectedIntersectType) {
-			if ((item as any).options.length === 0) {
-				this.securityService.getPolicyEditRelationLookupOptions(selectedIntersectType, this.item.assetTypeUid).subscribe((results) => {
-					(item as any).options = results;
-					this.cdRef.detectChanges();
-				});
+			const formFieldValue: string = item.get("fieldName").value;
+			(item as any).operators = this.fieldLookupOperators;
+
+			if (!this.selectedAssetTypeOptions) {
+				return;
 			}
-		}
+
+			let selectedFieldType = this.selectedAssetTypeOptions.fields.find((f) => f.value === formFieldValue);
+			if (selectedFieldType) {
+				switch (selectedFieldType.type) {
+					case "Lookup":
+						(item as any).operators = this.fieldLookupOperators;
+						const assetTypeUid = this.policyForm.get("assetTypeUid").getRawValue();
+						if (assetTypeUid) {
+							this.securityService.getPolicyEditFieldLookupOptions(assetTypeUid, formFieldValue).subscribe((results) => {
+								(item as any).options = results;
+								obs.next();
+							});
+						}
+						break;
+					case "Boolean":
+						(item as any).operators = this.fieldBooleanOperators;
+						(item as any).options = [{ label: "Yes", value: "true" }, { label: "No", value: "false" }];
+						obs.next();
+						break;
+					case "Decimal":
+					case "Number":
+						(item as any).operators = this.fieldNumericOperators;
+						(item as any).options = null;
+						obs.next();
+						break;
+					default:
+						(item as any).operators = this.fieldTextOperators;
+						(item as any).options = null;
+						obs.next();
+						break;
+				}
+			}
+			else {
+				(item as any).options = [];
+				obs.next();
+			}
+		});
+	}
+
+	loadWhenValuesForRelation(item: FormGroup): Observable<boolean> {
+		return new Observable<boolean>(obs => {
+			if (!item) {
+				obs.next();
+				return;
+			} 
+
+			const selectedIntersectType: string = item.get("intersectTypeUid").value;
+			(item as any).operators = this.relationshipOperators;
+
+			(item as any).options = [];
+			if (selectedIntersectType) {
+				if ((item as any).options.length === 0) {
+					this.securityService.getPolicyEditRelationLookupOptions(selectedIntersectType, this.item.assetTypeUid).subscribe((results) => {
+						(item as any).options = results;
+						obs.next();
+						//this.cdRef.detectChanges();
+					});
+				}
+			}
+		});
 	}
 
 	loadThenOptions() {
@@ -405,7 +457,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 		const itemToSave = this.policyForm.value as ReadSecurityPolicy;
 
 		itemToSave.securityType =
-			this.policyForm.get("securityTypeBool").value ? PolicySecurityType.Group : PolicySecurityType.User;
+			this.policyForm.get("securityTypeBool").value ? "Group" : "User";
 
 		if (this.item.uid) {
 			itemToSave.uid = this.item.uid;

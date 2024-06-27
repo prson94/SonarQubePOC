@@ -9,7 +9,7 @@ import { ReadRole } from "../../../../models/security.model";
 	styles: [`
 		.main-panel {
 			display: flex;
-			flex- direction: column;
+			flex-direction: column;
 		}`]
 })
 export class RolesSidePanelWrapperComponent implements OnChanges {

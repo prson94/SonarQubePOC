@@ -47,7 +47,7 @@ namespace repositories.azure
 					"select * from FieldType where Object in ('GroupType'); " +
 					"select * from FieldType where Object in ('ResourceType'); " +
 					"select * from Asset where Uid in @AssetUids; " +
-					"select * from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID and a.Uid in @SecurityUids; " +
+					"select * from [Group] where Uid in @SecurityUids; " +
 					"select * from reporting.Global_Resource where Uid in @SecurityUids;",
 					new { model.AssetTypeUid, model.RoleUid, IntersectTypeUids, AssetUids, SecurityUids }
 				);
@@ -725,7 +725,7 @@ order by p.DisplayPath",
 					"select * from FieldType where Object in ('GroupType'); " +
 					"select * from FieldType where Object in ('ResourceType'); " +
 					"select * from Asset where Uid in @AssetUids; " +
-					"select * from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID and a.Uid in @SecurityUids; " +
+					"select * from [Group] where Uid in @SecurityUids; " +
 					"select * from reporting.Global_Resource where Uid in @SecurityUids;", new { uid, model.RoleUid, model.AssetTypeUid, model.Name, IntersectTypeUids, AssetUids, SecurityUids }
 					);
 				int assetTypeId = await query.ReadSingleAsync<int>();
@@ -783,8 +783,8 @@ order by p.DisplayPath",
 					using (var trans = connection.BeginTransaction())
 					{ 
 						connection.Execute(
-							"update [security].[Rule] set Name = @Name, RoleId = @roleId, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
-							new { roleId, model.Name, ruleId, assetTypeId, u = CurrentUserId, dt }, 
+							"update [security].[Rule] set Name = @Name, RoleId = @roleId, SecurityType = @securityType, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
+							new { roleId, model.Name, ruleId, securityType = (int)securityType, assetTypeId, u = CurrentUserId, dt }, 
 							transaction: trans
 						);
 
@@ -1082,7 +1082,7 @@ order by p.DisplayPath",
 			if (conditions.Count > 0)
 			{
 				int position = 0;
-				conditions.ForEach((Action<SecurityPolicyThen>)(t =>
+				conditions.ForEach(t =>
 				{
 					position++;
 					if (response == null) // Once we have an error, just stop.
@@ -1154,7 +1154,7 @@ order by p.DisplayPath",
 							rawThens.Add(rawThen);
 						}
 					}
-				}));
+				});
 			}
 
 			return (rawThens, response);

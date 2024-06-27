@@ -117,7 +117,7 @@
 														optionLabel="label"
 														optionValue="value"
 														[options]="selectedAssetTypeOptions?.fields"
-														(onChange)="loadWhenValuesForField(w, 'fieldName')"
+														(onChange)="loadWhenValues(w, 'F')"
 														placeholder="Value Required"></p-dropdown>
 
 											<p-dropdown igDropdown required *ngIf="w.get('checkType').value === 'R'"
@@ -127,7 +127,7 @@
 														optionLabel="label"
 														optionValue="value"
 														[options]="selectedAssetTypeOptions?.intersectTypes"
-														(onChange)="loadWhenValuesForRelation(w)"
+														(onChange)="loadWhenValues(w, 'R')"
 														placeholder="Value Required"></p-dropdown>
 										</div>
 										<div>
@@ -167,12 +167,12 @@
 														[options]="w?.options"
 														formControlName="assetUid"
 														[virtualScroll]="w?.options?.length > 100"
-														itemSize="20"
+														virtualScrollItemSize="20"
 														[filter]="true"
 														placeholder="Value Required"></p-dropdown>
 										</div>
 										<div>
-											<a (click)="deleteWhenCondition(w)"><i class='fa fa-trash' title='Remove'></i></a>
+											<a (click)="deleteWhenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a>
 										</div>
 									</div>
 								</div>

@@ -9,7 +9,7 @@ import { SidePanelService } from "../../../../services/side-panel.service";
 	styles: [`
 		.main-panel {
 			display: flex;
-			flex- direction: column;
+			flex-direction: column;
 		}`]
 })
 export class OwnersSidePanelWrapper {

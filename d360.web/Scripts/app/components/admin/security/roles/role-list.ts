@@ -70,7 +70,7 @@ export class RoleList extends BaseComponent implements OnChanges {
 
 	getData() {
 		this.isLoading = true;
-		let obs = this.securityService.getRoles();
+		const obs = this.securityService.getRoles();
 
 		obs.subscribe((result) => {
 			this.roles = [];

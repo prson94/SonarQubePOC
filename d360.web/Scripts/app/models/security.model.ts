@@ -1,10 +1,11 @@
 ﻿import { MenuItem } from "primeng/api";
 import { Operator } from "./operator.model";
 
-export enum PolicySecurityType {
-	Group = 1,
-	User = 2
-}
+export type PolicySecurityType = 'Group' | 'User';
+//export enum PolicySecurityType {
+//	Group = 1,
+//	User = 2
+//}
 
 export class AssetOwnerModel {
 	ruleUid: string;

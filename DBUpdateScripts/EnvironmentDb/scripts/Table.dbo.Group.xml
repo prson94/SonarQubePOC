@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.dbo.Group-v2">
+ <changeSet author="Pappas" id="Table.dbo.Group-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Group')
@@ -22,6 +22,27 @@ BEGIN
 		CONSTRAINT PK_Group PRIMARY KEY CLUSTERED ( [ID] ASC ),
 		CONSTRAINT ucGroupName UNIQUE NONCLUSTERED ( [Name] ASC )
 	)
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Group]') AND name = 'Uid')
+BEGIN
+	alter table dbo.[Group] add [Uid] uniqueidentifier null
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.dbo.Group-Group_UidPopulate-v1">
+  <sql dbms="mssql">
+<![CDATA[
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Group]') AND name = 'Uid')
+BEGIN
+	update	g
+	set		g.[Uid] = coalesce(a.Uid, newid())
+	from	[Group] g
+			left join Asset a on a.Object = 'Group' and a.ObjectID = g.ID;
+
+	alter table [Group] alter column [Uid] uniqueidentifier not null;
 END
 ]]>
   </sql>

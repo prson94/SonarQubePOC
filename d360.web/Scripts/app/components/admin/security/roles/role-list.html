@@ -24,6 +24,8 @@
 
 <div class="grid-wrapper">
 	<p-table #dt [value]="roles"
+			 [scrollable]="true" 
+			 scrollHeight="flex" 
 			 selectionMode="single"
 			 [metaKeySelection]="true"
 			 [globalFilterFields]="['name','description', 'uid']"

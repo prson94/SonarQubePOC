@@ -2829,8 +2829,8 @@ update  set
 		G.UpdatedOn = @date,
 		G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
 when	not matched then
-insert	(Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID, IsActiveDirectoryGroup, UpdatedOn, UpdatedBy)
-values	(TRIM(S.Name), TRIM(S.Description), S.PrimaryID, S.SecondaryID, S.IsActiveDirectoryGroup, @date, @CurrentResourceID)
+insert	(Uid, Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID, IsActiveDirectoryGroup, UpdatedOn, UpdatedBy)
+values	(coalesce(EG.GroupUid, newid()), TRIM(S.Name), TRIM(S.Description), S.PrimaryID, S.SecondaryID, S.IsActiveDirectoryGroup, @date, @CurrentResourceID)
 output	inserted.ID, $action, inserted.Name, S.ExecutionItemUid into #mergeResultTable;
 
 INSERT	INTO Asset (
@@ -2844,7 +2844,7 @@ INSERT	INTO Asset (
 		[UpdatedOn], 
 		[UpdatedBy]
 		)
-SELECT	coalesce(EG.GroupUid, newid()), 
+SELECT	G.Uid, 
 		T.ID, 
 		1, 
 		'Group', 

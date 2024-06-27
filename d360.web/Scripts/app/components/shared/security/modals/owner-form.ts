@@ -102,10 +102,10 @@ export class OwnerForm extends BaseComponent implements OnChanges, OnInit {
 		const assigneeUid = event.value;
 		var option = this.assigneeOptions.find((a) => { return a.value === assigneeUid; });
 		if (option.groupName === "Group") {
-			this.frm.get("securityType").setValue(PolicySecurityType.Group);
+			this.frm.get("securityType").setValue("Group");
 		}
 		else {
-			this.frm.get("securityType").setValue(PolicySecurityType.User);
+			this.frm.get("securityType").setValue("User");
 		}
 	}
 
