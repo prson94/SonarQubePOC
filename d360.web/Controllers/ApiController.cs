@@ -3851,7 +3851,14 @@ namespace d360.web.Controllers
 							}
 						});
 
-						if (load.DateCompleted.HasValue && load.DateStarted.HasValue)
+						bool IsComplete = true;
+
+						if (load.Action == "Promotion")
+						{
+							IsComplete = GetPromotionStatus(load);
+						}
+
+						if (load.DateCompleted.HasValue && load.DateStarted.HasValue && IsComplete)
 						{
 							var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
 
@@ -4870,6 +4877,43 @@ where v.id = {0}", id)).FirstOrDefault();
 								where u.resourceid = @resourceId1 or u.resourceid = @resourceId2
 								",
 				new { resourceId1 = userId1, resourceId2 = userId2 });
+		}
+
+		private bool GetPromotionStatus(LoadDetail load)
+		{
+			var status = true;
+
+			if (Company.LoadItems.Any(x => x.LoadID == load.ID))
+			{
+				//once there are load items and put / post execution are both null
+				var loadInfo = Company.Loads.FirstOrDefault(x => x.ID == load.ID);
+				//once a post / put uid is in place
+				if (loadInfo != null)
+				{
+					if (loadInfo.PostExecutionID.HasValue || loadInfo.PutExecutionID.HasValue)
+					{
+						if (loadInfo.PostExecutionID.HasValue)
+						{
+							var post = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PostExecutionID.Value);
+
+							if (post != null && (!post.ProcessingStartedOn.HasValue && load.DateCompletedCurrentDateDiffInMin <= 20))
+							{
+								status = false;
+							}
+						}
+						else if (loadInfo.PutExecutionID.HasValue)
+						{
+							var put = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == loadInfo.PutExecutionID.Value);
+
+							if (put != null && (!put.ProcessingStartedOn.HasValue && load.DateCompletedCurrentDateDiffInMin <= 20))
+							{
+								status = false;
+							}
+						}
+					}
+				}
+			}
+			return status;
 		}
 
 		private string GetPromotionStatusMessage(LoadDetail load)

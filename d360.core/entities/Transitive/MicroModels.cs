@@ -171,8 +171,11 @@ namespace d360.core.entities
         
         [DataMember]
         public DateTime? DateStarted { get; set; }
-        
-        [DataMember]
+
+		[DataMember]
+		public long? DateCompletedCurrentDateDiffInMin { get; set; }
+		
+		[DataMember]
         public DateTime? DateCompleted { get; set; }
         
         [DataMember]

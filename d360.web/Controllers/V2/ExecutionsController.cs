@@ -817,9 +817,9 @@ namespace d360.web.Controllers.V2
 										select *
 										into #tempExecutionData
 										from (
-											select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId in (@putExecutionID,@postExecutionID)
+											select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, substring(Message,1,2000) Message, Success from api.ExecutionAsset where ExecutionId in (@putExecutionID,@postExecutionID)
 											union all
-											select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId in (@putExecutionID,@postExecutionID)
+											select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, substring(Message,1,2000) Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId in (@putExecutionID,@postExecutionID)
 										 ) EA;
 										create clustered index cx_#tempExecutionData on #tempExecutionData(ExecutionId, ItemNumber);
 									";
