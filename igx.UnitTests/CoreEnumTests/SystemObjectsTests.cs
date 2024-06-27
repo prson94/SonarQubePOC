@@ -60,7 +60,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(SystemObjects.Score.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
             Assert.True(SystemObjects.ScoreType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
             Assert.True(SystemObjects.ScoreTypeMetric.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
-            Assert.True(SystemObjects.SurveyType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
             Assert.True(SystemObjects.Synonym.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
             Assert.True(SystemObjects.SynonymType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System));
             Assert.True(SystemObjects.Tag.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Counter | DataType.System));

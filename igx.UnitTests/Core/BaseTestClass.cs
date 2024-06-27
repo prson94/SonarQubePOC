@@ -882,16 +882,6 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public ISurveyRepository GetSurveyRepository()
-        {
-            var mock = new Mock<ISurveyRepository>();
-            mock.Setup(x => x.GetSurveyTypeByUid(It.IsAny<Guid>()))
-                .Returns((Guid uid) =>
-                uid == Guid.Parse(DataConstants.ValidGUID) ? new SurveyType() : null);
-
-            return mock.Object;
-        }
-
         #endregion
     }
 
