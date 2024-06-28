@@ -89,15 +89,15 @@ namespace d360.model.workflow
 
 			if (@object == SystemObjects.Issue.ToString())
 			{
-				fields = context.Fields.Where(x => x.IssueID == objectId);
+				fields = fields.Where(x => x.IssueID == objectId);
 			}
 			else if (@object == SystemObjects.Intersect.ToString())
 			{
-				fields = context.Fields.Where(x => x.IntersectID == objectId);
+				fields = fields.Where(x => x.IntersectID == objectId);
 			}
 			else
 			{
-				fields = context.Fields.Where(x => x.AssetID == assetID);
+				fields = fields.Where(x => x.AssetID == assetID);
 			}
 
             if (issueObjectTypeId > -1)
