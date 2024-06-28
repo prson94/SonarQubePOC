@@ -85,7 +85,20 @@ namespace d360.model.workflow
 			//We have to get the asset id, because if asset is null, the expression in the Fields where throws an exception.
 			var assetID = context.Assets.Where(a => a.Object == @object && a.ObjectID == objectId).FirstOrDefault()?.ID;
 
-			IQueryable<Field> fields = context.Fields.Where(x => ((x.IssueID == objectId && @object == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && @object == SystemObjects.Intersect.ToString()) || (x.AssetID == assetID && @object != SystemObjects.Issue.ToString() && @object != SystemObjects.Intersect.ToString())));
+			IQueryable<Field> fields = context.Fields.AsQueryable();
+
+			if (@object == SystemObjects.Issue.ToString())
+			{
+				fields = context.Fields.Where(x => x.IssueID == objectId);
+			}
+			else if (@object == SystemObjects.Intersect.ToString())
+			{
+				fields = context.Fields.Where(x => x.IntersectID == objectId);
+			}
+			else
+			{
+				fields = context.Fields.Where(x => x.AssetID == assetID);
+			}
 
             if (issueObjectTypeId > -1)
             {
@@ -144,10 +157,33 @@ namespace d360.model.workflow
             {
                 Field field = fields.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeId);
                 string value = field?.Value ?? null;
-                string formattedVal = field?.FormattedValue ?? null;
 
-                //special case for changed operator. If it's in the list of changed fields, return true
-                if (item.Operator == CriteriaOperator.Changed)
+				FieldType fieldType = null;
+				if (value == null)
+				{
+					fieldType = context.FieldTypes.FirstOrDefault(ft => ft.ID == item.FieldTypeId);
+					if (fieldType?.DefaultValue != null)
+					{
+						value = fieldType.DefaultValue.ToString();
+					}
+				}
+
+				string formattedVal = field?.FormattedValue ?? null;
+				if (formattedVal == null)
+				{
+					if (fieldType == null)
+					{
+						fieldType = context.FieldTypes.FirstOrDefault(ft => ft.ID == item.FieldTypeId);
+					}
+
+					if (fieldType?.DefaultFormattedValue != null)
+					{
+						formattedVal = fieldType.DefaultFormattedValue.ToString();
+					}
+				}
+
+				//special case for changed operator. If it's in the list of changed fields, return true
+				if (item.Operator == CriteriaOperator.Changed)
                 {
                     return changedFields.Contains(item.FieldTypeId);
                 }
