@@ -763,7 +763,7 @@ from    api.ExecutionAsset T
 
 								update	{targetTable} 
 								set		Success = 0,
-										[Message] = @msg
+										[Message] = LEFT(@msg,@characterLimit)
 								where	ExecutionID = @executionID 
 										 and ItemNumber between @beginItemNumber and @endItemNumber;",
          new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
@@ -781,7 +781,7 @@ from    api.ExecutionAsset T
 
 								update	{targetTable} 
 								set		Success = 0,
-										[Message] = @msg
+										[Message] = LEFT(@msg,@characterLimit)
 								where	ExecutionID = @executionID ;",
 		 new { executionID, msg, errorcount, characterLimit }, commandTimeout: timeout);
 		}
