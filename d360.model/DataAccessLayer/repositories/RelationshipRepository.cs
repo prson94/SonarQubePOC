@@ -234,7 +234,8 @@ namespace d360.model.DataAccessLayer
 		e.AssetID is null
 		and T.DefaultPermissions = 0 
 		and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
-		and not exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
+		and not exists(select 1 from dbo.ResponsibilitySummary where AssetID = A.ID and ResourceID = @ResourceID)
+		and not exists(select 1 from dbo.ResponsibilitySummary where AssetTypeID = A.AssetTypeID and ResourceID = @ResourceID)
 	option(recompile)";
 
 				dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
