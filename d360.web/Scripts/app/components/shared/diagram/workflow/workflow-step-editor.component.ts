@@ -188,7 +188,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 this.step.settings.SendToDefaultUsers = true;
             } else {
                 this.step.settings.SendToDefaultUsers = this.step.settings.SendToDefaultUsers.toString().toLowerCase() === 'true' ? true : false;
-            }
+			}
+			if (this.step.settings.IncludePreviousFormResponses == null) {
+				this.step.settings.IncludePreviousFormResponses = false;
+			} else {
+				this.step.settings.IncludePreviousFormResponses = this.step.settings.IncludePreviousFormResponses.toString().toLowerCase() === 'true' ? true : false;
+			}
         } else if (this.step.activityType === WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
                 .subscribe((r) => {
