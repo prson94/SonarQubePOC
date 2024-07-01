@@ -300,10 +300,12 @@ end
 									coalesce(EA.ErrorMessage, @LoadErrorMessage,'') + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
 									'MyFile.' + L.Extension as FilePath,
 									L.DateStarted,
+									case when L.DateCompleted is null then 0 else datediff(minute,L.DateCompleted,GETDATE()) end DateCompletedCurrentDateDiffInMin,
 									case when L.Action in ('P','R','U') and L.[File] is null then
 										case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
 											L.DateCompleted
-										when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+										when	(L.PutExecutionId is not null and EE.CompletedOn is null and (EE.ProcessingStartedOn is not NULL OR datediff(minute,L.DateCompleted,GETDATE()) >= 20)) 
+											or	(L.PostExecutionId is not null and EA.CompletedOn is null and (EA.ProcessingStartedOn is not NULL  OR datediff(minute,L.DateCompleted,GETDATE()) >= 20)) then
 											L.DateCompleted
 										when (L.Action = 'P' and L.PutExecutionId is null  and L.PostExecutionId is null and L.DateCompleted is not null) then
 											L.DateCompleted
@@ -1291,7 +1293,7 @@ inner join AssetPath P on P.ID = A.ID
 						await Connection.ExecuteAsync(@"
 								update  LoadItem 
 								set     Status = 0, 
-										StatusMessage = @msg 
+										StatusMessage = substring(@msg , 1, 500)
 								where   LoadID = @id 
 										and RowIndex = @rowIndex",
 									new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex }, commandTimeout: timeout);
@@ -1605,9 +1607,9 @@ inner join AssetPath P on P.ID = A.ID
 						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
 						sqlTables = @"
 							from (
-								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
+								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, substring(Message,1,2000), Success from api.ExecutionAsset where ExecutionId = {0}
 								union all
-								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
+								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, substring(Message,1,2000), cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
 							 ) EA
 							 left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
 						columns.ForEach(c =>
@@ -1628,7 +1630,7 @@ inner join AssetPath P on P.ID = A.ID
 
 						});
 						sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  substring(EA.Message,1,2000) end as StatusMessage\n";
 
 						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
 						sql += $"union all\n";
@@ -1650,7 +1652,7 @@ inner join AssetPath P on P.ID = A.ID
 
 						});
 						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+						sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else substring(coalesce(EA.Message, ER.Message, I.StatusMessage),1,2000) end as StatusMessage\n";
 
 						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
 
@@ -1667,7 +1669,7 @@ inner join AssetPath P on P.ID = A.ID
 
 						});
 						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+						sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  substring(coalesce(EA.Message, I.StatusMessage),1,2000) end as StatusMessage\n";
 
 						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
 						break;
