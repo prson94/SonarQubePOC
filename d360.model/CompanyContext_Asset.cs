@@ -2659,7 +2659,7 @@ where	T.ExecutionID = @ExecutionID
 
 								                            update	S
 								                            set		S.Success = 0,
-										                            S.[Message] = @msg
+										                            S.[Message] = LEFT(@msg,@characterLimit)
                                                             from api.ExecutionDeletedAsset S
 								                            where	{chunksQueryString} and S.AssetID is not null;",
 												 new { execution.ExecutionID, msg = ex.GetFullExceptionData(false), beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
