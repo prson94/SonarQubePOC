@@ -2667,11 +2667,6 @@ namespace d360.model.DataAccessLayer
 
 		public void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
 		{
-			if (!CompanyContext.CurrentResourceIsAdmin)
-			{
-				throw new StatusCodeException(HttpStatusCode.Forbidden);
-			}
-
 			var measure = CompanyContext.GetByUid<MetricAsset>(measureUid, a => a.Versions, a => a.Allocation);
 
 			if (measure == null)
