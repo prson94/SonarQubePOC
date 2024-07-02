@@ -2550,36 +2550,57 @@ from	IntersectType I
 					{
 						if (fieldSql.Length != 0)
 						{
-							fieldSql.Append(" or ");
+							fieldSql.Append(" union all ");
 						}
 
 						if (item.AssetID > 0)
 						{
-							fieldSql.Append($"(f.AssetID = {item.AssetID} and f.FieldTypeID = {item.FieldTypeID})");
+							fieldSql.Append($@"	select f.AssetID ID, f.Value, f.FieldTypeID 
+												from field f 
+												where (f.AssetID = {item.AssetID} and f.FieldTypeID = {item.FieldTypeID})");
 						}
 
 						if (item.IssueID > 0)
 						{
-							fieldSql.Append($"(f.IssueID = {item.IssueID} and f.FieldTypeID = {item.FieldTypeID})");
+							fieldSql.Append($@"	select f.IssueID ID, f.Value, f.FieldTypeID 
+												from field f 
+												where (f.IssueID = {item.IssueID} and f.FieldTypeID = {item.FieldTypeID})");
+
 						}
 
 						if (item.IntersectID > 0)
 						{
-							fieldSql.Append($"(f.IntersectID = {item.IntersectID} and f.FieldTypeID = {item.FieldTypeID})");
+							fieldSql.Append($@"	select f.IntersectID ID, f.Value, f.FieldTypeID 
+												from field f 
+												where (f.IntersectID = {item.IntersectID} and f.FieldTypeID = {item.FieldTypeID})");
 						}
 					}
 				}
 
 				if (fieldSql.Length != 0)
 				{
-					string sql = $"select f.AssetID, f.IssueID, f.IntersectID, f.Value, f.FieldTypeID from field f where {fieldSql}";
+					string sql = $"{fieldSql}";
 
 					IEnumerable<dynamic> vals = Query<dynamic>(sql);
 
 					foreach (Field item in fieldsToCheckForChanges)
 					{
-						dynamic value = vals.FirstOrDefault(x => (x.AssetID == item.AssetID || x.IssueID == item.IssueID || x.IntersectID == item.IntersectID) && x.FieldTypeID == item.FieldTypeID);
+						long? idValue = null;
 
+						if (item.IssueID > 0)
+						{
+							idValue = item.IssueID;
+						}
+						else if (item.IntersectID > 0)
+						{
+							idValue = item.IntersectID;
+						}
+						else
+						{
+							idValue = item.AssetID;
+						}
+
+						dynamic value = vals.FirstOrDefault(x => x.ID == idValue && x.FieldTypeID == item.FieldTypeID);
 						if ((value != null) && (item.Value != (string)value.Value))
 						{
 							changedFields.Add(item);

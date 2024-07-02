@@ -2827,11 +2827,13 @@ where	T.ExecutionID = @ExecutionID
 					await Database.Connection.ExecuteAsync($@"
 						declare @displayValue nvarchar(max) = ''
 						declare @assetTypeName nvarchar(max) = ''
-						declare @nextVersion int = (select max(version) + 1 as Version from reporting.Global_Audit ga where ga.Object = @object and ga.ObjectID = @objectId)
-						if @nextVersion is null
-						begin
-						  set @nextVersion = 1
-						end
+						declare @nextVersion int = null;
+
+						select @nextVersion = coalesce(max(version),0) + 1 as Version 
+						from reporting.Global_Audit ga where ga.Object = @object 
+						and ga.ObjectID = @objectId
+						option (recompile);
+
 
 						declare @value nvarchar(max) = (select top 1 FormattedValue from Field where FieldTypeID = @fieldTypeId and AssetID = @assetId)
 

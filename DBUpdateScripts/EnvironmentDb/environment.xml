@@ -224,8 +224,6 @@
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
-	<include file="scripts/View.workflow.ItemAsset.xml"/>
-	<include file="scripts/View.workflow.ItemIssue.xml"/>
     <include file="scripts/View.dbo.AuditView.xml"/>
     <include file="scripts/View.dbo.AuditViewCustomFilter.xml"/>
 	
@@ -302,7 +300,6 @@
 	<include file="scripts/Procedure.dbo.DeleteAssetDataProfileRecords.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteObject.xml"/>
 	<include file="scripts/Procedure.dbo.FollowObject.xml"/>
-	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetDisplayValue.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAssetTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>

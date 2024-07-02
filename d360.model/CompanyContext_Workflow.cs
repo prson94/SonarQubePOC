@@ -1935,8 +1935,21 @@ namespace d360.model
 				return false;
 			}
 
-			registration.LastExecuted = DateTime.UtcNow;
-			Entry(registration).State = EntityState.Modified;
+
+			try
+			{
+				await Database.Connection.ExecuteAsync(@"
+													 update er
+													 set LastExecuted = @dt
+													 from workflow.EventRegistration er
+													 where id = @id"
+														, new { id = registration.ID, dt = DateTime.UtcNow });
+			}
+			catch (Exception e)
+			{
+				Log.LogError(e, $"Error in updating LastExecuted {registration.ID}.");
+			}
+
 
 			WorkflowVersion version = WorkflowVersions
 				.Include(i => i.Steps)
