@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Procedure.utility.AddAuditEntry-v33">
+ <changeSet author="Pappas,Puneet" id="Procedure.utility.AddAuditEntry-v32">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -70,7 +70,11 @@ begin
 		else if @DependentObject = 'ResponsibilityType'
 		begin
 			select @ActionObjectName = Name from ResponsibilityType where ID = @DependentObjectID
-		end						
+		end				
+		else if @DependentObject = 'SurveyType'
+		begin
+			select @ActionObjectName = Name from SurveyType where ID = @DependentObjectID
+		end			
 		else if @DependentObject = 'Tag'
 		begin
 			select @ActionObjectName = Value from Tag where ID = @DependentObjectID
@@ -239,6 +243,27 @@ begin
 			where	ID = @MainObjectID;
 	end
 	
+	if @MainObject = 'QuestionType'
+	begin
+		select	@ActionObjectTypeName = T.Name,
+				@ObjectName = O.Name 
+		from	QuestionType O
+				inner join SurveyType T on T.ID = O.SurveyTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl (FieldName, NewValue)
+			select	FieldName, NewValue
+			from	QuestionType
+					cross apply
+					(
+					  values
+					  ('Name', cast(Name as nvarchar(max))),
+					  ('Description', cast(Description as nvarchar(max))),
+					  ('DisplayStyle', cast(DisplayStyle as nvarchar(max)))
+					) c (FieldName, NewValue)
+			where	ID = @MainObjectID;
+	end
+	
 	if @MainObject = 'ReferenceItem'
 	begin
 		insert into @tbl (FieldName, NewValue)
@@ -357,6 +382,27 @@ begin
 		insert into @tbl (FieldName, NewValue) select 'Context', Context from ResponsibilityTypeRelationOverrideItem where ID = @MainObjectID
 		insert into @tbl (FieldName, NewValue) select 'Group', g.Name from ResponsibilityTypeRelationOverrideItem r inner join [Group] g on g.id = r.securityassetid where r.SecurityAsset = 'G' and r.ID = @MainObjectID
 		insert into @tbl (FieldName, NewValue) select 'User', gr.FirstName + ' ' + gr.LastName from ResponsibilityTypeRelationOverrideItem r inner join reporting.[Global_Resource] gr on gr.ResourceID = r.securityassetid where r.SecurityAsset = 'R' and r.ID = @MainObjectID
+	end
+	
+	if @MainObject = 'SurveyType'
+	begin
+		select	@ActionObjectTypeName = 'Survey Type',
+				@ObjectName = O.Name 
+		from	SurveyType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl (FieldName, NewValue)
+			select	FieldName, NewValue
+			from	SurveyType
+					cross apply
+					(
+					  values
+					  ('Name', cast(Name as nvarchar(max))),
+					  ('Description', cast(Description as nvarchar(max))),
+					  ('AssetTypeID', cast(AssetTypeID as nvarchar(max))),
+					  ('ValidForDays', cast(ValidForDays as nvarchar(max)))
+					) c (FieldName, NewValue)
+			where	ID = @MainObjectID;
 	end
 
 	if @MainObject = 'CompanySettings'

@@ -1,0 +1,49 @@
+﻿
+<d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" (onClose)="closeDialog()" [isVisible]="isModalVisible">
+    <form *ngIf="surveyDetails && surveyDetails.Questions && !isLoading" (ngSubmit)="onSubmit()" #surveyForm="ngForm">
+        <div class="content">
+            <div class="row" *ngIf="currentQuestion">
+                <span class="question-count" *ngIf="surveyDetails.Questions.length > 1" i18n>Question {{currentQuestionIndex+1}} of {{surveyDetails.Questions.length}}</span>
+                <h4 style="padding-bottom:10px;padding-top:10px">{{currentQuestion.Name}}</h4>
+                <span *ngIf="currentQuestion.Description" [innerHtml]="currentQuestion.Description"></span>
+                <span [ngSwitch]="currentQuestion.DisplayStyle">
+                    <span *ngSwitchCase="'Radio'">
+                        <div *ngFor="let option of currentQuestion?.Options" style="padding:2px">
+                            <p-radioButton igRadioButton name="options" [(ngModel)]="currentQuestion.Value" [value]="option.Value" [label]="option.Name"></p-radioButton>
+                        </div>
+                    </span>
+                    <span *ngSwitchCase="'CheckList'">
+                        <div *ngFor="let option of currentQuestion?.Options;index as i" style="padding:2px">
+                            <p-checkbox igCheckbox name="options_{{i}}" [(ngModel)]="currentQuestion.Value" [value]="option.Value" [label]="option.Name"></p-checkbox>
+                        </div>
+                    </span>
+                </span>
+                <div>
+                    <div class="FieldName">Comments</div>
+                    <textarea name="comments" [style]="{'height':'150px'}" [(ngModel)]="currentQuestion.Comments"></textarea>
+                </div>
+                <div *ngIf="errorMessage.length > 0" class="errorMessage ng-star-inserted">* {{errorMessage}}</div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button igButton class="left ig-button-secondary" type="button" i18n-label label="Close"
+					*ngIf="ShowCloseButton" (click)="closeDialog()" [disabled]="submitting">
+			</button>
+            <span class="grow"></span>
+            <button igButton class="ig-button-secondary" icon="fa-arrow-circle-left" margin
+					[loading]="submitting" *ngIf="currentQuestionIndex > 0" [disabled]="!surveyForm.form.valid"
+					type="button" i18n-label label="Previous" (click)="previousQuestion(currentQuestionIndex)">
+            </button>
+            <button igButton class="ig-button-primary" icon="fa-arrow-circle-right" margin
+					[loading]="submitting" [disabled]="!surveyForm.form.valid"
+					*ngIf="currentQuestionIndex + 1 < surveyDetails.Questions.length"
+					type="button" i18n-label label="Next" (click)="nextQuestion(currentQuestionIndex)">
+            </button>
+            <button igButton class="ig-button-primary" type="submit" i18n-label label="Submit Survey"
+					[loading]="submitting" [disabled]="!surveyForm.form.valid"
+					*ngIf="currentQuestionIndex + 1 === surveyDetails.Questions.length">
+            </button>
+        </div>
+    </form>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+</d3s-modal>

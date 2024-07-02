@@ -318,6 +318,9 @@ namespace d360.web.Controllers
 				case "ISSUETYPE":
 					objectId = Company.IssueTypes.FirstOrDefault(x => x.uid == uid).ID;
 					return await DynamicEditorEditFields(o, objectId);
+				case "SURVEYTYPE":
+					objectId = Company.SurveyTypes.FirstOrDefault(x => x.Uid == uid).ID;
+					return await DynamicEditorEditFields(o, objectId);
 				default:
 					foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
 					{
@@ -368,6 +371,9 @@ namespace d360.web.Controllers
 					break;
 				case "RESOURCETYPE":
 					res = await Resource_EditFields(oid);
+					break;
+				case "SURVEYTYPE":
+					res = SurveyType_EditFields(oid);
 					break;
 				case "TAG":
 					res = Tag_EditFields(oid);
@@ -459,6 +465,18 @@ namespace d360.web.Controllers
 			throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
 		}
 
+		[HttpGet, Route("dynamiceditor/new/objectUid/{objectType}")]
+		public async Task<JsonResult> DynamicEditorAddFieldsByObjectUid(string objectType)
+		{
+			switch ((objectType ?? "").ToUpper())
+			{
+				case "SURVEYTYPE":
+					return await DynamicEditorAddFields(objectType, objectID: null, parentID: null, typeID: null);
+				default:
+					throw new ArgumentException(FormControllerApiMessage.InvalidEditorType);
+			}
+		}
+
 		[HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
 		public async Task<JsonResult> DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
 		{
@@ -497,6 +515,9 @@ namespace d360.web.Controllers
 					break;
 				case "RESOURCETYPE":
 					res = await Resource_AddFields(objectID.GetValueOrDefault());
+					break;
+				case "SURVEYTYPE":
+					res = SurveyType_AddFields();
 					break;
 				case "TAG":
 					res = Tag_AddFields();
@@ -1803,7 +1824,7 @@ order by Sort, title";
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
 
-		/// <param name="id">tag identifier</param>
+		/// <param name="id">SurveyTypeID</param>
 		[Route("Tag_EditFields"), NonNullableParameters]
 		public JsonResult Tag_EditFields(int id)
 		{

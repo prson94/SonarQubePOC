@@ -221,6 +221,15 @@ namespace d360.core
         }
     }
 
+    public class AllowSurveyAttribute : Attribute
+    {
+        public bool Allowed { get; private set; } = true;
+        public AllowSurveyAttribute(bool allowed)
+        {
+            Allowed = allowed;
+        }
+    }
+
     public class DescriptionAttribute : LocalizedAttribute
     {
         public string Description

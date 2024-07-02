@@ -2825,6 +2825,9 @@ namespace d360.web.Controllers
 				case SystemObjects.Intersect:
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
+				case SystemObjects.SurveyType:
+					objectId = Company.SurveyTypes.FirstOrDefault(s => s.Uid == uid).ID;
+					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
 				default:
 					if (type.IsType())
 					{
@@ -4575,6 +4578,56 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					resourceType = null;
 					break;
 				#endregion
+				case SystemObjects.SurveyType:
+					#region Fields
+					var surveyType = Company.GetById<SurveyType>(id);
+					if (surveyType != null)
+					{
+						model.rows.Add(new DetailReadOnlyRowModel
+						{
+							columns = 1,
+							FirstColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Survey Name", FieldName = "SurveyTypeName", FieldDescription = surveyType.GetDescription(i => i.Name), Value = surveyType.Name }
+							}
+						});
+
+						model.rows.Add(new DetailReadOnlyRowModel
+						{
+							columns = 1,
+							FirstColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Uid", FieldName = "Uid", FieldDescription = surveyType.GetDescription(i => i.Uid), Value = surveyType.Uid.ToString() }
+							}
+						});
+
+						var dtlSurveyType = Company.GetObjectDetail(surveyType.AssetType.Object, surveyType.AssetType.ObjectID);
+						model.rows.Add(new DetailReadOnlyRowModel
+						{
+							columns = 2,
+							FirstColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.AssetType.Object), Value = (dtlSurveyType != null) ? dtlSurveyType.Class.GetDisplayName() : "Invalid class" }
+							},
+							SecondColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Object", FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.AssetType.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.AssetType.ObjectID.ToString() }
+							}
+						});
+
+						model.rows.Add(new DetailReadOnlyRowModel
+						{
+							columns = 1,
+							FirstColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Description", FieldName = "Description", FieldDescription = surveyType.GetDescription(i => i.Description), Value = surveyType.Description, DataType = "HTML" }
+							}
+						});
+
+					}
+					surveyType = null;
+					break;
+				#endregion
 				case SystemObjects.Tag:
 					#region Fields
 					var tag = Company.GetById<Tag>(id);
@@ -4599,6 +4652,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 						});
 
 					}
+					surveyType = null;
 					break;
 				#endregion
 				case SystemObjects.Taxonomy:
@@ -5205,6 +5259,159 @@ where v.id = {0}", id)).FirstOrDefault();
 				HttpStatusCode.OK,
 				model
 			);
+		}
+
+		#endregion
+
+		#region Surveys
+
+		[Route("surveys"), RequireAdminPermissions]
+		public IQueryable<SurveyType> GetSurveyTypes()
+		{
+			return Company.Table<SurveyType>();
+		}
+
+		[Route("surveys/{typeID:int}/{assetId}/report")]
+		public JObject GetSurveyReport(int typeID, long assetId)
+		{
+			var sql = $@"
+					SELECT (
+							SELECT	(
+									SELECT
+										(
+										SELECT		QT.ID,
+													QT.Name AS Title,
+													S.Average/S.Total AS Score,
+													COALESCE(S.Responses, 0) AS TotalResponses,
+													(
+													SELECT	(
+																SELECT		IQTO.Name,
+																			COUNT(1) AS Value
+																FROM		Question IQ
+																			INNER JOIN QuestionOption IQO ON IQ.ID = IQO.QuestionID
+																			INNER JOIN QuestionTypeOption IQTO on IQTO.ID = IQO.QuestionTypeOptionID and IQTO.QuestionTypeID = QT.ID
+																			inner join Survey S on S.ID = IQ.SurveyID and S.AssetId = @assetId
+																			inner join  SurveyType ST on ST.ID = S.SurveyTypeID and ST.ID = @SurveyTypeID
+																WHERE		IQTO.QuestionTypeID = QT.ID
+																GROUP BY	IQTO.QuestionTypeID, 
+																			IQTO.Name
+																ORDER BY	IQTO.QuestionTypeID
+																FOR XML PATH('Result'), Type
+															) FOR XML PATH('Results'), Type
+													)
+										FROM		QuestionType QT
+													LEFT JOIN	(
+																SELECT		QT.ID AS QuestionTypeID,
+																			AVG(QTO.Value) AS Average,
+																			QTO.Value as Total,
+																			COUNT(1) AS Responses
+																FROM		QuestionType QT
+																			INNER JOIN QuestionTypeOption QTO on QTO.QuestionTypeID = QT.ID and QT.ID = @SurveyTypeID
+																			INNER JOIN QuestionOption QO ON QO.QuestionTypeOptionID = QTO.ID
+																			LEFT JOIN Question Q ON Q.ID = QO.QuestionID
+																GROUP BY	QT.ID, QTO.Value
+																) AS S ON S.QuestionTypeID = QT.ID
+										WHERE		QT.SurveyTypeID = ST.ID
+										ORDER BY	QT.ID
+										FOR XML PATH('Chart'), Type
+										)
+									FOR XML PATH('Charts'), Type--as Charts
+									)
+							FROM		SurveyType ST
+										INNER JOIN Survey S ON ST.ID = S.SurveyTypeID AND S.AssetId = @assetId and getutcdate() between S.CreatedOn and dateadd(dd, ST.[ValidForDays], S.CreatedOn)
+							WHERE		ST.ID = @SurveyTypeID
+							GROUP BY ST.Name, ST.ID
+							FOR XML PATH(''), Type
+							)
+							FOR XML PATH('Report')";
+
+			var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, assetId });
+			var xmlString = string.Join("", models);
+			var xml = XElement.Parse(xmlString);
+			string json = JsonConvert.SerializeXNode(xml);
+
+			return JObject.Parse(json);
+		}
+
+		[Route("surveys/{assetTypeId}/{assetId}/survey")]
+		public ObjectSurveyModel GetSurvey(SystemObjects parentType, int assetTypeId, long assetId)
+		{
+			var sql = @"
+						select id, name from surveytype where AssetTypeId = @assetTypeId and id not in(
+								select 
+									st.id
+								from 
+									surveytype st 
+									inner join survey s on (s.surveytypeid = st.id and s.resourceid = @resource and s.createdon > DATEADD(day, (st.validfordays*-1), getdate()) and s.AssetId = @assetId)
+					)";
+
+			var surveys = Company.Query<ObjectSurveyModel>(sql, new
+			{
+				assetTypeId,
+				assetId,
+				resource = Company.CurrentResourceID
+			}).ToList();
+
+			if (surveys == null || surveys.Count == 0)
+			{
+				return null;
+			}
+
+			var rand = new Random();
+			var randIndex = rand.Next(0, surveys.Count);
+
+			if (randIndex > 0 && randIndex < surveys.Count)
+			{
+				return surveys[randIndex];
+			}
+
+			return surveys.First();
+		}
+
+		[Route("survey/{surveyId}/{assetId}")]
+		[ValidateHttpAntiForgeryToken]
+		public CreateResponse PostSurveyResponse(int surveyId, long assetId, SurveyResponseModel data)
+		{
+			foreach (var question in data.Questions)
+			{
+				if (!question.Values.Any(x => x.IsChecked == true))
+				{
+					throw new Exception(ApiMessages.InvalidModel);
+				}
+			}
+
+			var survey = new Survey
+			{
+				SurveyTypeID = surveyId,
+				AssetID = assetId,
+				ResourceID = Company.CurrentResourceID,
+				CreatedOn = DateTime.UtcNow
+			};
+
+			Company.SaveOrUpdate(survey);
+
+			foreach (var question in data.Questions)
+			{
+				//insert the question
+				var q = new Question
+				{
+					SurveyID = survey.ID,
+					Comment = question.Comments
+				};
+
+				Company.SaveOrUpdate(q);
+
+				// insert each selected survey value
+
+				var selected = question.Values.Where(x => x.IsChecked);
+
+				foreach (var value in selected)
+				{
+					Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID }).FirstOrDefault();
+				}
+			}
+
+			return new CreateResponse { Message = "Created" };
 		}
 
 		#endregion

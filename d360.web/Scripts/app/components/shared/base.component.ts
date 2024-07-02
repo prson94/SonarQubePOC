@@ -1224,6 +1224,7 @@ export class BaseComponent {
 			StringConstants.Section_Relationships,
 			StringConstants.Section_Rules,
 			StringConstants.Section_Scoring,
+			StringConstants.Section_Surveys,
 			StringConstants.Section_Actions,
 			StringConstants.Section_Workflows]
 			.indexOf(areaName) !== -1 ? StringConstants.Area_Configuration : StringConstants.Area_Administration;

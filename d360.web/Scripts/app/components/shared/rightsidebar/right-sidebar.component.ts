@@ -9,8 +9,10 @@ import {
     OnChanges,
     OnDestroy,
     Output,
+    QueryList,
     SimpleChange,
-    ViewChild
+    ViewChild,
+    ViewChildren
 } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -21,7 +23,9 @@ import { Subscription } from 'rxjs';
 import { sortBy, startsWith } from "lodash-es";
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
+import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { SearchDetail } from '../../../models/search-result.model';
@@ -32,6 +36,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
@@ -54,6 +59,7 @@ import { TabsModule } from '../tabs/tabs.module';
 		TagUsageInfoModule,
 		SharedDeleteFormModule,
 		SiteModalModule,
+		TakeSurveyModule,
 		PipesModule,
 		ScoreBadgeModule,
 		InfoTooltipModule,
@@ -62,7 +68,7 @@ import { TabsModule } from '../tabs/tabs.module';
 		DirectivesModule,
 		TabsModule
 	],
-    providers: [ObjectStatisticsService, ArtifactService, WorkflowService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     styleUrls: ['./right-sidebar.component.less'],
 })
 
@@ -87,6 +93,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
     currentObject: any;
+    survey: Survey;
     @ViewChild('badge', { static: false }) badge: ElementRef;
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     private statistics: ObjectStatistics;
@@ -101,7 +108,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showStatus = false;
     showCertify = false;
     showDefaultHeader: boolean = false;
+    showSurvey: boolean = false;
     showNav: boolean = true;
+    showSurveyPopup: boolean = false;
     showCertifyModal: boolean = false;
     assetAction: AssetAction;
     dataClassification: string;
@@ -115,6 +124,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     constructor(
         private secondaryNavService: SecondaryNavService,
         protected objectStatisticsService: ObjectStatisticsService,
+        private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
@@ -209,6 +219,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.statistics = null;
         this.showCertify = false;
         this.showDefaultHeader = false;
+        this.showSurvey = false;
         this.searchDetails = null;
         this.items = [];
 		this.buttons = [];
@@ -248,6 +259,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showStatus = false;
                 this.showDataClassification = false;
                 this.showOnlyMainTab = false;
+                this.showSurvey = false;
                 this.searchDetails = null;
                 this.emitChanges();
             });
@@ -273,6 +285,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showDataClassification = false;
                 this.statistics = null;
                 this.showCertify = false;
+                this.showSurvey = false;
                 this.searchDetails = null;
                 this.emitChanges();
             }
@@ -399,6 +412,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.ref.markForCheck();
                 }
             );
+            this.surveysService.getObjectSurvey(this.currentObject.Uid)
+                .subscribe((result) => {
+                    this.survey = undefined;
+                    if (result) {
+                        this.survey = result;
+                        this.showSurvey = true;
+                        this.ref.markForCheck();
+                    }
+                });
         }
 
         this.loadAssetAssignmentCount();
@@ -488,6 +510,22 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
                         }, 6000);
                 });}
+    }
+
+    navigateToSurvey() {
+        if (this.currentObject) {
+            this.showSurveyPopup = true;
+        }
+    }
+
+    closeSurveyPopup() {
+        this.showSurveyPopup = false;
+        this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
+    }
+
+    handleComplete(event) {
+        this.closeSurveyPopup();
+        this.showSurvey = false;
     }
 
     OpenScoring(scoreType: string) {

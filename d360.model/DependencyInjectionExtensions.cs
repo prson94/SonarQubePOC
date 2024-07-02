@@ -19,6 +19,7 @@ namespace d360.model
             builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
+			builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
             builder.RegisterType<GraphFilterValidator>().InstancePerRequest();
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
 			builder.RegisterType<ExecutionsRepository>().As<IExecutionsRepository>().InstancePerRequest();
@@ -30,6 +31,7 @@ namespace d360.model
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
+            builder.RegisterType<SurveyRepository>().As<ISurveyRepository>().InstancePerRequest();
             builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<GraphFilterRepository>().As<IGraphFilterRepository>().InstancePerRequest();
