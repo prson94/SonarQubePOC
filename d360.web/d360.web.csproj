@@ -1999,7 +1999,6 @@
     <Content Include="Views\Shared\Unsupported.cshtml" />
     <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
     <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
-    <Content Include="Views\Slo\OidcLogout.cshtml" />
     <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
     <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
