@@ -106,7 +106,6 @@
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTestBase.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
-    <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />
     <Compile Include="ValidatorTests\SemanticValidationTests.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />

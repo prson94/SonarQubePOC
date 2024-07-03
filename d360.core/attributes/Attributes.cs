@@ -210,21 +210,10 @@ namespace d360.core
 		}
 	}
 
-
-
     public class AllowMultiplePredicatesAttribute : Attribute
     {
         public bool Allowed { get; private set; } = true;
         public AllowMultiplePredicatesAttribute(bool allowed)
-        {
-            Allowed = allowed;
-        }
-    }
-
-    public class AllowSurveyAttribute : Attribute
-    {
-        public bool Allowed { get; private set; } = true;
-        public AllowSurveyAttribute(bool allowed)
         {
             Allowed = allowed;
         }

@@ -154,12 +154,6 @@ namespace d360.model
 
 		public DbSet<Predicate> Predicates { get; set; }
 
-		public DbSet<Question> Questions { get; set; }
-
-		public DbSet<QuestionType> QuestionTypes { get; set; }
-
-		public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
-
 		public DbSet<Report> Reports { get; set; }
 
 		public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
@@ -173,10 +167,6 @@ namespace d360.model
 		public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
 
 		public DbSet<Shortcut> Shortcuts { get; set; }
-
-		public DbSet<Survey> Surveys { get; set; }
-
-		public DbSet<SurveyType> SurveyTypes { get; set; }
 
 		public DbSet<Theme> Themes { get; set; }
 
@@ -1963,10 +1953,6 @@ from	IntersectType I
 			modelBuilder.Entity<FieldType>().Property(x => x.Increment).HasPrecision(38, 18);
 			modelBuilder.Entity<FieldWithRelation>().Property(x => x.MinimumLength).HasPrecision(38, 18);
 			modelBuilder.Entity<FieldWithRelation>().Property(x => x.MaximumLength).HasPrecision(38, 18);
-			modelBuilder.Entity<Question>().HasMany(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
-			{
-				i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
-			});
 			modelBuilder.Entity<Score>().HasMany(i => i.Items).WithMany(i => i.Scores).Map(i =>
 			{
 				i.MapLeftKey("ScoreUid").MapRightKey("ScoreItemUid").ToTable("ScoreItemLink", "metrics");
@@ -2452,31 +2438,6 @@ from	IntersectType I
 
 				#endregion
 
-				#region Business logic : QuestionType
-
-				if (entry.Entity is QuestionType)
-				{
-					QuestionType o = entry.Entity as QuestionType;
-
-					if (entry.State == EntityState.Added)
-					{
-						if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
-						{
-							throw new ArgumentException(Messages.Error_NameTaken);
-						}
-					}
-
-					if (entry.State == EntityState.Modified)
-					{
-						if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
-						{
-							throw new ArgumentException(Messages.Error_NameTaken);
-						}
-					}
-				}
-
-				#endregion
-
 				#region Business logic : Report
 
 				if (entry.Entity is Report)
@@ -2530,31 +2491,6 @@ from	IntersectType I
 						if (Any<ResponsibilityDetail>(i => i.ResponsibilityTypeID == o.ID))
 						{
 							throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
-						}
-					}
-				}
-
-				#endregion
-
-				#region Business logic : SurveyType
-
-				if (entry.Entity is SurveyType)
-				{
-					SurveyType o = entry.Entity as SurveyType;
-
-					if (entry.State == EntityState.Added)
-					{
-						if (Any<SurveyType>(i => i.Name == o.Name))
-						{
-							throw new ArgumentException(Messages.Error_NameTaken);
-						}
-					}
-
-					if (entry.State == EntityState.Modified)
-					{
-						if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
-						{
-							throw new ArgumentException(Messages.Error_NameTaken);
 						}
 					}
 				}
