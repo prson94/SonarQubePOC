@@ -297,7 +297,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
 		if (this.field.Value != null && this.field.Value.length > 0) {
 			const x = this.field.Value[0];
-			console.log(this.field);
 			this.resouceAssigned = x.split('|')[2];
 			this.resourceGrid = false;
 			this.model.selectedResource = x;
