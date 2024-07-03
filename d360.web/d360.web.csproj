@@ -1792,6 +1792,10 @@
     <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
     <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
     <Content Include="Scripts\app\components\admin\security\roles.html" />
+    <Content Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
+    <Content Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
+    <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.html" />
     <Content Include="Scripts\app\components\shared\security\owner-list.html" />
     <Content Include="Scripts\app\components\shared\security\modals\owner-form.html" />
     <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
@@ -2000,6 +2004,7 @@
     <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
     <Content Include="Scripts\app\components\admin\security\policy.less" />
+    <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -2018,6 +2023,13 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\owner-list.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-delete.ts" />
@@ -2025,6 +2037,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -2163,7 +2176,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.table.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\policies.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />
@@ -3060,7 +3072,6 @@
     <None Include="Scripts\app\components\admin\scoring\measure-list.component.html" />
     <None Include="Scripts\app\components\admin\search\admin-search.component.html" />
     <None Include="Scripts\app\components\admin\security\policies.html" />
-    <None Include="Scripts\app\components\admin\security\policies\policy.form.html" />
     <None Include="Scripts\app\components\admin\security\roles.html" />
     <None Include="Scripts\app\components\admin\settings\admin-home.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.html" />
