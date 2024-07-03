@@ -4009,7 +4009,6 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					policy = null;
 					break;
 				#endregion
-
 				case SystemObjects.RuleType:
 					#region Fields
 					var ruleType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "RuleType").SingleOrDefault();
@@ -5379,7 +5378,6 @@ where v.id = {0}", id)).FirstOrDefault();
 
 			List<CountModel> items = new List<CountModel>
 			{
-				//need to add a record for social, Issue, Task, DataEvent, Question
 				new CountModel { Name = Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) },
 				new CountModel { Name = Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) }
 			};

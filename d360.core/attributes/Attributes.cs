@@ -210,8 +210,6 @@ namespace d360.core
 		}
 	}
 
-
-
     public class AllowMultiplePredicatesAttribute : Attribute
     {
         public bool Allowed { get; private set; } = true;

@@ -1256,7 +1256,7 @@ end
 		]]>
     </sql>
   </changeSet>
-  
+
  <changeSet author="Pappas" id="Data.Corrections.DeleteSurveyHistory">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -1266,6 +1266,6 @@ delete reporting.Global_Audit where Object = 'SurveyType';
 delete reporting.Global_Audit where Object = 'QuestionType';
 ]]>
   </sql>
- </changeSet>
-  
+ </changeSet>	
+	
 </databaseChangeLog>

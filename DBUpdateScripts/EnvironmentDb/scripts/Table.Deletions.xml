@@ -146,8 +146,20 @@ drop table if exists [analytics].[Action]
 ]]>
   </sql>
  </changeSet>
- 
- <changeSet author="Pappas" id="Table.Deletions.Survey-v1">
+
+ <changeSet author="Pappas" id="Table.Deletions.ShoppingCart-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop table if exists [dbo].[ShoppingCartItem]
+GO
+drop table if exists [dbo].[ShoppingCart]
+GO
+drop table if exists [dbo].[ShoppingCartType]
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.Deletions.Survey-v1.0">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 drop table if exists [dbo].QuestionOption
@@ -164,18 +176,6 @@ drop table if exists [dbo].SurveyType
 GO
 ]]>
   </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.Deletions.ShoppingCart-v1">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop table if exists [dbo].[ShoppingCartItem]
-GO
-drop table if exists [dbo].[ShoppingCart]
-GO
-drop table if exists [dbo].[ShoppingCartType]
-]]>
-  </sql>
- </changeSet>
-
+ </changeSet>	
+	
 </databaseChangeLog>

@@ -2128,6 +2128,11 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-delete-dialog.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu-folder-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-site-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.ts" />
@@ -2601,6 +2606,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-comment.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tabs\tabs.component.ts" />
@@ -2811,6 +2818,7 @@
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\survey.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tag.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\third-party-license-model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
@@ -2911,6 +2919,7 @@
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\title-and-tabs.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip-singleton.service.ts" />
@@ -3022,6 +3031,9 @@
     <None Include="Scripts\app\components\admin\settings\admin-site-menu-delete-dialog.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-site-menu-folder-editor.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
+    <None Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
+    <None Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
+    <None Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
@@ -3317,6 +3329,7 @@
     <None Include="Scripts\app\components\shared\social\comment-form.component.html" />
     <None Include="Scripts\app\components\shared\social\social-board.component.html" />
     <None Include="Scripts\app\components\shared\social\social-comment.component.html" />
+    <None Include="Scripts\app\components\shared\survey\take-survey.component.html" />
     <None Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.html" />
     <None Include="Scripts\app\components\shared\tabs\tabs.component.html" />
     <None Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.html" />

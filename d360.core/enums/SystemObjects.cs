@@ -42,7 +42,7 @@ namespace d360.core
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         ResourceType = 14,
-        
+               
         [Description("Tag"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Counter | DataType.System)]
         Tag = 16,
         
@@ -51,9 +51,6 @@ namespace d360.core
         
         [Description("Taxonomy Type"), IsType(true), ExcludeDataType(DataType.System)]
         TaxonomyType = 18,
-        
-        [Description("Tooltip  Template"), AllowOwnership(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
-        TooltipTemplate = 19,
         
         [Description("Field"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
         Field = 20,
@@ -115,25 +112,14 @@ namespace d360.core
         [Description("Group Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.Score | DataType.Html | DataType.Link | DataType.System)]
         GroupType = 40,
         
-        [Description("Rule Dimension"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
-        RuleDimension = 41,
-        
-        [Description("Map"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
-        Map = 42,
-        
-        [Description("Map Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
-        MapType = 43,
-        
         [Description("Reference Item"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         ReferenceItem = 44,
         
         [Description("Reference Item Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter)]
         ReferenceItemType = 45,
-        
-        [Description("Monitor"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
-        Monitor = 48,
-        
-        [Description("Issue Type"), IsType(true),
+		[Description("Monitor"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
+		Monitor = 48,
+		[Description("Issue Type"), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         IssueType = 49,

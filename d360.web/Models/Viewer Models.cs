@@ -418,7 +418,6 @@ namespace d360.web.Models
         public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
 
-
     [DataContract]
     public class TagSuggestionModel
     {
