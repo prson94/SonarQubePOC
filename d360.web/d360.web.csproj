@@ -862,36 +862,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SearchApiMessages.nl-NL.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.de-DE.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.de-DE.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.es-ES.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.es-ES.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.fr-FR.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.fr-FR.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.it-IT.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.it-IT.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.nl-NL.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.nl-NL.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\Swagger.de-DE.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1650,26 +1620,6 @@
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>SearchApiMessages.nl-NL.designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.de-DE.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.de-DE.designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.es-ES.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.es-ES.designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.fr-FR.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.fr-FR.designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.it-IT.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.it-IT.designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.nl-NL.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.nl-NL.designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\Swagger.de-DE.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>Swagger.de-DE.designer.cs</LastGenOutput>
@@ -1778,11 +1728,6 @@
     <EmbeddedResource Include="App_GlobalResources\ScoreApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ScoreApiMessages.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="Content\Swagger\index.html" />

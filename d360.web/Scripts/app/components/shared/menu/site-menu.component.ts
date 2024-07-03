@@ -398,7 +398,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.NavigationItems.push({ Name: $localize`Workflows`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Workflow Actions`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Scoring Definitions`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: $localize`Surveys`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, count: null });
     }
 
     private buildAdminMenu() {
