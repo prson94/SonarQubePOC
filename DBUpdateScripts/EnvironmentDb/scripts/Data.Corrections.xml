@@ -1256,5 +1256,16 @@ end
 		]]>
     </sql>
   </changeSet>
-  
+
+ <changeSet author="Pappas" id="Data.Corrections.DeleteSurveyHistory">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+delete i from reporting.Global_FieldAudit i inner join reporting.Global_Audit h on h.ID = i.AuditID and h.Object = 'SurveyType';
+delete i from reporting.Global_FieldAudit i inner join reporting.Global_Audit h on h.ID = i.AuditID and h.Object = 'QuestionType';
+delete reporting.Global_Audit where Object = 'SurveyType';
+delete reporting.Global_Audit where Object = 'QuestionType';
+]]>
+  </sql>
+ </changeSet>	
+	
 </databaseChangeLog>
