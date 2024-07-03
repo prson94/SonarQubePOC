@@ -513,6 +513,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
 										case when FT.Type = 'Lookup' then FT.SortByAscending else null end as 'Type.Lookup.SortByAscending',
 										case when FT.Type = 'Lookup' then COALESCE(TRY_CONVERT(UNIQUEIDENTIFIER, FT.DefaultValue),DFA.[Uid]) else null end as 'Type.Lookup.DefaultValue',
+										case when FT.Type = 'Lookup' then COALESCE(FT.DefaultFormattedValue, FT.DefaultValue) else null end as 'Type.Lookup.DefaultFormattedValue',
 										case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 										case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
 										case when FT.Type = 'Lookup' then FT.IsRequired else null end as 'Type.Lookup.Validation.IsRequired',
