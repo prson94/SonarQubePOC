@@ -750,6 +750,9 @@ namespace d360.core.entities
 		public string DefaultValue { get; set; }
 
 		[DataMember]
+		public string DefaultFormattedValue { get; set; }
+
+		[DataMember]
 		public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
 
 		[DataMember]

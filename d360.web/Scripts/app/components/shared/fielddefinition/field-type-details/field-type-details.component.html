@@ -188,7 +188,13 @@
 					</ng-container>
 
 					<ng-template #nonLinkField>
-						<div class="row" *ngIf="['Link'].indexOf(currentType) === -1">
+						<div class="row" *ngIf="['Link'].indexOf(currentType) === -1 && currentType === 'Lookup'">
+							<label class="ig-label" i18n>Default Value</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultFormattedValue ?? '---'}}
+							</div>
+						</div>
+						<div class="row" *ngIf="['Link'].indexOf(currentType) === -1 && currentType !== 'Lookup'">
 							<label class="ig-label" i18n>Default Value</label>
 							<div class="ig-value">
 								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}

@@ -495,6 +495,7 @@ export class DefaultValue {
 
 export class Lookup implements ICommonOptions {
 	DefaultValue: string;
+	DefaultFormattedValue: string;
 	Description: Description = new Description();
 	AllowAllValue: boolean;
 	AllowMultipleValues: boolean;
