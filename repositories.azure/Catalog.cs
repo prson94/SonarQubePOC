@@ -4,8 +4,6 @@ using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.EMMA;
 using repositories.resources;
 using System;
 using System.Collections.Generic;
@@ -13,7 +11,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

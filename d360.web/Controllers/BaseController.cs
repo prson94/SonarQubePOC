@@ -354,6 +354,11 @@ namespace d360.web.Controllers
 			}
 		}
 
+		protected internal IHttpActionResult errorMessageForbiddenResponse(string message)
+		{
+			return ResponseMessage(ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.Forbidden, message));
+		}
+
 		protected internal IHttpActionResult errorMessageArgumentResponse(string message)
 		{
 			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message));

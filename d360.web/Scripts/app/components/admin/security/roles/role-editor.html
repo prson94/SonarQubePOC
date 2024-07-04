@@ -1,0 +1,108 @@
+﻿<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
+		   [showTitle]="false"
+		   (onClose)="cancel();"
+		   [isVisible]="isModalVisible">
+	<div class="editor-container">
+		<div class="form-editor-container">
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 i18n>Security</h2>
+				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges" [igformGroup]="roleForm" [inputContainer]="formElement"></ig-form-feedback-badges>
+			</div>
+			<ig-message-box>
+				<span i18n>Create a role that you can assign to users and groups.</span>
+			</ig-message-box>
+			<d3s-loading [isLoading]="isLoading"></d3s-loading>
+			<div class="form-wrapper">
+				<form #form (ngSubmit)="onSubmit()" [formGroup]="roleForm" *ngIf="!isLoading">
+					<ig-property-group [igformGroup]="roleForm" title="General" [showHeaderLine]="false" i18n-title>
+						<div inputs>
+							<div class="form-group">
+								<div class="row">
+									<div class="field-col">
+										<label for="name" class="ig-label" i18n>Name</label>
+										<input igInput
+											   igSize="full"
+											   [igDataCy]="'Role_Text_Name'"
+											   type="text"
+											   name="name"
+											   formControlName="name"
+											   required />
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="field-col">
+										<label for="description" class="ig-label" i18n>Description</label>
+										<textarea igTextArea
+												  igSize="full"
+												  [igDataCy]="'Role_Text_Description'"
+												  type="text"
+												  name="description"
+												  formControlName="description"></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+					</ig-property-group>
+
+					<ig-property-group [igformGroup]="roleForm" title="Permissions" [showHeaderLine]="false" i18n-title>
+						<div inputs>
+							<div class="form-group">
+
+								<div class="row">
+									<div class="col l3 m3 s12" pTooltip="Read an asset and its properties" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Read_Asset" [value]="Read_Asset" binary="true" [ngModelOptions]="{standalone: true}" label="Read asset"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Add an asset" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Add_Asset" [value]="Add_Asset" binary="true" [ngModelOptions]="{standalone: true}" label="Create asset"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Update an asset's properties" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Edit_Asset" [value]="Edit_Asset" binary="true" [ngModelOptions]="{standalone: true}" label="Modify asset"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Remove an asset" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Delete_Asset" [value]="Delete_Asset" binary="true" [ngModelOptions]="{standalone: true}" label="Remove asset"></p-checkbox>
+									</div>
+
+									<div class="col l3 m3 s12" pTooltip="Read an asset's owners" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Read_Owner" [value]="Read_Owner" binary="true" [ngModelOptions]="{standalone: true}" label="Read owners"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Add owners to an asset" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Add_Owner" [value]="Add_Owner" binary="true" [ngModelOptions]="{standalone: true}" label="Create owner"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Modify an asset's owners" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Edit_Owner" [value]="Edit_Owner" binary="true" [ngModelOptions]="{standalone: true}" label="Modify owner"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Remove an asset's owners" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Delete_Owner" [value]="Delete_Owner" binary="true" [ngModelOptions]="{standalone: true}" label="Remove owner"></p-checkbox>
+									</div>
+
+									<div class="col l3 m3 s12" pTooltip="Read an asset's relationships" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Read_Relation" [value]="Read_Relation" binary="true" [ngModelOptions]="{standalone: true}" label="Read relations"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Add relationships to an asset" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Add_Relation" [value]="Add_Relation" binary="true" [ngModelOptions]="{standalone: true}" label="Create relation"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Modify an asset's relationships" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Edit_Relation" [value]="Edit_Relation" binary="true" [ngModelOptions]="{standalone: true}" label="Modify relation"></p-checkbox>
+									</div>
+									<div class="col l3 m3 s12" pTooltip="Remove an asset's relationships" tooltipPosition="bottom" tooltipStyleClass="ig-tooltip">
+										<p-checkbox formControlName="Delete_Relation" [value]="Delete_Relation" binary="true" [ngModelOptions]="{standalone: true}" label="Remove relation"></p-checkbox>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</ig-property-group>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton [disabled]="isSaving" class="ig-button-secondary" type="button" (click)="cancel()" label="{{cancelLabel}}"></button>
+		<span class="grow"></span>
+		<button [disabled]="isSubmitDisabled || isSaving" [loading]="isSaving" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
+	</div>
+</d3s-modal>

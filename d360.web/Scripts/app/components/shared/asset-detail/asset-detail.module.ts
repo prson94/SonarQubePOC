@@ -28,6 +28,7 @@ import { PortalsModule } from "../portals/portals.module";
 import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
 import { GroupMembersModule } from '../group/group-members.module';
 import { UserAvatarModule } from '../small-widgets/user-avatar/user-avatar.module';
+import { SecurityModule } from '../security/security.module';
 
 
 @NgModule({
@@ -50,7 +51,8 @@ import { UserAvatarModule } from '../small-widgets/user-avatar/user-avatar.modul
 		SearchFieldModule,
 		LinkDisplayModule,
         ScoreBadgeModule,
-        PeopleResponsibilitiesModule,
+		PeopleResponsibilitiesModule,
+		SecurityModule,
         DynamicFieldNameModule,
         PortalsModule,
         SharedAssignmentsModule,

@@ -270,9 +270,9 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<dynamic> GetResponsibilityType(Guid uid)
 		{
-			return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>($@"
-							select [ID], [Name], [Description], [uid], [UpdatedOn] from [dbo].[responsibilitytype] WHERE [uid] = '{uid.ToString()}'
-							", ApiTimeout);
+			return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(
+				"select [ID], [Name], [Description], [uid], [UpdatedOn] from [security].[Role] WHERE [uid] = @uid",
+				new { uid });
 		}
 
 		private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, Guid responsibilityUidFilter, Guid assigneeUidFilter, int timeout = 300)

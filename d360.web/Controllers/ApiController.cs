@@ -5008,55 +5008,37 @@ where v.id = {0}", id)).FirstOrDefault();
 		}
 
 
-		[Route("{id:int}/permissionsbyid")]
-		public async Task<List<PermissionInfo>> GetPermissionsObject(int id)
-		{
-			var isAdmin = Company.CurrentResourceIsAdmin;
-			AssetDetail asset = null;
+		//[Route("{type}/{uid}/permissions")]
+		//public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
+		//{
+		//	if (type == SystemObjects.Tag)
+		//	{
+		//		List<PermissionInfo> ret = new List<PermissionInfo>();
 
-			if (!isAdmin)
-			{
-				asset = (await Catalog.ReadAssetDetail(id));
-				if (asset == null)
-				{
-					throw new ArgumentNullException(ApiMessages.AssetNotfound);
-				}
-			}
+		//		if (tagRepository.IsAuthorizedToEditTag(uid))
+		//		{
+		//			ret.AddRange(Permission.DeleteAsset.GetList());
+		//		}
 
-			return GetPermissionsByObject(asset, isAdmin);
-		}
+		//		return ret;
+		//	}
 
-		[Route("{type}/{uid}/permissions")]
-		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
-		{
-			if (type == SystemObjects.Tag)
-			{
-				List<PermissionInfo> ret = new List<PermissionInfo>();
+		//	if (type == SystemObjects.ConnectorLabel)
+		//	{
+		//		List<PermissionInfo> ret = new List<PermissionInfo>();
 
-				if (tagRepository.IsAuthorizedToEditTag(uid))
-				{
-					ret.AddRange(Permission.DeleteAsset.GetList());
-				}
+		//		if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
+		//		{
+		//			ret.AddRange(Permission.DeleteAsset.GetList());
+		//		}
 
-				return ret;
-			}
+		//		return ret;
+		//	}
 
-			if (type == SystemObjects.ConnectorLabel)
-			{
-				List<PermissionInfo> ret = new List<PermissionInfo>();
+		//	int id = Company.GetObjectId(uid, type);
 
-				if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
-				{
-					ret.AddRange(Permission.DeleteAsset.GetList());
-				}
-
-				return ret;
-			}
-
-			int id = Company.GetObjectId(uid, type);
-
-			return GetPermissionsByObject(type, id);
-		}
+		//	return GetPermissionsByObject(type, id);
+		//}
 
 		[Route("{type}/{id:int}/permissions")]
 		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, int id)

@@ -137,6 +137,11 @@
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>
 	<include file="scripts/Table.reporting.Global_Resource.xml"/>
 
+	<include file="scripts/Table.security.Role.xml"/>
+	<include file="scripts/Table.security.Rule.xml"/>
+	<include file="scripts/Table.security.RuleThen.xml"/>	
+	<include file="scripts/Table.security.RuleWhen.xml"/>
+	
 	<include file="scripts/Table.usage.Analytic.xml"/>
 	<include file="scripts/Table.usage.Ip.xml"/>
 	<include file="scripts/Table.usage.Sidebar.xml"/>
@@ -231,6 +236,9 @@
 	
 	<include file="scripts/View.dbo.CatalogBrowseSubject.xml"/>
     <include file="scripts/View.dbo.CatalogBrowseObject.xml"/>
+
+	<include file="scripts/View.security.Owners.xml"/>
+	<include file="scripts/View.security.TypeLevelOwners.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
@@ -352,5 +360,6 @@
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
-	<include file="scripts/Data.Initial.SemanticTypes.xml"/>	
+	<include file="scripts/Data.Initial.SemanticTypes.xml"/>
+	<!--include file="scripts/Data.Migration.Security.xml"/-->	<!-- DRAFT -->
 </databaseChangeLog>

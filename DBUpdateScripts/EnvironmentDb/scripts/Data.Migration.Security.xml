@@ -1,0 +1,125 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.A">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+set identity_insert [security].[Role] on;
+insert into [security].[Role] (ID, Uid, Name, Description, [Permissions], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+	select	ID, Uid, Name, Description, 0, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
+	from	ResponsibilityType
+set identity_insert [security].[Role] off;
+]]>
+    </sql>
+  </changeSet>
+
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.B">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+set identity_insert [security].[Rule] on;
+insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+	select	r.ID,
+			r.Uid,
+			r.Name,
+			r.ResponsibilityTypeID,
+			2 as SecurityType,
+			a.ID as AssetTypeId,
+			r.ApplyToType,
+			r.IsVisible,
+			0 as IsOverride,
+			r.CreatedBy,
+			r.CreatedOn,
+			r.UpdatedBy,
+			r.UpdatedOn
+	from	ResponsibilityTypeRelationRule r
+			left join AssetType a on a.Object = r.Object and a.ObjectID = r.ObjectID
+set identity_insert [security].[Rule] off;
+
+-- Set the security type ( [G]roup OR [U]ser )
+update	t
+set		t.SecurityType = s.SecurityType
+from	[security].[Rule] t
+		inner join (
+					select	r.ID,
+							iif(sec.[Object] = 'GroupType', 1, 2) as SecurityType
+					from	ResponsibilityTypeRelationRule r
+							cross apply openjson(r.Definition) with (
+								[Then] nvarchar(max) as json
+							) d
+							cross apply openjson(d.[Then]) with (
+								Object varchar(50)
+							) sec
+					) s on s.ID = t.Id;
+]]>
+    </sql>
+  </changeSet>
+
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.C">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+insert into [security].RuleThen
+	select	r.ID,
+			row_number() over(partition by r.Id order by r.Id) as [Position],
+			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', 1, ti.[Operator]) as Operator,
+			iif(ti.FieldTypeID > 0, ti.FieldTypeID, null) as FieldTypeId,
+			iif(ti.FieldTypeID > 0, ti.[Value], null) as [Value],
+			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', ti.[Value], null) as SecurityId
+	from	ResponsibilityTypeRelationRule r
+			cross apply openjson(r.Definition) with (
+				[Then] nvarchar(max) as json
+			) d
+			cross apply openjson(d.[Then]) with (
+				--Object varchar(50),
+				--ObjectID int,
+				Conditions nvarchar(max) as json
+			) t
+			cross apply openjson(t.[Conditions]) with (
+				[Operator] varchar(25),
+				[FieldTypeID] int,
+				FieldTypeName nvarchar(250),
+				[Value] nvarchar(500)--,
+				--IntersectTypeID int,
+				--TargetObject varchar(50),
+				--TargetObjectID int
+			) ti;
+]]>
+    </sql>
+  </changeSet>
+
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.D">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+insert into [security].RuleWhen
+	select	r.Id,
+			row_number() over(partition by r.Id order by r.Id) as [Position],
+			wi.CheckType,
+			iif(wi.FieldTypeID > 0, wi.FieldTypeId, null) as FieldTypeId,
+			iif(wi.IntersectTypeID > 0, wi.IntersectTypeID, null) as IntersectTypeId,
+			--wi.*,
+			iif(wi.IntersectTypeID > 0, 1, coalesce(wi.[Operator], 1)) as [Operator],
+			iif(wi.FieldTypeID > 0, wi.[Value], null) as [Value],
+			a.Id as AssetId
+	from	ResponsibilityTypeRelationRule r
+			cross apply openjson(r.Definition) with (
+				[When] nvarchar(max) as json
+			) w
+			cross apply openjson(w.[When]) with (
+				[CheckType] char(1),
+				[Operator] varchar(25),
+				[FieldTypeID] int,
+				FieldTypeName nvarchar(250),
+				[Value] nvarchar(500),
+				IntersectTypeID int,
+				TargetObject varchar(50),
+				TargetObjectID int
+			) wi
+			left join Asset a on a.Object = wi.TargetObject and a.ObjectID = wi.TargetObjectID;
+]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

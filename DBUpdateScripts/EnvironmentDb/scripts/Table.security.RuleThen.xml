@@ -1,0 +1,27 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.security.RuleThen-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'RuleThen')
+BEGIN
+	create table [security].[RuleThen] (
+		[Id] bigint not null,
+		[Position] int not null,
+		[Operator] int not null, 
+		[FieldTypeId] int sparse,
+		[Value] nvarchar(500) sparse,
+		SecurityId int sparse,
+		constraint [PK_Security_RuleThen] primary key clustered ( Id, [Position] asc )
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

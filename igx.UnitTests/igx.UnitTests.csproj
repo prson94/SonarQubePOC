@@ -162,7 +162,7 @@
       <Name>d360.model</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.web\d360.web.csproj">
-      <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
+      <Project>{DF57BE56-958B-4C4D-B82C-6B61297434AB}</Project>
       <Name>d360.web</Name>
     </ProjectReference>
     <ProjectReference Include="..\repositories\repositories.csproj">

@@ -255,17 +255,6 @@ export class BaseComponent {
 
 	}
 
-	loadPermissionsById(
-		permissionsService: PermissionsService,
-		assetID: number
-	) {
-
-		return permissionsService.getPermissionsById(assetID).toPromise().then((result) => {
-			this.permissions = result;
-		});
-
-	}
-
 	hasPermission(permission: number | Permission) {
 		//permissions coming from v2 api
 		//in future this will replace ResponsibilityTypeRelationPermission
@@ -1203,8 +1192,6 @@ export class BaseComponent {
 			var isType = this.IsType(r.Object);
 			this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
 			this.secondaryNavService.showHeader(true);
-
-			this.activateComponent();
 		});
 	}
 
@@ -1280,31 +1267,6 @@ export class BaseComponent {
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue));
 		this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
-	}
-
-	private activateComponent() {
-		var currentComponentUrl = '';
-		if (this.breadcrumbsService) {
-			currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
-		}
-
-		var components: SecondaryNavItem[] = [];
-		components.push(this.scoreSidebar);
-		components.push(this.dashboardSidebar);
-		components.push(this.lineageSidebar);
-		components.push(this.relationsSidebar);
-		components.push(this.ownershipSidebar);
-		components.push(this.actionsSidebar);
-		components.push(this.monitorSidebar);
-		components.push(this.commentsSidebar);
-		components.push(this.followersSidebar);
-		components.push(this.auditSidebar);
-		components.push(this.childSidebar);
-		components.push(this.fieldNav);
-		components.push(this.ruleResultSidebar);
-		components.push(this.groupsSidebar);
-		components.push(this.itemOwnSidebar);
-		components.push(this.followingSidebar);
 	}
 
 	private setArtifactBreadcrumbs(data) {

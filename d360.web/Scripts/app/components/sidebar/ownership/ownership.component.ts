@@ -7,24 +7,20 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../../services/feature-flags.enum';
 
 @Component({
 	selector: 'd3s-ownership',
-	template: `
-        <div class="row">
-            <div class="col s12">
-                <div class="tile tile-detail">
-                    <d3s-people-responsibilities-tile [assetUid]="uid"></d3s-people-responsibilities-tile>
-                </div>
-            </div>
-        </div>
-    `,
+	template: `<owner-list *ngIf="newSecurityEnabledFeatureFlag" [assetUid]="uid"></owner-list>
+    <d3s-people-responsibilities-tile *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="uid"></d3s-people-responsibilities-tile>`,
 	providers: [
 	]
 })
 
 export class OwnershipComponent extends BaseComponent implements OnInit {
 	destroySubject$: Subject<void> = new Subject();
+
+	newSecurityEnabledFeatureFlag: boolean = true;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -37,6 +33,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
 		this.launchDarklyService = launchDarklyService;
+		this.newSecurityEnabledFeatureFlag = this.launchDarklyService.variation<boolean>(FeatureFlags.NewSecurityModel);
 	}
 
 	ngOnInit() {

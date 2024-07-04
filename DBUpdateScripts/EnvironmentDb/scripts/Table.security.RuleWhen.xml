@@ -1,0 +1,30 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.security.RuleWhen-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'RuleWhen')
+BEGIN
+	create table [security].[RuleWhen] (
+		Id bigint not null,
+		[Position] int not null,
+		CheckType char(1) not null,		-- F, R, A
+		FieldTypeId int sparse,
+		IntersectTypeId int sparse,
+		[Operator] int not null,
+		[Value] nvarchar(500) sparse,
+		AssetId bigint sparse,
+
+		constraint [PK_Security_RuleWhen] primary key clustered ( Id, [Position] asc )
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

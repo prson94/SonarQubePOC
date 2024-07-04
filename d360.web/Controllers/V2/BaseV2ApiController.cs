@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using ComponentSpace.SAML2.Protocols;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -9,6 +10,7 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using Resources;
 using SpreadsheetLight;
 using System;
@@ -21,6 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
+using System.Web.UI.WebControls;
 
 namespace d360.web.Controllers.V2
 {
@@ -1009,6 +1012,23 @@ namespace d360.web.Controllers.V2
 			result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
 			return ResponseMessage(result);
+		}
+
+		internal IHttpActionResult sendRepositoryResponse<T>(RepositoryResponse<T> result) 
+		{
+			if (result.IsSuccess)
+			{
+				var message = new ResponseMessageResult(Request.CreateResponse((HttpStatusCode)result.StatusCode));
+				message.Response.ReasonPhrase = result.Message;
+				message.Response.Content = new StringContent(
+					JsonConvert.SerializeObject(result.Data), encoding: Encoding.UTF8, "application/json"
+					);
+				return message;
+			}
+			else
+			{
+				return errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
+			}
 		}
 
 		internal async Task<IHttpActionResult> sendConflictNotAccessible()

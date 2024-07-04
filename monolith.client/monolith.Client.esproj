@@ -9,10 +9,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\_shared\models\" />
-    <Folder Include="src\app\_shared\components\" />
-    <Folder Include="src\app\_shared\guards\" />
-    <Folder Include="src\app\_shared\interceptors\" />
-    <Folder Include="src\app\_shared\directives\" />
-    <Folder Include="src\app\_shared\services\" />
   </ItemGroup>
 </Project>

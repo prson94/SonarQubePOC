@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 using d360.core.entities;
 using d360.core.entities.Permissions;
 using d360.core.enums;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
@@ -32,10 +34,17 @@ namespace d360.web.Controllers.V2
         #region DI
 
         private readonly IAssetRepository AssetRepository;
+		private readonly ISecurity Security;
 
-        public PermissionsController(ICoreComponentSet set, IAssetRepository repository) : base(set)
+		private bool IsNewPermissions
+		{
+			get { return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, GetFeatureFlagUser()); }
+		}
+
+        public PermissionsController(ICoreComponentSet set, IAssetRepository repository, ISecurity security) : base(set)
         {
             AssetRepository = repository;
+			Security = security;
         }
 
         #endregion
@@ -54,28 +63,36 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult GetAssetPermissionsByUid(Guid assetUid)
+        public async Task<IHttpActionResult> GetAssetPermissionsByUid(Guid assetUid)
         {
-            Asset asset = AssetRepository.GetAssetByUID(assetUid);
-
-			if (asset == null)
+			if (IsNewPermissions)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "Asset"));
+				var permissions = await Security.ReadPermissionsByAssetAsync(assetUid);
+				return Ok(permissions.Data);
 			}
-
-			if (!SupportsPermissions(asset.AssetType.Class))
+			else 
 			{
-				throw new ArgumentException(string.Format(Permissions.Permissions_Not_Supported));
+				Asset asset = AssetRepository.GetAssetByUID(assetUid);
+
+				if (asset == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "Asset"));
+				}
+
+				if (!SupportsPermissions(asset.AssetType.Class))
+				{
+					throw new ArgumentException(string.Format(Permissions.Permissions_Not_Supported));
+				}
+
+				List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
+				if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
+				{
+					//If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
+					permissions.Add(Permission.ReadAsset.GetPermissionInfo());
+				}
+
+				return Ok(CreatePermissionsResponse(permissions));
 			}
-
-            List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-            if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
-            {
-                //If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
-                permissions.Add(Permission.ReadAsset.GetPermissionInfo());
-            }
-
-			return Ok(CreatePermissionsResponse(permissions));
         }
 
         /// <summary>
@@ -92,23 +109,31 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of assettype permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult GetAssetTypePermissionsByUid(Guid assetTypeUid)
+        public async Task<IHttpActionResult> GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {
-            AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-			if (assetType == null)
+			if (IsNewPermissions)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "AssetType"));
+				var permissions = await Security.ReadPermissionsByAssetTypeAsync(assetTypeUid);
+				return Ok(permissions.Data);
 			}
-
-			if (!SupportsPermissions(assetType.Class))
+			else 
 			{
-				throw new ArgumentException(string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name));
+				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+				if (assetType == null)
+				{
+					return errorMessageNotFoundResponse(string.Format(Permissions.UID_not_Found, "AssetType"));
+				}
+
+				if (!SupportsPermissions(assetType.Class))
+				{
+					return errorMessageArgumentResponse(string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name));
+				}
+
+				List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
+
+				return Ok(CreatePermissionsResponse(permissions));			
 			}
-
-            List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
-
-			return Ok(CreatePermissionsResponse(permissions));
         }
 
         /// <summary>

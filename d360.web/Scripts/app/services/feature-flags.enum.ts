@@ -11,5 +11,6 @@ export enum FeatureFlags {
 	ReferenceListV2Flag = "GovernReferenceTemp20230901",
 	CustomSynonymsFlag = "govern-custom-synonyms-temp",
 	TagsLimitedValuesFlag = "govern-tagging-new-administration-ui-temp",
-	TagsAdminUIV2Flag = "govern-tagging-value-limitation-temp"
+	TagsAdminUIV2Flag = "govern-tagging-value-limitation-temp",
+	NewSecurityModel = "govern-security-security-policy-conversion-temp"
 }
