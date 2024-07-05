@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="View.Deletions.v8">
+ <changeSet author="Pappas" id="View.Deletions.v9">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 drop view if exists [reporting].[RuleImplementations_Results]
@@ -59,6 +59,11 @@ GO
 drop view if exists [reporting].[Workflows]
 GO
 drop view if exists [reporting].[WorkflowSteps]
+GO
+drop view if exists [workflow].[ItemIssue]
+GO
+drop view if exists [workflow].[ItemAsset]
+
 ]]>
   </sql>
  </changeSet>
