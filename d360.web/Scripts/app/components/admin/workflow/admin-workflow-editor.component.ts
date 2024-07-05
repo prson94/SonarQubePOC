@@ -134,8 +134,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         if (this.model.Event.SettingsObject.Settings == null)
                             {this.model.Event.SettingsObject.Settings = {};}
 
-                        if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
-                            && this.model.Event.SettingsObject.Settings.Visible != null) {
+                        if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null) {
                             if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
                                 //convert to bool
                                 {this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() === "true" ? true : false;}
