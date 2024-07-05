@@ -70,25 +70,48 @@ namespace d360.model.DataAccessLayer
 
 		public Task<DashboardApiGetModel> PutDashboardAsync(DashboardApiUpsertModel model)
 		{
-			ValidateDashboardModel(model);
-
-			var report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
-			report.Name = model.Name;
-			report.Description = model.Description.SanitizeHtml();
-			report.AssetTypeID = model.AssetTypeId;
-			report.AssetTypeUid = model.AssetTypeUid;
-
-			if (model.Definition != null)
+			string currentStep = "";
+			Report report = null;
+			try
 			{
-				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
+				currentStep = "Update->ValidateDashboardModel";
+				
+				ValidateDashboardModel(model);
+
+				currentStep = "Update->Report";
+				report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
+				if (report == null)
+				{
+					throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(FieldErrors.InvalidAssetTypeUid, model.AssetTypeUid));
+				}
+				report.Name = model.Name;
+				report.Description = model.Description.SanitizeHtml();
+				report.AssetTypeID = model.AssetTypeId;
+				report.AssetTypeUid = model.AssetTypeUid;
+
+				currentStep = "Update->Definition";
+
+				if (model.Definition != null)
+				{
+					report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
+				}
+				report.ReportType = model.DashboardType.Value;
+				report.Location = model.Location.Value;
+
+				currentStep = "Update->SaveChanges";
+
+				CompanyContext.SaveChanges();
+
+
+				currentStep = "Update->UpdateResponsibility";
+				UpdateReportResponsibilities(model, report);
 			}
-			report.ReportType = model.DashboardType.Value;
-			report.Location = model.Location.Value;
-
-			CompanyContext.SaveChanges();
-
-			UpdateReportResponsibilities(model, report);
-
+			catch (Exception ex)
+			{
+				string errorMessage = currentStep + ":" + ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, errorMessage);
+			}
 			return Task.FromResult(report.ToApiDashboardGetModel());
 		}
 
@@ -294,12 +317,22 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 		private void UpdateReportResponsibilities(DashboardApiUpsertModel model, Report report)
 		{
 			var responsibilities = model.Responsibilities ?? new List<Guid>();
-			CompanyContext.Database.Connection.Query(@"
-					delete from dbo.ReportResponsibility where ReportID = @reportId
+			if (responsibilities.Count == 0)
+			{
+				CompanyContext.Database.Connection.Query(@"
+					delete from dbo.ReportResponsibility where ReportID = @reportId",
+					new { reportId = report.ID, responsibilities });
+			}
+			else
+			{
+				CompanyContext.Database.Connection.Query(@"
+					delete from dbo.ReportResponsibility where ReportID = @reportId;
+
 					insert into dbo.ReportResponsibility (ReportID, ResponsibilityTypeID)
 					select @reportId, rt.ID as responsibilitytypeid from dbo.ResponsibilityType rt
 					where rt.uid in @Responsibilities",
-				new { reportId = report.ID, responsibilities });
+					new { reportId = report.ID, responsibilities });
+			}
 		}
 	}
 }
