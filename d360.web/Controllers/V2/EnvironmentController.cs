@@ -2231,17 +2231,23 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostDashboard()
 		{
+			string currentStep = "";
 			try
 			{
+				currentStep = "Checn Current resource is Admin";
 				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
+				currentStep = "FillDataFromFormData";
+
 				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
 				requestModel.FillDataFromFormData(data);
 				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
+
+				currentStep = "Check->ValidateDashboardModel";
 
 				DashboardRepository.ValidateDashboardModel(requestModel);
 
@@ -2255,30 +2261,46 @@ select	r.uid as ResourceUid,
 
 				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
 				{
+					currentStep = "PowerBI->File";
 					try
 					{
 						MemoryStream memoryStream = new MemoryStream();
+						currentStep = "PowerBI->Copy";
+
 						file.InputStream.CopyTo(memoryStream);
+
+						currentStep = "PowerBI->memoryStream";
+
 						if (!isPowerBiFileValid(memoryStream))
 						{
 							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 						}
 						memoryStream.Position = 0; // Reset position to read again.
 
+						currentStep = "PowerBI->uploadPowerBIReport";
+
 						var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
+
+						currentStep = "PowerBI->Upload Complete"; 
+						
 						if (importResult.ImportState == "Failed")
 						{
 							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 						}
+						currentStep = "PowerBI->powerBiDatasetId"; 
 
 						definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
 
 						var rpt = importResult.Reports.FirstOrDefault();
 
+						currentStep = "PowerBI->powerBiReportId";
+
 						if (rpt != null)
 						{
 							definition.powerBiReportId = rpt.Id.ToString();
 						}
+
+						currentStep = "definition->fileName";
 
 						definition.fileName = file.FileName;
 
@@ -2294,17 +2316,25 @@ select	r.uid as ResourceUid,
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
 				}
 
+				currentStep = "Create->Dashboard";
+
 				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
+
+				currentStep = "Process Complete";
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
 			catch (GenericException ex)
 			{
+				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PostDashboard => " }, { "Current Step", currentStep } });
 				throw ex;
 			}
-			catch
+			catch(Exception ex1)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				string errorMessage = currentStep + ":" + ex1.Message + (ex1.InnerException != null ? ex1.InnerException.Message : "");
+				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
+				SendException(ex1, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PostDashboard => " } });
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, errorMessage);
 			}
 		}
 
@@ -2348,17 +2378,24 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutDashboard()
 		{
+			string currentStep = "";
 			try
 			{
+				currentStep = "Checn Current resource is Admin";
+
 				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
+				currentStep = "FillDataFromFormData";
+
 				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
 				requestModel.FillDataFromFormData(data);
 				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
+
+				currentStep = "Check->Uid Request";
 
 				if (requestModel.Uid.HasValue)
 				{
@@ -2367,6 +2404,8 @@ select	r.uid as ResourceUid,
 						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(DashboardMessages.DashboardNotFound, requestModel.Uid));
 					}
 				}
+
+				currentStep = "Check->ValidateDashboardModel";
 
 				DashboardRepository.ValidateDashboardModel(requestModel);
 
@@ -2380,6 +2419,8 @@ select	r.uid as ResourceUid,
 
 				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
 				{
+					currentStep = "PowerBI->File";
+
 					MemoryStream memoryStream = new MemoryStream();
 					file.InputStream.CopyTo(memoryStream);
 
@@ -2390,38 +2431,54 @@ select	r.uid as ResourceUid,
 
 					memoryStream.Position = 0; // Reset position to read again.
 
+					currentStep = "PowerBI->Upload";
+
 					var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
+
+					currentStep = "PowerBI->Upload Complete";
 
 					if (importResult.ImportState == "Failed")
 					{
 						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
 					}
 
+					currentStep = "PowerBI->powerBiDatasetId";
+
 					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
 
 					var rpt = importResult.Reports.FirstOrDefault();
+
+					currentStep = "PowerBI->powerBiReportId";
 
 					if (rpt != null)
 					{
 						definition.powerBiReportId = rpt.Id.ToString();
 					}
 
+					currentStep = "definition->fileName";
 					definition.fileName = file.FileName;
 
 					requestModel.Definition = definition;					
 				}
 
+				currentStep = "Update->Dashboard";
+
 				var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
 
+				currentStep = "Process Complete";
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
 			}
 			catch (GenericException ex)
 			{
+				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PutDashboard => " },{ "Current Step", currentStep}});
 				throw ex;
 			}
-			catch
+			catch (Exception ex1)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				string errorMessage = currentStep + ":" + ex1.Message + (ex1.InnerException != null ? ex1.InnerException.Message : "");
+				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
+				SendException(ex1, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PutDashboard => " } });
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnUpdate,errorMessage);
 			}
 		}
 
