@@ -425,7 +425,7 @@ namespace d360.web.Controllers.V2
 
 			if (model == null)
 			{
-				throw new NotFoundException(MetricsApiMessages.MetricNotFound);
+				return errorMessageNotFoundResponse(MetricsApiMessages.MetricNotFound);
 			}
 
 			MetricsRepository.DeleteMetric(model);

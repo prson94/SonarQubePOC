@@ -539,13 +539,13 @@ namespace d360.web.Controllers.V2
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
+		public async Task<IHttpActionResult> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
 		{
 			var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
 
 			if (groupUid == Guid.Empty)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
+				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
 			}
 
 			var validGroups = await membershipRepository.GetGroups(kvpGroupUid);
@@ -553,19 +553,19 @@ namespace d360.web.Controllers.V2
 
 			if (validGroups.Total != 1)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.GroupUidNotExists));
+				return errorMessageNotFoundResponse(ApiMessages.GroupUidNotExists);
 			}
 
 			var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
 			if (duplicatedUsers.Count() != 0)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.DuplicateUserUidProvided));
+				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
 			}
 
 			if (users.Count == 0)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoUserUIDProvided));
+				return errorMessageArgumentResponse(ApiMessages.NoUserUIDProvided);
 			}
 
 			var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
@@ -577,49 +577,40 @@ namespace d360.web.Controllers.V2
 
 				if (!isValid)
 				{
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.UidNotValid));
+					return errorMessageNotFoundResponse(ActionApiMessages.UidNotValid);
 				}
 
 				var isUser = assetRepository.GetAssetByUID(user.Uid);
 
 				if (isUser == null || isUser.Object != "Resource")
 				{
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.InvalidUserUids));
+					return errorMessageNotFoundResponse(ApiMessages.InvalidUserUids);
 				}
 
 				var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
 
 				if (isMember != null)
 				{
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.UserAlreadyMemberOfGroup, user.Uid.ToString())));
+					return errorMessageArgumentResponse(string.Format(ApiMessages.UserAlreadyMemberOfGroup, user.Uid.ToString()));
 				}
 
 				resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
 			}
 
-			try
+			foreach (var m in resourceGroups)
 			{
-				foreach (var m in resourceGroups)
-				{
-					Company.Add(m);
-					Company.Connection.Execute(@"insert into reporting.Global_Audit
-						select	distinct 
-								'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
-						from	[group] g 
-								inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
-								cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-						where	g.id = @groupid", 
-						new { m.GroupID, m.ResourceID, Company.CurrentResourceID });
-				}
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+				Company.Add(m);
+				Company.Connection.Execute(@"insert into reporting.Global_Audit
+					select	distinct 
+							'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
+					from	[group] g 
+							inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
+							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
+					where	g.id = @groupid", 
+					new { m.GroupID, m.ResourceID, Company.CurrentResourceID });
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, users);
+			return Ok(users);
 		}
 
 		/// <summary>
@@ -639,7 +630,7 @@ namespace d360.web.Controllers.V2
 		   SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
 		   SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 		]
-		public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
+		public async Task<IHttpActionResult> GetMembers(Guid groupUid)
 		{
 			string finalSql;
 			string countSql;
@@ -718,7 +709,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
+				return errorMessageArgumentResponse(isValid);
 			}
 
 			var resourceTypeIds = Company.AssetTypes.Where(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
@@ -778,7 +769,7 @@ namespace d360.web.Controllers.V2
 			model.items = results;
 			model.total = count.FirstOrDefault();
 
-			return Request.CreateResponse(HttpStatusCode.OK, model);
+			return Ok(model);
 		}
 
 		[
@@ -1468,17 +1459,17 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
+		public IHttpActionResult DeleteGroup(List<DeleteGroupModel> groups)
 		{
 			if (groups.Count() < 1)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
+				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
 			var result = membershipRepository.DeleteGroups(execution, groups);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
+			return Ok(result);
 		}
 
 		private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
@@ -2078,17 +2069,17 @@ namespace d360.web.Controllers.V2
 
 			if (!allowedActions.Contains(claim.Action))
 			{
-				throw new ArgumentException();
+				return errorMessageArgumentResponse("");
 			}
 
 			if (claim.Location == ClaimLocation.Default || claim.Location == ClaimLocation.Client)
 			{
-				throw new ForbiddenBusinessLayerException();
+				return errorMessageForbiddenResponse("");
 			}
 
 			if (claim.Path?.Length > 250)
 			{
-				throw new ArgumentException();
+				return errorMessageArgumentResponse("");
 			}
 
 			await membershipRepository.AddClaim(claim);
@@ -2127,7 +2118,7 @@ namespace d360.web.Controllers.V2
 
 			if (existingClaim == null)
 			{
-				throw new NotFoundBusinessLayerException();
+				return errorMessageNotFoundResponse("");
 			}
 
 			var claimType = existingClaim.ClaimType.GetType().GetMember(existingClaim.ClaimType.ToString()).First();
@@ -2135,17 +2126,17 @@ namespace d360.web.Controllers.V2
 
 			if (!allowedActions.Contains(claim.Action))
 			{
-				throw new ArgumentException();
+				return errorMessageArgumentResponse("");
 			}
 
 			if (existingClaim.Location == ClaimLocation.Default || existingClaim.Location == ClaimLocation.Client)
 			{
-				throw new ForbiddenBusinessLayerException();
+				return errorMessageForbiddenResponse("");
 			}
 
 			if (claim.Path?.Length > 250)
 			{
-				throw new ArgumentException();
+				return errorMessageArgumentResponse("");
 			}
 
 			await membershipRepository.UpdateClaim(id, claim);

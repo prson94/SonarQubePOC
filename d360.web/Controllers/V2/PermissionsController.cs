@@ -76,12 +76,12 @@ namespace d360.web.Controllers.V2
 
 				if (asset == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "Asset"));
+					return errorMessageNotFoundResponse(string.Format(Permissions.UID_not_Found, "Asset"));
 				}
 
 				if (!SupportsPermissions(asset.AssetType.Class))
 				{
-					throw new ArgumentException(string.Format(Permissions.Permissions_Not_Supported));
+					return errorMessageArgumentResponse(string.Format(Permissions.Permissions_Not_Supported));
 				}
 
 				List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);

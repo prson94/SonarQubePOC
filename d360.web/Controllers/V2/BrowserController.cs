@@ -319,71 +319,59 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetOwnerHop(AssetBrowserApiOwnerHopRequestModel criteria)
+        public async Task<IHttpActionResult> GetOwnerHop(AssetBrowserApiOwnerHopRequestModel criteria)
         {
-            try
-            {
-                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
-                if (!showResources)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Environment Conflict", "Your environment does not allow retrieval of owners in Asset Browser.");
-                }
+			var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
+			if (!showResources)
+			{
+				return errorMessageResponse(HttpStatusCode.Conflict, "Environment Conflict", "Your environment does not allow retrieval of owners in Asset Browser.");
+			}
 
-				var distinctOwners = new List<AssetBrowserOwnerModel>();
+			var distinctOwners = new List<AssetBrowserOwnerModel>();
 
-                var owners = await Company.QueryAsync<AssetBrowserOwnerModel>(@"
+            var owners = await Company.QueryAsync<AssetBrowserOwnerModel>(@"
 select	distinct
-		A.Uid as assetUid,
-		R.ResourceName as displayValue, 
-		'fa-user' as icon,
-		RE.Uid as resourceUid,
-        R.resourceId
+	A.Uid as assetUid,
+	R.ResourceName as displayValue, 
+	'fa-user' as icon,
+	RE.Uid as resourceUid,
+    R.resourceId
 from	ResponsibilityDetail R
-		inner join Asset A on ( (A.ID = R.AssetID) OR (R.AssetID = 0 and A.AssetTypeID = R.AssetTypeID) ) and R.IsVisible = 1
-		inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
+	inner join Asset A on ( (A.ID = R.AssetID) OR (R.AssetID = 0 and A.AssetTypeID = R.AssetTypeID) ) and R.IsVisible = 1
+	inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
 where	A.Uid in @assetUids
-        and R.ResponsibilityTypeID = @ResponsibilityTypeId
+    and R.ResponsibilityTypeID = @ResponsibilityTypeId
 order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).ToList(), criteria.responsibilityTypeId });
 
-                foreach (var o in owners)
+            foreach (var o in owners)
+            {
+                o.key = $"{criteria.hierarchyKey}_{criteria.responsibilityTypeId}|{o.resourceId}";
+                if (!distinctOwners.Any(d => d.key == o.key))
                 {
-                    o.key = $"{criteria.hierarchyKey}_{criteria.responsibilityTypeId}|{o.resourceId}";
-                    if (!distinctOwners.Any(d => d.key == o.key))
-                    {
-                        distinctOwners.Add(o);
-                    }
+                    distinctOwners.Add(o);
                 }
+            }
 
-                var ownerRelations = (
-                                     from o in owners
-                                     join a in criteria.assets on o.assetUid equals a.Uid
-                                     select new AssetBrowserOwnerRelationModel
-                                     {
-                                         assetKey = a.Key,
-                                         assetUid = a.Uid,
-                                         backColor = o.backColor,
-                                         foreColor = o.foreColor,
-                                         ownerKey = o.key,
-                                         ownerUid = o.resourceUid
-                                     }).ToList();
+            var ownerRelations = (
+                                    from o in owners
+                                    join a in criteria.assets on o.assetUid equals a.Uid
+                                    select new AssetBrowserOwnerRelationModel
+                                    {
+                                        assetKey = a.Key,
+                                        assetUid = a.Uid,
+                                        backColor = o.backColor,
+                                        foreColor = o.foreColor,
+                                        ownerKey = o.key,
+                                        ownerUid = o.resourceUid
+                                    }).ToList();
 
-                return Request.CreateResponse(
-                    HttpStatusCode.OK, 
-                    new AssetBrowserOwnersModel 
-                    { 
-                        owners = distinctOwners, 
-                        ownerRelations = ownerRelations 
-                    }
-                );
-            }
-            catch (GenericException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
+            return Ok(
+                new AssetBrowserOwnersModel 
+                {
+                    owners = distinctOwners, 
+                    ownerRelations = ownerRelations 
+                }
+            );
         }
 
         /// <summary>
@@ -399,103 +387,96 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetBrowserFilters()
+        public async Task<IHttpActionResult> GetAssetBrowserFilters()
         {
-            try
-            {
-                #region
+            #region
 
-				var sql = @"
-							with H as	(
-										select	O.Class,
-												O.[uid],
-												O.ID as AssetTypeID,
-												cast(O.Name as nvarchar(2500)) as [Path],
-												cast(null as int) as ParentAssetTypeID,
-												1 as [Level]
-										from	AssetType O
-												outer apply (
-															select	I.ID 
-															from	IntersectType I 
-																	inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3 and I.ObjectAssetTypeID = O.ID
-															) I
-										where	I.ID is null
-												and O.Class in (1,7,8)
-										union all
-										select	O.Class,
-												O.[uid],
-												O.ID as AssetTypeID,
-												cast(H.Path + ' > ' + O.Name as nvarchar(2500)) as [Path],
-												H.AssetTypeID as ParentAssetTypeID,
-												H.[Level]+1 as [Level]
-										from	AssetType O
-												inner join IntersectType I on I.ObjectAssetTypeID = O.ID
-												inner join H on H.AssetTypeID = I.SubjectAssetTypeID
-												inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
-										)
-
-							select	*
-							from	(
-									select		[Uid], [Path], AssetTypeID, Class as ClassId, [Level]
-									from		H 
-									where		[Level] = 1
-												or AssetTypeID in (
-																	select	A.ID
-																	from	AssetType A
-																			inner join	(
-																						select	I.SubjectAssetTypeID
-																						from	AssetType O
-																								inner join IntersectType I on I.ObjectAssetTypeID = O.ID
-																								inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
-																								left join IntersectType SI on SI.SubjectAssetTypeID = O.ID and SI.PredicateID = P.ID
-																						where	O.Class in (1,7,8)
-																								and SI.ID is null
-																						) S on S.SubjectAssetTypeID = A.ID
-																)
-									union
-									select	O.[Uid],
-											cast(O.Name as nvarchar(2500)) as [Path],
+			var sql = @"
+						with H as	(
+									select	O.Class,
+											O.[uid],
 											O.ID as AssetTypeID,
-											O.Class as ClassId,
+											cast(O.Name as nvarchar(2500)) as [Path],
+											cast(null as int) as ParentAssetTypeID,
 											1 as [Level]
 									from	AssetType O
-									where	O.Class in (2,6)
-									) H
-							order by	ClassId, [Path];
+											outer apply (
+														select	I.ID 
+														from	IntersectType I 
+																inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3 and I.ObjectAssetTypeID = O.ID
+														) I
+									where	I.ID is null
+											and O.Class in (1,7,8)
+									union all
+									select	O.Class,
+											O.[uid],
+											O.ID as AssetTypeID,
+											cast(H.Path + ' > ' + O.Name as nvarchar(2500)) as [Path],
+											H.AssetTypeID as ParentAssetTypeID,
+											H.[Level]+1 as [Level]
+									from	AssetType O
+											inner join IntersectType I on I.ObjectAssetTypeID = O.ID
+											inner join H on H.AssetTypeID = I.SubjectAssetTypeID
+											inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
+									)
 
-							select	Id,
-									[Uid],
-									[Type] as TypeId,	
-									[Name],
-									[Inverse]
-							from	[Predicate]
-							where	[Type] in (5,6,7,9,14)
-							order by [Type], [Name];
+						select	*
+						from	(
+								select		[Uid], [Path], AssetTypeID, Class as ClassId, [Level]
+								from		H 
+								where		[Level] = 1
+											or AssetTypeID in (
+																select	A.ID
+																from	AssetType A
+																		inner join	(
+																					select	I.SubjectAssetTypeID
+																					from	AssetType O
+																							inner join IntersectType I on I.ObjectAssetTypeID = O.ID
+																							inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+																							left join IntersectType SI on SI.SubjectAssetTypeID = O.ID and SI.PredicateID = P.ID
+																					where	O.Class in (1,7,8)
+																							and SI.ID is null
+																					) S on S.SubjectAssetTypeID = A.ID
+															)
+								union
+								select	O.[Uid],
+										cast(O.Name as nvarchar(2500)) as [Path],
+										O.ID as AssetTypeID,
+										O.Class as ClassId,
+										1 as [Level]
+								from	AssetType O
+								where	O.Class in (2,6)
+								) H
+						order by	ClassId, [Path];
 
-							select  Id,
-									[Uid],
-									Name
-							from    ResponsibilityType
-							order by Name";
+						select	Id,
+								[Uid],
+								[Type] as TypeId,	
+								[Name],
+								[Inverse]
+						from	[Predicate]
+						where	[Type] in (5,6,7,9,14)
+						order by [Type], [Name];
 
-				#endregion
+						select  Id,
+								[Uid],
+								Name
+						from    ResponsibilityType
+						order by Name";
 
-				var reader = await Company.QueryMultipleAsync(sql, timeout: 60);
-				var assetTypes = reader.Read<AssetBrowserAssetTypeFilterItem>().ToList();
-				var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
-				var responsibilityTypes = reader.Read<AssetBrowserResponsibilityTypeFilterItem>().ToList();
+			#endregion
 
-				return Request.CreateResponse(HttpStatusCode.OK, new
-				{
-					AssetTypeOptions = assetTypes,
-					PredicateOptions = predicates,
-					ResponsibilityTypeOptions = responsibilityTypes
-				});
-			}
-			catch (Exception ex)
+			var reader = await Company.QueryMultipleAsync(sql, timeout: 60);
+			var assetTypes = reader.Read<AssetBrowserAssetTypeFilterItem>().ToList();
+			var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
+			var responsibilityTypes = reader.Read<AssetBrowserResponsibilityTypeFilterItem>().ToList();
+
+			return Ok(new
 			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
+				AssetTypeOptions = assetTypes,
+				PredicateOptions = predicates,
+				ResponsibilityTypeOptions = responsibilityTypes
+			});
 		}
 
 
@@ -512,24 +493,10 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetUserAssetBrowserFilters()
+		public IHttpActionResult GetUserAssetBrowserFilters()
 		{
-			try
-			{
-				var fil = GraphFilterRepository.GetGraphFiltersByUser(Company.CurrentResourceID);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fil))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", "BrowserController.GetUserAssetBrowserFilters" },
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var fil = GraphFilterRepository.GetGraphFiltersByUser(Company.CurrentResourceID);
+			return Ok(fil);
 		}
 
 		/// <summary>
@@ -554,23 +521,13 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				return errorMessageResponse(validationStatus);
 			}
 
-			try
+			if (GraphFilterRepository.CreateGraphFilter(model))
 			{
-				if (GraphFilterRepository.CreateGraphFilter(model))
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
-				}
-				else
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = ApiMessages.SaveFailedMessage, Success = false, Uid = Guid.Empty }));
-				}
-
+				return Ok(model);
 			}
-			catch (Exception ex)
+			else
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return Ok(new ApiStatusResponse { Message = ApiMessages.SaveFailedMessage, Success = false, Uid = Guid.Empty });
 			}
 		}
 
@@ -598,35 +555,25 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				return errorMessageResponse(validationStatus);
 			}
 
-			try
+			GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);
+
+			if (orig == null)
 			{
-				GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);
-
-				if (orig == null)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.FilterNotFound));
-				}
-
-				if (orig.OwnedBy != Company.CurrentResourceID)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
-				}
-
-				orig.Name = model.Name;
-				orig.IsPublic = model.IsPublic;
-				orig.Settings = model.Settings;
-
-				GraphFilterRepository.UpdateGraphFilter(orig);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, orig));
-
+				return errorMessageNotFoundResponse(ApiMessages.FilterNotFound);
 			}
-			catch (Exception ex)
+
+			if (orig.OwnedBy != Company.CurrentResourceID)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
 			}
+
+			orig.Name = model.Name;
+			orig.IsPublic = model.IsPublic;
+			orig.Settings = model.Settings;
+
+			GraphFilterRepository.UpdateGraphFilter(orig);
+
+			return Ok(orig);
 		}
 
 		/// <summary>
@@ -644,33 +591,23 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> DeleteAssetBrowserFilterById(Guid uid)
+		public IHttpActionResult DeleteAssetBrowserFilterById(Guid uid)
 		{
-			try
+			GraphFilter model = GraphFilterRepository.GetGraphFilterByUid(uid);
+
+			if (model == null)
 			{
-				GraphFilter model = GraphFilterRepository.GetGraphFilterByUid(uid);
-
-				if (model == null)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.FilterNotFound));
-				}
-
-				if (model.OwnedBy != Company.CurrentResourceID)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
-				}
-
-				GraphFilterRepository.DeleteGraphFilter(model);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = ApiMessages.FilterRemove, Success = true, Uid = Guid.Empty }));
-
+				return errorMessageNotFoundResponse(ApiMessages.FilterNotFound);
 			}
-			catch (Exception ex)
+
+			if (model.OwnedBy != Company.CurrentResourceID)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
 			}
+
+			GraphFilterRepository.DeleteGraphFilter(model);
+
+			return Ok(new ApiStatusResponse { Message = ApiMessages.FilterRemove, Success = true, Uid = Guid.Empty });
 		}
 
 		/// <summary>
@@ -693,21 +630,21 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 		{
 			if (uid == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid));
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetUid);
 			}
 
 			var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString())));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, uid.ToString()));
 			}
 
 			var assetType = (await Company.QueryAsync<AssetType>("select * from AssetType where id = @assetTypeID", new { asset.AssetTypeID })).FirstOrDefault();
 
 			if (assetType == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.AssetTypeNotFoundForAsset));
+				return errorMessageNotFoundResponse(ApiMessages.AssetTypeNotFoundForAsset);
 			}
 
 
@@ -789,7 +726,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				}
 			}
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { initial, items }));
+			return Ok(new { initial, items });
 		}
 	}
 }

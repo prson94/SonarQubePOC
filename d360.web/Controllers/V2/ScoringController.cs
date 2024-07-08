@@ -514,41 +514,29 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
 		{
-			var prefix = "Metrics.GetMetricStructureByAssetType => ";
+			var queryParams = Request.GetQueryNameValuePairs();
+			bool includeDisabled = false;
 
-			try
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_includedisabled"))
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				bool includeDisabled = false;
+				var includeDisabledString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_includedisabled").Value;
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_includedisabled"))
+				if (!bool.TryParse(includeDisabledString, out includeDisabled))
 				{
-					var includeDisabledString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_includedisabled").Value;
-
-					if (!bool.TryParse(includeDisabledString, out includeDisabled))
-					{
-						throw new ArgumentException($"Invalid value [{includeDisabledString}] provided in the request", "_includedisabled");
-					}
+					return errorMessageArgumentResponse($"Invalid value [{includeDisabledString}] provided in the request");
 				}
-
-				List<State> states = new List<State>() { State.Active };
-
-				if (includeDisabled)
-				{
-					states.Add(State.Deleted);
-				}
-
-				var models = MetricsRepository.GetMetricStructureByAllocation(allocationUid, states);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
 			}
-			catch (Exception ex)
+
+			List<State> states = new List<State>() { State.Active };
+
+			if (includeDisabled)
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+				states.Add(State.Deleted);
 			}
+
+			var models = MetricsRepository.GetMetricStructureByAllocation(allocationUid, states);
+
+			return Ok(models);
 		}
 
 		/// <summary>
@@ -571,22 +559,9 @@ namespace d360.web.Controllers.V2
 		{
 			if (!Enum.TryParse(scoreType, true, out ScoreType sc))
 			{
-				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+				return errorMessageArgumentResponse(ApiMessages.InvalidScoreType);
 			}
-
-			try
-			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await ScoringRepository.GetUnallocatedAssetTypes(sc)));
-			}
-			catch (Exception ex)
-			{
-				return DetermineUnhandledException(
-					ex,
-					ScoreApiMessages.ErrorUnallocatedAssetType,
-					null,
-					new Dictionary<string, string> { { "Method Name", "GetUnallocatedAssetTypesForScoreType" } }
-				);
-			}
+			return Ok(await ScoringRepository.GetUnallocatedAssetTypes(sc));
 		}
 
 		/// <summary>
@@ -614,23 +589,10 @@ namespace d360.web.Controllers.V2
 		{
 			if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
 			{
-				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+				return errorMessageArgumentResponse(ApiMessages.InvalidScoreType);
 			}
-
-			try
-			{
-				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
-			}
-			catch (Exception ex)
-			{
-				return DetermineUnhandledException(
-					ex,
-					ApiMessages.ErrorAddingScoreResultsHeading,
-					null,
-					new Dictionary<string, string> { { "Method Name", "PostExternalResultsByScoreType" } }
-				);
-			}
+			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
+			return Ok(ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution));
 		}
 
 		/// <summary>
@@ -657,24 +619,24 @@ namespace d360.web.Controllers.V2
 		{
 			if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
 			{
-				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidScoreType, nameof(scoreType)));
 			}
 			else 
 			{
 				if (scoreTypeEnum != ScoreType.Governance)
 				{
-					throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+					return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidScoreType, nameof(scoreType)));
 				}
 			}
 
 			if (model == null || model.Count < 1)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 			var results = ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model);
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -697,7 +659,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null || model.Count < 1)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			foreach (var m in model)
@@ -706,7 +668,7 @@ namespace d360.web.Controllers.V2
 
 				if (isDistinct.Count() != m.measures.Count())
 				{
-					throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.ErrorAddingScoreResults, ScoreApiMessages.DuplicateMeasureUid);
+					return errorMessageArgumentResponse(ScoreApiMessages.DuplicateMeasureUid);
 				}
 			}
 
@@ -714,34 +676,16 @@ namespace d360.web.Controllers.V2
 
 			if (allocation == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
+				return errorMessageNotFoundResponse(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
 			}
 
 			if (!allocation.IsExternallyCalculated)
 			{
-				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid), nameof(allocationUid));
+				return errorMessageArgumentResponse(string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid));
 			}
 
-			try
-			{
-				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
-
-				return ResponseMessage(
-					Request.CreateResponse(
-						HttpStatusCode.OK,
-						ScoringRepository.PostExternalResults(allocation, model, execution)
-					)
-				);
-			}
-			catch (Exception ex)
-			{
-				return DetermineUnhandledException(
-					ex,
-					ApiMessages.ErrorAddingScoreResultsHeading,
-					null,
-					new Dictionary<string, string> { { "Method Name", "PostExternalResultsByAllocation" } }
-				);
-			}
+			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
+			return Ok(ScoringRepository.PostExternalResults(allocation, model, execution));
 		}
 
 		/// <summary>
@@ -764,48 +708,23 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null || model.Count < 1)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
 
 			if (allocation == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
+				return errorMessageNotFoundResponse(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
 			}
 
 			if (allocation.IsExternallyCalculated)
 			{
-				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotInternalCalculation, allocationUid), nameof(allocationUid));
+				return errorMessageArgumentResponse(string.Format(ScoreApiMessages.ScoreNotInternalCalculation, allocationUid));
 			}
 
-			try
-			{
-				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
-
-				return ResponseMessage(
-					Request.CreateResponse(
-						HttpStatusCode.OK,
-						ScoringRepository.PostScoreResults(allocation, execution, model)
-					)
-				);
-			}
-			catch (Exception ex)
-			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid.ToString()) },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid.ToString()) },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
-				};
-
-				return DetermineUnhandledException(
-					ex,
-					ApiMessages.ErrorAddingScoreResultsHeading,
-					messages,
-					new Dictionary<string, string> { { "Method Name", "PostScoreResultsByAllocation" } }
-				);
-			}
+			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
+			return Ok(ScoringRepository.PostScoreResults(allocation, execution, model));
 		}
 
 		/// <summary>
@@ -824,26 +743,8 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetMeasureHistory(Guid measureUid)
 		{
-			try
-			{
-				var models = MetricsRepository.GetMetricVersionHistory(measureUid);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x => x.Version)));
-			}
-			catch (Exception ex)
-			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = ScoreApiMessages.RestrictReadVersionHistory }
-				};
-
-				return DetermineUnhandledException(
-					ex,
-					ApiMessages.EndpointGettingMeasureHistoryHeading,
-					messages,
-					new Dictionary<string, string> { { "Method Name", "GetMeasureHistory" } }
-				);
-			}
+			var models = MetricsRepository.GetMetricVersionHistory(measureUid);
+			return Ok(models.OrderByDescending(x => x.Version));
 		}
 
 
@@ -864,26 +765,25 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetScoreHistoryByAllocationAndAsset(string allocationUid, string assetUid, DateTime? effectiveDate = null)
 		{
-
 			var allocationStatus = validateScoreAllocation(allocationUid, out Guid _allocationUid);
 
 			if (allocationStatus.StatusCode != HttpStatusCode.OK)
 			{
-				return ResponseMessage(Request.CreateErrorResponse(allocationStatus.StatusCode, allocationStatus.Message));
+				return errorMessageResponse(allocationStatus);
 			}
 
 			var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out Guid _assetUid);
 
 			if (assetStatus.StatusCode != HttpStatusCode.OK)
 			{
-				return ResponseMessage(Request.CreateErrorResponse(assetStatus.StatusCode, assetStatus.Message));
+				return errorMessageResponse(assetStatus);
 			}
 
 			if (effectiveDate.HasValue)
 			{
 				if (effectiveDate.Value.ToUniversalTime().Date > DateTime.UtcNow.Date)
 				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ScoreApiMessages.EffectiveDateNotGTToday));
+					return errorMessageArgumentResponse(ScoreApiMessages.EffectiveDateNotGTToday);
 				}
 			}
 
@@ -920,7 +820,7 @@ namespace d360.web.Controllers.V2
 
 			var model = Company.Query<dynamic>(sql, parameters, ApiTimeout);
 
-			return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
+			return Ok(model);
 		}
 
 		/// <summary>
@@ -944,17 +844,11 @@ namespace d360.web.Controllers.V2
 		public IHttpActionResult RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
 		{
 			MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
-
-			return ResponseMessage(
-				Request.CreateResponse(
-					HttpStatusCode.OK,
-					new ApiExecutionRecievedResponse
-					{
-						Message = ApiMessages.ExecutionIDStatus,
-						Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{Guid.Empty}/status" //so as not to break automation.
-					}
-				)
-			);
+			return Ok(
+				new ApiExecutionRecievedResponse {
+					Message = ApiMessages.ExecutionIDStatus,
+					Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{Guid.Empty}/status" //so as not to break automation.
+				});
 		}
 
 		/// <summary>
