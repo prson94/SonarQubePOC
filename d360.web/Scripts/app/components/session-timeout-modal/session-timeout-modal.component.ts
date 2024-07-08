@@ -65,8 +65,8 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	}
 
 	private storageEventListener(event: StorageEvent) {
-		if (event.storageArea == localStorage && event.key == this.localStorageKey) {
-			if (event.newValue == this.localStorageSloMessage) {
+		if (event.storageArea === localStorage && event.key === this.localStorageKey) {
+			if (event.newValue === this.localStorageSloMessage) {
 				this.signOut();
 				return;
 			}
