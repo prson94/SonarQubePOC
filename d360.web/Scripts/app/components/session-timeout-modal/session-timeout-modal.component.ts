@@ -13,6 +13,8 @@ import { throttleTime } from 'rxjs';
 export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	sessionExpiresOn: Date = null;
 	modalPopupTimeInSeconds: number = 60;
+	private localStorageKey: string = "d3s.sto";
+	private localStorageSloMessage = "signOut";
 
 	intervalCheckTime: number = 1000;
 
@@ -31,6 +33,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	ngOnInit() {
 		this.initializeWatch();
 		this.initializeAPIWatch();
+		window.addEventListener("storage", this.storageEventListener.bind(this));
 	}
 
 
@@ -46,10 +49,10 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 					this.sessionTimeoutCheckInterval = setInterval(this.checkSessionTimeout.bind(this), this.intervalCheckTime)
 				}
 
+				window.localStorage.setItem(this.localStorageKey, this.sessionExpiresOn.toISOString())
 				console.info("Session expiration:", this.sessionExpiresOn)
 			}
 		})
-
 	}
 
 	initializeAPIWatch() {
@@ -59,6 +62,24 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 			}
 			this.apiTimeoutCheck = setTimeout(() => this.extendSession(), 500);
 		})
+	}
+
+	private storageEventListener(event: StorageEvent) {
+		if (event.storageArea === localStorage && event.key === this.localStorageKey) {
+			if (event.newValue === this.localStorageSloMessage) {
+				this.signOut();
+				return;
+			}
+			const storageExpiresOn = new Date(event.newValue);
+			if (storageExpiresOn > this.sessionExpiresOn) {
+				this.sessionExpiresOn = storageExpiresOn;
+				if (this.isModalVisible && this.timeUntilLogout > this.modalPopupTimeInSeconds) {
+					this.isModalVisible = false;
+					this.cdRef.markForCheck();
+				}
+				console.info("Session expiration:", this.sessionExpiresOn);
+			}
+		}
 	}
 
 	clearWatch = () => {
@@ -72,6 +93,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 		if (this.apiTimeoutCheck) {
 			clearTimeout(this.apiTimeoutCheck)
 		}
+		window.removeEventListener("storage", this.storageEventListener.bind(this));
 	}
 
 	checkSessionTimeout() {
@@ -105,6 +127,7 @@ export class SessionTimeoutModalComponent implements OnDestroy, OnInit {
 	}
 
 	signOut() {
+		window.localStorage.setItem(this.localStorageKey, this.localStorageSloMessage);
 		window.location.href = '/slo'
 	}
 
