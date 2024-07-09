@@ -2829,7 +2829,7 @@ where	T.ExecutionID = @ExecutionID
 						declare @assetTypeName nvarchar(max) = ''
 						declare @nextVersion int = null;
 
-						select @nextVersion = coalesce(max(version),0) + 1 as Version 
+						select @nextVersion = coalesce(max(version),0) + 1
 						from reporting.Global_Audit ga where ga.Object = @object 
 						and ga.ObjectID = @objectId
 						option (recompile);
@@ -2842,7 +2842,7 @@ where	T.ExecutionID = @ExecutionID
 						inner join AssetType at on at.ID = a.AssetTypeID
 						where a.ID = @assetId
 
-						if @value <> @previousValue
+						if coalesce(@value,'') <> coalesce(@previousValue,'')
 						begin
 							DECLARE @inserted TABLE (id INT);
 							insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
