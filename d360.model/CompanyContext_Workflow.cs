@@ -1260,6 +1260,8 @@ namespace d360.model
 					declare @formattedValue nvarchar(max) = (select 
 						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
 					    from FieldType ft where ft.ID = @fieldTypeID)
+
+					declare @updateDate datetime = GETUTCDATE()
 					
 					if @fieldId > 0
 					begin
@@ -1267,14 +1269,22 @@ namespace d360.model
 							set Value = @value,
 							FormattedValue = coalesce(@formattedValue, @value),
 							UpdatedBy = @updatedBy,
-							UpdatedOn = GETUTCDATE()
+							UpdatedOn = @updateDate
 						where ID = @fieldId and COALESCE(value,FormattedValue) <> @value
 					end
 					else
 					begin
 						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy) 
 						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, COALESCE(@formattedValue ,@value), @IssueID, @IntersectID, @updatedBy)
-					end"
+					end
+
+					if(@assetID is not null)
+					BEGIN
+						Update Asset
+						set UpdatedOn = @updateDate
+						where ID = @assetID
+					END
+					"
 					, dbargs);
 			}
 			else if (field != null)
@@ -1308,7 +1318,18 @@ namespace d360.model
 				//remove the field from db if field value is null or empty 
 				if (string.IsNullOrEmpty(updateValue))
 				{
-					await Database.Connection.ExecuteAsync($"delete from Field where FieldTypeID = @fieldTypeID and {idSQL}"
+					await Database.Connection.ExecuteAsync($@"
+						delete from Field 
+						where 
+							FieldTypeID = @fieldTypeID and {idSQL}
+
+						if(@assetID is not null)
+						BEGIN
+							Update Asset
+							set UpdatedOn = GETUTCDATE()
+							where ID = @assetID
+						END
+					"
 					, new
 					{
 						fieldTypeID = field.FieldTypeID,
@@ -1324,7 +1345,17 @@ namespace d360.model
 						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
 					    from FieldType ft where ft.ID = @fieldTypeID)
 
-						update Field set [Value] = @value, [FormattedValue] = coalesce(@formattedValue,@value), UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and COALESCE(value,FormattedValue) <> @value"
+						declare @updateDate datetime = GETUTCDATE()
+
+						update Field set [Value] = @value, [FormattedValue] = coalesce(@formattedValue,@value), UpdatedOn = @updateDate, UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and COALESCE(value,FormattedValue) <> @value
+
+						if(@assetID is not null)
+						BEGIN
+							Update Asset
+							set UpdatedOn = @updateDate
+							where ID = @assetID
+						END
+						"
 					, new
 					{
 						value = updateValue,
@@ -1398,20 +1429,8 @@ namespace d360.model
 				if (item.ClearValue)
 				{
 					//delete the value
-					string sql = "delete field where fieldtypeid = @fieldTypeId";
-					var parameters = new DynamicParameters(new { fieldTypeId = item.FieldID });
-					if (item.ObjectType == "Issue" || item.ObjectType == "Intersect")
-					{
-						sql += $" and {item.ObjectType}ID = @id";
-						parameters.Add("id", objectId);
-					}
-					else
-					{
-						sql += " and AssetID = @id";
-						parameters.Add("id", asset.ID);
-					}
-
-					await Database.Connection.ExecuteAsync(sql, parameters);
+					
+					await UpdateField(objectId, objectType, fieldType, item, string.Empty, assetType, asset);
 
 				}
 				else if (item.CurrentDate)
