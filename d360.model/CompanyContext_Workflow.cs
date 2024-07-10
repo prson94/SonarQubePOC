@@ -1281,7 +1281,7 @@ namespace d360.model
 					if(@assetID is not null)
 					BEGIN
 						Update Asset
-						set UpdatedOn = @updateDate
+						set UpdatedOn = @updateDate, UpdatedBy = @updatedBy
 						where ID = @assetID
 					END
 					"
@@ -1326,7 +1326,7 @@ namespace d360.model
 						if(@assetID is not null)
 						BEGIN
 							Update Asset
-							set UpdatedOn = GETUTCDATE()
+							set UpdatedOn = GETUTCDATE(), UpdatedBy = @updatedBy
 							where ID = @assetID
 						END
 					"
@@ -1335,7 +1335,8 @@ namespace d360.model
 						fieldTypeID = field.FieldTypeID,
 						issueId = field.IssueID,
 						intersectId = field.IntersectID,
-						assetId = field.AssetID
+						assetId = field.AssetID,
+						updatedBy = CurrentResourceID
 					});
 				}
 				else //update
@@ -1352,7 +1353,7 @@ namespace d360.model
 						if(@assetID is not null)
 						BEGIN
 							Update Asset
-							set UpdatedOn = @updateDate
+							set UpdatedOn = @updateDate, UpdatedBy = @updatedBy
 							where ID = @assetID
 						END
 						"
