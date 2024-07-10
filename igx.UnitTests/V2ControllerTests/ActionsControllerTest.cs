@@ -191,14 +191,12 @@ namespace igx.UnitTests.V2ControllerTests
 		[MemberData("GetInvalidUIDFilterData")]
 		public async void GetIssueTypes_TestInvalidUIDParameters(string filterParam, string guid)
 		{
-			var qs = new Dictionary<string, string>();
-			qs.Add(filterParam, guid);
+			var qs = new Dictionary<string, string> { { filterParam, guid } };
 			actionsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
-			await Assert.ThrowsAsync<ArgumentException>(async () => {
-				var actionResult = await actionsController.GetIssueTypes();
-				var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-			});
+			var actionResult = await actionsController.GetIssueTypes();
+			var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.Result.StatusCode == System.Net.HttpStatusCode.BadRequest);
 		}
 	}
 }

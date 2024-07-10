@@ -108,7 +108,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				throw new ArgumentException(isValid);
+				return errorMessageArgumentResponse(isValid);
 			}
 
 			long.TryParse(_pageSize, out long pageSize);
@@ -127,7 +127,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					throw new ArgumentException(ApiMessages.InvalidDirection);
+					return errorMessageArgumentResponse(ApiMessages.InvalidDirection);
 			}
 
 			if (string.IsNullOrEmpty(_order))
@@ -191,7 +191,7 @@ namespace d360.web.Controllers.V2
 
 					if (issue == null)
 					{
-						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionUidNotFound, actionUid));
+						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionUidNotFound, actionUid));
 					}
 					else
 					{
@@ -214,7 +214,7 @@ namespace d360.web.Controllers.V2
 
 					if (issueType == null)
 					{
-						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
+						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
 					}
 					else
 					{
@@ -251,13 +251,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
+					return errorMessageNotFoundResponse(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
 				}
 			}
 
 			if (!isOrderByFieldValid)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
 			}
 
 			if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
@@ -268,7 +268,7 @@ namespace d360.web.Controllers.V2
 
 					if (asset == null)
 					{
-						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
+						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
 					}
 
 					queries.Add("A.[Uid] = @assetUid");
@@ -276,7 +276,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, assetUid));
+					return errorMessageNotFoundResponse(string.Format(ApiMessages.InvalidGuid, assetUid));
 				}
 			}
 
@@ -344,7 +344,7 @@ namespace d360.web.Controllers.V2
 
 			if (model == null)
 			{
-				throw new ArgumentException(ApiMessages.EmptyInvalidParameterSet);
+				return errorMessageArgumentResponse(ApiMessages.EmptyInvalidParameterSet);
 			}
 
 			if (model.assets.Count == 0)
@@ -399,13 +399,13 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) || actionTypeUid == Guid.Empty)
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 				}
 
 				var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
 				if (!validUid)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 				}
 			}
 
@@ -415,17 +415,17 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid) || assetTypeUid == Guid.Empty)
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetTypeUid);
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 				if (assetType == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
 				}
 				else if (assetType.Class == AssetTypeClass.Diagram)
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetTypeUid);
 				}
 			}
 
@@ -435,17 +435,17 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid) || assetUid == Guid.Empty)
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetUid);
 				}
 
 				var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
 				if (asset == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 				}
 				else if (asset.AssetType.Class == AssetTypeClass.Diagram)
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetUid);
 				}
 
 				if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
@@ -454,7 +454,7 @@ namespace d360.web.Controllers.V2
 
 					if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
 					{
-						throw new ArgumentException(ApiMessages.AssetValidateWithAssetType);
+						return errorMessageArgumentResponse(ApiMessages.AssetValidateWithAssetType);
 					}
 				}
 			}
@@ -465,12 +465,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (string.IsNullOrEmpty(nameParam.Value.Trim()))
 				{
-					throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
+					return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
 				}
 
 				if (nameParam.Value.Trim().Length > 250)
 				{
-					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+					return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
 				}
 			}
 
@@ -480,13 +480,13 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
 				{
-					throw new ArgumentException(ActionApiMessages.ResourceUidNotValid);
+					return errorMessageArgumentResponse(ActionApiMessages.ResourceUidNotValid);
 				}
 
 				var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
 				if (!validUid)
 				{
-					throw new NotFoundBusinessLayerException(ActionApiMessages.ResourceUidNotFound);
+					return errorMessageNotFoundResponse(ActionApiMessages.ResourceUidNotFound);
 				}
 			}
 
@@ -496,7 +496,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidLimitActiveWorkflow);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidLimitActiveWorkflow);
 				}
 			}
 
@@ -507,7 +507,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(hasAssignments.Value, out _))
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidHasAssignments);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidHasAssignments);
 				}
 			}
 
@@ -517,7 +517,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(hasAnyAssignments.Value, out _))
 				{
-					throw new ArgumentException(ActionApiMessages.InvalidHasAnyAssignments);
+					return errorMessageArgumentResponse(ActionApiMessages.InvalidHasAnyAssignments);
 				}
 			}
 
@@ -546,7 +546,7 @@ namespace d360.web.Controllers.V2
 			AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
 			if (assetType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
 
 			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
@@ -578,25 +578,25 @@ namespace d360.web.Controllers.V2
 
 				if (validUid)
 				{
-					throw new ArgumentException(ActionApiMessages.UniqueUid);
+					return errorMessageArgumentResponse(ActionApiMessages.UniqueUid);
 				}
 			}
 
 			if (string.IsNullOrEmpty(model.Name.Trim()))
 			{
-				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
+				return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
 			}
 
 			if (model.Name.Trim().Length > 250)
 			{
-				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
 			}
 
 			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
 			if (validName)
 			{
-				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction);
+				return errorMessageArgumentResponse(ActionApiMessages.UniqueNameWorkflowAction);
 			}
 
 			if (model.Uid == null || model.Uid == Guid.Empty)
@@ -649,36 +649,36 @@ namespace d360.web.Controllers.V2
 		{
 			if (model.Uid == null || model.Uid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.UidNotEmptyAndRequired);
+				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
 
 			if (issueType == null)
 			{
-				throw new ArgumentException(ActionApiMessages.UidNotValid);
+				return errorMessageArgumentResponse(ActionApiMessages.UidNotValid);
 			}
 
 			if (model.Name == null)
 			{
-				throw new ArgumentException(ActionApiMessages.NameNotNull);
+				return errorMessageArgumentResponse(ActionApiMessages.NameNotNull);
 			}
 
 			if (string.IsNullOrEmpty(model.Name.Trim()))
 			{
-				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
+				return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
 			}
 
 			if (model.Name.Trim().Length > 250)
 			{
-				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
 			}
 
 			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
 
 			if (validName)
 			{
-				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction);
+				return errorMessageArgumentResponse(ActionApiMessages.UniqueNameWorkflowAction);
 			}
 
 			if (model.Description == null)
@@ -723,7 +723,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -747,18 +747,18 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
+				return errorMessageNotFoundResponse(ActionApiMessages.ActionTypeNotFound);
 			}
 
 			if (!model.cascade && Company.Issues.Any(x => x.IssueTypeID == issueType.ID))
 			{
 				if (IsFromUI)
 				{
-					throw new ArgumentException(string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name));
+					return errorMessageArgumentResponse(string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name));
 				}
 				else
 				{
-					throw new ArgumentException(ActionApiMessages.CascadeDeleteActionType);
+					return errorMessageArgumentResponse(ActionApiMessages.CascadeDeleteActionType);
 				}
 			}
 
@@ -807,28 +807,28 @@ namespace d360.web.Controllers.V2
 
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 			}
 
 			WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
 
 			if (validationStatus.StatusCode != HttpStatusCode.OK)
 			{
-				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+				return errorMessageResponse(validationStatus);
 			}
 
 			foreach (var issueModel in issueModels)
 			{
 				if (!Company.CurrentResourceIsAdmin && issueModel.Issue.AssetTypeID.HasValue && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID.Value, Permission.ReadAsset))
 				{
-					throw new ForbiddenBusinessLayerException(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
+					return errorMessageForbiddenResponse(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
 				}
 
 				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
@@ -1159,19 +1159,19 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			if (assetTypeUids.Count == 0)
 			{
-				throw new ArgumentException(ActionApiMessages.EmptyAllocationRequest);
+				return errorMessageArgumentResponse(ActionApiMessages.EmptyAllocationRequest);
 			}
 
 			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
@@ -1180,14 +1180,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUid, out Guid uid))
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
 				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
 				}
 
 				if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
@@ -1223,14 +1223,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			string allocationsSQL = @"
@@ -1283,26 +1283,26 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 
 			if (assetType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
 			}
 
 			string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
@@ -1310,7 +1310,7 @@ namespace d360.web.Controllers.V2
 
 			if (res == 0)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name));
 			}
 
 			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful);
@@ -1334,33 +1334,33 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
+				return errorMessageNotFoundResponse(ActionApiMessages.ActionTypeNotFound);
 			}
 
 			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
 
 			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
 
 			if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
 			}
 
 			if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
 			{
-				throw new ArgumentException(ActionApiMessages.UniqueAllocation);
+				return errorMessageArgumentResponse(ActionApiMessages.UniqueAllocation);
 			}
 
 			if (model.responsibilityTypeUid.Count() > 0)
@@ -1371,7 +1371,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!responsibilityTypes.Any(rt => rt.uid == uid))
 					{
-						throw new ArgumentException(string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
+						return errorMessageArgumentResponse(string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
 					}
 				}
 			}

@@ -282,9 +282,10 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async Task Err_DeleteMetric_BadUid()
         {
-			Action act = () => { metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID)); };
-			act.Should().ThrowExactly<NotFoundException>();
-        }
+			var actionResult = metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID));
+			var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.Result.StatusCode == System.Net.HttpStatusCode.NotFound);
+		}
 
         [Fact]
         public async void GetMetricHierarchyByAssetTypeUid()

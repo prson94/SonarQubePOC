@@ -3566,13 +3566,13 @@ namespace d360.web.Controllers.V2
 
 				if (res == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFoundOrPermission, assetUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFoundOrPermission, assetUid.ToString()));
 				}
 
 				return Ok(res);
 			}
 
-			throw new ArgumentException(ApiMessages.InvalidRequest);
+			return errorMessageArgumentResponse(ApiMessages.InvalidRequest);
 		}
 
 		/// <summary>
@@ -3592,41 +3592,21 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> RequestCertification(Guid assetUid)
 		{
-			var prefix = "Assets.RequestCertification => ";
+			var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x => x.AssetType).FirstOrDefault();
 
-			try
+			if (asset == null)
 			{
-				var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x => x.AssetType).FirstOrDefault();
-
-				if (asset == null)
-				{
-					throw new NotFoundException("Asset");
-				}
-
-				if (Enum.TryParse(asset.Object, out SystemObjects obj) && Enum.TryParse(asset.AssetType.Object, out SystemObjects objType))
-				{
-					Company.RequestObjectCertification(obj, asset.ObjectID, objType, asset.AssetType.ObjectID);
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiStatusResponse() { Success = true, Message = AssetsApiMessages.RequestCreatedMsg, Uid = asset.uid })
-						)
-					);
-				}
-				else
-				{
-					throw new NotFoundException(AssetsApiMessages.InvalidAsset);
-
-				}
+				return errorMessageNotFoundResponse("Asset");
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
+			if (Enum.TryParse(asset.Object, out SystemObjects obj) && Enum.TryParse(asset.AssetType.Object, out SystemObjects objType))
+			{
+				Company.RequestObjectCertification(obj, asset.ObjectID, objType, asset.AssetType.ObjectID);
+				return Ok(new ApiStatusResponse() { Success = true, Message = AssetsApiMessages.RequestCreatedMsg, Uid = asset.uid });
+			}
+			else
+			{
+				return errorMessageNotFoundResponse(AssetsApiMessages.InvalidAsset);
 			}
 		}
 
@@ -4127,7 +4107,7 @@ namespace d360.web.Controllers.V2
 			Guid assetTypeID;
 			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidAssetUid, assetTypeUid));
 			}
 
 			ValidateParameters();
@@ -4136,7 +4116,7 @@ namespace d360.web.Controllers.V2
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{
-				throw new NotFoundBusinessLayerException($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
+				return errorMessageNotFoundResponse($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
 			}
 
 			var result = entities.Select(x => new AssetTypeAncestryModel

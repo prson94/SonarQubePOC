@@ -52,7 +52,7 @@ namespace igx.UnitTests
         [Fact]
         public async void GetFieldTypes()
         {
-            var results = await fieldsController.GetFieldTypesAsync();
+            var results = await (await fieldsController.GetFieldTypesAsync()).ExecuteAsync(CancellationToken.None);
             var list = new FieldTypesApiViewModel();
             var res = results.TryGetContentValue(out list);
 
@@ -100,10 +100,10 @@ namespace igx.UnitTests
         public async Task DeleteFields_CheckIfValidationIncluded()
         {
             FieldTypesApiDeleteModel model = new FieldTypesApiDeleteModel();
-			Func<Task> act = async () => { await fieldsController.DeleteFieldTypesAsync(model); };
-
-			await act.Should().ThrowAsync<RestApiException>();
-        }
+			var actionResult = await fieldsController.DeleteFieldTypesAsync(model);
+			var res = actionResult.ExecuteAsync(new CancellationToken());
+			Assert.True(res.Result.StatusCode == HttpStatusCode.BadRequest);
+		}
 
         [Fact]
         public async void DeleteFields()
