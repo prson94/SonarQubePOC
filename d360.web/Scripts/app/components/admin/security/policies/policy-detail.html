@@ -26,6 +26,16 @@
 							{{item.roleName}}
 						</span>
 					</div>
+					<div class="row">
+						<label class="ig-label" i18n>When Does This Apply?</label>
+						<span *ngIf="item.applyToType">
+							All assets of this type
+						</span>
+						<span *ngIf="!item.applyToType && item.whenConditions">
+							{{item.whenConditions.length}} {{item.whenConditions.length > 1 ? 'conditions' : 'condition'}}.
+						</span>
+					</div>
+
 				</div>
 			</div>
 		</ig-property-group>

@@ -81,6 +81,9 @@ export class PolicyEditor implements OnChanges, OnInit {
 	@Output() onSave = new EventEmitter();
 
 	title: string = $localize`Edit`;
+	instructions: string = '';
+	newInstructions: string = $localize`Create a policy that will assign users or groups to a role on a set of assets based on attributes of those assets.`;
+	editInstructions: string = $localize`Updating this policy that may alter role assignments on assets.`;
 	addFieldCheckTitle = $localize`Add Field Condition`;
 	addRelationCheckTitle = $localize`Add Relation Condition`;
 
@@ -190,6 +193,10 @@ export class PolicyEditor implements OnChanges, OnInit {
 		return this.policyForm.get('thenConditions') as FormArray;
 	}
 
+	get allowAddWhenRelation(): boolean {
+		return (this.selectedAssetTypeOptions?.intersectTypes &&  this.selectedAssetTypeOptions?.intersectTypes.length > 0);
+	}
+
 	addWhen(type: string, condition: SecurityPolicyWhen): void {
 		let group: FormGroup = this.fb.group({
 			checkType: [type, Validators.required],
@@ -208,8 +215,10 @@ export class PolicyEditor implements OnChanges, OnInit {
 				condition.fieldName = fieldName;
 			}
 			else {
-				const intersectTypeUid = this.selectedAssetTypeOptions?.intersectTypes[0].value;
-				condition.intersectTypeUid = intersectTypeUid;
+				if (this.allowAddWhenRelation) {
+					const intersectTypeUid = this.selectedAssetTypeOptions?.intersectTypes[0].value;
+					condition.intersectTypeUid = intersectTypeUid;
+				}
 			}
 		}
 
@@ -224,6 +233,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 		}
 
 		obs.subscribe((o) => {
+			group.controls["operator"].setValue(condition.operator);
 			this.whenConditions.push(group);
 		});
 	}
@@ -253,31 +263,12 @@ export class PolicyEditor implements OnChanges, OnInit {
 	}
 
 	isWhenValid() {
-		if (this.item?.applyToType) {
+		const applyToType = this.policyForm.controls["applyToType"].getRawValue() as boolean;
+		if (applyToType) {
 			return false;
 		}
-		return true;
-		//if (!this.item?.whenConditions) {
-		//	return true;
-		//}
-
-		//if (this.item?.whenConditions?.every((w) =>
-		//	w.checkType
-		//	&& w.operator
-		//	&& (
-		//		(
-		//			w.checkType === 'F'
-		//			&& w.fieldName
-		//			&& ( (w.value && w.value.length > 0) || (w.assetUid && w.assetUid.length > 0) )
-		//		)
-		//		||
-		//		( w.checkType === 'R' && w.intersectTypeUid && w.assetUid && w.assetUid.length > 0 )
-		//	)
-		//)
-		//) {
-		//	return true;
-		//}
-		//return false;
+		//return true;
+		return (this.policyForm.controls["whenConditions"].valid);
 	}
 
 	loadForm() {
@@ -288,11 +279,13 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 		//Set UI labels.
 		if (isEdit) {
+			this.instructions = this.editInstructions;
 			this.saveLabel = $localize`Save Changes`;
 			this.cancelLabel = $localize`Close`;
 			this.title = $localize`Edit Policy`;
 		}
 		else {
+			this.instructions = this.newInstructions;
 			this.title = $localize`Add Policy`;
 			this.saveLabel = this.title;
 			this.cancelLabel = $localize`Cancel`;
