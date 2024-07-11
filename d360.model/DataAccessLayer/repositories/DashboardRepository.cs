@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 
 using Dapper;
+using DocumentFormat.OpenXml.Bibliography;
 using repositories;
 
 namespace d360.model.DataAccessLayer
@@ -64,6 +66,18 @@ namespace d360.model.DataAccessLayer
 
 			UpdateReportResponsibilities(model, report);
 
+			#region "Audit Log"
+			try
+			{
+				addChangeLogDashboard(report, "C");
+			}
+			catch
+			{
+
+			}
+			#endregion
+
+
 			return Task.FromResult(report.ToApiDashboardGetModel());
 		}
 
@@ -72,6 +86,7 @@ namespace d360.model.DataAccessLayer
 		{
 			string currentStep = "";
 			Report report = null;
+			Report nowPreviousreport = null;
 			try
 			{
 				currentStep = "Update->ValidateDashboardModel";
@@ -84,6 +99,10 @@ namespace d360.model.DataAccessLayer
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(FieldErrors.InvalidAssetTypeUid, model.AssetTypeUid));
 				}
+
+				nowPreviousreport = report.CloneThis();
+
+
 				report.Name = model.Name;
 				report.Description = model.Description.SanitizeHtml();
 				report.AssetTypeID = model.AssetTypeId;
@@ -112,6 +131,17 @@ namespace d360.model.DataAccessLayer
 				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, errorMessage);
 			}
+
+			#region "Audit Log"
+			try
+			{
+				addChangeLogDashboard(report, "U", nowPreviousreport);
+			}
+			catch 
+			{
+
+			}
+			#endregion
 			return Task.FromResult(report.ToApiDashboardGetModel());
 		}
 
@@ -188,6 +218,18 @@ namespace d360.model.DataAccessLayer
 				.Query(@"
 					delete from ReportResponsibility where ReportId = @reportId;
 					delete from Report where Id = @reportId", new { reportId = dashboard.ID });
+
+
+			#region "Audit Log"
+			try
+			{
+				addChangeLogDashboard(dashboard, "D");
+			}
+			catch
+			{
+
+			}
+			#endregion
 			return true;
 		}
 
@@ -334,5 +376,76 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 					new { reportId = report.ID, responsibilities });
 			}
 		}
+
+		private void addChangeLogDashboard(Report current, string action, Report previous = null)
+		{
+			int deleteSameValue = 0;
+
+			switch (action)
+			{
+				case "C":
+					action = "Created";
+					break;
+				case "U":
+					deleteSameValue = 1;
+					action = "Updated";
+					break;
+				case "D":
+				case "R":
+					action = "Removed";
+					break;
+				default:
+					// No action, leave the value as is.
+					break;
+			}
+			var audit = new Audit
+			{
+				AuditFields = new List<AuditField>(),
+				Date = (DateTime)((DateTime)current.UpdatedOn == null ? DateTime.Now : current.UpdatedOn),
+				ActionDescription = $"Report {action.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.",
+				Action = action,
+				ActionObjectID = current.ID,
+				ActionObject = "Report",
+				ActionObjectName = current.Name,
+				ActionObjectTypeName = "Report",
+				Object = "Report",
+				ObjectID = current.ID,
+				ObjectName = current.Name,
+				ResourceID = (int)((int)current.UpdatedBy == 0 ? CompanyContext.CurrentResourceID : current.UpdatedBy),
+				Version = 0
+			};
+
+			if (action == "Created" || (action == "Updated"))
+			{ 
+				audit.AuditFields.Add(new AuditField { FieldName = "Name", PreviousValue = ((previous != null) ? previous.Name : null), Value = current.Name, FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "Description", PreviousValue = ((previous != null) ? previous.Description : null), Value = current.Description, FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "ReportType", PreviousValue = ((previous != null) ? ((int)previous.ReportType).ToString() : null), Value = ((int)current.ReportType).ToString(), FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "AssetTypeID", PreviousValue = ((previous != null) ? previous.AssetTypeID.ToString() : null), Value = current.AssetTypeID.ToString(), FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "Location", PreviousValue = ((previous != null) ? ((int)previous.Location).ToString() : null), Value = ((int)current.Location).ToString(), FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "Definition", PreviousValue = ((previous != null) ? previous.Definition : null), Value = current.Definition, FieldTypeID = 0 });
+			}
+			CompanyContext.Add(audit);
+
+			CompanyContext.Connection.Execute(@"
+												update	T
+												set		T.Version = coalesce(S.[maxversion],0) + 1
+												from	[reporting].[Global_Audit] T
+												outer apply (
+															select	max(version) as [maxversion]
+															from	[reporting].[Global_Audit] A  
+															where A.Object = T.Object 
+															and A.ObjectID = T.ObjectID
+														) S
+												where   T.ID = @ID and T.[Version] = 0
+
+												if (@deleteSameValue = 1)
+												begin
+													delete f
+													from [reporting].[Global_FieldAudit] f
+													where auditid = @ID and coalesce(value,'') = coalesce(Previousvalue,'')
+												end
+												", new { audit.ID, deleteSameValue});
+		}
+		
 	}
 }
