@@ -12,6 +12,7 @@ using d360.web.Models;
 using d360.web.Models.Usage;
 using d360.web.Utilities;
 using Dapper;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.PowerBI.Api.V2;
 using Microsoft.Rest;
@@ -2202,6 +2203,7 @@ select	r.uid as ResourceUid,
 		/// <returns>The created dashboard.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("dashboards"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
@@ -2231,111 +2233,73 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostDashboard()
 		{
-			string currentStep = "";
-			try
+			if (!IsDashboardingEnabled)
 			{
-				currentStep = "Checn Current resource is Admin";
-				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
+				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+			}
+
+			NameValueCollection data = HttpContext.Current.Request.Form;
+			var requestModel = new DashboardApiUpsertModel();
+			requestModel.FillDataFromFormData(data);
+			requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
+
+			DashboardRepository.ValidateDashboardModel(requestModel);
+
+			HttpPostedFile file = null;
+
+			if (HttpContext.Current.Request.Files.Count > 0)
+			{
+				file = HttpContext.Current.Request.Files[0];
+			}
+			var definition = new DashboardDefinition();
+
+			if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
+			{
+				try
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
+					MemoryStream memoryStream = new MemoryStream();
 
-				currentStep = "FillDataFromFormData";
+					file.InputStream.CopyTo(memoryStream);
 
-				NameValueCollection data = HttpContext.Current.Request.Form;
-				var requestModel = new DashboardApiUpsertModel();
-				requestModel.FillDataFromFormData(data);
-				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
-
-				currentStep = "Check->ValidateDashboardModel";
-
-				DashboardRepository.ValidateDashboardModel(requestModel);
-
-				HttpPostedFile file = null;
-
-				if (HttpContext.Current.Request.Files.Count > 0)
-				{
-					file = HttpContext.Current.Request.Files[0];
-				}
-				var definition = new DashboardDefinition();
-
-				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
-				{
-					currentStep = "PowerBI->File";
-					try
-					{
-						MemoryStream memoryStream = new MemoryStream();
-						currentStep = "PowerBI->Copy";
-
-						file.InputStream.CopyTo(memoryStream);
-
-						currentStep = "PowerBI->memoryStream";
-
-						if (!isPowerBiFileValid(memoryStream))
-						{
-							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
-						}
-						memoryStream.Position = 0; // Reset position to read again.
-
-						currentStep = "PowerBI->uploadPowerBIReport";
-
-						var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
-
-						currentStep = "PowerBI->Upload Complete"; 
-						
-						if (importResult.ImportState == "Failed")
-						{
-							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
-						}
-						currentStep = "PowerBI->powerBiDatasetId"; 
-
-						definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
-
-						var rpt = importResult.Reports.FirstOrDefault();
-
-						currentStep = "PowerBI->powerBiReportId";
-
-						if (rpt != null)
-						{
-							definition.powerBiReportId = rpt.Id.ToString();
-						}
-
-						currentStep = "definition->fileName";
-
-						definition.fileName = file.FileName;
-
-						requestModel.Definition = definition;
-					}
-					catch (Exception ex)
+					if (!isPowerBiFileValid(memoryStream))
 					{
 						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 					}
+					memoryStream.Position = 0; // Reset position to read again.
+
+					var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name);
+					if (importResult.ImportState == "Failed")
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+					}
+
+					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+					var rpt = importResult.Reports.FirstOrDefault();
+
+
+					if (rpt != null)
+					{
+						definition.powerBiReportId = rpt.Id.ToString();
+					}
+
+					definition.fileName = file.FileName;
+
+					requestModel.Definition = definition;
 				}
-				else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
+				catch (Exception ex)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
+					return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 				}
-
-				currentStep = "Create->Dashboard";
-
-				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
-
-				currentStep = "Process Complete";
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
-			catch (GenericException ex)
+			else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
 			{
-				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PostDashboard => " }, { "Current Step", currentStep } });
-				throw ex;
+				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
 			}
-			catch(Exception ex1)
-			{
-				string errorMessage = currentStep + ":" + ex1.Message + (ex1.InnerException != null ? ex1.InnerException.Message : "");
-				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
-				SendException(ex1, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PostDashboard => " } });
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, errorMessage);
-			}
+
+			var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 		}
 
 		/// <summary>
@@ -2348,6 +2312,7 @@ select	r.uid as ResourceUid,
 		/// <returns>The created dashboard.</returns>
 		[
 			HttpPut,
+			RequireAdminPermissions,
 			Route("dashboards"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
@@ -2378,108 +2343,74 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutDashboard()
 		{
-			string currentStep = "";
-			try
+			if (!IsDashboardingEnabled)
 			{
-				currentStep = "Checn Current resource is Admin";
-
-				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				currentStep = "FillDataFromFormData";
-
-				NameValueCollection data = HttpContext.Current.Request.Form;
-				var requestModel = new DashboardApiUpsertModel();
-				requestModel.FillDataFromFormData(data);
-				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
-
-				currentStep = "Check->Uid Request";
-
-				if (requestModel.Uid.HasValue)
-				{
-					if (!Company.Reports.Any(x => x.uid == requestModel.Uid))
-					{
-						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(DashboardMessages.DashboardNotFound, requestModel.Uid));
-					}
-				}
-
-				currentStep = "Check->ValidateDashboardModel";
-
-				DashboardRepository.ValidateDashboardModel(requestModel);
-
-				HttpPostedFile file = null;
-
-				if (HttpContext.Current.Request.Files.Count > 0)
-				{
-					file = HttpContext.Current.Request.Files[0];
-				}
-				var definition = new DashboardDefinition();
-
-				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
-				{
-					currentStep = "PowerBI->File";
-
-					MemoryStream memoryStream = new MemoryStream();
-					file.InputStream.CopyTo(memoryStream);
-
-					if (!isPowerBiFileValid(memoryStream))
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
-					}
-
-					memoryStream.Position = 0; // Reset position to read again.
-
-					currentStep = "PowerBI->Upload";
-
-					var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
-
-					currentStep = "PowerBI->Upload Complete";
-
-					if (importResult.ImportState == "Failed")
-					{
-						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
-					}
-
-					currentStep = "PowerBI->powerBiDatasetId";
-
-					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
-
-					var rpt = importResult.Reports.FirstOrDefault();
-
-					currentStep = "PowerBI->powerBiReportId";
-
-					if (rpt != null)
-					{
-						definition.powerBiReportId = rpt.Id.ToString();
-					}
-
-					currentStep = "definition->fileName";
-					definition.fileName = file.FileName;
-
-					requestModel.Definition = definition;					
-				}
-
-				currentStep = "Update->Dashboard";
-
-				var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
-
-				currentStep = "Process Complete";
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+				return errorMessageForbiddenResponse(ApiMessages.EndpointNotAuthorizedMessage);
 			}
-			catch (GenericException ex)
+
+			NameValueCollection data = HttpContext.Current.Request.Form;
+			var requestModel = new DashboardApiUpsertModel();
+			requestModel.FillDataFromFormData(data);
+			requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
+
+			var definition = new DashboardDefinition();
+
+			if (!requestModel.Uid.HasValue)
 			{
-				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PutDashboard => " },{ "Current Step", currentStep}});
-				throw ex;
+				return errorMessageArgumentResponse(DashboardMessages.InvalidDashboardUid);
 			}
-			catch (Exception ex1)
+
+			var existingReport = Company.Reports.FirstOrDefault(x => x.uid == requestModel.Uid);
+			if (existingReport == null)
 			{
-				string errorMessage = currentStep + ":" + ex1.Message + (ex1.InnerException != null ? ex1.InnerException.Message : "");
-				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
-				SendException(ex1, new Dictionary<string, string>() { { "Endpoint Method", "Environment.PutDashboard => " } });
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnUpdate,errorMessage);
+				return errorMessageArgumentResponse(string.Format(DashboardMessages.DashboardNotFound, requestModel.Uid));
 			}
+			definition = existingReport.DashboardDefinition;
+
+			DashboardRepository.ValidateDashboardModel(requestModel);
+
+			HttpPostedFile file = null;
+
+			if (HttpContext.Current.Request.Files.Count > 0)
+			{
+				file = HttpContext.Current.Request.Files[0];
+			}
+
+			if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
+			{
+				MemoryStream memoryStream = new MemoryStream();
+				file.InputStream.CopyTo(memoryStream);
+
+				if (!isPowerBiFileValid(memoryStream))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+				}
+
+				memoryStream.Position = 0; // Reset position to read again.
+
+				var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiReportId, definition.powerBiDatasetId);
+
+				if (importResult.ImportState == "Failed")
+				{
+					return errorMessageArgumentResponse(FormControllerApiMessage.FailedToLoadPowerBI);
+				}
+
+				definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+				var rpt = importResult.Reports.FirstOrDefault();
+
+				if (rpt != null)
+				{
+					definition.powerBiReportId = rpt.Id.ToString();
+				}
+
+				definition.fileName = file.FileName;
+
+				requestModel.Definition = definition;					
+			}
+
+			var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
+			return Ok(responseModel);
 		}
 
 		const string DASHBOARD_NOT_FOUND = "The dashboard was not found based on the provided unique identifier.";
@@ -2491,6 +2422,7 @@ select	r.uid as ResourceUid,
 		/// <returns>A confirmation response.</returns>
 		[
 			HttpDelete,
+			RequireAdminPermissions,
 			Route("dashboards/{uid:Guid}"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
@@ -2499,26 +2431,30 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this dashboard is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult DeleteDashboard(Guid uid)
+		public async Task<IHttpActionResult> DeleteDashboard(Guid uid)
 		{
-			try
+			if (!IsDashboardingEnabled)
 			{
-				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
+				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+			}
+				
+			var existingReport = Company.Reports.FirstOrDefault(x => x.uid == uid);
+			if (existingReport == null)
+			{
+				return errorMessageNotFoundResponse(string.Format(DashboardMessages.DashboardNotFound, uid));
+			}
+			if (existingReport.ReportType == DashboardType.PowerBi)
+			{
+				var definition = existingReport.DashboardDefinition;
 				DashboardRepository.DeleteDashboard(uid);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = DashboardMessages.DashboardRemoved }));
+				await removePowerBIReport(definition.powerBiReportId, definition.powerBiDatasetId);
 			}
-			catch (GenericException ex)
+			else
 			{
-				throw ex;
+				DashboardRepository.DeleteDashboard(uid);
 			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
-			}
+
+			return Ok(new ConfirmResponse { message = DashboardMessages.DashboardRemoved });
 		}
 
 
@@ -2791,11 +2727,11 @@ select	r.uid as ResourceUid,
 			return true;
 		}
 
-		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(Stream fileStream, string name, string datasetId = "")
+		private async Task removePowerBIReport(string currentReportId = "", string currentDatasetId = "")
 		{
 			var companySettings = await GetCachedSettings();
-			var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
-			var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
+			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
+			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
 
 			if (string.IsNullOrEmpty(clientId))
 			{
@@ -2805,10 +2741,43 @@ select	r.uid as ResourceUid,
 			// if the workspace id is null create a new one and update the companysettings
 			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
-			// if an existing one exists delete it
-			if (!string.IsNullOrEmpty(datasetId))
+			// if an existing report exists delete it
+			if (!string.IsNullOrEmpty(currentReportId))
 			{
-				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
+				await PowerBI.DeleteReport(pbiUsername, pbiPassword, clientId, groupId, currentReportId);
+			}
+
+			// if an existing dataset exists delete it
+			if (!string.IsNullOrEmpty(currentDatasetId))
+			{
+				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, currentDatasetId);
+			}
+		}
+
+		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(Stream fileStream, string name, string currentReportId = "", string currentDatasetId = "")
+		{
+			var companySettings = await GetCachedSettings();
+			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
+			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
+
+			if (string.IsNullOrEmpty(clientId))
+			{
+				throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+			}
+
+			// if the workspace id is null create a new one and update the companysettings
+			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+
+			// if an existing report exists delete it
+			if (!string.IsNullOrEmpty(currentReportId))
+			{
+				await PowerBI.DeleteReport(pbiUsername, pbiPassword, clientId, groupId, currentReportId);
+			}
+
+			// if an existing dataset exists delete it
+			if (!string.IsNullOrEmpty(currentDatasetId))
+			{
+				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, currentDatasetId);
 			}
 
 			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, fileStream);

@@ -75,7 +75,24 @@ namespace d360.web.Extensions
             }
         }
 
-        public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId, AuthenticationResult auth = null)
+		/// <summary>
+		/// Removes a published report from a given workspace.
+		/// </summary>
+		/// <param name="user"></param>
+		/// <param name="pwd"></param>
+		/// <param name="clientId"></param>
+		/// <param name="groupId"></param>
+		/// <param name="reportId"></param>
+		/// <returns></returns>
+		public static async Task DeleteReport(string user, string pwd, string clientId, string groupId, string reportId)
+		{
+			using (var client = await CreateClient(user, pwd, clientId))
+			{
+				await client.Reports.DeleteReportInGroupAsync(groupId, reportId);
+			}
+		}
+
+		public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId, AuthenticationResult auth = null)
         {
             if (auth == null)
             {
