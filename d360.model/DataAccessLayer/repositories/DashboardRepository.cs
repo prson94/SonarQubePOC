@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 
 using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
 using repositories;
 
 namespace d360.model.DataAccessLayer
