@@ -67,11 +67,11 @@ namespace d360.model.DataAccessLayer
 			#region "Audit Log"
 			try
 			{
-				addChangeLogDashboard(report, "C");
+				addChangeLogDashboard(report, "Created");
 			}
 			catch
 			{
-
+				// Do nothing.
 			}
 			#endregion
 
@@ -133,11 +133,11 @@ namespace d360.model.DataAccessLayer
 			#region "Audit Log"
 			try
 			{
-				addChangeLogDashboard(report, "U", nowPreviousreport);
+				addChangeLogDashboard(report, "Updated", nowPreviousreport);
 			}
 			catch 
 			{
-
+				// Do nothing.
 			}
 			#endregion
 			return Task.FromResult(report.ToApiDashboardGetModel());
@@ -221,11 +221,11 @@ namespace d360.model.DataAccessLayer
 			#region "Audit Log"
 			try
 			{
-				addChangeLogDashboard(dashboard, "D");
+				addChangeLogDashboard(dashboard, "Removed");
 			}
 			catch
 			{
-
+				// Do nothing.
 			}
 			#endregion
 			return true;
@@ -377,25 +377,8 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 
 		private void addChangeLogDashboard(Report current, string action, Report previous = null)
 		{
-			int deleteSameValue = 0;
+			int deleteSameValue = action == "Updated" ? 1 : 0;
 
-			switch (action)
-			{
-				case "C":
-					action = "Created";
-					break;
-				case "U":
-					deleteSameValue = 1;
-					action = "Updated";
-					break;
-				case "D":
-				case "R":
-					action = "Removed";
-					break;
-				default:
-					// No action, leave the value as is.
-					break;
-			}
 			var audit = new Audit
 			{
 				AuditFields = new List<AuditField>(),
