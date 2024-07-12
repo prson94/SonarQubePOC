@@ -14,6 +14,7 @@ using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
 using LaunchDarkly.Sdk.Server;
+using MoreLinq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -2337,6 +2338,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				includeAssetUrl = false;
 			}
 
+			//Resolve Type from origing field in fields from relationships
+			fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null).ForEach(f => f.Type = CompanyContext.FieldTypes.Where(ft => ft.ID == f.LookupObjectFieldTypeID).FirstOrDefault().Type);
+
 			var rowData = results.items.ToList();
 
 			var document = new SLDocument();
@@ -2595,6 +2599,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 			tempFields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
 			fields = tempFields;
+
+			//Resolve Type from origing field in fields from relationships
+			fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null).ForEach(f => f.Type = CompanyContext.FieldTypes.Where(ft => ft.ID == f.LookupObjectFieldTypeID).FirstOrDefault().Type);
 
 			foreach (var field in fieldsToRemove)
 			{
