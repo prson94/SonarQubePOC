@@ -1263,20 +1263,22 @@ namespace d360.model
 
 					declare @updateDate datetime = GETUTCDATE()
 					
-					if @fieldId > 0
-					begin
-						update Field
-							set Value = @value,
-							FormattedValue = coalesce(@formattedValue, @value),
-							UpdatedBy = @updatedBy,
+					MERGE dbo.Field AS tgt
+					USING (SELECT @fieldId, @assetID, @fieldTypeID, @objectId, @objectType, @value, COALESCE(@formattedValue ,@value), @IssueID, @IntersectID, @updatedBy)
+								AS src(ID, AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy)
+						ON (tgt.ID = src.ID)
+					WHEN MATCHED
+						THEN
+							UPDATE
+							set Value = src.[Value],
+							FormattedValue = coalesce(src.[FormattedValue], src.[Value]),
+							UpdatedBy = src.UpdatedBy,
 							UpdatedOn = @updateDate
-						where ID = @fieldId and COALESCE(value,FormattedValue) <> @value
-					end
-					else
-					begin
-						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy) 
-						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, COALESCE(@formattedValue ,@value), @IssueID, @IntersectID, @updatedBy)
-					end
+
+					WHEN NOT MATCHED
+						THEN
+							INSERT (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy)
+							VALUES (src.AssetID, src.FieldTypeID, src.ObjectID, src.ObjectType, src.[Value], src.[FormattedValue], src.IssueID, src.IntersectID, src.UpdatedBy)""
 
 					if(@assetID is not null)
 					BEGIN
