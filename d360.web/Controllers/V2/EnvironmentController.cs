@@ -2353,7 +2353,7 @@ select	r.uid as ResourceUid,
 			requestModel.FillDataFromFormData(data);
 			requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
 
-			var definition = new DashboardDefinition();
+			DashboardDefinition definition;
 
 			if (!requestModel.Uid.HasValue)
 			{
