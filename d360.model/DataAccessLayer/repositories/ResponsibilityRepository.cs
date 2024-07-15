@@ -908,7 +908,7 @@ from    Asset A
 			}
 			catch
 			{
-
+				// Do nothing.
 			}
 			#endregion
 
@@ -955,7 +955,7 @@ from    Asset A
 			}
 			catch
 			{
-
+				// Do nothing.
 			}
 			#endregion
 
