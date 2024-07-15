@@ -6,8 +6,6 @@ using d360.extensions;
 using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using repositories;
 using System;
@@ -16,7 +14,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
