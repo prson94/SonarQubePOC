@@ -1969,6 +1969,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value does not fall within the expected range.
+        /// </summary>
+        public static string ValueNotExpectedRange {
+            get {
+                return ResourceManager.GetString("ValueNotExpectedRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are no longer watching {0}..
         /// </summary>
         public static string YouAreNoLongerWatching {

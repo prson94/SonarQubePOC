@@ -939,6 +939,7 @@ namespace d360.web.Controllers.V2
 
 			if (!Guid.TryParse(allocationUid, out uid))
 			{
+				status.Error = OthersMessages.AnErrorOccurred;
 				status.StatusCode = System.Net.HttpStatusCode.BadRequest;
 				status.Message = string.Format(OthersMessages.AllocationUidNotCorrectlyFormatted, allocationUid);
 			}
@@ -948,6 +949,7 @@ namespace d360.web.Controllers.V2
 
 				if (!Company.Any<core.entities.Metric.MetricAllocation>(i => i.Uid == auid))
 				{
+					status.Error = OthersMessages.AnErrorOccurred;
 					status.StatusCode = System.Net.HttpStatusCode.NotFound;
 					status.Message = string.Format(OthersMessages.AllocationIdentifierDoesnotValidAllocation, uid.ToString());
 				}

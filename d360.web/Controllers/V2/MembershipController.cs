@@ -2079,7 +2079,7 @@ namespace d360.web.Controllers.V2
 
 			if (claim.Path?.Length > 250)
 			{
-				return errorMessageArgumentResponse("");
+				return errorMessageArgumentResponse(ApiMessages.ValueNotExpectedRange);
 			}
 
 			await membershipRepository.AddClaim(claim);

@@ -106,6 +106,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred.
+        /// </summary>
+        public static string AnErrorOccurred {
+            get {
+                return ResourceManager.GetString("AnErrorOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
         public static string AssetIdentifierDoesnotValidAsset {

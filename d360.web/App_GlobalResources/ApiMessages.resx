@@ -762,4 +762,7 @@
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>AssetTypeuid {0} is invalid</value>
   </data>
+  <data name="ValueNotExpectedRange" xml:space="preserve">
+    <value>Value does not fall within the expected range</value>
+  </data>
 </root>
