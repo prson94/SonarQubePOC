@@ -173,7 +173,7 @@ namespace d360.core.entities
         public DateTime? DateStarted { get; set; }
 
 		[DataMember]
-		public long? DateCompletedCurrentDateDiffInMin { get; set; }
+		public string? StatusMessage { get; set; }
 		
 		[DataMember]
         public DateTime? DateCompleted { get; set; }
