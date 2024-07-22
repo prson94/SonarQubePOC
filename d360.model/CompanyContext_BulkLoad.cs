@@ -297,26 +297,11 @@ end
 										else coalesce(C_D.[Name], '{Bulkload.Object_Default.CleanForSql()}') 
 									end as ObjectName,
 									L.Notes, 
-									coalesce(EA.ErrorMessage, @LoadErrorMessage,'') + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
+									coalesce(GLD.ErrorMessageEA, @LoadErrorMessage,'') + iif(GLD.ErrorMessageEA is null, '', '; ') + coalesce(GLD.ErrorMessageEE, '' ) as ErrorMessage,
 									'MyFile.' + L.Extension as FilePath,
 									L.DateStarted,
-									case when L.DateCompleted is null then 0 else datediff(minute,L.DateCompleted,GETDATE()) end DateCompletedCurrentDateDiffInMin,
-									case when L.Action in ('P','R','U') and L.[File] is null then
-										case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
-											L.DateCompleted
-										when	(L.PutExecutionId is not null and EE.CompletedOn is null and (EE.ProcessingStartedOn is not NULL OR datediff(minute,L.DateCompleted,GETDATE()) >= 20)) 
-											or	(L.PostExecutionId is not null and EA.CompletedOn is null and (EA.ProcessingStartedOn is not NULL  OR datediff(minute,L.DateCompleted,GETDATE()) >= 20)) then
-											L.DateCompleted
-										when (L.Action = 'P' and L.PutExecutionId is null  and L.PostExecutionId is null and L.DateCompleted is not null) then
-											L.DateCompleted
-										when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
-											EE.CompletedOn
-										else
-											EA.CompletedOn      
-										end
-									else 
-										L.DateCompleted 
-									end as DateCompleted,
+									GLD.StatusMessage,
+									GLD.DateCompleted,
 									case L.[Action]
 										when 'M' then '{Bulkload.UsersGroups.CleanForSql()}'
 										when 'P' then '{Bulkload.Promotion.CleanForSql()}'
@@ -334,17 +319,17 @@ end
 									T.C as Total,
 									R.FirstName + ' ' + R.LastName as Requestor
 							from	[Load] L
-									left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
-									left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
-									left join (
-										select [Name], [Object] ,ObjectID from AssetType
-										union all
-										select ITN.[Name] as [Name], 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
-										cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
-
-									) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
-									left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-									{countSql}";
+							outer apply GetLoadDateCompleted(L.ID) GLD
+							outer apply (
+								select [Name] from AssetType
+								where [Object] = L.[Object] and ObjectID = L.ObjectID
+								union all
+								select ITN.[Name] as [Name] from IntersectType IT
+								cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+								where L.[Object] = 'IntersectType' and L.ObjectID = IT.ID
+							) C_D
+							left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
+							{countSql}";
 		}
 
 		#endregion

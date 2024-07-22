@@ -1,0 +1,149 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Puneet" id="Function.dbo.GetLoadDateCompleted-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function dbo.GetLoadDateCompleted 
+(
+	@LoadID int
+)
+RETURNS @results TABLE 
+(
+	DateCompleted Datetime,
+	StatusMessage Nvarchar(2000),
+	ErrorMessageEE Nvarchar(2000),
+	ErrorMessageEA Nvarchar(2000)
+)
+AS
+BEGIN
+	declare @DateCompleted Datetime,
+	@StatusMessage Nvarchar(2000) = 'Queued...',
+	@ErrorMessageEE Nvarchar(2000) = null,
+	@ErrorMessageEA Nvarchar(2000) = null;
+
+	Declare @Action char(1),
+	@File [varbinary](max),
+	@PutExecutionId uniqueidentifier,
+	@PostExecutionId uniqueidentifier,
+	@LoadDateCompleted datetime,
+	@EEDateCompleted datetime,
+	@EADateCompleted datetime,
+	@EEProcessingStartedOn datetime,
+	@EAProcessingStartedOn datetime;
+
+	select @Action = L.Action,
+	@File = L.[File],
+	@PutExecutionId = L.PutExecutionID,
+	@PostExecutionId = L.PostExecutionID,
+	@LoadDateCompleted = L.DateCompleted
+	from [Load] L
+	Where Id = @LoadID;
+
+	if (@Action is not null and @Action in ('P','R','U') and @File is null)
+	begin
+		set @StatusMessage = 'Processing spreadsheet data...';
+
+		if (@PutExecutionId is not null)
+		begin
+			set @StatusMessage = 'Submitted requests waiting processing...';
+
+			select	@EEDateCompleted = CompletedOn ,
+					@EEProcessingStartedOn = ProcessingStartedOn,
+					@ErrorMessageEE = substring(ErrorMessage,1,2000)
+			From Api.Execution
+			where executionid = @PutExecutionId;
+		end
+	
+		if (@PostExecutionId is not null)
+		begin
+			set @StatusMessage = 'Submitted requests waiting processing...';
+
+			select	@EADateCompleted = CompletedOn ,
+					@EAProcessingStartedOn = ProcessingStartedOn,
+					@ErrorMessageEA = substring(ErrorMessage,1,2000)
+			From Api.Execution
+			where executionid = @PostExecutionId;
+		end
+		
+		if (@LoadDateCompleted is not null and @PostExecutionId is null and @PutExecutionId is null)
+			begin
+				Set @DateCompleted = @LoadDateCompleted;
+			end
+		else if (@LoadDateCompleted is not null and @PostExecutionId is not null and @PutExecutionId is not null)
+			begin
+				if (@EADateCompleted is not null and @EEDateCompleted is not null)
+					begin
+						Set @DateCompleted = GREATEST(@EADateCompleted,@EEDateCompleted);
+					end
+				else if (@EADateCompleted is not null or @EEDateCompleted is not null)
+					begin
+						if (datediff(hour,@LoadDateCompleted,GETDATE())>=5)
+							begin
+								Set @DateCompleted = coalesce(@EADateCompleted,@EEDateCompleted,@LoadDateCompleted);
+							end
+						else
+							begin
+								if (@EAProcessingStartedOn is not null or @EEProcessingStartedOn is not null)
+									begin
+										set @StatusMessage = 'Submitted requests processing...';
+									end
+							end
+					end
+				else
+					begin
+						if (datediff(hour,@LoadDateCompleted,GETDATE())>=5)
+							begin
+								Set @DateCompleted = @LoadDateCompleted;
+							end
+						else
+							begin
+								if (@EAProcessingStartedOn is not null or @EEProcessingStartedOn is not null)
+									begin
+										set @StatusMessage = 'Submitted requests processing...';
+									end
+							end
+					end
+			end
+		else if (@LoadDateCompleted is not null)
+			begin
+				if (@EADateCompleted is not null or @EEDateCompleted is not null)
+					begin
+						Set @DateCompleted = coalesce(@EADateCompleted,@EEDateCompleted);
+					end
+				else
+					begin
+						if (datediff(hour,@LoadDateCompleted,GETDATE())>=5)
+							begin
+								Set @DateCompleted = @LoadDateCompleted;
+							end
+						else
+							if (@EAProcessingStartedOn is not null or @EEProcessingStartedOn is not null)
+								begin
+									set @StatusMessage = 'Submitted requests processing...';
+								end
+					end
+			end
+			if (@DateCompleted is not null)
+			begin
+				set @StatusMessage = null;
+			end
+
+	end
+	else
+	begin
+		Set @DateCompleted = @DateCompleted;
+	end
+	insert into @results values (@DateCompleted,@StatusMessage,@ErrorMessageEE,@ErrorMessageEA);
+
+	RETURN 
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>
