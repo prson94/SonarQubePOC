@@ -126,6 +126,9 @@
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
     <value>[allocationUid] {0} is not a correctly formatted identifier.</value>
   </data>
+  <data name="AnErrorOccurred" xml:space="preserve">
+    <value>An error occurred</value>
+  </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>Asset identifier with value {0} does not correspond to a valid asset.</value>
   </data>
