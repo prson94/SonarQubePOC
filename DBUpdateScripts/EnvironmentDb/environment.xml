@@ -21,6 +21,7 @@
 	<include file="scripts/Udt.dbo.ObjectsTable.xml"/>
 	<include file="scripts/Udt.dbo.ParentIntersect.xml"/>
 	<include file="scripts/Udt.dbo.UidTable.xml"/>
+	<include file="scripts/Udt.dbo.typeResponsibilityTypeRelationOverrideItem.xml"/>
 	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ValidateCatalogItemProperty.xml"/>

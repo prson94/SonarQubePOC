@@ -900,6 +900,18 @@ from    Asset A
 			CompanyContext.SaveChanges();
 
 			sendAssetMeasureQueueForOverrides(responsibilityType, asset);
+
+			#region "Audit Log"
+			try
+			{
+					addChangeLogOverride(items, "Created");
+			}
+			catch
+			{
+				// Do nothing.
+			}
+			#endregion
+
 		}
 
 		public void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
@@ -926,10 +938,27 @@ from    Asset A
 				&& x.AssetID == asset.ID
 				&& securityAssetHash.Contains(x.SecurityAsset + x.SecurityAssetID));
 
+			var overridesAudit = overrides.ToList().CloneThis();
+
 			CompanyContext.ResponsibilityTypeRelationOverrideItems.RemoveRange(overrides);
 			CompanyContext.SaveChanges();
 
 			sendAssetMeasureQueueForOverrides(responsibilityType, asset);
+
+			#region "Audit Log"
+			try
+			{
+				if (overridesAudit != null)
+				{
+					addChangeLogOverride(overridesAudit.ToList(), "Removed");
+				}
+			}
+			catch
+			{
+				// Do nothing.
+			}
+			#endregion
+
 		}
 
 		public async Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
@@ -1611,6 +1640,133 @@ from    Asset A
 				resourceUid = (await CompanyContext.Assets.Where(x=> x.Object == obj && x.ObjectID == responsibilityOverride.SecurityAssetID).FirstOrDefaultAsync()).uid;
 			}
 			return (responsibilityOverride, resourceUid);
+		}
+
+		private static DataTable getaddChangeLogOverrideTable(List<ResponsibilityTypeRelationOverrideItem> model)
+		{
+			var tb = new DataTable();
+
+			tb.Columns.Add("id", typeof(long));
+			tb.Columns.Add("ResponsibilityTypeID", typeof(int));
+			tb.Columns.Add("AssetID", typeof(long));
+			tb.Columns.Add("SecurityAsset", typeof(string));
+			tb.Columns.Add("SecurityAssetID", typeof(int));
+			tb.Columns.Add("Context", typeof(string));
+			tb.Columns.Add("UpdatedBy", typeof(int));
+			tb.Columns.Add("UpdatedOn", typeof(DateTime));
+
+			foreach (var f in model)
+			{
+				var fieldRow = tb.NewRow();
+
+				fieldRow["id"] = f.ID;
+				fieldRow["ResponsibilityTypeID"] = f.ResponsibilityTypeID;
+				fieldRow["AssetID"] = f.AssetID;
+				fieldRow["SecurityAsset"] = f.SecurityAsset;
+				fieldRow["SecurityAssetID"] = f.SecurityAssetID;
+				fieldRow["Context"] = f.Context;
+				fieldRow["UpdatedBy"] = f.UpdatedBy;
+				fieldRow["UpdatedOn"] = f.UpdatedOn;
+				tb.Rows.Add(fieldRow);
+			}
+			return tb;
+		}
+
+
+		private void addChangeLogOverride(List<ResponsibilityTypeRelationOverrideItem> current, string action)
+		{
+			//action = "Created","Updated","Removed"
+			string logSqlR = $@"
+declare @tbl table (ID bigint, ObjectID int)
+
+
+drop table if exists #TempCurrent;
+create table #TempCurrent([ID] [bigint],
+		[ResponsibilityTypeID] [int] NOT NULL,
+		[AssetID] [bigint] NOT NULL,
+		[SecurityAsset] [char](1) NOT NULL,
+		[SecurityAssetID] [int] NOT NULL,
+		[Context] [nvarchar](max) NULL,
+		[UpdatedOn] datetime,
+		[RTName] nvarchar(500),
+		AssetObject nvarchar(50),
+		AssetObjectID int,
+		DisplayValue nvarchar(250));
+
+insert into #TempCurrent (ID,ResponsibilityTypeID,AssetID,SecurityAsset,SecurityAssetID,Context,UpdatedOn)
+select distinct t.ID,t.ResponsibilityTypeID,t.AssetID,SecurityAsset,SecurityAssetID,
+Context,case when '{action}' = 'Removed' then @utcdate else UpdatedOn end
+from @TableData t;
+
+update O
+set O.RTName = RT.Name
+from #TempCurrent O
+inner join ResponsibilityType RT on O.ResponsibilityTypeID = RT.ID
+
+update O
+set O.AssetObject = a.Object,
+O.AssetObjectID = a.objectID
+from #TempCurrent O
+inner join Asset a on O.AssetID = a.ID;
+
+update O
+set O.DisplayValue = Substring(a.DisplayValue,1,250)
+from #TempCurrent O
+inner join AssetDisplayValue a on O.AssetID = a.AssetID;
+
+insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+output inserted.ID,inserted.ObjectID into @tbl
+	select	'ResponsibilityTypeRelationOverrideItem', 
+			O.ID,
+			O.RTName, 
+			@r, 
+			O.UpdatedOn, 
+			mv.[Version],
+			Case when '{action}' = 'Removed' then 'Deleted' else '{action}' end, 
+			O.AssetObject, 
+			O.AssetObjectID,
+			'Responsibility Type Override', 
+			O.DisplayValue, 
+			'Responsibility Type Override {action.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.' 
+	from	#TempCurrent O
+	cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version] 
+				from reporting.Global_Audit ga
+				where ga.Object = 'ResponsibilityTypeRelationOverrideItem' and ObjectID = O.ID) mv
+
+if ( '{action}' = 'Created')
+begin
+	insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+	select	tt.ID as AuditID,
+			0,
+			f.FieldName,
+			f.FieldValue,
+			pv.[Value] as PreviousValue
+	from #TempCurrent O
+	inner join @tbl tt on tt.ObjectID = O.ID
+	cross apply (
+				select 0 as FieldTypeID, 'Responsibility Type' as FieldName, Name as FieldValue 
+				From ResponsibilityType where ID = O.ResponsibilityTypeID
+				union
+				select 0 as FieldTypeID, 'Context' as FieldName, O.Context as FieldValue
+				union
+				select 0 as FieldTypeID, 'Group' as FieldName, g.Name as FieldValue
+				from [Group] g where O.SecurityAsset = 'G' and g.id = O.securityassetid
+				union
+				select 0 as FieldTypeID, 'User' as FieldName, gr.FirstName + ' ' + gr.LastName as FieldValue
+				from reporting.[Global_Resource] gr where O.SecurityAsset = 'R' and gr.ResourceID = O.securityassetid
+				) f
+	outer apply (select top 1
+			ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) ) ORDER BY i_p.[AuditId] DESC) as RowNum,
+			[Value]
+	from	reporting.Global_FieldAudit i_p
+			inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = 'ResponsibilityTypeRelationOverrideItem' and i_a.ObjectID = O.ID and ( i_p.FieldName = f.FieldName and f.FieldTypeID = 0)
+			order by RowNum asc) pv
+	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
+end";
+
+			CompanyContext.Execute(logSqlR, new {TableData = getaddChangeLogOverrideTable(current).AsTableValuedParameter("dbo.typeResponsibilityTypeRelationOverrideItem"), action, r = CompanyContext.CurrentResourceID, utcdate = DateTime.UtcNow },commandTimeout: ApiTimeout);
+
 		}
 	}
 }
