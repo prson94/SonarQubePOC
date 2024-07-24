@@ -964,6 +964,7 @@ namespace d360.web.Controllers.V2
 
 			if (!Guid.TryParse(assetUid, out uid))
 			{
+				status.Error = ApiMessages.BadRequest;
 				status.StatusCode = System.Net.HttpStatusCode.BadRequest;
 				status.Message = string.Format(OthersMessages.AssetuidNotCorrectlyFormatted, assetUid);
 			}
@@ -974,6 +975,7 @@ namespace d360.web.Controllers.V2
 
 				if (asset == null)
 				{
+					status.Error = ApiMessages.BadRequest;
 					status.StatusCode = System.Net.HttpStatusCode.BadRequest;
 					status.Message = string.Format(OthersMessages.AssetIdentifierDoesnotValidAsset, uid.ToString());
 				}
@@ -983,6 +985,7 @@ namespace d360.web.Controllers.V2
 
 					if (!canRead)
 					{
+						status.Error = ApiMessages.Forbidden;
 						status.StatusCode = System.Net.HttpStatusCode.Forbidden;
 						status.Message = OthersMessages.NoPremissiontoviewScoreHistory;
 					}
