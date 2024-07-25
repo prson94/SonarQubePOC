@@ -321,9 +321,9 @@ namespace d360.web.Controllers
 								'none'
 							end as Threshold		
 					from	metrics.Score S
-							inner join Asset A on A.uid = S.AssetUid and A.id = @id and S.EndDate is null
-							inner join metrics.Allocation L on L.uid = S.AllocationUid and L.ScoreType = @scoreType and L.OverrideName is null"
-										, new { id = details.AssetID, ft.ScoreType }).ConfigureAwait(false);
+							inner join metrics.Allocation L on L.uid = S.AllocationUid and L.ScoreType = @scoreType and L.OverrideName is null
+					where S.AssetUid = @UID and S.EndDate is null "
+										, new {details.UID, ft.ScoreType }).ConfigureAwait(false);
 
 				var ro = new ReadOnlyField
 				{
@@ -1840,7 +1840,8 @@ namespace d360.web.Controllers
 					{ "assetUid", asset.uid },
 					{ "object", asset.Object },
 					{ "objectId", asset.ObjectID },
-					{ "fieldTypeId", fieldType.ID }
+					{ "fieldTypeId", fieldType.ID },
+					{ "assetId", asset.ID }
 				};
 
 				if (fieldType.Type == "ComplexRelationLookup")
@@ -1888,62 +1889,36 @@ namespace d360.web.Controllers
 		private async Task<List<DetailReadOnlyRowModel>> RenderRelationshipField(string type, int id, FieldType ft)
 		{
 			var list = new List<DetailReadOnlyRowModel>();
-			var intersectTypeID = ft.LookupObjectID.Value;
 			var sType = type.ToString();
 			var values = new List<ReadOnlyFieldValue>();
-			var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id && (i.SubjectTypeID != i.ObjectTypeID || (i.SubjectTypeID == i.ObjectTypeID && ft.IsSubject))) || (i.Object == sType && i.ObjectID == id && (i.SubjectTypeID != i.ObjectTypeID || (i.SubjectTypeID == i.ObjectTypeID && !ft.IsSubject))))).OrderBy(x => x.ObjectName);
+
+			var intersects = (await Company.QueryAsync<GetRenderRelationshipFieldModel>($"exec [dbo].[GetRenderRelationshipField] @typeID, @id, @FieldTypeID, @CurrentResourceIsAdmin, @CurrentResourceID",
+															new { typeID = sType, id, FieldTypeID = ft.ID, Company.CurrentResourceIsAdmin, Company.CurrentResourceID })).ToList();
 
 			if (intersects == null)
 			{
 				return list;
 			}
 
-			//load the current users permissions to these objects if they dont have access we cant show the link to let them go nowhere
-			var objectsToCheckAccesFor = new List<BasicAsset>();
-
 			foreach (var intersect in intersects)
 			{
-				var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
+				var url = intersect.Url;
+				var obj = intersect.Object;
+				var objID = intersect.ObjectID;
+				var uid = intersect.uid;
+				var intersectDisplayValue = intersect.intersectDisplayValue ?? "";
 
-				var obj = isSubject ? intersect.Object : intersect.Subject;
-				var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
-				var assetUid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
-
-				objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj, Uid = assetUid });
-			}
-
-			var objectsWithoutReadAccess = await GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
-
-			var relationshipAssetInfo = Company.Query<BasicAsset>(@"select 
-					A.Uid,AT.uid as 'AssetTypeUid',AP.DisplayPath, adv.DisplayValue
-					from Asset A
-					inner join AssetType AT on AT.Id = A.AssetTypeID
-					left join AssetPath AP ON AP.ID = A.ID
-					left join AssetDisplayValue adv on adv.AssetID = a.ID
-					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x => x.Uid).ToList() }).ToList();
-
-			foreach (var intersect in intersects)
-			{
-				var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
-				var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
-				var obj = isSubject ? intersect.Object : intersect.Subject;
-				var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
-				var uid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
-
-				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == uid).FirstOrDefault();
-				var intersectDisplayValue = ft.UseDisplayFormat ? assetInfo?.DisplayValue : assetInfo?.DisplayPath ?? assetInfo?.DisplayValue;
-
-				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
+				if (!intersect.IsRead)
 				{
 					url = null;
 				}
 
 				var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
 
-				if (assetInfo != null && assetInfo.Uid != null && assetInfo.Uid != Guid.Empty)
+				if (intersect.AssetUid != null && intersect.AssetUid != Guid.Empty)
 				{
-					relVal.uid = assetInfo.Uid.Value;
-					relVal.assetTypeUid = assetInfo.AssetTypeUid.Value;
+					relVal.uid = intersect.AssetUid.Value;
+					relVal.assetTypeUid = intersect.AssetTypeUid.Value;
 					if (relVal.TooltipType.ToLower().IndexOf("referenceitem") > -1)
 					{
 						relVal.TooltipUrl += "," + relVal.uid.ToString();
@@ -1951,7 +1926,7 @@ namespace d360.web.Controllers
 				}
 				else
 				{
-					var referenceListName = Company.AssetTypes.Where(x => x.uid == uid).Select(x => x.Name).FirstOrDefault();
+					var referenceListName = intersect.AssetTypeName;
 					relVal.assetTypeUid = uid.Value;
 					relVal.TooltipUrl = "assets/" + uid;
 					relVal.Value = referenceListName;

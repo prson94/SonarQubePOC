@@ -750,9 +750,7 @@ namespace d360.web.Controllers.V2
 
 			if (type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
 			{
-				var asset = Company.Assets.Where(a => a.uid == uid).FirstOrDefault();
-
-				if (asset == null)
+				if (!Company.Assets.Any(a => a.uid == uid))
 				{
 					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetUid, uid)));
 				}
@@ -760,9 +758,7 @@ namespace d360.web.Controllers.V2
 
 			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
 			{
-				var assetType = Company.AssetTypes.Where(ast=>ast.uid == uid).FirstOrDefault();
-
-				if (assetType == null) {
+				if (!Company.AssetTypes.Any(ast => ast.uid == uid)) {
 					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, uid)));
 				}
 			}

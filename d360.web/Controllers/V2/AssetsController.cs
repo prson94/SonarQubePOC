@@ -2260,7 +2260,8 @@ namespace d360.web.Controllers.V2
 					{ "assetUid", assetUid },
 					{ "object", asset.Object },
 					{ "objectId", asset.ObjectID },
-					{ "fieldTypeId", fieldType.ID }
+					{ "fieldTypeId", fieldType.ID },
+					{ "assetId", asset.ID }
 				};
 
 				if (fieldType.Type == "ComplexRelationLookup")

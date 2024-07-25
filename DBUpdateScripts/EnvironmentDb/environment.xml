@@ -332,7 +332,7 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateOwnerShipDataForGetAsset.xml"/>
-	
+	<include file="scripts/Procedure.dbo.GetRenderRelationshipField.xml"/>
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Procedure.metrics.GenerateScore.xml"/>
 	<include file="scripts/Procedure.metrics.GetImpactedAssetsForAssetResults.xml"/>

@@ -1882,11 +1882,15 @@ namespace d360.model.DataAccessLayer
 		public async Task<long> GetAssetAssignmentCount(string type, Guid uid)
 		{
 			long ID = 0;
+			int objectid = 0;
+			string objecttype = "";
 
-			if(type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
+			if (type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
 			{
 				var asset = CompanyContext.Assets.Where(a => a.uid == uid).FirstOrDefault();
 				ID = asset?.ID ?? 0;
+				objecttype = asset?.Object ?? "";
+				objectid = asset?.ObjectID ?? 0;
 			}
 
 			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
@@ -1917,20 +1921,19 @@ namespace d360.model.DataAccessLayer
 								Wi.ID
 							from 
 								Assignments WI
-								inner join 
-								Asset A on WI.Object <> 'Issue' and wi.CompletedOn is null and A.[Object] = WI.Object and A.ObjectID = WI.ObjectID and {(type == "asset" ? "A.id=@ID" : "A.assettypeid=@ID")}
+								{(type == "asset" ? " where WI.Object <> 'Issue' and wi.CompletedOn is null and WI.Object = @objecttype and WI.ObjectID = @ObjectID "
+								: " inner join Asset A on WI.Object <> 'Issue' and wi.CompletedOn is null and A.[Object] = WI.Object and A.ObjectID = WI.ObjectID and A.assettypeid=@ID ")}
 							union
 							select 
 								Wi.ID 
 							from 
 								Assignments WI
-								inner join 
-								Issue I on WI.Object = 'Issue' and wi.CompletedOn is null and I.[ID] = WI.ObjectID
-								inner join 
-								Asset A on A.ID = I.AssetID and {(type == "asset" ? "A.Id=@ID" : "A.assetTypeId=@ID")}
+								inner join Issue I on WI.Object = 'Issue' and wi.CompletedOn is null and I.[ID] = WI.ObjectID
+								{(type == "asset" ? " and I.AssetID = @ID "
+								: " inner join Asset A on A.ID = I.AssetID and A.assetTypeId = @ID")}
 						) items";
 
-			return await CompanyContext.QueryFirstOrDefaultAsync<long>(sql, new { ID }, ApiTimeout);
+			return await CompanyContext.QueryFirstOrDefaultAsync<long>(sql, new { ID, objecttype, objectid}, ApiTimeout);
 		}
 
 		public async Task<WorkflowUserGroupedAssignments> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
