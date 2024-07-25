@@ -2312,20 +2312,29 @@ namespace d360.model
 				};
 
 				WorkflowItemStepTransitions.Add(trans);
-				
-				// remove NoValidTransitions error if a previous transition from this step set it
-				if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
-				{						
-					var itemStateDetail = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions).FirstOrDefault();
-					if (itemStateDetail != null)
+				SaveChanges();
+
+				try
+				{
+					// remove NoValidTransitions error if a previous transition from this step set it
+					if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
 					{
-						WorkflowItemStepStateDetails.Remove(itemStateDetail);
+						var itemStateDetails = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions);
+						foreach (var itemStateDetail in itemStateDetails)
+						{
+							WorkflowItemStepStateDetails.Remove(itemStateDetail);
+							SaveChanges();
+						}
 					}
 				}
-
+				catch (Exception ex)
+				{
+					Log.LogError(ex, $"error when removing transition error records");
+				}
+				
 				fromItemStep.State = StepState.Complete;
 
-				SaveChanges();
+				SaveChanges();			
 
 				EventInfo startEvent = new EventInfo
 				{
@@ -2348,7 +2357,7 @@ namespace d360.model
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
 				//Only mark as failed if it is not marked complete.
-				if (fromItemStep != null && !WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID) && fromItemStep.State != StepState.Complete)
+				if (fromItemStep != null && !WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID))
 				{
 					fromItemStep.State = StepState.NoValidTransitions;
 
