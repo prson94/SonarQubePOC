@@ -1,0 +1,156 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetRenderRelationshipField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure GetRenderRelationshipField
+@type varchar(50),
+@id   int,
+@FieldTypeID int,
+@IsAdmin bit,
+@ResID int
+as
+begin
+	declare @intersectTypeID int;
+	declare @AssetId bigint;
+	declare @IsSubject bit;
+	declare @UseDisplayFormat bit = 0;
+	declare @AssetTypeId int = null;
+	declare @TypeApply int = 0;
+
+	select @intersectTypeID = LookupObjectID,
+	@IsSubject = IsSubject,
+	@UseDisplayFormat = UseDisplayFormat,
+	@AssetTypeId = AssetTypeID
+	from FieldType
+	where id = @FieldTypeID;
+
+	create table #temp_intersect(ID int,[Object] nvarchar(50),ObjectID int,Uid uniqueidentifier, AssetId bigint,AssetTypeID int,AssetUid uniqueidentifier, IsRead bit default 1,
+	AssetTypeUid uniqueidentifier,intersectDisplayValue nvarchar(1000),[url] nvarchar(4000),AssetTypeName nvarchar(500));
+
+	if (@AssetTypeId is not null)
+		begin
+			
+			select @TypeApply = case when it.SubjectAssetTypeID = @AssetTypeId and ((it.SubjectAssetTypeID != it.ObjectAssetTypeID) or (it.SubjectAssetTypeID = it.ObjectAssetTypeID and @IsSubject = 1)) then 1 
+						when it.ObjectAssetTypeID = @AssetTypeId and ((it.SubjectAssetTypeID != it.ObjectAssetTypeID) or (it.SubjectAssetTypeID = it.ObjectAssetTypeID and @IsSubject = 0)) then 2
+						else 3 end
+			from IntersectType it
+			where id = @intersectTypeID
+
+			if (@TypeApply = 1)
+			begin
+				insert into #temp_intersect(ID,[Object],[ObjectID],[Uid],[url])
+				select i.ID,I.Object,I.ObjectID,I.ObjectUid,I.ObjectUrl
+				from [IntersectDetail] i
+				where IntersectTypeID = @intersectTypeID
+				and I.Subject = @type and I.SubjectID = @id 
+			end
+
+			if (@TypeApply = 2)
+			begin
+				insert into #temp_intersect(ID,[Object],[ObjectID],[Uid],[url])
+				select i.ID,I.Subject,I.SubjectID,I.SubjectUid,I.ObjectUrl
+				from [IntersectDetail] i
+				where IntersectTypeID = @intersectTypeID
+				and I.Object = @type and I.ObjectID = @id 
+			end
+		end
+	else
+		begin
+			insert into #temp_intersect(ID,[Object],[ObjectID],[Uid],[url])
+			select * 
+			from (
+			select i.ID,I.Object,I.ObjectID,I.ObjectUid,I.ObjectUrl
+			from [IntersectDetail] i
+			where IntersectTypeID = @intersectTypeID
+			and I.Subject = @type and I.SubjectID = @id and ((i.SubjectTypeID != i.ObjectTypeID) or (i.SubjectTypeID = i.ObjectTypeID and @IsSubject = 1))
+			union
+			select i.ID,I.Subject,I.SubjectID,I.SubjectUid,I.ObjectUrl
+			from [IntersectDetail] i
+			where IntersectTypeID = @intersectTypeID
+			and I.Object = @type and I.ObjectID = @id and ((i.SubjectTypeID != i.ObjectTypeID) or (i.SubjectTypeID = i.ObjectTypeID and @IsSubject = 0))
+			) a;
+		end
+
+	if exists (select 1 from #temp_intersect)
+	begin
+		update T
+		set AssetId = A.Id,
+		AssetUid = A.Uid,
+		AssetTypeUid = att.Uid,
+		AssetTypeName = att.Name
+		from #temp_intersect T
+		inner join [Asset] a on T.Object = a.Object and t.ObjectID = a.ObjectID
+		inner join [AssetType] att on att.ID = a.AssetTypeID;
+
+		update T
+		set AssetTypeUid = att.Uid,
+		AssetTypeName = att.Name
+		from #temp_intersect T
+		inner join [AssetType] att on att.uid = t.Uid
+		where T.AssetUid is null;
+
+		if (@UseDisplayFormat = 1)
+			begin
+				update T
+				set intersectDisplayValue = substring(adv.DisplayValue,1,1000)
+				from #temp_intersect T
+				inner join AssetDisplayValue adv on adv.AssetId = T.AssetId;
+
+				update T
+				set intersectDisplayValue = substring(AP.DisplayPath,1,1000)
+				from #temp_intersect T
+				inner join [AssetPath] ap on ap.ID = T.AssetId
+				where intersectDisplayValue is null;
+
+			end
+		else
+			begin
+				update T
+				set intersectDisplayValue = substring(AP.DisplayPath,1,1000)
+				from #temp_intersect T
+				inner join [AssetPath] ap on ap.ID = T.AssetId;
+
+				update T
+				set intersectDisplayValue = substring(adv.DisplayValue,1,1000)
+				from #temp_intersect T
+				inner join AssetDisplayValue adv on adv.AssetId = T.AssetId
+				where intersectDisplayValue is null;
+			end
+
+		if (@IsAdmin = 0)
+		begin
+			update t
+			set t.isread = 0
+			from #temp_intersect T
+			inner join ResponsibilityDetail rs on rs.Object = t.Object and rs.ObjectID = t.ObjectID and rs.ResourceID = @ResID and rs.PermissionsBitMask & 1 = 0
+			where IsRead = null;
+
+			update t
+			set t.isread = 0
+			from #temp_intersect T
+			inner join ResponsibilityDetail rs on rs.AssetTypeID = t.AssetTypeID and rs.ApplyToType = 1 and rs.ResourceID = @ResID and rs.PermissionsBitMask & 1 = 0
+			where IsRead = null;
+		end
+	end
+	select [Object], ObjectID, [Uid], AssetId ,AssetTypeID ,AssetUid, IsRead,
+	AssetTypeUid,intersectDisplayValue,[url],AssetTypeName
+	from #temp_intersect
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

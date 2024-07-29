@@ -2436,8 +2436,7 @@ namespace d360.model.DataAccessLayer
 			else if (fieldType.Type == "RefListRelationship")
 			{
 				var fields = new List<FieldType>();
-
-				fields.AddRange(CompanyContext.Query<FieldType>($@"
+				var sql = $@"
 					declare @objectAssetId int
 					declare @referenceId int
 					declare @isSubject bit
@@ -2466,15 +2465,18 @@ namespace d360.model.DataAccessLayer
 
 				   select * from fieldtype
 						where assettypeid = @referenceid and IsListable = 1
-						order by ColumnOrder asc, FriendlyName asc;
-						", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
+						order by ColumnOrder asc, FriendlyName asc;";
 
+				fields.AddRange(CompanyContext.Query<FieldType>(sql, new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
-				fields.Insert(fields.IndexOf(fields.First(f => f.Name == "Code")) + 1, new FieldType
+				if (fields.Count > 0)
 				{
-					Name = "Color",
-					Type = DataType.Color.ToString()
-				});
+					fields.Insert(fields.IndexOf(fields.First(f => f.Name == "Code")) + 1, new FieldType
+					{
+						Name = "Color",
+						Type = DataType.Color.ToString()
+					});
+				}
 				return fields;
 			}
 			else
@@ -2882,7 +2884,23 @@ namespace d360.model.DataAccessLayer
 			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs).ConfigureAwait(false);
 
 			wheres.Add("A.AssetTypeID = @assetTypeId");
-			wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
+			wheres.Add(@"not exists(select 1
+									from [dbo].[AssetType] Ast
+									inner join [dbo].[responsibilitytyperelationrule] R on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)	
+									inner join [dbo].[ResponsibilityTypeRelation] RR on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)
+									inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = 0 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
+									where Ast.ID = A.AssetTypeID and RR.PermissionsBitMask & 1 = 0
+									and 
+									( exists( select 1 
+											from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource 
+											where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' 
+											and rresource.SecurityAssetID = @resourceid )
+									or exists( select 1 
+												from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource 
+												inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' 
+												inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  
+												where rresource.RuleID = R.ID and RG.ResourceID =  @resourceid ) 
+									))");
 			dbArgs.Add("assetTypeId", assetTypeId);
 
 			string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false, sortFields);

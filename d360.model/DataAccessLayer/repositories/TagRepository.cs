@@ -215,16 +215,14 @@ where t.uid in @uids
 
 		public IEnumerable<Tag> GetTagsForAsset(long assetId)
 		{
-			var assetTags = CompanyContext.AssetTags.Where(x => x.AssetID == assetId).ToList();
-			List<Tag> tags = new List<Tag>();
-			assetTags.ForEach(x =>
-			{
-				var tag = CompanyContext.Tags.FirstOrDefault(y => y.ID == x.TagID);
-				if (tag != null)
-				{
-					tags.Add(tag);
-				}
-			});
+
+			string sql = $@"
+							select t.*
+							from AssetTag atg
+							inner join tag t on atg.TagID = t.ID
+							where atg.assetid = @assetId
+							";
+			List<Tag> tags = CompanyContext.Query<Tag>(sql, new { assetId }, ApiTimeout).ToList();
 			return tags;
 		}
 

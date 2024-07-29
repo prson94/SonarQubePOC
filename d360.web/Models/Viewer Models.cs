@@ -466,4 +466,30 @@ namespace d360.web.Models
 
         public int TypeID { get; set; }
     }
+	public class GetRenderRelationshipFieldModel
+	{
+		[DataMember]
+		public string Object { get; set; }
+
+		[DataMember]
+		public int ObjectID { get; set; }
+
+		public Guid? uid { get; set; }
+
+		public long? AssetId { get; set; }
+
+		public int? AssetTypeId { get; set; }
+
+		public Guid? AssetUid { get; set; }
+
+		public bool IsRead { get; set; }
+
+		public Guid? AssetTypeUid { get; set; }
+
+		public string intersectDisplayValue { get; set; }
+
+		public string Url { get; set; }
+
+		public string AssetTypeName { get; set; }
+	}
 }
