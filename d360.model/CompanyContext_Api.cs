@@ -1654,7 +1654,7 @@ where   ER.ExecutionID = @ExecutionID
 				}
 				else
 				{
-					string activeKeySql = $@"
+					 string activeKeySql = $@"
 											select		A.ID,
 													utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 											from		Asset A 
@@ -1662,19 +1662,21 @@ where   ER.ExecutionID = @ExecutionID
 													left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
 													left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = F.AssetId
 											where	    A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1
+											and coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue,'') != ''
 											group by    A.ID;";
 
-					Connection.Execute($@"
+					string sql = $@"
+
 											update  T
 											set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 											from    {assetTable} T
 												inner join	(
-															select		A.ItemNumber,
-																		COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-															from		{assetTable} A
-																		inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-																		inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
-															where		A.ExecutionID = @ExecutionID
+															select	A.ItemNumber,
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+															from	{assetTable} A
+																	inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+															where	A.ExecutionID = @ExecutionID and coalesce(F.LookupValue, F.FieldValue,'') != ''
 															group by	A.ItemNumber, A.ParentUid
 															) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
@@ -1685,8 +1687,9 @@ where   ER.ExecutionID = @ExecutionID
 											insert into #Keys WITH(TABLOCK)
 											{activeKeySql} 
 
-											{keyComparisonUpdateStatement}",
-					new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+											{keyComparisonUpdateStatement}";
+
+					Connection.Execute(sql, new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
 				}
 			}
 		}
