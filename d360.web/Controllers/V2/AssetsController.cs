@@ -3367,6 +3367,11 @@ namespace d360.web.Controllers.V2
 				{
 					var field = allFieldTypes.FirstOrDefault(x => x.Name.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase));
 
+					if(field.Type == DataType.FieldFromRelationship.ToString() && field.LookupObjectFieldTypeID != null)
+					{
+						field.Type = Company.FieldTypes.Where(ft => ft.ID == field.LookupObjectFieldTypeID).FirstOrDefault().Type;
+					}
+
 					if (field != null)
 					{
 						fieldsForCustomExport.Add(field);
