@@ -727,7 +727,7 @@ end
 											outer apply dbo.getassetlevelbyid(A.ID) L
 											inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 											left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-								where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel
+								where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel  and coalesce(F.Value, F.FormattedValue, FT.DefaultValue,'') != ''
 								group by    A.Uid
 
 								Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
