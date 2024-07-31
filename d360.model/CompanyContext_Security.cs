@@ -117,6 +117,8 @@ namespace d360.model
 
 		List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
 
+		void addChangeLogResponsibility(ResponsibilityType current, string action, ResponsibilityType previous = null);
+
 		#endregion
 	}
 
@@ -3777,6 +3779,80 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 									Connection.Execute(insertSQL,
 											new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
+									#region Execution Log
+									try
+									{
+										string logSqlR = $@"
+											declare @tbl table (ID bigint, ObjectID int)
+
+
+											drop table if exists #TempCurrent;
+											create table #TempCurrent(
+													[ID] [int],
+													[Name] [nvarchar](250),
+													[Description] [nvarchar](4000),
+													[UpdatedOn] [datetime],
+													Action varchar(100));
+
+											insert into #TempCurrent (ID,Name,Description,UpdatedOn,Action)
+											select distinct ert.ResponsibilityTypeID,ert.Name,ert.Description,coalesce(rt.UpdatedOn,rt.CreatedOn),
+											case when ert.IsNew = 1 then 'Created' else 'Updated' end
+											from api.ExecutionResponsibilityType ert
+											inner join ResponsibilityType rt on rt.id = ert.ResponsibilityTypeID
+											where ert.ExecutionID = @ExecutionID 
+											and ert.ItemNumber between @beginItemNumber and @endItemNumber 
+											and (ert.Success is null or ert.Success = 1);
+
+											insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+											output inserted.ID,inserted.ObjectID into @tbl
+												select	'ResponsibilityType', 
+														O.ID,
+														O.Name, 
+														@r, 
+														O.UpdatedOn, 
+														mv.[Version],
+														O.Action, 
+														'ResponsibilityType' AssetObject, 
+														O.ID AssetObjectID,
+														'Responsibility Type' ActionObjectTypeName, 
+														O.Name ActionObjectName, 
+														'ResponsibilityType ' + O.Action
+												from	#TempCurrent O
+												cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version] 
+															from reporting.Global_Audit ga
+															where ga.Object = 'ResponsibilityType' and ObjectID = O.ID) mv
+
+												insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+												select	tt.ID as AuditID,
+														0,
+														f.FieldName,
+														f.FieldValue,
+														pv.[Value] as PreviousValue
+												from #TempCurrent O
+												inner join @tbl tt on tt.ObjectID = O.ID
+												cross apply (
+															select 0 as FieldTypeID, 'Name' as FieldName, O.Name as FieldValue 
+															union
+															select 0 as FieldTypeID, 'Description' as FieldName, O.Description as FieldValue
+															) f
+												outer apply (select top 1
+														ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) ) ORDER BY i_p.[AuditId] DESC) as RowNum,
+														[Value]
+												from	reporting.Global_FieldAudit i_p
+														inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = 'ResponsibilityType' and i_a.ObjectID = O.ID and ( i_p.FieldName = f.FieldName and f.FieldTypeID = 0)
+														order by RowNum asc) pv
+												where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+												or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+
+
+										Connection.Execute(logSqlR, new { execution.ExecutionID, beginItemNumber, endItemNumber, r = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+									}
+									catch
+									{
+										// Do nothing.
+									}
+									#endregion
+
 									Connection.Execute(
 										$"update ERT set ERT.Success = 1 from api.ExecutionResponsibilityType ERT where	{querySuffix} and ERT.ResponsibilityTypeId is not null;",
 										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -3827,6 +3903,77 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 			return results;
 		}
 
+
+		public void addChangeLogResponsibility(ResponsibilityType current, string action, ResponsibilityType previous = null)
+		{
+			int deleteSameValue = action == "Updated" ? 1 : 0;
+			DateTime UpdatedOn = DateTime.Now;
+			int UpdatedBy = CurrentResourceID;
+
+			if ((action == "Created" || (action == "Updated")) && current != null)
+			{
+				if (current?.UpdatedOn != null)
+				{
+					UpdatedOn = (DateTime)current?.UpdatedOn;
+				}
+
+				if (current?.UpdatedBy != null)
+				{
+					UpdatedBy = (int)current?.UpdatedBy;
+				}
+			}
+
+
+			var audit = new Audit
+			{
+				AuditFields = new List<AuditField>(),
+				Date = UpdatedOn,
+				ActionDescription = $"ResponsibilityType {action.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.",
+				Action = action,
+				ActionObjectID = current.ID,
+				ActionObject = "ResponsibilityType",
+				ActionObjectName = current.Name,
+				ActionObjectTypeName = "Responsibility Type",
+				Object = "ResponsibilityType",
+				ObjectID = current.ID,
+				ObjectName = current.Name,
+				ResourceID = UpdatedBy,
+				Version = 0
+			};
+
+			if (action == "Created" || (action == "Updated"))
+			{
+				audit.AuditFields.Add(new AuditField { FieldName = "Name", PreviousValue = ((previous != null) ? previous?.Name : null), Value = current.Name, FieldTypeID = 0 });
+				audit.AuditFields.Add(new AuditField { FieldName = "Description", PreviousValue = ((previous != null) ? previous?.Description : null), Value = current.Description, FieldTypeID = 0 });
+			}
+			Add(audit);
+
+			Execute(@"
+												update	T
+												set		T.Version = coalesce(S.[maxversion],0) + 1
+												from	[reporting].[Global_Audit] T
+												outer apply (
+															select	max(version) as [maxversion]
+															from	[reporting].[Global_Audit] A  
+															where A.Object = T.Object 
+															and A.ObjectID = T.ObjectID
+														) S
+												where   T.ID = @ID and T.[Version] = 0
+
+												if (@deleteSameValue = 1)
+													begin
+														delete f
+														from [reporting].[Global_FieldAudit] f
+														where auditid = @ID and coalesce(value,'') = coalesce(Previousvalue,'')
+													end
+												else
+													begin
+														delete f
+														from [reporting].[Global_FieldAudit] f
+														where auditid = @ID and coalesce(value,'') = ''
+													end
+												", new { audit.ID, deleteSameValue });
+		}
 		#endregion
 	}
 }
