@@ -332,7 +332,9 @@ namespace d360.web.Controllers
 			try
 			{
 				var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
-				
+
+				ResponsibilityType nowPreviousreport = existing.CloneThis();
+
 				if (existing == null)
 				{
 					throw new NotFoundException(ApiMessages.OwnershipType);
@@ -385,6 +387,17 @@ namespace d360.web.Controllers
 
 				Company.Update(existing);
 
+				#region "Audit Log"
+				try
+				{
+					Company.addChangeLogResponsibility(model, "Updated", nowPreviousreport);
+				}
+				catch
+				{
+					// Do nothing.
+				}
+				#endregion
+				
 				return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.Item), model.ID.ToString(), "edit", HttpStatusCode.OK);
 			}
 			catch (BaseException ex)
@@ -416,6 +429,17 @@ namespace d360.web.Controllers
 
 				model.UID = Guid.NewGuid();
 				Company.Add(model);
+
+				#region "Audit Log"
+				try
+				{
+					Company.addChangeLogResponsibility(model, "Created");
+				}
+				catch
+				{
+					// Do nothing.
+				}
+				#endregion
 
 				return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.Item), model.ID.ToString(), "add", HttpStatusCode.Created);
 			}

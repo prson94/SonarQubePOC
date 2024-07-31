@@ -618,6 +618,17 @@ namespace d360.model.DataAccessLayer
 				CompanyContext.CreateCheckDependencyRemovedResultExecution(impactedMeasureVersions);
 			}
 
+			#region "Audit Log"
+			try
+			{
+				CompanyContext.addChangeLogResponsibility(resType, "Removed");
+			}
+			catch
+			{
+				// Do nothing.
+			}
+			#endregion
+
 			return result;
 		}
 
