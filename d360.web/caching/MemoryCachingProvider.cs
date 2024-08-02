@@ -3,171 +3,123 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Caching;
+using System.Runtime.Caching;
 
 namespace d360.web.caching
 {
-    public class MemoryCachingProvider : ICachingProvider
-    {
-        public bool ListItemExists<T, TIdentifier>(string name, TIdentifier id)
-        {
-            var d = getOrCreateDictionary<T, TIdentifier>(name);
+	public class MemoryCachingProvider : ICachingProvider
+	{
+		public MemoryCache Cache { get { return MemoryCache.Default; } }
 
-            return d.Keys.Any(i => i.Equals(id));
-        }
+		public bool ListItemExists<T, TIdentifier>(string name, TIdentifier id)
+		{
+			var d = getOrCreateDictionary<T, TIdentifier>(name);
 
-        public bool ItemExists<T>(string name)
-        {
-            return HttpContext.Current.Cache[name] is T;
-        }
+			return d.Keys.Any(i => i.Equals(id));
+		}
 
-        public T GetItem<T>(string name)
-        {
-            var obj = HttpContext.Current.Cache.Get(name);
+		public bool ItemExists<T>(string name)
+		{
+			return Cache.Get(name) is T;
+		}
 
-            if (obj is T)
-            {
-                return (T)obj;
-            }
-            else
-            {
-                return default(T);
-            }
-        }
+		public T GetItem<T>(string name)
+		{
+			var obj = Cache.Get(name);
 
-        public T GetItemInListByID<T, TIdentifier>(string name, TIdentifier id)
-        {
-            var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
+			if (obj is T)
+			{
+				return (T)obj;
+			}
+			else
+			{
+				return default;
+			}
+		}
 
-            if (dictionary.TryGetValue(id, out T obj))
-            {
-                return obj;
-            }
-            else
-            {
-                return default(T);
-            }
-        }
+		public bool CachePresent<T>(string name)
+		{
+			var obj = Cache.Get(name);
+			return (obj is T);
+		}
 
-        public void SetItem<T>(string name, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
-        {
-            bool cachePresent = false;
+		public T GetItemInListByID<T, TIdentifier>(string name, TIdentifier id)
+		{
+			var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
 
-            try
-            {
-                T obj = (T)HttpContext.Current.Cache.Get(name);
-                cachePresent = obj != null;
-            }
-            catch
-            {
-            }
+			if (dictionary.TryGetValue(id, out T obj))
+			{
+				return obj;
+			}
+			else
+			{
+				return default(T);
+			}
+		}
 
-            if (cachePresent)
-            {
-                RemoveItem(name);
-            }
+		CacheItemPolicy createPolicy(bool isAbsoluteExpiration = true, int expirationMinutes = 10)
+		{
+			return (isAbsoluteExpiration) ?
+				new CacheItemPolicy { AbsoluteExpiration = DateTime.UtcNow.AddMinutes(expirationMinutes) } :
+				new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(expirationMinutes) };
+		}
 
+		public void SetItem<T>(string name, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
+		{
+			if (CachePresent<T>(name))
+			{
+				RemoveItem(name);
+			}
 
-            if (isAbsoluteExpiration)
-            {
-                HttpContext.Current.Cache.Insert(name, item,
-                    null, DateTime.UtcNow.AddMinutes(expirationMinutes),
-                    Cache.NoSlidingExpiration,
-                    CacheItemPriority.Default,
-                    null);
-            }
-            else
-            {
-                HttpContext.Current.Cache.Insert(name, item,
-                    null,
-                    Cache.NoAbsoluteExpiration,
-                    TimeSpan.FromMinutes(expirationMinutes),
-                    CacheItemPriority.Default,
-                    null);
-            }
-        }
+			Cache.Add(name, item, createPolicy(isAbsoluteExpiration, expirationMinutes));
+		}
 
-        public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
-        {
-            var obj = HttpContext.Current.Cache.Get(name);
-            if (obj != null)
-            {
-                RemoveItem(name);
-            }
+		public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
+		{
+			if (CachePresent<T>(name))
+			{
+				RemoveItem(name);
+			}
 
-            if (isAbsoluteExpiration)
-            {
-                HttpContext.Current.Cache.Insert(name, list,
-                    null, DateTime.UtcNow.AddMinutes(expirationMinutes),
-                    Cache.NoSlidingExpiration,
-                    CacheItemPriority.Default,
-                    null);
-            }
-            else
-            {
-                HttpContext.Current.Cache.Insert(name, list,
-                    null,
-                    Cache.NoAbsoluteExpiration,
-                    TimeSpan.FromMinutes(expirationMinutes),
-                    CacheItemPriority.Default,
-                    null);
-            }
-        }
+			Cache.Add(name, list, createPolicy(isAbsoluteExpiration, expirationMinutes));
+		}
 
-        public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
-        {
-            var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
+		public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
+		{
+			var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
 
-            if (dictionary.ContainsKey(id))
-            {
-                dictionary[id] = item;
-            }
-            else
-            {
-                dictionary.TryAdd(id, item);
-            }
+			if (dictionary.ContainsKey(id))
+			{
+				dictionary[id] = item;
+			}
+			else
+			{
+				dictionary.TryAdd(id, item);
+			}
 
-            if (isAbsoluteExpiration)
-            {
-                HttpContext.Current.Cache.Insert(name, dictionary,
-                    null, DateTime.UtcNow.AddMinutes(expirationMinutes),
-                    Cache.NoSlidingExpiration,
-                    CacheItemPriority.Default,
-                    null);
-            }
-            else
-            {
-                HttpContext.Current.Cache.Insert(name, dictionary,
-                    null,
-                    Cache.NoAbsoluteExpiration,
-                    TimeSpan.FromMinutes(expirationMinutes),
-                    CacheItemPriority.Default,
-                    null);
-            }
-        }
+			Cache.Add(name, dictionary, createPolicy(isAbsoluteExpiration, expirationMinutes));
+		}
 
-        private ConcurrentDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
-        {
-            var list = HttpContext.Current.Cache.Get(name);
-            ConcurrentDictionary<TIdentifier, T> dictionary;
+		private ConcurrentDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
+		{
+			var list = Cache.Get(name);
+			ConcurrentDictionary<TIdentifier, T> dictionary;
 
-            if (list != null)
-            {
-                dictionary = (ConcurrentDictionary<TIdentifier, T>)list;
-            }
-            else
-            {
-                dictionary = new ConcurrentDictionary<TIdentifier, T>();
-            }
+			if (list != null)
+			{
+				dictionary = (ConcurrentDictionary<TIdentifier, T>)list;
+			}
+			else
+			{
+				dictionary = new ConcurrentDictionary<TIdentifier, T>();
+			}
 
-            return dictionary;
-        }
+			return dictionary;
+		}
 
-
-        public void RemoveItem(string name)
-        {
-            HttpContext.Current.Cache.Remove(name);
-        }
-    }
+		public void RemoveItem(string name)
+		{
+			Cache.Remove(name);
+		}
+	}
 }
