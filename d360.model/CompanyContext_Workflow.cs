@@ -1278,7 +1278,7 @@ namespace d360.model
 					WHEN NOT MATCHED
 						THEN
 							INSERT (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy)
-							VALUES (src.AssetID, src.FieldTypeID, src.ObjectID, src.ObjectType, src.[Value], src.[FormattedValue], src.IssueID, src.IntersectID, src.UpdatedBy)""
+							VALUES (src.AssetID, src.FieldTypeID, src.ObjectID, src.ObjectType, src.[Value], src.[FormattedValue], src.IssueID, src.IntersectID, src.UpdatedBy);
 
 					if(@assetID is not null)
 					BEGIN
@@ -2513,11 +2513,12 @@ namespace d360.model
 				WorkflowItemStep itemStep = WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
 				itemStep.State = StepState.Error;
 
+				var message = ex.InnerException?.Message ?? ex.Message;
 				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 				{
 					itemStepID = itemStep.ID,
 					Details = ex.StackTrace,
-					Message = ex.InnerException?.Message ?? ex.Message,
+					Message = message.Substring(0, 250),
 					State = StepState.Error
 				};
 
