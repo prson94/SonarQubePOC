@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChildren, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChildren, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItemStep, StepState } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
@@ -10,7 +10,7 @@ import { WorkflowHelpers } from '../../../static/workflow-helpers';
 	templateUrl: './assignment-progress.component.html',
 	styleUrls: ['./assignment-progress.component.less']
 })
-export class AssignmentProgressComponent {
+export class AssignmentProgressComponent implements OnChanges {
 
 	@ViewChildren(AssignmentProgressStepComponent) private assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
@@ -22,9 +22,6 @@ export class AssignmentProgressComponent {
 	@Input() showLinks: boolean = false;
 	@Input({ required: true }) set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
-		if (this._workflowItemUid) {
-			this.loadAssignmentSteps();
-		}
 	}
 	@Input() assignmentStatus: string;
 
@@ -56,6 +53,13 @@ export class AssignmentProgressComponent {
 	constructor(private workflowService: WorkflowService,
 				public linkClickInterceptor: LinkClickInterceptor,
 				private changeDetectorRef: ChangeDetectorRef) {
+	}
+
+	ngOnChanges(changes: SimpleChanges) {
+		//loadAssignmentSteps depends on two inputs (workflowItemUid & assignmentStatus), so it shouldn't be called from a setter.
+		if (changes['workflowItemUid'] && this._workflowItemUid) {
+			this.loadAssignmentSteps();
+		}
 	}
 
 	private loadAssignmentSteps() {
