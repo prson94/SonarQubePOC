@@ -2320,9 +2320,9 @@ namespace d360.model
 					if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
 					{
 						var itemStateDetails = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions);
-						foreach (var itemStateDetail in itemStateDetails)
+						if (itemStateDetails.Any())
 						{
-							WorkflowItemStepStateDetails.Remove(itemStateDetail);
+							WorkflowItemStepStateDetails.RemoveRange(itemStateDetails);
 							SaveChanges();
 						}
 					}
@@ -2365,7 +2365,8 @@ namespace d360.model
 					{
 						itemStepID = fromItemStep.ID,
 						Message = "Step completed with 0 valid transitions",
-						State = StepState.NoValidTransitions
+						State = StepState.NoValidTransitions,
+						Details = $"VersionStepTransitionID: {versionStepTransitionID}"
 					};
 
 					WorkflowItemStepStateDetails.Add(itemStateDetail);
