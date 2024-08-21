@@ -2519,7 +2519,7 @@ namespace d360.model
 				{
 					itemStepID = itemStep.ID,
 					Details = ex.StackTrace,
-					Message = message.Substring(0, 250),
+					Message = message.Substring(0, Math.Min(250, message.Length)),
 					State = StepState.Error
 				};
 
