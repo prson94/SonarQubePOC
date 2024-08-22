@@ -1,0 +1,45 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.ItemStepTransitionState-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'ItemStepTransitionState')
+BEGIN
+	CREATE TABLE [workflow].[ItemStepTransitionState](
+		[FromItemStepID] [bigint] NOT NULL,
+		[VersionStepTransitionID] [bigint] NOT NULL,
+		[Passed] [bit] NULL,
+		[State] [int] CONSTRAINT [df__workflow_itemsteptransitionstate_state] DEFAULT (1) NULL,
+		CONSTRAINT [PK_WorkflowItemStepTransitionState] PRIMARY KEY CLUSTERED ( [FromItemStepID] ASC, [VersionStepTransitionID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItemStepTransitionState_FromItemStep')
+BEGIN
+	ALTER TABLE [workflow].[ItemStepTransitionState]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowItemStepTransitionState_FromItemStep] FOREIGN KEY([FromItemStepID]) REFERENCES [workflow].[ItemStep] ([ID])
+	ALTER TABLE [workflow].[ItemStepTransitionState] CHECK CONSTRAINT [FK_WorkflowItemStepTransitionState_FromItemStep]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItemStepTransitionState_VersionStepTransitionID')
+BEGIN
+	ALTER TABLE [workflow].[ItemStepTransitionState]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowItemStepTransitionState_VersionStepTransitionID] FOREIGN KEY([VersionStepTransitionID]) REFERENCES [workflow].[VersionStepTransition] ([ID])
+	ALTER TABLE [workflow].[ItemStepTransitionState] CHECK CONSTRAINT [FK_WorkflowItemStepTransitionState_VersionStepTransitionID]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
