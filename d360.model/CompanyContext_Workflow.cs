@@ -1171,7 +1171,6 @@ namespace d360.model
 		private async Task StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo, long fromStepID)
 		{
 			List<EventInfo> events = new List<EventInfo>();
-			List<WorkflowItemStepTransitionState> transitionStates = new List<WorkflowItemStepTransitionState>();
 
 			WorkflowItemStepTransitionStates.AddRange(transitions.Select(t => new WorkflowItemStepTransitionState
 				{
