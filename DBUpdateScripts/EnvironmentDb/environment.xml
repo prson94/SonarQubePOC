@@ -160,6 +160,7 @@
 	<include file="scripts/Table.workflow.ItemStep.xml"/>
 	<include file="scripts/Table.workflow.ItemStepStateDetail.xml"/>
 	<include file="scripts/Table.workflow.ItemStepTransition.xml"/>
+	<include file="scripts/Table.workflow.ItemStepTransitionState.xml"/>
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
 
 	<include file="scripts/Table.api.Execution.xml"/>

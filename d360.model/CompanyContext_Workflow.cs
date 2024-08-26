@@ -40,6 +40,9 @@ namespace d360.model
 
 		DbSet<WorkflowItemStepTransition> WorkflowItemStepTransitions { get; set; }
 
+		DbSet<WorkflowItemStepTransitionState> WorkflowItemStepTransitionStates	{ get; set; }
+
+
 		DbSet<WorkflowTaskProcedure> WorkflowTaskProcedures { get; set; }
 
 		DbSet<core.entities.Workflow.Type> WorkflowTypes { get; set; }
@@ -125,6 +128,8 @@ namespace d360.model
 		public DbSet<WorkflowItemStep> WorkflowItemSteps { get; set; }
 
 		public DbSet<WorkflowItemStepTransition> WorkflowItemStepTransitions { get; set; }
+
+		public DbSet<WorkflowItemStepTransitionState> WorkflowItemStepTransitionStates { get; set; }
 
 		public DbSet<WorkflowTaskProcedure> WorkflowTaskProcedures { get; set; }
 
@@ -1163,9 +1168,18 @@ namespace d360.model
 			return false;
 		}
 
-		private async Task StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
+		private async Task StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo, long fromStepID)
 		{
 			List<EventInfo> events = new List<EventInfo>();
+
+			WorkflowItemStepTransitionStates.AddRange(transitions.Select(t => new WorkflowItemStepTransitionState
+				{
+					FromItemStepID = fromStepID,
+					VersionStepTransitionID = t.ID,
+					State = StepState.Pending
+				})
+			);
+			SaveChanges();
 
 			foreach (WorkflowVersionStepTransition transition in transitions)
 			{
@@ -2032,7 +2046,7 @@ namespace d360.model
 
 			if (transitions.Count > 0)
 			{
-				await StartTransitions(transitions, item.ID, objectInfo);
+				await StartTransitions(transitions, item.ID, objectInfo, firstItemStep.ID);
 			}
 
 			return true;
@@ -2204,6 +2218,15 @@ namespace d360.model
 				throw new ArgumentNullException(nameof(transition), "ERROR - UNABLE TO LOCATE THE SPECIFIED WORKFLOW TRANSITION STEP");
 			}
 
+			WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
+				if (fromItemStep == null)
+			{
+				throw new ArgumentNullException(nameof(fromItemStep), "ERROR - CANNOT FIND ITEM FROM STEP");
+			}
+
+			WorkflowItemStepTransitionState transitionState = WorkflowItemStepTransitionStates
+				.Where(i => i.VersionStepTransitionID == versionStepTransitionID && i.FromItemStepID == fromItemStep.ID ).FirstOrDefault();
+
 			bool transitionPassed = false;
 			WorkflowItem item = null;
 			Asset issueObject = null;
@@ -2269,15 +2292,15 @@ namespace d360.model
 					break;
 			}
 
+			if (transitionState != null)
+			{
+				transitionState.Passed = transitionPassed;
+				transitionState.State = StepState.Complete;
+				SaveChanges();
+			}
+
 			if (transitionPassed)
 			{
-				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
-
-				if (fromItemStep == null)
-				{
-					throw new ArgumentNullException(nameof(fromItemStep), "ERROR - CANNOT FIND ITEM FROM STEP");
-				}
-
 				long toItemStepID = 0;
 
 				WorkflowItemStep toItemStep = new WorkflowItemStep
@@ -2314,24 +2337,6 @@ namespace d360.model
 				WorkflowItemStepTransitions.Add(trans);
 				SaveChanges();
 
-				try
-				{
-					// remove NoValidTransitions error if a previous transition from this step set it
-					if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
-					{
-						var itemStateDetails = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions);
-						foreach (var itemStateDetail in itemStateDetails)
-						{
-							WorkflowItemStepStateDetails.Remove(itemStateDetail);
-							SaveChanges();
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.LogError(ex, $"error when removing transition error records");
-				}
-				
 				fromItemStep.State = StepState.Complete;
 
 				SaveChanges();			
@@ -2354,21 +2359,21 @@ namespace d360.model
 			{
 				Thread.Sleep(500 + randomNumberGenerator.Next(1000));
 
-				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
+				var allFailed = WorkflowItemStepTransitionStates
+					.Where(i => i.FromItemStepID == fromItemStep.ID)
+					.All(s => s.State == StepState.Complete && s.Passed == false);
 
-				//Only mark as failed if it is not marked complete.
-				if (fromItemStep != null && !WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID))
+				if (allFailed)
 				{
 					fromItemStep.State = StepState.NoValidTransitions;
 
-					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					WorkflowItemStepStateDetails.Add(new WorkflowItemStepStateDetail
 					{
 						itemStepID = fromItemStep.ID,
 						Message = "Step completed with 0 valid transitions",
-						State = StepState.NoValidTransitions
-					};
-
-					WorkflowItemStepStateDetails.Add(itemStateDetail);
+						State = StepState.NoValidTransitions,
+						Details = $"VersionStepTransitionID: {versionStepTransitionID}"
+					});
 
 					SaveChanges();
 				}
@@ -2518,7 +2523,7 @@ namespace d360.model
 				{
 					itemStepID = itemStep.ID,
 					Details = ex.StackTrace,
-					Message = message.Substring(0, 250),
+					Message = message.Substring(0, Math.Min(250, message.Length)),
 					State = StepState.Error
 				};
 
@@ -2557,6 +2562,7 @@ namespace d360.model
 			List<dynamic> res = Query<dynamic>(sql).ToList();
 
 			List<EventInfo> events = new List<EventInfo>();
+			List<WorkflowItemStepTransitionState> transitionStates = new List<WorkflowItemStepTransitionState>();
 
 			foreach (dynamic transition in res)
 			{
@@ -2595,6 +2601,19 @@ namespace d360.model
 				}
 
 				item.TimerLastRunDate = DateTime.UtcNow;
+
+				transitionStates.Add(new WorkflowItemStepTransitionState
+				{
+					FromItemStepID = fromTransitionId,
+					VersionStepTransitionID = transition.VersionStepTransitionID,
+					State = StepState.Pending
+				});
+				SaveChanges();
+			}
+
+			if(transitionStates.Count > 0)
+			{
+				WorkflowItemStepTransitionStates.AddRange(transitionStates);
 				SaveChanges();
 			}
 
@@ -2809,7 +2828,7 @@ namespace d360.model
 				if (transitions.Count > 0)
 				{
 					transitionCount = transitions.Count;					
-					await StartTransitions(transitions, itemID, objectInfo);					
+					await StartTransitions(transitions, itemID, objectInfo, itemStep.ID);					
 				}
 				else
 				{
