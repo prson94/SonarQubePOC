@@ -2218,8 +2218,11 @@ namespace d360.model
 				throw new ArgumentNullException(nameof(transition), "ERROR - UNABLE TO LOCATE THE SPECIFIED WORKFLOW TRANSITION STEP");
 			}
 
-			WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
-				if (fromItemStep == null)
+			//There might be loops in the workflow, so get the latest ItemStep that matches the FromVersionStepID
+			WorkflowItemStep fromItemStep = WorkflowItemSteps
+				.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID)
+				.OrderByDescending(i => i.ID).FirstOrDefault();
+			if (fromItemStep == null)
 			{
 				throw new ArgumentNullException(nameof(fromItemStep), "ERROR - CANNOT FIND ITEM FROM STEP");
 			}
