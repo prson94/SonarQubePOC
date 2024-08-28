@@ -140,6 +140,11 @@ namespace d360.model
 									from	[workflow].[ItemAssignment] T
 											where exists(select 1 from #w S where S.ItemID = T.ItemID);
 
+									delete	T
+									from	[workflow].[ItemStepTransitionState] T
+											inner join workflow.itemstep wis on wis.ID = T.FromItemStepID
+											where exists (select 1 from #w S where S.ItemID = wis.ItemID);
+
 									delete  T
 									from	[workflow].[ItemStepTransition] T
 											inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
