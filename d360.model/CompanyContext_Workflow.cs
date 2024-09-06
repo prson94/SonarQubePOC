@@ -2872,7 +2872,7 @@ namespace d360.model
 				{
 					bodyTemplate = bodyTemplate.SanitizeHtml();
 				}
-				catch (OWASP.AntiSamy.Exceptions.ScanException)
+				catch
 				{
 					Log.LogTrace($"Bypassing SanitizeHtml for Workflow Item Step {itemStep}");
 				}
