@@ -2868,7 +2868,14 @@ namespace d360.model
 
 			if (supportHtml)
 			{
-				bodyTemplate = bodyTemplate.SanitizeHtml();
+				try
+				{
+					bodyTemplate = bodyTemplate.SanitizeHtml();
+				}
+				catch (OWASP.AntiSamy.Exceptions.ScanException)
+				{
+					Log.LogTrace($"Bypassing SanitizeHtml for Workflow Item Step {itemStep}");
+				}
 			}
 
 			List<string> tokens = Regex.Matches(bodyTemplate, "\\[([A-Z]+_?\\|?)+([0-9.]*)\\|?([0-9a-zA-Z]*)\\]").OfType<Match>().Select(m => m.Value).Distinct().ToList();
