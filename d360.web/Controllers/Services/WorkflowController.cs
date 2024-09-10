@@ -1435,6 +1435,8 @@ namespace d360.web.Controllers.Services
 				}
 
 				string sql = "";
+				sql = @"DELETE FROM [workflow].[ItemStepTransitionState] WHERE [FromItemStepID] IN (SELECT [ID] FROM [workflow].[ItemStep] WHERE [ItemID] IN (" + inclause + "))";
+				_ = Company.Database.Connection.Execute(sql, parameters);
 				sql = @"DELETE FROM [workflow].[ItemStepTransition] WHERE [FromItemStepID] IN (SELECT [ID] FROM [workflow].[ItemStep] WHERE [ItemID] IN (" + inclause + "))";
 				_ = Company.Database.Connection.Execute(sql, parameters);
 				sql = @"DELETE FROM [workflow].[ItemStep] WHERE [ItemID] IN  (" + inclause + ")";
