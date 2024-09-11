@@ -122,6 +122,20 @@ namespace igx.jobs.bulkloadprocessor
 									var loadItemColumns = new List<LoadItemColumn>();
 									var loadColumns = company.GetLoadColumns(load.Action, load.Object, load.ObjectID, true);
 
+									string qry = $@"declare @AssetTypeId int;
+													Declare @LoadID int = @id;
+
+													select @AssetTypeId = ATT.ID
+													from [Load] L
+													inner join AssetType ATT on ATT.uid = L.AssetTypeUid and Action = 'P';
+
+													select L.ColumnIndex , FT.IsPartOfKey , FT.Type
+													from LoadColumn L
+													inner join FieldType FT on Ft.AssetTypeID = @AssetTypeId and Ft.Name = L.Name and ft.IsPartOfKey = 1
+													where LoadID = @LoadID";
+
+									var LoadColumnIsPartOfKey = companyConnection.Query<dynamic>(qry, new { id = load.ID }).ToList();
+
 									while (rowIndex <= stats.EndRowIndex)
 									{
 										// Empty row validation.
@@ -160,7 +174,14 @@ namespace igx.jobs.bulkloadprocessor
 												}
 												else
 												{
-													loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+													if (CheckLoadColumIsPartOfKey(LoadColumnIsPartOfKey, c.ColumnIndex))
+													{
+														loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").Trim();
+													}
+													else
+													{
+														loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+													}
 												}
 
 												loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = null });
@@ -1365,5 +1386,19 @@ where LI.LoadID = @loadId"
 		{
 			await company.BulkRelation(load, relationshipRepository, assetRepository, operation);
 		}
+
+		private bool CheckLoadColumIsPartOfKey(List<dynamic> loadcolumnIsPartOkKey, int ColumnIdx)
+		{
+			if (loadcolumnIsPartOkKey != null && loadcolumnIsPartOkKey.Count > 0)
+			{
+				var ColData = loadcolumnIsPartOkKey.Where(x => x.ColumnIndex == ColumnIdx).FirstOrDefault();
+				if (ColData != null)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}
 }
