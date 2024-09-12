@@ -751,7 +751,18 @@ namespace d360.model.DataAccessLayer
 
 		public string GetKeyFieldsHash(List<FieldType> fields)
 		{
-			return string.Join("|", fields.Where(f => f.IsPartOfKey).Select(f => f.ID + "DF:" + (f.DefaultValue ?? "")).OrderBy(f => f));
+			return string.Join("|", fields.Where(f => f.IsPartOfKey).Select(
+				f => {
+					if (f.Type == DataType.Counter.ToString())
+					{
+						return f.ID + "CP:" + (f.CounterPrefix ?? "");
+					}
+					else
+					{
+						return f.ID + "DF:" + (f.DefaultValue ?? "");
+					}
+				}
+			).OrderBy(f => f));
 		}
 
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
