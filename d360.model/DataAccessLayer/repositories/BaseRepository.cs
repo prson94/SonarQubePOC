@@ -1262,7 +1262,7 @@ namespace d360.model.DataAccessLayer.repositories
 					}
 					break;
 				case "HTML":
-					var txt = (value as string).ReplaceHtmlEntities();
+					var txt = (value as string).ReplaceHtmlEntities().GetSafeXLSColumnValue();
 					if (txt.StartsWith("="))
 					{
 						txt = "'" + txt;
