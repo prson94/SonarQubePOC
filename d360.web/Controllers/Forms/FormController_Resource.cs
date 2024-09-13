@@ -118,6 +118,7 @@ namespace d360.web.Controllers
 			var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = (i.Name).ToString() }).ToList();
 			var cr = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID);
 			var asset = Company.Filter<Asset>(i => i.Object == "Resource" && i.ObjectID == id).SingleOrDefault();
+			var assettype = Company.AssetTypes.Where(i => i.Class == AssetTypeClass.User).Select(i => new { i.ID }).FirstOrDefault();
 
 			list.Add(new EditableField 
 			{
@@ -199,8 +200,14 @@ namespace d360.web.Controllers
 				Items = stateList, Value = cr.State.ToString() 
 			});
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assettype.ID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+			var fields = new List<FieldWithRelation>();
+
+			if (asset != null)
+			{
+				fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
+			}
 
 			list = await loadDynamicFields(
 					SystemObjects.Resource.ToString(),
