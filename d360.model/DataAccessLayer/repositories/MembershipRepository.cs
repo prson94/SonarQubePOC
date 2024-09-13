@@ -584,8 +584,13 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 
 						if (isUser == null || isUser.Object != "Resource")
 						{
-							success = false;
-							messages.Add(string.Format(MemberShipErrors.UserUidNotFound, user.uid));
+							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.Uid == currentUser);
+
+							if (globalResource == null)
+							{
+								success = false;
+								messages.Add(string.Format(MemberShipErrors.UserUidNotFound, user.uid));
+							}
 						}
 					}
 
