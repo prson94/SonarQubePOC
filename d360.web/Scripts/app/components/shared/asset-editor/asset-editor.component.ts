@@ -94,6 +94,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	@Input() showActions: boolean = true;
 	@Input() useSidePanel: boolean = true;
 	@Input() editorDecription: string = '';
+	@Input() iskeyvaluepassed: true;
 
 	@Input() useModelBinding: boolean = false;
 	@Input() dataModel: any = null;
@@ -356,7 +357,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			}
 
 			//this comes from process side panel
-			if (this.selection.key) {
+			if (this.selection.key && this.iskeyvaluepassed) {
 				if (this.selection.isNew) {
 					id = null;
 				}
