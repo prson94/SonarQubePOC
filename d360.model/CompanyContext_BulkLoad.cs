@@ -1232,11 +1232,7 @@ inner join AssetPath P on P.ID = A.ID
 						{
 							LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
 
-							if (parentAssetType != null && col.Name == parentAssetType.Name)
-							{
-								continue;
-							}
-							else if (fieldscounterSkip.Contains(col.Name))
+							if ((parentAssetType != null && col.Name == parentAssetType.Name) || (fieldscounterSkip != null && fieldscounterSkip.Contains(col.Name)))
 							{
 								continue;
 							}
