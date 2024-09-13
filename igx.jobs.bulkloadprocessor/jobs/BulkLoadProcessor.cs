@@ -1008,6 +1008,13 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
 					usersBulkCopy.WriteToServer(tbl);
 
 					company.Execute(@"
+declare @CreatedBy nvarchar(100),
+@CreateDate datetime = getdate();
+
+select @CreatedBy = UpdatedBy
+from Load
+where id = @loadId;
+
 merge into  reporting.Global_Resource T
 using       (
             select  ResourceID, 
@@ -1033,7 +1040,31 @@ when matched then
 		T.[State] = S.[State]
 when not matched by target then
     insert  ([uid], ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
-    values  (S.[uid], S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
+    values  (S.[uid], S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);
+
+
+
+merge	into 
+		Asset as A
+using	(
+		select	R.ResourceID,
+				RT.ID as AssetTypeID,
+				coalesce(R.UpdatedOn,R.CreatedOn,@CreateDate) UpdatedOn ,
+				coalesce(R.CreatedOn,R.UpdatedOn,@CreateDate)  CreatedOn,
+				@CreatedBy CreatedBy,
+				R.Uid ResourceUid
+		from	reporting.Global_Resource R
+				inner join #Users U on R.ResourceID = R.ResourceID
+				inner join AssetType RT on RT.Object = 'ResourceType'
+		) R
+on		(A.Object = 'Resource' and A.ObjectID = R.ResourceID)
+when	matched then
+update	set 
+		A.UpdatedOn = R.UpdatedOn,
+		A.UpdatedBy = R.CreatedBy
+when not matched then
+insert	(AssetTypeID, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid)
+values	(R.AssetTypeID, 'Resource', R.ResourceID, R.ResourceID, R.CreatedOn, R.CreatedBy, R.UpdatedOn, R.CreatedBy, R.ResourceUid);", new { loadId }, transaction: trans);
 
 					company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
 
@@ -1070,6 +1101,27 @@ when matched and S.Value is not null then
 when not matched by target and S.Value is not null then
     insert  (AssetID, FieldTypeID, Value, UpdatedBy)
     values  (S.AssetID, S.FieldTypeID, S.Value, S.UpdatedBy);", transaction: trans);
+
+					company.Execute($@"
+declare @AssetTypeID int;
+declare @Class int = 11;
+
+
+select @AssetTypeID = ID
+from AssetType
+where Class = @Class;
+
+drop table if exists #tempassetDV;
+Create table #tempassetDV (AssetID bigint,Object varchar(50), objectid int, Code nvarchar(250));
+create clustered index cix_tempassetDV on #tempassetDV (AssetID);
+					
+insert into #tempassetDV (AssetID, object, objectid,code) 
+select  A.ID,A.Object,A.ObjectID,null
+from   Asset A  
+inner join #Users U on U.ResourceID = A.ObjectID
+where A.AssetTypeID = @AssetTypeID ;
+
+exec [GenerageDisplayValuesByTempAssetTable] @AssetTypeID,@Class", transaction: trans);
 
 					company.Execute(@"
 update	T

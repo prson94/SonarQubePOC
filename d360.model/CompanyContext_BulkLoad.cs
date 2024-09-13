@@ -259,6 +259,7 @@ namespace d360.model
 
 		private string LoadDetailBaseSql(string countSql, int LoadId, bool getLoadErrorMessage = false)
 		{
+			string sqlstmt;
 			string loaderrorsql = "";
 			if (getLoadErrorMessage)
 			{
@@ -282,7 +283,7 @@ end
 ";
 			}
 
-			return $@"		
+			sqlstmt = $@"
 								declare @LoadErrorMessage nvarchar(2000);
 
 								{loaderrorsql}
@@ -330,6 +331,7 @@ end
 							) C_D
 							left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
 							{countSql}";
+			return sqlstmt;
 		}
 
 		#endregion

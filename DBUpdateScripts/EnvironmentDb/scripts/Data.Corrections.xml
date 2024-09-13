@@ -1267,5 +1267,60 @@ delete reporting.Global_Audit where Object = 'QuestionType';
 ]]>
   </sql>
  </changeSet>	
+
+
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-34608">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @Resource_AssetTypeId int,
+@Class int = 11,
+@CreatedOn datetime = getdate(),
+@Object nvarchar(10) = 'Resource';
+
+select @Resource_AssetTypeId = ID from AssetType where Class = @Class;
+
+drop table if exists #tempdata_34608;
+
+select	distinct R.ResourceID,
+	R.CreatedOn CreatedOn,
+	R.UpdatedOn UpdatedOn,
+	R.Uid ResourceUid
+into #tempdata_34608
+from reporting.Global_Resource R
+left outer join	Asset A on A.AssetTypeID = @Resource_AssetTypeId and A.Object = @Object and A.ObjectID = R.ResourceID
+where R.ResourceID > 0 and R.State != 3 and A.ID is null;
+
+if exists (select 1 from #tempdata_34608)
+begin
+	insert into Asset (AssetTypeID, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid)
+	select distinct @Resource_AssetTypeId,@Object,R.ResourceID,R.ResourceID,R.CreatedOn, 0, r.UpdatedOn,0, r.ResourceUid
+	From #tempdata_34608 R
+	where not exists (select 1 from Asset a 
+					where a.AssetTypeID = @Resource_AssetTypeId
+					and a.Object = 'Resource' and a.ObjectID = R.ResourceID);
+					
+					
+	drop table if exists #tempassetDV;
+	Create table #tempassetDV (AssetID bigint,Object varchar(50), objectid int, Code nvarchar(250));
+	create clustered index cix_tempassetDV on #tempassetDV (AssetID);
+						
+	insert into #tempassetDV (AssetID, object, objectid,code) 
+	select  distinct A.ID,A.Object,A.ObjectID,null
+	from   Asset A  
+	inner join #tempdata_34608 U on U.ResourceID = A.ObjectID
+	where A.AssetTypeID = @Resource_AssetTypeId ;
+
+	exec [GenerageDisplayValuesByTempAssetTable] @Resource_AssetTypeId ,@Class;
+	drop table if exists #tempassetDV;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 	
 </databaseChangeLog>
