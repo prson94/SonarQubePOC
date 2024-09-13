@@ -310,7 +310,7 @@ namespace d360.model.validators
 						}
 					}
 
-					if (field.Type.Relationship.IsEditable == false && field.Type.Relationship.Description.Form?.Trim().Length > 0)
+					if (field.Type.Relationship.IsEditable == false && field.Type.Relationship?.Description?.Form?.Trim().Length > 0)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.FormDescriptionMustBeEmptyForRelationship, field.FriendlyName));
 					}
