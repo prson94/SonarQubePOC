@@ -991,7 +991,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
     }
 
-    private convertToWorkflowModel(model: NodeModel | LinkModel): WorkflowDiagramNode | WorkflowDiagramLink {
+	private convertToWorkflowModel(model: NodeModel | LinkModel, preserveLabel: boolean = false): WorkflowDiagramNode | WorkflowDiagramLink {
         if (model.diagramObjectType === DiagramObjectType.Link) {
             const m: LinkModel = <LinkModel>model;
 
@@ -1007,8 +1007,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             const cond = cloneDeep(m.condition);
             cond.forEach((c) => {
                 delete c['@FieldName'];
-                delete c['_$visited'];
-                delete c['@ValueLabel'];
+				delete c['_$visited'];
+				if (!preserveLabel) {
+					delete c['@ValueLabel'];
+				}
             });
 
             n.Condition = JSON.stringify({ Conditions: { Condition: cond } });
@@ -1535,7 +1537,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach((l) => {
-            this.model.Links.push(<WorkflowDiagramLink>this.convertToWorkflowModel(<LinkModel>l));
+            this.model.Links.push(<WorkflowDiagramLink>this.convertToWorkflowModel(<LinkModel>l, true));
         });
 
         this.onBackClick.emit(this.model);
