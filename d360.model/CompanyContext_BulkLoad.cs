@@ -456,6 +456,86 @@ end
 								left join FieldType FT on FT.[Name] = LC.[Name] and FT.AssetTypeID = T.ID
 						where   L.ID = @ID;
 
+						if exists (select 1 from #BulkExecutionField ef inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter')
+						begin
+									
+							update ef 
+							set FieldValue = replace(FieldValue,ft.CounterPrefix,'')
+							from #BulkExecutionField ef 
+							inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
+							where coalesce(FieldValue,'') != '' and ft.CounterPrefix is not null;
+
+
+							update LIC
+							set [Value] = replace([Value],ft.CounterPrefix,'')
+							from LoadItemColumn LIC 
+							inner join LoadColumn LC on LC.LoadID = LIC.LoadID
+							inner join fieldtype ft on ft.Name = LC.Name and ft.Type = 'Counter' and ft.AssetTypeID = @atID
+							where LIC.LoadId = @id and coalesce(LIC.[Value],'') != '' and ft.CounterPrefix is not null;
+
+							drop table if exists #tempcountervalue;
+
+							select itemnumber,ft.name,ISNUMERIC(ef.FieldValue) IsNum,ft.CounterInitialIndex,try_cast(ef.FieldValue as int) CounterValue
+							into #tempcountervalue
+							from #BulkExecutionField ef 
+							inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
+							where coalesce(FieldValue,'') != '';
+
+							create clustered index cx_tempcountervalue on #tempcountervalue(itemnumber)
+
+							--Check Non Numeric Value
+							update A
+							set A.Success = 0
+							from #BulkExecutionAsset A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 0
+							where A.ExecutionID = @executionID and A.Success is null;
+
+							update A
+							set status = 0,
+								StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than 0 and less than 2147483647.',1,500)
+							from LoadItem A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 0
+							where A.LOADID = @ID and coalesce(status,1) = 1;
+					
+							--Check Value less than  CounterInitialIndex
+							update A
+							set A.Success = 0
+							from #BulkExecutionAsset A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
+							where A.ExecutionID = @executionID  and A.Success is null;
+
+							update A
+							set status = 0,
+								StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than or equal to ' + cast(TC.CounterInitialIndex as nvarchar(10)),1,500)
+							from LoadItem A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
+							where A.LOADID = @ID and coalesce(status,1) = 1;
+
+							--Check Value duplicate Value
+
+							select CounterValue
+							into #tempcountduplicate
+							from #tempcountervalue Tc
+							where TC.IsNum = 1 and CounterValue is not null
+							group by CounterValue
+							having count(1)>1
+
+							update A
+							set A.Success = 0
+							from #BulkExecutionAsset A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber 
+							inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
+							where A.ExecutionID = @executionID  and A.Success is null;
+
+							update A
+							set status = 0,
+								StatusMessage =  substring('Counter Field (' + tc.name + ') should be unique value',1,500)
+							from LoadItem A
+							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex
+							inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
+							where A.LOADID = @ID and coalesce(status,1) = 1;
+						end
+
 						--handle ref lists
 						if @class = 9
 						begin
@@ -656,7 +736,7 @@ end
 									declare @fieldtypeid int = 0;
 
 									drop table if exists #tempfielddata;
-									drop table if exists tempcalasset;
+									drop table if exists #tempcalasset;
 									drop table if exists #AssetActiveKey;
 
 									----Below statement to get first fieldtypeid primary key column order by columnorder
@@ -689,15 +769,31 @@ end
 									create clustered index idx_tempasset on #tempcalasset([AssetUid]);
 
 									-- hash value only required asset only with all primary key 
-									select		t.AssetUid [Uid],
-												utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-									into		#AssetActiveKey
-									from		#tempcalasset t
-												left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
-												left join Asset P on P.ID = I.SubjectAssetID 
-												inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
-												left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
-									group by    t.AssetUid, P.Uid
+									if exists (select 1 from FieldType FT where FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1 and type = 'Counter')
+										begin
+											select		t.AssetUid [Uid],
+														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+											into		#AssetActiveKey
+											from		#tempcalasset t
+														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
+														left join Asset P on P.ID = I.SubjectAssetID 
+														inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
+														left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
+														left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = T.ID
+											group by    t.AssetUid, P.Uid
+										end
+									else
+										begin
+											select		t.AssetUid [Uid],
+														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+											into		#AssetActiveKey
+											from		#tempcalasset t
+														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
+														left join Asset P on P.ID = I.SubjectAssetID 
+														inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
+														left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
+											group by    t.AssetUid, P.Uid
+										end
 
 									Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
 
@@ -720,15 +816,33 @@ end
 
 								drop table if exists #AssetActiveKey;
 
-								select		A.Uid,
-											utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-								Into		#AssetActiveKey
-								from		Asset A
-											outer apply dbo.getassetlevelbyid(A.ID) L
-											inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-											left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-								where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel  and coalesce(F.Value, F.FormattedValue, FT.DefaultValue,'') != ''
-								group by    A.Uid
+								create table #AssetActiveKey (Uid uniqueidentifier,ActiveKey varchar(32))
+
+								if exists (select 1 from FieldType FT where FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and type = 'Counter')
+									begin
+										insert into #AssetActiveKey(Uid,ActiveKey)
+										select		A.Uid,
+													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+										from		Asset A
+													outer apply dbo.getassetlevelbyid(A.ID) L
+													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+													left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+													left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.ID
+										where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel  and coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue,'') != ''
+										group by    A.Uid
+									end
+								else
+									begin
+										insert into #AssetActiveKey(Uid,ActiveKey)
+										select		A.Uid,
+													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+										from		Asset A
+													outer apply dbo.getassetlevelbyid(A.ID) L
+													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+													left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+										where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel  and coalesce(F.Value, F.FormattedValue, FT.DefaultValue,'') != ''
+										group by    A.Uid
+									end
 
 								Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
 
@@ -777,52 +891,40 @@ into #tempdupassetuid
 from LoadItem 
 where loadid =  @ID
 and AssetUid is not null
+and coalesce(status,1) = 1
 group by AssetUid
 having count(1) > 1;
 
-select @DuplicateRow = substring(STRING_AGG('[' + cast(RowIndex as nvarchar(max)) + ']','#'),1,400)
-from (
-select tt.AssetUid,substring(STRING_AGG(cast(lt.RowIndex as nvarchar(max)),','),1,400) RowIndex
-from #tempdupassetuid tt
-cross apply (select top 20 rowindex from LoadItem lt1 where lt1.loadid =  @ID and tt.AssetUid = lt1.AssetUid and lt1.AssetUid is not null) lt
-group by tt.AssetUid) a;
 
-if (@DuplicateRow is not null)
+if exists (select 1 from #tempdupassetuid)
 begin
-	set @errormessage = 'Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.' + @DuplicateRow;
+	drop table if exists #tempduplvalue;
+
+	select AssetUid,STRING_AGG(pk_value, ' > ') within group (order by ColumnOrder asc, Name asc) pk_value
+	into #tempduplvalue
+	from ( select distinct lt.AssetUid, coalesce(ltc.LookupValue, ltc.[Value]) pk_value,FT.ColumnOrder, FT.Name
+	from #tempdupassetuid tt
+	inner join LoadItem lt on lt.AssetUid = tt.AssetUid
+	inner join LoadItemColumn ltc on ltc.loadid = lt.loadid and ltc.rowindex = lt.rowindex
+	inner join LoadColumn lc on lc.loadid = lt.loadid and lc.ColumnIndex = ltc.ColumnIndex
+	inner join FieldType FT on FT.Name = lc.Name and FT.AssetTypeID = @atID and FT.IsPartOfKey = 1
+	where lt.loadid =  @ID and lt.AssetUid is not null and coalesce(lt.status,1) = 1
+	) a
+	group by AssetUid;
+
+	create clustered index ix_tempduplvalue on #tempduplvalue(AssetUid)
 
 	update lt
 	set status = 0,
-	StatusMessage =  substring(@errormessage,1,500)
+	StatusMessage =  'Duplicate Asset[Primary Key Value : ' + substring(tt.pk_value,1,400) + '].'
 	from LoadItem lt
-	where lt.loadid =  @ID and lt.AssetUid is not null;
-
-	update lt
-	set status = 0,
-	StatusMessage =  'Duplicate Asset.'
-	from LoadItem lt
-	inner join #tempdupassetuid tt on lt.AssetUid = tt.AssetUid
-	where lt.loadid =  @ID and lt.AssetUid is not null;
+	inner join #tempduplvalue tt on lt.AssetUid = tt.AssetUid
+	where lt.loadid =  @ID and lt.AssetUid is not null and coalesce(lt.status,1) = 1;
 
 end
-
-select @IsNotAllFailed = count(1) 
-from (
-select top 1 lt.loadid
-from LoadItem lt
-where lt.loadid =  @ID and coalesce(status,1) = 1
-) a
-select @errormessage errormessage, @IsNotAllFailed IsNotAllFailed
 ";
-			var dupasset = await Connection.QuerySingleAsync<dynamic>(sqlduplicate, new { load.ID });
+			await Connection.ExecuteAsync(sqlduplicate, new { load.ID, atID = assetType.ID });
 
-			if (dupasset != null)
-			{
-				if (!dupasset?.IsNotAllFailed)
-				{
-					throw new ArgumentNullException($"{dupasset?.errormessage}");
-				}
-			}
 			List<AssetUpdate> putAssets = new List<AssetUpdate>();
 			List<AssetInsert> postAssets = new List<AssetInsert>();
 
@@ -838,7 +940,8 @@ select @errormessage errormessage, @IsNotAllFailed IsNotAllFailed
 				int numberOfRequiredFields = FieldTypes.Count(f => f.AssetTypeID == assetType.ID && f.IsPartOfKey);
 				int maxLevels = assetType.HierarchyMaximumDepth;
 
-				columnParentItemNumberMappings = Query<LoadColumnParentItemNumberMapping>(@"create table #tempRowIndexKeyTable(RowIndex int, [Key] nvarchar(4000), LastLevelKey nvarchar(4000), ParentRowIndex int)
+				columnParentItemNumberMappings = Query<LoadColumnParentItemNumberMapping>(@"
+create table #tempRowIndexKeyTable(RowIndex int, [Key] nvarchar(4000), LastLevelKey nvarchar(4000), ParentRowIndex int)
 create nonclustered index ix_key_idx on #tempRowIndexKeyTable([Key])
 
 declare @currentLevel int = 1
@@ -952,6 +1055,14 @@ create clustered index cx_tempdata on #tempdata (Rowindex);
 select LIC.* 
 from #tempdata t
 inner join LoadItemColumn LIC on LoadID = @id and LIC.RowIndex = t.RowIndex";
+
+			//ignore counter field if edit and non primary key
+			List<string> fieldscounterSkip = new List<string>();
+			IQueryable<FieldType> countnerFields = FieldTypes.Where(f => f.AssetTypeID == assetType.ID && !f.IsPartOfKey && f.Type == "Counter");
+			foreach (FieldType k in countnerFields)
+			{
+				fieldscounterSkip.Add(k.Name);
+			}
 
 			for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
 			{
@@ -1122,6 +1233,10 @@ inner join AssetPath P on P.ID = A.ID
 							LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
 
 							if (parentAssetType != null && col.Name == parentAssetType.Name)
+							{
+								continue;
+							}
+							else if (fieldscounterSkip.Contains(col.Name))
 							{
 								continue;
 							}

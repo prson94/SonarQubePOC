@@ -1477,11 +1477,17 @@ where   ER.ExecutionID = @ExecutionID
 			string shouldCheckHashStatement = $@"
 						declare @hasUpdatedKeyFields bit = 0
 						if exists (
-							select a.AssetID, f.FieldValue, fl.FormattedValue from {assetTable} A
+							select a.AssetID from {assetTable} A
 							 inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
 							 inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
 							 left join Field fl on fl.AssetId = a.assetid and fl.fieldtypeid = ft.id
 							where A.executionid = @executionid and (f.fieldvalue <> fl.formattedvalue or fl.id is null)
+							union all
+							select a.AssetID from {assetTable} A
+							 inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+							 inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1 and FT.Type = 'Counter'
+							 left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
+							where A.executionid = @executionid and (try_cast(f.fieldvalue as int) <> FCV.Value or FCV.AssetId is null)
 						)
 						set @hasUpdatedKeyFields = 1 
 						else
@@ -1553,14 +1559,25 @@ where   ER.ExecutionID = @ExecutionID
 															--only key field and required
 			
 															select @fieldtypeid = id,
-																   @DefaultValue = DefaultValue
+																   @DefaultValue = DefaultValue,
+																   @FieldDataType = Type
 															from fieldtype
 															where assettypeid = @id and IsPartOfKey = 1;
 			
-															update T
-															set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
-															from #Keys T
-															left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+															if (@FieldDataType = 'Counter')
+																begin
+																	update T
+																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(cast(FCV.Value as nvarchar(100)), @DefaultValue)
+																	from #Keys T
+																	left join FieldCounterValue FCV on FCV.FieldTypeID = @fieldtypeid and FCV.AssetID = T.AssetID
+																end
+															else
+																begin
+																	update T
+																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
+																	from #Keys T
+																	left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+																end
 
 														end
 													else
@@ -1570,10 +1587,11 @@ where   ER.ExecutionID = @ExecutionID
 															CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
 			
 															insert into #KeysField WITH(TABLOCK)
-															select A.AssetID,STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
+															select A.AssetID,STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
 															from #Keys A
 															inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
 															left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
+															left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
 															group by A.AssetID;
 
 															CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
@@ -1594,6 +1612,7 @@ where   ER.ExecutionID = @ExecutionID
 					string keyHashCalulationScript = $@"
 										Declare @fieldtypeid int =-1;
 										declare @DefaultValue nvarchar(max);
+										declare @FieldDataType nvarchar(50);
 
 										update  T
 										set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
