@@ -1313,6 +1313,7 @@ namespace d360.model.DataAccessLayer
 									select 
 										WI.uid as workflowItemUid 
 										,T.uid as workflowUid
+										,T.ID as workflowTypeId
 										,T.Name as workflowName
 										,GR.FirstName + ' ' + GR.LastName as initiator
 										,GR.uid as initiatorUid	
@@ -1421,9 +1422,10 @@ namespace d360.model.DataAccessLayer
 					inner join AssetType ast on ast.ID = I.AssetTypeID
 
 					update WA
-					set WA.AssetId = a.ID, WA.AssetTypeId = A.AssetTypeID
+					set WA.AssetId = coalesce(a.ID, WA.AssetId), WA.AssetTypeId = coalesce(A.AssetTypeID, WERAT.AssetTypeId, WA.AssetTypeId)
 					FROM #assignments WA
-					inner join Asset a on WA.Object=A.object and WA.ObjectID= A.objectID 
+					left join Asset a on WA.Object=A.object and WA.ObjectID= A.objectID
+					left join workflow.EventRegistration WERAT on WERAT.TypeID = WA.workflowTypeId
 					where WA.Object <> 'Issue' and WA.Object <> 'Intersect'
 
 					update WA
@@ -1565,12 +1567,12 @@ namespace d360.model.DataAccessLayer
 						begin
 							update t
 							set AssetUid = aat.uid,
-							t.AssetTypeID = aat.assettypeid,
+							t.AssetTypeID = coalesce(aat.assettypeid,WERAT.assettypeid,t.AssetTypeID),
 							t.AssetID = aat.id,
 							t.ChangeType = WERAT.ChangeType 
 							from #tempWorkFlowDetail t
-							inner join Asset aat on t.Object = aat.object and t.ObjectID = aat.objectID
-							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID and WERAT.AssetTypeID = aat.assettypeid
+							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID
+							left join Asset aat on t.Object = aat.object and t.ObjectID = aat.objectID -- and WERAT.AssetTypeID = aat.assettypeid
 							where trim(t.Object) not in ('issue','intersect') ;
 						end
 
