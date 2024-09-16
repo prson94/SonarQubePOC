@@ -144,6 +144,9 @@
   <data name="ReponsibilityOverrideExists" xml:space="preserve">
     <value>Responsibility override for '{0}' already exist.</value>
   </data>
+  <data name="ReponsibilityOverrideResourceExists" xml:space="preserve">
+    <value>Responsibility override already attached.</value>
+  </data>
   <data name="ReposibilityTypeNotValidForAsset" xml:space="preserve">
     <value>Responsibility Type not valid for current Asset.</value>
   </data>

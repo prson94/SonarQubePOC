@@ -45,8 +45,10 @@ namespace repositories
         ResponsibilityType GetResponsibilityTypeByUID(Guid uid);
         
         bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid);
-        
-        IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);
+
+		string IsValidResponsibilityForResources(int responsibilityid, long assetid, ResponsibilityOverridePutModel model);
+
+		IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);
         
         void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context);
         

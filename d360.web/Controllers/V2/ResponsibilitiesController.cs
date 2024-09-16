@@ -881,7 +881,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> UpdateResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
+		public async Task<IHttpActionResult> UpdateResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePutModel model)
 		{
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
@@ -902,18 +902,48 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityOverrideNotExist, responsibilityUid.ToString()));
 			}
 
+			string isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForResources(responsibility.ID, asset.ID, model);
+
+			if (!string.IsNullOrWhiteSpace(isValidResponsibilityForAsset))
+			{
+				string vstr = isValidResponsibilityForAsset;
+				if (!string.IsNullOrWhiteSpace(vstr))
+				{
+					if (vstr.Contains("<InvalidUid>") && vstr.Contains("<AlreadyAssigned>"))
+					{
+						vstr = vstr.Replace("<NEWLINE>", System.Environment.NewLine);
+					}
+					else
+					{
+						vstr = vstr.Replace("<NEWLINE>", "");
+					}
+
+					vstr = vstr.Replace("<InvalidUid>", ResponsibilityApiMessages.ResourceUidInvalid);
+					vstr = vstr.Replace("<AlreadyAssigned>", ResponsibilityApiMessages.ReponsibilityOverrideResourceExists);
+				}
+				throw new ArgumentException(vstr);
+
+			}
+
 			if (!Company.HasAssetPermission(asset.ID, Permission.EditResponsibilities))
 			{
 				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
 			}
 
-			var deleteModel = new List<ResponsibilityOverrideDeleteModel>
+			var deleteModel = new List<ResponsibilityOverrideDeleteModel>();
+			List<Guid> postresourceUid = new List<Guid>();
+
+			foreach (var uid in model.ResourceUid)
 			{
-				new ResponsibilityOverrideDeleteModel { ResourceUid = resourceUid }
-			};
+				postresourceUid.Add(uid.ToResourceUid);
+				deleteModel.Add(new ResponsibilityOverrideDeleteModel { ResourceUid = uid.FromResourceUid});
+			}
+
 			DeleteResponsibilitiesOverride(assetUid, responsibilityUid, deleteModel, passedResponsibilityCheck: true);
 
-			return AddResponsibilitiesOverride(assetUid, responsibilityUid, model, passedResponsibilityCheck: true);
+			ResponsibilityOverridePostModel AddModel = new ResponsibilityOverridePostModel { ResourceUid = postresourceUid , Description = model.Description};
+
+			return AddResponsibilitiesOverride(assetUid, responsibilityUid, AddModel, passedResponsibilityCheck: true);
 		}
 
 		/// <summary>

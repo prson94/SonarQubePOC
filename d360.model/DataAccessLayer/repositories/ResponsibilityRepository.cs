@@ -827,6 +827,75 @@ namespace d360.model.DataAccessLayer
 							  where rt.uid = @responsibilityUID and at.object = rtr.ObjectType and at.ObjectID = rtr.ObjectID", new { assetUid, responsibilityUid }).FirstOrDefault();
 		}
 
+		public string IsValidResponsibilityForResources(int  responsibilityid, long assetid, ResponsibilityOverridePutModel model)
+		{
+			return CompanyContext.Query<string>(@"
+							declare @InvalidUid varchar(4000),
+							@AlreadyAssignUid varchar(4000),
+							@ReturnStr nvarchar(max)='';
+
+							drop table if exists #ResourceUid;
+
+							select distinct u.Uid, u.Type,cast(a.ObjectID as int) SecurityAssetID,cast(substring(a.Object,1,1) as char(1)) SecurityAsset
+							into #ResourceUid
+							from (select uid,'F' Type
+							from @FromResourceUid
+							union 
+							select uid,'T' Type
+							from @ToResourceUid
+							) u
+							left join asset a on u.uid = a.uid;
+
+							if exists(select 1 from #ResourceUid where SecurityAssetID is  null)
+								begin
+									update u
+									set SecurityAsset = 'R',
+									SecurityAssetID = R.ResourceID
+									from #ResourceUid U
+									inner join reporting.global_resource R on U.Uid = R.Uid 
+									where u.SecurityAsset is null;
+
+									update u
+									set SecurityAsset = 'G',
+									SecurityAssetID = G.ID
+									from #ResourceUid U
+									inner join [Group] G on U.Uid = G.Uid 
+									where u.SecurityAsset is null;
+								end
+
+								select @InvalidUid = substring(STRING_AGG(cast(uid as nvarchar(40)),','),1,3500) 
+								from #ResourceUid
+								where SecurityAssetID is null;
+
+								select @AlreadyAssignUid = substring(STRING_AGG(cast(T.uid as nvarchar(40)),','),1,3500) 
+								from ResponsibilityTypeRelationOverrideItem ro
+								inner join #ResourceUid T on ro.SecurityAsset = T.SecurityAsset and ro.SecurityAssetID = T.SecurityAssetID and T.Type = 'T'
+								where  ro.ResponsibilityTypeID = @responsibilityid and ro.AssetID = @assetid 
+								and not exists(select 1 
+												from  #ResourceUid F 
+												where ro.SecurityAsset = F.SecurityAsset and ro.SecurityAssetID = F.SecurityAssetID and F.Type = 'F');
+
+								if (@InvalidUid is not null and @InvalidUid != '')
+								begin
+									set @ReturnStr = @ReturnStr +  '<InvalidUid> : ' +  @InvalidUid + '<NEWLINE>';
+								end
+
+								if (@AlreadyAssignUid is not null and @AlreadyAssignUid != '')
+								begin
+									set @ReturnStr = @ReturnStr +  '<AlreadyAssigned> : ' +  @AlreadyAssignUid;
+								end
+
+								select @ReturnStr;
+
+							", new {
+									fromResourceuid = model.ResourceUid.Distinct().AsTableValuedParameter("dbo.UidTable",new List<string>() { "FromResourceUid" }),
+									toResourceuid = model.ResourceUid.Distinct().AsTableValuedParameter("dbo.UidTable",new List<string>() { "ToResourceUid" }),
+									assetid,
+									responsibilityid,
+									}).FirstOrDefault();
+		}
+
+
 		public IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid)
 		{
 			return CompanyContext.Query<SecurityAssetModel>(@"select 
