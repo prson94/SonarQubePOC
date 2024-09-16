@@ -888,8 +888,8 @@ namespace d360.model.DataAccessLayer
 								select @ReturnStr;
 
 							", new {
-									fromResourceuid = model.ResourceUid.Distinct().AsTableValuedParameter("dbo.UidTable",new List<string>() { "FromResourceUid" }),
-									toResourceuid = model.ResourceUid.Distinct().AsTableValuedParameter("dbo.UidTable",new List<string>() { "ToResourceUid" }),
+									fromResourceuid = model.ResourceUid.AsTableValuedParameter("dbo.UidTable",new List<string>() { "FromResourceUid" }),
+									toResourceuid = model.ResourceUid.AsTableValuedParameter("dbo.UidTable",new List<string>() { "ToResourceUid" }),
 									assetid,
 									responsibilityid,
 									}).FirstOrDefault();

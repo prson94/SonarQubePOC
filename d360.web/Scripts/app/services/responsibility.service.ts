@@ -7,8 +7,7 @@ import {
     ResponsibilityItemDetailV2,
     ResponsibilityOverrideDeleteModel,
 	ResponsibilityOverridePostModel,
-	ResponsibilityOverridePutModel,
-	PutResourceUids
+	ResponsibilityOverridePutModel
 } from '../models/responsibility.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
