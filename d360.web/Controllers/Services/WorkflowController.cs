@@ -3953,7 +3953,7 @@ namespace d360.web.Controllers.Services
 						{
 							detail.ItemSettings.emails = new { email = new JArray() };
 						}
-					}
+					}					
 
 					var resourceIds = new List<int>();
 
@@ -4076,6 +4076,28 @@ namespace d360.web.Controllers.Services
 
 						SetWorkFlowStepRelationshipAssets(form);
 					}
+				}
+
+				if (detail.ActivityType == WorkflowActivityType.HTTPRequest)
+				{
+					var eventInfo = new EventObjectInfo
+					{
+						Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object),
+						ObjectID = detail.ObjectID,
+						ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.ObjectType),
+						ObjectTypeID = detail.ObjectTypeID,
+					};
+
+					dynamic request = detail.Settings.HTTPRequest;
+
+					if (request.Body != null)
+					{
+						request.Body = await Company.ProcessMessageTokens(request.Body.ToString(), eventInfo, Company.CurrentCompanyDomain, itemStep);
+					}
+
+					request.Url = await Company.ProcessMessageTokens(request.Url.ToString(), eventInfo, Company.CurrentCompanyDomain, itemStep, false, false, false);
+
+					detail.Settings.HTTPRequest = request;
 				}
 			}
 			catch (Exception ex)
