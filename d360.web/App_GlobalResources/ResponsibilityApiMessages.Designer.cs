@@ -178,6 +178,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility override already attached..
+        /// </summary>
+        public static string ReponsibilityOverrideResourceExists {
+            get {
+                return ResourceManager.GetString("ReponsibilityOverrideResourceExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsibility Type not valid for current Asset..
         /// </summary>
         public static string ReposibilityTypeNotValidForAsset {

@@ -6,7 +6,8 @@ import {
     ResponsibilityItem,
     ResponsibilityItemDetailV2,
     ResponsibilityOverrideDeleteModel,
-    ResponsibilityOverridePostModel
+	ResponsibilityOverridePostModel,
+	ResponsibilityOverridePutModel
 } from '../models/responsibility.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -73,12 +74,12 @@ export class ResponsibilityService extends BaseObservableService implements IRes
             );
 	}
 
-	putResponsibilityOverride(assetUid: string, responsibilityUid: string, responsibilityOverridePostModel: ResponsibilityOverridePostModel): Observable<JsonResult> {
+	putResponsibilityOverride(assetUid: string, responsibilityUid: string, responsibilityOverridePutModel: ResponsibilityOverridePutModel): Observable<JsonResult> {
 		const httpOptions = {
 			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 		};
 
-		return this.http.put(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, JSON.stringify(responsibilityOverridePostModel), httpOptions)
+		return this.http.put(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, JSON.stringify(responsibilityOverridePutModel), httpOptions)
 			.pipe(
 				map((response) => <JsonResult>response),
 				catchError((err) => this.handleError(err))

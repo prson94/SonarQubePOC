@@ -28,6 +28,17 @@ export class ResponsibilityItem {
 export class ResponsibilityOverridePostModel {
     ResourceUid: string[];
     Description: string;
+	OrgResourceUid: string[];
+}
+
+export class ResponsibilityOverridePutModel {
+	ResourceUid: PutResourceUids[];
+	Description: string;
+}
+
+export class PutResourceUids {
+	FromResourceUid: string;
+	ToResourceUid: string;
 }
 
 export class ResponsibilityOverrideDeleteModel {

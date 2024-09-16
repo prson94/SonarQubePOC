@@ -984,7 +984,26 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string Description { get; set; }
+
 	}
+
+	[DataContract]
+	public class ResponsibilityOverridePutModel
+	{
+		[DataMember]
+		public List<PutResourceUids> ResourceUid { get; set; }
+
+		[DataMember]
+		public string Description { get; set; }
+	}
+
+	public class PutResourceUids
+	{
+		public Guid FromResourceUid { get; set; }
+
+		public Guid ToResourceUid { get; set; }
+	}
+
 
 	[DataContract]
 	public class ResponsibilityOverrideDeleteModel

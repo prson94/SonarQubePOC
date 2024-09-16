@@ -3,7 +3,9 @@ import {
 	ResponsibilityEditorModel,
 	ResponsibilityItemDetailV2,
 	ResponsibilityItemV2,
-	ResponsibilityOverridePostModel
+	ResponsibilityOverridePostModel,
+	ResponsibilityOverridePutModel,
+	PutResourceUids
 } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { SelectItem, SharedModule } from 'primeng/api';
@@ -62,6 +64,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 	private resources: SelectItem[] = [];
 	private IsResponsibilityDisabled: boolean = false;
 	private resouceAssigned: string;
+	private orgResourceUid: string;
 
 	constructor(
 		private responsibilityService: ResponsibilityService,
@@ -85,6 +88,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 		this.itemToSave.AssetUid = this.assetUid;
 		this.itemToSave.Description = this.item.Description;
 		this.itemToSave.ResourceUid = this.item.GroupResourceUid ?? this.item.ResourceUid;
+		this.orgResourceUid = this.itemToSave.ResourceUid;
 
 		this.setResouceAssigned();
 
@@ -224,11 +228,15 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 	}
 
 	private putRequest() {
-		const responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
-		responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
-		responsibilityOverridePostModel.Description = this.itemToSave.Description;
+		const responsibilityOverridePutModel: ResponsibilityOverridePutModel = new ResponsibilityOverridePutModel();
+		const putResourceUids: PutResourceUids = new PutResourceUids();
+		putResourceUids.FromResourceUid = this.orgResourceUid;
+		putResourceUids.ToResourceUid = this.itemToSave.ResourceUid;
 
-		this.responsibilityService.putResponsibilityOverride(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
+		responsibilityOverridePutModel.ResourceUid = [putResourceUids];
+		responsibilityOverridePutModel.Description = this.itemToSave.Description;
+
+		this.responsibilityService.putResponsibilityOverride(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePutModel)
 			.subscribe((data) => {
 				this.isLoading = false;
 				data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
