@@ -60,7 +60,7 @@ namespace d360.web.Models
 	public class UserAuthentication
 	{
 		public Dictionary<string, string> CustomClaims { get; set; } = new Dictionary<string, string>();
-		public string Email { get; set; }
+		public string Username { get; set; }
 		public string FirstName { get; set; }
 		public Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
 		public string LastName { get; set; }
@@ -131,7 +131,7 @@ namespace d360.web.Models
 						case ClaimType.Email:
 							if (!string.IsNullOrWhiteSpace(val))
 							{
-								Email = val;
+								Username = val;
 							}
 							break;
 						case ClaimType.FirstName:

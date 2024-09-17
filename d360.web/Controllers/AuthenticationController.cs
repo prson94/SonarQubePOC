@@ -259,7 +259,7 @@ namespace d360.web.Controllers
 							Company.Add(new GlobalReportingResource
 							{
 								LastLoggedInOn = companyResource.LastLoggedInOn,
-								Email = resource.Email,
+								Email = resource.Username,
 								FirstName = resource.FirstName,
 								LastName = resource.LastName,
 								IsAdministrator = false,
@@ -303,7 +303,7 @@ namespace d360.web.Controllers
 								Company.Add(new GlobalReportingResource
 								{
 									LastLoggedInOn = companyResource.LastLoggedInOn,
-									Email = resource.Email,
+									Email = resource.Username,
 									FirstName = resource.FirstName,
 									LastName = resource.LastName,
 									IsAdministrator = false,
@@ -620,7 +620,7 @@ namespace d360.web.Controllers
 										LastName = resource.LastName,
 										ResourceID = resource.ID,
 										uid = resource.Uid,
-										Username = resource.Email,
+										Username = resource.Username,
 										IsNew = true
 									}
 								};
@@ -1032,7 +1032,7 @@ namespace d360.web.Controllers
                 };
 
                 return await parseUserInfoAndLogin(
-					userAuth.Email, userAuth.FirstName, userAuth.LastName,
+					userAuth.Username, userAuth.FirstName, userAuth.LastName,
 					userAuth.Groups, userAuth.CustomClaims,
                     redirectUrl, addOpenIdTokenToContext);
             }
