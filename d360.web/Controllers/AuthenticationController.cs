@@ -151,14 +151,14 @@ namespace d360.web.Controllers
 
             if (!string.IsNullOrEmpty(eMail))
             {
-				eMail= eMail.ToLower();
+				eMail= eMail.ToLowerInvariant();
 
-				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLower();
+				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLowerInvariant();
 
-				resource = Community.Filter<Resource>(i => i.Email.ToLower() == eMail).SingleOrDefault();
+				resource = Community.Filter<Resource>(i => i.Email.ToLowerInvariant() == eMail).SingleOrDefault();
 				if (resource == null)
 				{
-					resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
+					resource = Community.Filter<Resource>(i => i.Username.ToLowerInvariant() == userName).SingleOrDefault();
 				}
 
 				//If there is a domain whitelist, make sure the user has access
