@@ -327,6 +327,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 			resourceTable.Columns.Add("ItemNumber", typeof(int));
 			resourceTable.Columns.Add("ResourceID", typeof(int));
 			resourceTable.Columns.Add("Username", typeof(string));
+			resourceTable.Columns.Add("Email", typeof(string));
 			resourceTable.Columns.Add("uid", typeof(Guid));
 
 			userTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -368,9 +369,13 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 
 				var row = resourceTable.NewRow();
 
+				user.Username = (string.IsNullOrWhiteSpace(user.Username) ? user.Email : user.Username);
+				user.Email = (string.IsNullOrWhiteSpace(user.Email) ? user.Username : user.Email);
+
 				row["ExecutionID"] = executionID;
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
+				row["email"] = user.Email;
 				if (user.uid.HasValue)
 				{
 					row["uid"] = user.uid;
@@ -397,6 +402,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 							ExecutionID uniqueidentifier,
 							ItemNumber int,
 							Username nvarchar(500),
+							Email nvarchar(500),
 							ResourceID int,
 							[uid] uniqueidentifier,
 							CompanyResourceState int
@@ -411,16 +417,18 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 					bulkCopy.ColumnMappings.Add("Username", "Username");
+					bulkCopy.ColumnMappings.Add("Email", "Email");
 					bulkCopy.ColumnMappings.Add("uid", "uid");
 
 					await bulkCopy.WriteToServerAsync(resourceTable);
 
 					await CommunityContext.Connection.ExecuteAsync(@"
 						update  U
-						set     U.ResourceID = coalesce(R2.ID, R.ID)
+						set     U.ResourceID = coalesce(R2.ID, R.ID, R3.ID)
 						from    #UserResources U
-								left join [Resource] R on R.Email = U.Username
-								left join [Resource] R2 on R2.[uid] = U.[uid];
+								left join [Resource] R on R.Username = U.Username
+								left join [Resource] R2 on R2.[uid] = U.[uid]
+								left join [Resource] R3 on R.Email = U.Email;
 
 						update  U
 						set U.CompanyResourceState = R.[State],
@@ -625,6 +633,18 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 					messages.Add(MemberShipErrors.InvalidEmail);
 				}
 				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
+				{
+					success = false;
+					messages.Add(MemberShipErrors.UsernameDuplicate);
+				}
+
+
+				if (string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
+				{
+					success = false;
+					messages.Add(MemberShipErrors.InvalidEmail);
+				}
+				else if (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
 				{
 					success = false;
 					messages.Add(MemberShipErrors.UsernameDuplicate);
@@ -952,7 +972,7 @@ where	ExecutionID = @executionID",
 								{
 									FirstName = upsertUser.FirstName,
 									LastName = upsertUser.LastName,
-									Email = upsertUser.Username,
+									Email = upsertUser.Email,
 									Username = upsertUser.Username,
 									Password = PasswordHelper.HashPassword(upsertUser.Password)
 								};
@@ -971,7 +991,7 @@ where	ExecutionID = @executionID",
 									resource.FirstName = upsertUser.FirstName;
 									resource.LastName = upsertUser.LastName;
 
-									if (string.Compare(upsertUser.Username, resource.Username, true) != 0)
+									if ((string.Compare(upsertUser.Username, resource.Username, true) != 0) || string.Compare(upsertUser.Email, resource.Email, true) != 0)
 									{
 										//disallow changing the email/username if the current user is not an admin
 										if (CompanyContext.CurrentResourceIsAdmin == false)
@@ -985,7 +1005,11 @@ where	ExecutionID = @executionID",
 										}
 
 										//check if the resource already exists in community
-										var existing = CommunityContext.Filter<Resource>(i => i.Email == upsertUser.Username && i.Uid != upsertUser.uid).FirstOrDefault();
+										var existing = CommunityContext.Filter<Resource>(i => i.Email == upsertUser.Email  && i.Uid != upsertUser.uid).FirstOrDefault();
+										if (existing == null)
+										{
+											existing = CommunityContext.Filter<Resource>(i => i.Username == upsertUser.Username	 && i.Uid != upsertUser.uid).FirstOrDefault();
+										}
 
 										if (existing != null)
 										{
@@ -998,7 +1022,7 @@ where	ExecutionID = @executionID",
 										}
 
 										resource.Email = upsertUser.Username;
-										resource.Username = upsertUser.Username;
+										resource.Username = upsertUser.Email;
 									}
 
 									if (!string.IsNullOrEmpty(upsertUser.Password))
@@ -1072,7 +1096,7 @@ where	ExecutionID = @executionID",
 								{
 									globalResource.FirstName = upsertUser.FirstName;
 									globalResource.LastName = upsertUser.LastName;
-									globalResource.Email = upsertUser.Username;
+									globalResource.Email = upsertUser.Email;
 									globalResource.IsAdministrator = upsertUser.IsAdministrator;
 									globalResource.State = upsertUser.State ?? companyResource.State;
 									globalResource.UpdatedOn = DateTime.UtcNow;
@@ -1085,7 +1109,7 @@ where	ExecutionID = @executionID",
 									{
 										IsAdministrator = upsertUser.IsAdministrator,
 										ResourceID = (int)upsertUser.ResourceID,
-										Email = upsertUser.Username,
+										Email = upsertUser.Email,
 										FirstName = upsertUser.FirstName,
 										LastName = upsertUser.LastName,
 										State = upsertUser.State ?? companyResource.State,

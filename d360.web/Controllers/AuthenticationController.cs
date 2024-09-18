@@ -142,20 +142,27 @@ namespace d360.web.Controllers
         }
 
         private async Task<ActionResult> parseUserInfoAndLogin(
-            string userName, string firstName, string lastName,
+			string eMail, string userName, string firstName, string lastName,
             Dictionary<string,List<string>> groups = null, Dictionary<string, string> customClaims = null,
             string relayState = null,
             System.Action customAction = null)
         {
             Resource resource = null;
 
-            if (!string.IsNullOrEmpty(userName))
+            if (!string.IsNullOrEmpty(eMail))
             {
-                userName = userName.ToLower();
-                resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
-                
-                //If there is a domain whitelist, make sure the user has access
-                string domainWhitelistString = await GetCachedSettingValueById<string>(Setting.EmailDomainWhitelist);
+				eMail= eMail.ToLowerInvariant();
+
+				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLowerInvariant();
+
+				resource = Community.Filter<Resource>(i => i.Email.ToLowerInvariant() == eMail).SingleOrDefault();
+				if (resource == null)
+				{
+					resource = Community.Filter<Resource>(i => i.Username.ToLowerInvariant() == userName).SingleOrDefault();
+				}
+
+				//If there is a domain whitelist, make sure the user has access
+				string domainWhitelistString = await GetCachedSettingValueById<string>(Setting.EmailDomainWhitelist);
                 bool isDomainWhitelisted;
                 
                 //For internal use, bypass the whitelist
@@ -168,7 +175,7 @@ namespace d360.web.Controllers
                 {
                     isDomainWhitelisted = false;
                     var domainWhitelist = domainWhitelistString.Split(',');
-                    var userEmail = new MailAddress(userName);
+                    var userEmail = new MailAddress(eMail);
                     var userDomain = userEmail.Host;
 
                     foreach(var domain in domainWhitelist)
@@ -213,11 +220,11 @@ namespace d360.web.Controllers
 
                 if (resource == null)
                 {
-					Log.LogInformation($"Did not find resource account for Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
+					Log.LogInformation($"Did not find resource account for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
 
-                    if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+                    if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(eMail) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                     {
-						Log.LogInformation($"Now creating resource account for Username: {userName}.");
+						Log.LogInformation($"Now creating resource account for Username: {userName} and Email: {eMail}.");
 
                         if (string.IsNullOrEmpty(firstName))
                         {
@@ -231,7 +238,7 @@ namespace d360.web.Controllers
 
                         resource = new Resource
                         {
-                            Email = userName,
+                            Email = eMail,
                             FirstName = firstName,
                             LastName = lastName,
                             Password = PasswordHelper.CreateRandomPassword(),
@@ -270,7 +277,7 @@ namespace d360.web.Controllers
 							});
 						}
 
-						Log.LogTrace($"Finished creating resource account for Username: {userName}.");
+						Log.LogTrace($"Finished creating resource account for Username: {userName} and Email: {eMail}.");
                     }
                 }
                 else
@@ -279,7 +286,7 @@ namespace d360.web.Controllers
                     
                     if (companyResource == null)
                     {
-						Log.LogInformation($"User not associated to tenant. Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
+						Log.LogInformation($"User not associated to tenant. Username: {userName}. Other info: (Email : {eMail}, First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
 
 						if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                         {
@@ -321,7 +328,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}.");
+						Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}, Email: {eMail} .");
 
 						if (companyResource.State == CompanyResourceState.Active)
                         {
@@ -371,7 +378,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogWarning($"User attempting to log in does not have access. Username: {userName}.");
+						Log.LogWarning($"User attempting to log in does not have access. Username: {userName}, Email: {eMail}.");
 						return Redirect("/noaccess");
                     }
                 }
@@ -379,7 +386,7 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-				Log.LogTrace($"Resource account exists for Username: {userName}. Now authorizing with cookie.");
+				Log.LogTrace($"Resource account exists for Username: {userName}, Email: {eMail} . Now authorizing with cookie.");
 
 				if (resource.ID > 0)
                 {
@@ -527,21 +534,35 @@ namespace d360.web.Controllers
                     }
                     catch (Exception ex)
                     {
-						Log.LogError(ex, $"AssertionConsumerService => Error processing custom claims for: {userName}.");
+						Log.LogError(ex, $"AssertionConsumerService => Error processing custom claims for: {userName}, email: {eMail} .");
                     }
 
                     #endregion
 
                     var ticket = new FormsAuthenticationTicket(
                         1,
-                        userName,
+                        eMail,
                         DateTime.Now,
                         DateTime.Now.AddMinutes(sessionLengthMinutes),
                         false,
                         $"userName, {Request.UserAgent}",
                         FormsAuthentication.FormsCookiePath
                     );
-                    var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+
+					if (ticket == null)
+					{
+						ticket = new FormsAuthenticationTicket(
+							1,
+							userName,
+							DateTime.Now,
+							DateTime.Now.AddMinutes(sessionLengthMinutes),
+							false,
+							$"userName, {Request.UserAgent}",
+							FormsAuthentication.FormsCookiePath
+						);
+					}
+
+					var encryptedTicket = FormsAuthentication.Encrypt(ticket);
                     var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
                     {
                         HttpOnly = true,
@@ -589,7 +610,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-					Log.LogError($"Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}");
+					Log.LogError($"Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}, Email is: {eMail}");
                 }
             }
 
@@ -620,7 +641,8 @@ namespace d360.web.Controllers
 										LastName = resource.LastName,
 										ResourceID = resource.ID,
 										uid = resource.Uid,
-										Username = resource.Email,
+										Username = resource.Username,
+										Email = resource.Email,
 										IsNew = true
 									}
 								};
@@ -835,7 +857,8 @@ namespace d360.web.Controllers
 
                 // Get the subject name identifier.
                 string userName = null;
-                string firstName = null;
+				string eMail = null;
+				string firstName = null;
                 string lastName = null;
 				Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
 
@@ -859,6 +882,9 @@ namespace d360.web.Controllers
 						switch(claim.ClaimType)
 						{
 							case ClaimType.Email:
+								eMail= attValue;
+								break;
+							case ClaimType.Username:
 								userName = attValue;
 								break;
 							case ClaimType.FirstName:
@@ -881,7 +907,7 @@ namespace d360.web.Controllers
 						customClaims.Add(attName, attValue);
 					}
                 }
-				Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, FirstName: {firstName}, LastName: {lastName}");
+				Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, Email :  {eMail}, FirstName: {firstName}, LastName: {lastName}");
 
                 System.Action addSamlAssertionToCookie = () =>
                 {
@@ -897,7 +923,7 @@ namespace d360.web.Controllers
                     }
                 };
 
-                return await parseUserInfoAndLogin(userName, firstName, lastName, groups, customClaims, relayState, addSamlAssertionToCookie);
+                return await parseUserInfoAndLogin(eMail, userName, firstName, lastName, groups, customClaims, relayState, addSamlAssertionToCookie);
             }
             else
             {
@@ -1032,7 +1058,7 @@ namespace d360.web.Controllers
                 };
 
                 return await parseUserInfoAndLogin(
-					userAuth.Email, userAuth.FirstName, userAuth.LastName,
+					userAuth.Email, userAuth.Username,  userAuth.FirstName, userAuth.LastName,
 					userAuth.Groups, userAuth.CustomClaims,
                     redirectUrl, addOpenIdTokenToContext);
             }

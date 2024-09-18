@@ -374,8 +374,12 @@ namespace d360.model
             password = PasswordHelper.HashPassword(password);
             r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
 
-            // Check that resource has access to this company.
-            if (r != null)
+			if (r == null)
+			{
+				r = Filter<Resource>(i => i.Email == username && i.Password == password).SingleOrDefault();
+			}
+			// Check that resource has access to this company.
+			if (r != null)
             {
                 CompanyResource companyResource = Filter<CompanyResource>(i => i.CompanyID == CurrentCompanyID && i.ResourceID == r.ID).SingleOrDefault();
                 if (companyResource != null)
