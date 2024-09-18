@@ -133,9 +133,9 @@ namespace d360.web
 						var userAuth = new UserAuthentication();
 						userAuth.ParseClaims(claimMappings, allClaims, payload);
 
-						if (userAuth.Username== null && jwtClaim != null && jwtClaim.Identity != null && !string.IsNullOrEmpty(jwtClaim.Identity.Name))
+						if (userAuth.Email == null && jwtClaim != null && jwtClaim.Identity != null && !string.IsNullOrEmpty(jwtClaim.Identity.Name))
 						{
-							userAuth.Username = jwtClaim.Identity.Name;
+							userAuth.Email = jwtClaim.Identity.Name;
 						}
 
 						userCacheKey += $"E_{jwtClaim.Identity.Name.ToLower()}";
@@ -149,7 +149,7 @@ namespace d360.web
 						}
 						if (u != null)
 						{
-							await parseLoginInfoAndClaims(companyID, userAuth.FirstName, userAuth.LastName, userAuth.Username, userAuth.Groups);
+							await parseLoginInfoAndClaims(companyID, userAuth.FirstName, userAuth.LastName, userAuth.Email, userAuth.Groups);
 						}
 					}
 				}

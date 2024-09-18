@@ -28,7 +28,9 @@ namespace d360.core.entities.Membership
     {
         Guid? uid { get; set; }
 
-        string Username { get; set; }
+		string Email { get; set; }
+
+		string Username { get; set; }
 
         string FirstName { get; set; }
 
@@ -75,7 +77,10 @@ namespace d360.core.entities.Membership
         [DataMember]
         public string Username { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public string Email { get; set; }
+		
+		[DataMember]
         public string FirstName { get; set; }
 
         [DataMember]
@@ -110,7 +115,10 @@ namespace d360.core.entities.Membership
         [DataMember]
         public Guid? uid { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public string Email { get; set; }
+		
+		[DataMember]
         public string Username { get; set; }
 
         [DataMember]
