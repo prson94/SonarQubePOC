@@ -151,9 +151,9 @@ namespace d360.web.Controllers
 
 			if (!string.IsNullOrEmpty(eMail))
             {
-				eMail = eMail.ToLower();
+				eMail = eMail.ToLowerInvariant();
 
-				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLower();
+				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLowerInvariant();
 
 				resource = Community.Filter<Resource>(i => i.Email.ToLower() == eMail).SingleOrDefault();
 				if (resource == null)
