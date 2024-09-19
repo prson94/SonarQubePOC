@@ -61,7 +61,7 @@ namespace d360.core.entities.Membership
 
         public string Description { get; set; }
 
-        public Guid PrimaryOwnerUid { get; set; }
+        public Guid? PrimaryOwnerUid { get; set; }
 
         public Guid? SecondaryOwnerUid { get; set; }
 
