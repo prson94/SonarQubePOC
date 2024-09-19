@@ -741,6 +741,8 @@ end
 									drop table if exists #tempcalasset;
 									drop table if exists #AssetActiveKey;
 
+									create table #AssetActiveKey (Uid uniqueidentifier,ActiveKey varchar(32))
+
 									----Below statement to get first fieldtypeid primary key column order by columnorder
 									select top 1    @fieldtypeid =  ft.ID
 									from            #BulkExecutionField f
@@ -773,9 +775,9 @@ end
 									-- hash value only required asset only with all primary key 
 									if exists (select 1 from FieldType FT where FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1 and type = 'Counter')
 										begin
+											insert into #AssetActiveKey(Uid,ActiveKey)
 											select		t.AssetUid [Uid],
 														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-											into		#AssetActiveKey
 											from		#tempcalasset t
 														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
 														left join Asset P on P.ID = I.SubjectAssetID 
@@ -786,9 +788,9 @@ end
 										end
 									else
 										begin
+											insert into #AssetActiveKey(Uid,ActiveKey)
 											select		t.AssetUid [Uid],
 														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-											into		#AssetActiveKey
 											from		#tempcalasset t
 														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
 														left join Asset P on P.ID = I.SubjectAssetID 
