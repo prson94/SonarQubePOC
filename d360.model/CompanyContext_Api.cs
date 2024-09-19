@@ -1632,6 +1632,7 @@ where   ER.ExecutionID = @ExecutionID
 						//models with more levels comes with multiple name fields with same FieldTypeId
 						//we are using BulkExecutionFieldUnique temp table with unique field values, where only Name of asset is used to build hash values
 						keyHashCalulationScript = $@"
+										declare @FieldDataType nvarchar(50);
 										drop table if exists #BulkExecutionFieldUnique
 
 										;with unique_item_field as (
