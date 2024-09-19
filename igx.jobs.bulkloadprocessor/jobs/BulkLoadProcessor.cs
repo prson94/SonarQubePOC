@@ -1017,7 +1017,7 @@ where id = @loadId;
 
 merge into  reporting.Global_Resource T
 using       (
-            select  ResourceID, 
+            select  distinct ResourceID, 
                     [uid],
                     LastName, 
                     FirstName, 
@@ -1047,7 +1047,7 @@ when not matched by target then
 merge	into 
 		Asset as A
 using	(
-		select	R.ResourceID,
+		select	distinct R.ResourceID,
 				RT.ID as AssetTypeID,
 				coalesce(R.UpdatedOn,R.CreatedOn,@CreateDate) UpdatedOn ,
 				coalesce(R.CreatedOn,R.UpdatedOn,@CreateDate)  CreatedOn,
