@@ -372,6 +372,10 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 				user.Username = (string.IsNullOrWhiteSpace(user.Username) ? user.Email : user.Username);
 				user.Email = (string.IsNullOrWhiteSpace(user.Email) ? user.Username : user.Email);
 
+				user.Username = (string.IsNullOrWhiteSpace(user.Username) ? "" : user.Username);
+				user.Email = (string.IsNullOrWhiteSpace(user.Email) ? "" : user.Email);
+
+
 				row["ExecutionID"] = executionID;
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
@@ -638,13 +642,12 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 					messages.Add(MemberShipErrors.UsernameDuplicate);
 				}
 
-
-				if (string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
+				if (user.Username != user.Email && ( string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b")))
 				{
 					success = false;
 					messages.Add(MemberShipErrors.InvalidEmail);
 				}
-				else if (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
+				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
 				{
 					success = false;
 					messages.Add(MemberShipErrors.UsernameDuplicate);
@@ -1021,8 +1024,8 @@ where	ExecutionID = @executionID",
 											continue;
 										}
 
-										resource.Email = upsertUser.Username;
-										resource.Username = upsertUser.Email;
+										resource.Email = upsertUser.Email;
+										resource.Username = upsertUser.Username;
 									}
 
 									if (!string.IsNullOrEmpty(upsertUser.Password))
