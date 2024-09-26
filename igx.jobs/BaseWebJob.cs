@@ -47,10 +47,17 @@ namespace igx.jobs
 			return lvl;
 		}
 
-		public List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()
+		public List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot(string region = null)
 		{
 			var lvl = GetEnvironmentLevelCurrentSlot();
-			return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(ConnString).Where(i => i.EnvironmentLevel == lvl).ToList();
+			if (string.IsNullOrEmpty(region))
+			{
+				return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(ConnString).Where(i => i.EnvironmentLevel == lvl).ToList();
+			}
+			else 
+			{
+				return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(ConnString).Where(i => i.EnvironmentLevel == lvl && i.RegionCode == region).ToList();
+			}
 		}
 
 		public string GetCompanyConnectionString(int companyID)

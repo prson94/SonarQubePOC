@@ -20,12 +20,15 @@ namespace igx.jobs.responsibilityruleprocessor
 		readonly ICachingProvider Cache;
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
+		readonly string Region;
 
 		public ResponsibilityRuleProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
 		{
 			Cache = cache;
 			Mail = mail;
 			Queue = queue;
+			
+			Region = config[constants.Setting.Region];
 		}
 
 		[FunctionName(FUNCTION_NAME)]
@@ -36,7 +39,7 @@ namespace igx.jobs.responsibilityruleprocessor
 				// increase the default dapper timeout from 30 to 90 seconds
 				Dapper.SqlMapper.Settings.CommandTimeout = 90;
 
-				var companies = GetCompaniesByCurrentSlot();
+				var companies = GetCompaniesByCurrentSlot(Region);
 
 				foreach (var c in companies)
 				{
