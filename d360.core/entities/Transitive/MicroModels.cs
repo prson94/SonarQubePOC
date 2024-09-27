@@ -57,9 +57,9 @@ namespace d360.core.entities
 
         public string SearchServer { get; set; }
 
-        public string EventTopic { get; set; }
-
 		public string Region { get; set; }
+
+		public string RegionCode { get; set; }
 
 		public string UrlPrefix { get; set; }
 

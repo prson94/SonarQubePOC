@@ -92,11 +92,7 @@
     <Compile Include="jobs\ExecutionProcessor.cs" />
     <Compile Include="jobs\BaseTaskWebJob.cs" />
     <Compile Include="jobs\UserProcessor.cs" />
-    <Compile Include="models\AuditCustomDataFieldModel.cs" />
-    <Compile Include="models\AuditCustomDataModel.cs" />
     <Compile Include="models\ObjectIndexCollectionModel.cs" />
-    <Compile Include="models\QueueTask.cs" />
-    <Compile Include="models\TaskMessage.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="program\ChangeLogTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

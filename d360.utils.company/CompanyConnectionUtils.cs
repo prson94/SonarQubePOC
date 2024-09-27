@@ -77,10 +77,10 @@ namespace d360.utils.company
                             ds.Username, 
                             ds.Password,                             
                             ds.SearchServer, 
-                            ds.EventTopic, 
                             c.EnvironmentLevel,
                             CDS.UrlPrefix,
                             c.Priority,
+                            ds.RegionCode,
 							ds.[Region]
                     from    company c 
                             inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
