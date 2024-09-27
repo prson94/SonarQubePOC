@@ -35,11 +35,9 @@ end
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'RegionCode')
 begin
-	alter table [dbo].[DatabaseServer] add [RegionCode] char(2) NULL
-	GO
-	update DatabaseServer set RegionCode = 'US'
-	GO
-	alter table [dbo].[DatabaseServer] alter column [RegionCode] char(2) NOT NULL	
+	alter table [dbo].[DatabaseServer] add [RegionCode] char(2) NULL;
+	update DatabaseServer set RegionCode = 'US';
+	alter table [dbo].[DatabaseServer] alter column [RegionCode] char(2) NOT NULL;
 end
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ResourceGroup')
