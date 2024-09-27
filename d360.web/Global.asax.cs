@@ -13,7 +13,7 @@ using System.Web.Mvc;
 
 namespace d360.web
 {
-	public static class AutofacExtensions
+    public static class AutofacExtensions
     {
 	    public static void AddWebApiExceptionHandler<T>(this ContainerBuilder builder)
 			where T: IWebApi2ExceptionHandler
