@@ -67,11 +67,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(dataTypes[2].ReadOnly == false);
             Assert.True(dataTypes[2].Name == "DateTime");
 
-            Assert.True(dataTypes[3].ID == DataType.File);
-            Assert.True(dataTypes[3].Description == "File");
-            Assert.True(dataTypes[3].ReadOnly == true);
-            Assert.True(dataTypes[3].Name == "File");
-
             Assert.True(dataTypes[4].ID == DataType.Hidden);
             Assert.True(dataTypes[4].Description == "Hidden");
             Assert.True(dataTypes[4].ReadOnly == true);
@@ -102,20 +97,10 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(dataTypes[9].ReadOnly == false);
             Assert.True(dataTypes[9].Name == "Text");
 
-            Assert.True(dataTypes[10].ID == DataType.Password);
-            Assert.True(dataTypes[10].Description == "Password");
-            Assert.True(dataTypes[10].ReadOnly == true);
-            Assert.True(dataTypes[10].Name == "Password");
-
             Assert.True(dataTypes[11].ID == DataType.Link);
             Assert.True(dataTypes[11].Description == "Link");
             Assert.True(dataTypes[11].ReadOnly == false);
             Assert.True(dataTypes[11].Name == "Link");
-
-            Assert.True(dataTypes[12].ID == DataType.UncLink);
-            Assert.True(dataTypes[12].Description == "UNC/File Link");
-            Assert.True(dataTypes[12].ReadOnly == true);
-            Assert.True(dataTypes[12].Name == "UncLink");
 
             Assert.True(dataTypes[13].ID == DataType.Color);
             Assert.True(dataTypes[13].Description == "Color Picker");
@@ -131,16 +116,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(dataTypes[15].Description == "Relation Lookup");
             Assert.True(dataTypes[15].ReadOnly == false);
             Assert.True(dataTypes[15].Name == "ComplexRelationLookup");
-
-            Assert.True(dataTypes[16].ID == DataType.Percentage);
-            Assert.True(dataTypes[16].Description == "Percentage");
-            Assert.True(dataTypes[16].ReadOnly == true);
-            Assert.True(dataTypes[16].Name == "Percentage");
-
-            Assert.True(dataTypes[17].ID == DataType.DataTableSelect);
-            Assert.True(dataTypes[17].Description == "DataTableSelect");
-            Assert.True(dataTypes[17].ReadOnly == true);
-            Assert.True(dataTypes[17].Name == "DataTableSelect");
 
             Assert.True(dataTypes[18].ID == DataType.OwnershipLookup);
             Assert.True(dataTypes[18].Description == "Ownership Lookup");

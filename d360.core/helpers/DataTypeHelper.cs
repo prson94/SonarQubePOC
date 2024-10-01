@@ -8,8 +8,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Path.ToString(),
                 DataType.RefListRelationship.ToString(),
@@ -24,8 +22,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString()
             };
@@ -37,8 +33,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.Path.ToString(),
@@ -52,8 +46,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.JSON.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Relationship.ToString(),
@@ -71,8 +63,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.JSON.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Relationship.ToString(),
@@ -89,8 +79,6 @@ namespace d360.core.helpers
             List<string> types = new List<string>() {
                 DataType.Path.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.JsonElement.ToString(),
@@ -105,8 +93,6 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(),
                 DataType.JSON.ToString(),
                 DataType.RefListRelationship.ToString()
             };
@@ -119,7 +105,6 @@ namespace d360.core.helpers
             List<string> types = dt.GetComputedFields();
             types.Add(DataType.JSON.ToString());
             types.Add(DataType.Link.ToString());
-            types.Add(DataType.Password.ToString());
             types.Add(DataType.Relationship.ToString());
             types.Add(DataType.Tag.ToString());
             types.Add(DataType.Score.ToString());

@@ -2042,7 +2042,6 @@ where	EG.Success is null
             DataType.Path.ToString(),
             DataType.ComplexRelationLookup.ToString(),
             DataType.FieldFromRelationship.ToString(),
-            DataType.DataTableSelect.ToString(),
             DataType.OwnershipLookup.ToString(),
             DataType.RefListRelationship.ToString(),
             DataType.JsonElement.ToString(),

@@ -21,9 +21,6 @@ namespace d360.core
         [Description("Date With Time")]
         DateTime = 1 << 2,
 
-        [Description("File"), ReadOnly(true)]
-        File = 1 << 3,
-
         [Description("Hidden"), ReadOnly(true)]
         Hidden = 1 << 4,
 
@@ -42,14 +39,8 @@ namespace d360.core
         [Description("Simple Text")]
         Text = 1 << 9,
 
-        [Description("Password"), ReadOnly(true)]
-        Password = 1 << 10,
-
         [Description("Link")]
         Link = 1 << 11,
-
-        [Description("UNC/File Link"), ReadOnly(true)]
-        UncLink = 1 << 12,
 
         [Description("Color Picker"), ReadOnly(true)]
         Color = 1 << 13,
@@ -59,12 +50,6 @@ namespace d360.core
 
         [Description("Relation Lookup")]
         ComplexRelationLookup = 1 << 17,
-
-        [Description("Percentage"), ReadOnly(true)]
-        Percentage = 1 << 18, // used for range of > 0 and < 1
-
-        [Description("DataTableSelect"), ReadOnly(true)]
-        DataTableSelect = 1 << 19,
 
         [Description("Ownership Lookup")]
         OwnershipLookup = 1 << 20,
@@ -192,12 +177,10 @@ namespace d360.core
                 case DataType.Color: return Enums.FieldType_ColorPicker;
                 case DataType.ComplexRelationLookup: return Enums.FieldType_RelationLookup;
                 case DataType.Counter: return Enums.FieldType_Counter;
-                case DataType.DataTableSelect: return Enums.FieldType_DataTableSelect;
                 case DataType.Date: return Enums.FieldType_Date;
                 case DataType.DateTime: return Enums.FieldType_DateTime;
                 case DataType.Decimal: return Enums.FieldType_Decimal;
                 case DataType.FieldFromRelationship: return Enums.FieldType_FieldFromRel;
-                case DataType.File: return Enums.FieldType_File;
                 case DataType.Hidden: return Enums.FieldType_Hidden;
                 case DataType.Html: return Enums.FieldType_Html;
                 case DataType.JSON: return Enums.FieldType_JSON;
@@ -207,15 +190,12 @@ namespace d360.core
                 case DataType.None: return Enums.FieldType_None;
                 case DataType.Number: return Enums.FieldType_Number;
                 case DataType.OwnershipLookup: return Enums.FieldType_OwnershipLookup;
-                case DataType.Password: return Enums.FieldType_Password;
                 case DataType.Path: return Enums.FieldType_AssetPath;
-                case DataType.Percentage: return Enums.FieldType_Percentage;
                 case DataType.RefListRelationship: return Enums.FieldType_ReferenceItemListFromRel;
                 case DataType.Relationship: return Enums.FieldType_Relationship;
                 case DataType.Score: return Enums.FieldType_Score;
                 case DataType.Tag: return Enums.FieldType_Tag;
                 case DataType.Text: return Enums.FieldType_SimpleText;
-                case DataType.UncLink: return Enums.FieldType_UNCLink;
 				case DataType.System: return Enums.FieldType_System;
 
 				default: throw new ArgumentOutOfRangeException("DataType");

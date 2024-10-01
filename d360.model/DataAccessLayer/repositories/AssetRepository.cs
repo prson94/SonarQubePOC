@@ -2291,8 +2291,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			var typesToAvoid = new List<string>() {
-				DataType.ComplexRelationLookup.ToString(),
-				DataType.DataTableSelect.ToString()
+				DataType.ComplexRelationLookup.ToString()
 			};
 
 			string ParentAssetTypeUidHeading = "Parent";
@@ -4559,7 +4558,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			var typesToAvoid = new List<string>() {
 				DataType.ComplexRelationLookup.ToString(),
-				DataType.DataTableSelect.ToString(),
 				DataType.OwnershipLookup.ToString()
 			};
 

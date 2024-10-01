@@ -895,7 +895,6 @@ namespace d360.model.DataAccessLayer
 				
 				var typesToAvoid = new List<string>() {
 					DataType.ComplexRelationLookup.ToString(),
-					DataType.DataTableSelect.ToString(),
 					DataType.OwnershipLookup.ToString()
 					};
 
