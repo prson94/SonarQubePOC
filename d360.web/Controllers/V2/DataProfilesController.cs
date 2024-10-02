@@ -37,10 +37,7 @@ namespace d360.web.Controllers.V2
         StringEnumController
     ]
     public class DataProfilesController : BaseV2ApiController
-    {
-		public bool SemanticTypesEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()); } }
-		private bool DataProfilesEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()); } }
-
+    {	
 		internal IAssetRepository AssetRepository;
         internal IDataProfileRepository DataProfiles;
         private readonly ISemanticsRepository SemanticsRepository;
@@ -81,13 +78,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfilesByAsset(Guid assetUid)
-        {
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-			}
-
-            var queryParams = Request.GetQueryNameValuePairs();
+        {	
+			var queryParams = Request.GetQueryNameValuePairs();
             var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
 
             if (validationResult.StatusCode != HttpStatusCode.OK)
@@ -120,12 +112,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfilesByIdentifier(string profileIdentifier)
-        {
-            if (!FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()))
-            {
-				return await sendConflictNotAccessible();
-			}
-
+        {            
             var queryParams = Request.GetQueryNameValuePairs();
             var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
 
@@ -287,11 +274,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_assetUid", "Allows filtering results based on an asset uid", DataType = "string", ParameterType = "query", Required = false),
 		]
         public async Task<IHttpActionResult> GetDataProfiles()
-        {
-            if (!DataProfilesEnabled)
-            {
-                return await sendConflictNotAccessible();
-            }
+        {            
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -363,12 +346,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_filter", "The filter expression used to filter ProfileSeries by assetUid (Uid),profileSetDate (DateTime),typeQualifier (Text),type (Text),ftaVersion (Text),freshness (Number),ProfileSource (Text)and ProfileType (Number) fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 		]
 		public async Task<IHttpActionResult> GetDataProfilesSeries()
-		{
-			if (!DataProfilesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-			
+		{			
 			try
 			{
 				var queryParams = Request.GetQueryNameValuePairs();
@@ -408,11 +386,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-			}				               
-
             var validationResult = ValidateDataProfileUpsertRequest(models, true);
             if (validationResult.StatusCode != HttpStatusCode.OK)
             {
@@ -447,11 +420,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
         {
-			if (!DataProfilesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}				
-
 			var validationResult = ValidateDataProfileUpsertRequest(models, false);
 
             if (validationResult.StatusCode != HttpStatusCode.OK)
@@ -491,10 +459,6 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
         {
             var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-			}
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -564,11 +528,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!DataProfilesEnabled)
-				{
-					return await sendConflictNotAccessible();
-				}
-
 				if (!Company.CurrentResourceIsAdmin)
 				{
 					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
@@ -681,11 +640,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-			}
-
             List<ValidationResult> validationResults = new List<ValidationResult>();
             foreach (var model in models)
             {
@@ -717,11 +671,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-            }
-
             List<ValidationResult> validationResults = new List<ValidationResult>();
             foreach (var model in models)
             {
@@ -754,11 +703,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteBulkDataProfilesAsync(List<AssetDataProfileDeleteModel> models)
         {
-			if (!DataProfilesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-
 			var execution = getApiExecution(models.Count, action: ApiExecutionAction.DeleteDataProfile);
             ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
 			return await sendExecutionProcessingResponse(executionInfo);
@@ -826,11 +770,6 @@ namespace d360.web.Controllers.V2
 
             try
             {              
-                if (!DataProfilesEnabled)
-                {
-					return await sendConflictNotAccessible();
-				}
-
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
                 var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
@@ -915,11 +854,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetMatchingAssetCount(Guid assetUid, string similarType)
         {
-            if (!DataProfilesEnabled)
-            {
-				return await sendConflictNotAccessible();
-            }
-
             var queryParams = Request.GetQueryNameValuePairs();
             var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
@@ -981,12 +915,7 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
             try
-            {
-                if (!SemanticTypesEnabled)
-                {
-					return await sendConflictNotAccessible();
-				}
-
+            {                
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
                 var isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
@@ -1411,11 +1340,6 @@ namespace d360.web.Controllers.V2
         {
             try
             {               
-                if (!SemanticTypesEnabled)
-                {
-					return await sendConflictNotAccessible();
-				}
-
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
                 string isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
@@ -1489,12 +1413,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
         {
-			if (!SemanticTypesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-
-            var queryParams = Request.GetQueryNameValuePairs();
+			var queryParams = Request.GetQueryNameValuePairs();
             var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
@@ -1510,11 +1429,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic base types.", typeof(List<SemanticBaseTypeInfo>)),
         ]
         public IHttpActionResult GetSemanticTypeBaseTypes()
-        {
-			if (!SemanticTypesEnabled)
-			{
-				return sendConflictNotAccessible().Result;
-			}
+        {			
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticBaseType.LocalDate.GetAsList()));
         }
 
@@ -1529,11 +1444,6 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeMatchTypes()
         {
-			if (!SemanticTypesEnabled)
-			{
-				return sendConflictNotAccessible().Result;
-			}
-
             var queryParams = Request.GetQueryNameValuePairs();
             var orderBy = "name";
 
@@ -1556,11 +1466,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetSemanticTypeStatuses()
         {
-			if (!SemanticTypesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-
             var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
             List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
             HttpResponseMessage response;
@@ -1639,11 +1544,6 @@ namespace d360.web.Controllers.V2
 
             try
             {
-				if (!SemanticTypesEnabled)
-				{
-					return await sendConflictNotAccessible();
-				}
-
                 var responseModels = await SemanticsRepository.PatchSemanticsAsync(requestModels);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
@@ -1688,11 +1588,6 @@ namespace d360.web.Controllers.V2
 
             try
             {
-				if (!SemanticTypesEnabled)
-				{
-					return await sendConflictNotAccessible();
-				}
-
                 var responseModels = await SemanticsRepository.PostSemanticsAsync(requestModels);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModels));
@@ -1734,11 +1629,6 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
         {
-			if (!SemanticTypesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-
             var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModels));
@@ -1764,11 +1654,6 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
         {
-			if (!SemanticTypesEnabled)
-			{
-				return await sendConflictNotAccessible();
-			}
-
             var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
 
             return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Semantic type removed." }));
