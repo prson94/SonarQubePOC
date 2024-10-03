@@ -141,7 +141,6 @@ namespace d360.model.DataAccessLayer
 			var fieldJoins = new DynamicQueryJoins();
 
 			string filteredIntersectAssets = "";
-			string prefilteredIntersectTypesTempTable = "";
 
 			//if filtered by asset uid we will include relationship type name and asset name
 			//both relationship type name and asset name depends on which side of relationship are we on
@@ -166,7 +165,6 @@ namespace d360.model.DataAccessLayer
 			var IntersectTempTables = new StringBuilder();
 
 			List<string> fiterIntersectType = new List<string>();
-			var applyfilteredIntersectTypes = false;
 
 			List<string> fiterIntersect = new List<string>();
 			var AddInnerIntersectType = false;
@@ -192,56 +190,6 @@ namespace d360.model.DataAccessLayer
 				whereStatements.Add(whereClause);
 			}
 
-			//Check Record Exist for No Read Asset
-			//1: Add Condition, 0: Not Add Condition
-			var responsibilitySQL = @$"select count(1) from (select top 1 rd.RuleID from dbo.responsibilitydetail rd
-										where abs(ResourceID) = @ResourceID and ((PermissionsBitMask & @permission) = 0)) a
-										option(recompile)";
-
-			var AddrightCondition = CompanyContext.Database.Connection.Query<int>(responsibilitySQL, new { ResourceID = CompanyContext.CurrentResourceID, permission = (int)Permission.ReadRelationships }).FirstOrDefault();
-			//Create Temporary table to store No Read Asset/AssetTypeID
-			if (AddrightCondition == 1)
-			{
-				populateNoReadSQL = $@"
-					declare @ResourceID int = @CurrentResourceID,
-							@permission int = @ReadPremission;
-
-					drop table if exists #TempNoPermissionObjects;
-					create table #TempNoPermissionObjects (
-						AssetID bigint,
-						AssetTypeID int
-					);
-					Create Clustered Index IX_TempNoPermissionObjects on #TempNoPermissionObjects(AssetID,AssetTypeID);
-
-					Insert into #TempNoPermissionObjects
-	select distinct 
-			AssetID,
-			AssetTypeID
-	from	ResponsibilityDetail 
-	where	ResourceID = @ResourceID 
-			and ((PermissionsBitMask & @permission) = 0)
-	option(recompile)
-
-	insert into #TempNoPermissionObjects
-	select	
-		A.ID as AssetID,
-		A.AssetTypeID
-	from
-		dbo.Asset A
-		inner join dbo.AssetType T on T.ID = A.AssetTypeID
-		left join #TempNoPermissionObjects e on e.AssetID = A.ID and e.AssetTypeID = A.AssetTypeID
-	where	
-		e.AssetID is null
-		and T.DefaultPermissions = 0 
-		and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
-		and not exists(select 1 from dbo.ResponsibilitySummary where AssetID = A.ID and ResourceID = @ResourceID)
-		and not exists(select 1 from dbo.ResponsibilitySummary where AssetTypeID = A.AssetTypeID and ResourceID = @ResourceID)
-	option(recompile)";
-
-				dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
-				dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
-			}
-
 			string baseTableSql(bool excludeFilterQueries = false)
 			{
 				return $@"
@@ -263,15 +211,6 @@ namespace d360.model.DataAccessLayer
 			bool filteringByFields = false;
 			int pageNumber = 1;
 			int pageSize = 250;
-
-			//use ISNULL(S.ID,-1)
-			//we need isnull as not in statment does not work well null values
-			//we need -1 to not match results when asset type id is null (Reference Lists)
-			if (AddrightCondition == 1)
-			{
-				whereStatements.Add(" not exists (select 1 from #TempNoPermissionObjects TNPO_A where TNPO_A.AssetID in (ISNULL(S.ID,-1),ISNULL(O.ID,-1)) and TNPO_A.AssetID > 0) ");
-				whereStatements.Add(" not exists (select 1 from #TempNoPermissionObjects TNPO_AT where TNPO_AT.AssetID = 0 and TNPO_AT.AssetTypeID in (ISNULL(S.AssetTypeID,-1),ISNULL(O.AssetTypeID,-1))) ");
-			}
 
 			if (queryParams != null)
 			{
@@ -545,85 +484,29 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
 						var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
+						dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
+						dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
+						var subjectClause = "";
+						var objectClause = "";
 
 						if (asset != null)
 						{
 							isFilteredByAssetUID = true;
-
+							subjectClause = "I.SubjectAssetID = cast(@assetId as bigint)";
+							objectClause = "I.ObjectAssetID = cast(@assetId as bigint)";
 							dbArgs.Add("@assetId", asset.ID);
 
-							filteredIntersectAssets = @$"
-
-							drop table if exists #tempassettypedata;
-
-							with rsdata as
-							(
-							select distinct AssetTypeID
-							from (
-							select I.ObjectAssetTypeID AssetTypeID
-							from [Intersect] I
-							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
-							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.SubjectAssetID = cast(@assetId as bigint)
-							union all
-							select I.SubjectAssetTypeID AssetTypeID
-							from [Intersect] I
-							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
-							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.ObjectAssetID = cast(@assetId as bigint)
-							) a
-							)
-							select rsdata.AssetTypeID,ATPath.[Path]
-							into #tempassettypedata
-							from rsdata
-							cross apply dbo.GetAssetTypeTextPathById(rsdata.AssetTypeID, ' > ') ATPath
-							option (recompile);
-
-							create index ix_tempassettypedata on #tempassettypedata(AssetTypeID) include ([Path]);
-
-							drop table if exists #filteredIntersectAssets;
-
-							create table #filteredIntersectAssets (ID int,RelationshipTypeName Nvarchar(4000),AssetPath Nvarchar(2000));
-							create clustered index ix_filteredIntersectAssets on #filteredIntersectAssets(ID);
-
-							insert into #filteredIntersectAssets
-							select  I.ID,
-									P.Name + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
-									ISNULL(AP.DisplayPath,OT2.Name) AssetPath
-							from [Intersect] I
-							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
-							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
-							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
-							inner join [Predicate] p on IT.PredicateID = P.ID
-							left join AssetPath AP on AP.Id = I.ObjectAssetID
-							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
-							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							where I.SubjectAssetID = cast(@assetId as bigint)
-							option(recompile);
-
-							insert into #filteredIntersectAssets
-							select  I.ID,
-									P.Inverse + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
-									ISNULL(AP.DisplayPath,ST2.Name) AssetPath
-							from [Intersect] I
-							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
-							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
-							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
-							inner join [Predicate] p on IT.PredicateID = P.ID
-							left join AssetPath AP on AP.Id = I.SubjectAssetID
-							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
-							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
-							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							where fia.id is null and I.ObjectAssetID = cast(@assetId as bigint)
-							option(recompile);
-							";
 						}
 						else
 						{
 							isFilteredByAssetTypeUID = true;
+							subjectClause = $"I.SubjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.SubjectAssetID = 0 ")}";
+							objectClause = $"I.ObjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.ObjectAssetID = 0 ")}";
 							var type = CompanyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 							dbArgs.Add("@assetTypeId", type.ID);
-							filteredIntersectAssets = @$"
+						}
+
+						filteredIntersectAssets = @$"
 
 							drop table if exists #tempassettypedata;
 
@@ -635,14 +518,13 @@ namespace d360.model.DataAccessLayer
 							from [Intersect] I
 							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
 							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.SubjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.SubjectAssetID = 0 ")}
-
+							where {subjectClause}
 							union all
 							select I.SubjectAssetTypeID AssetTypeID
 							from [Intersect] I
 							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
 							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.ObjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? " " : " and I.ObjectAssetID = 0 ")}
+							where {objectClause}
 							) a
 							)
 							select rsdata.AssetTypeID,ATPath.[Path]
@@ -668,9 +550,11 @@ namespace d360.model.DataAccessLayer
 							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
 							inner join [Predicate] p on IT.PredicateID = P.ID
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
-							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID 
+							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							where I.SubjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.SubjectAssetID = 0 ")}
+							{(!CompanyContext.CurrentResourceIsAdmin ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
+							where {subjectClause}
+							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
@@ -683,13 +567,14 @@ namespace d360.model.DataAccessLayer
 							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
 							inner join [Predicate] p on IT.PredicateID = P.ID
 							left join AssetPath AP on AP.Id = I.SubjectAssetID
-							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID
+							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							where fia.id is null and I.ObjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.ObjectAssetID = 0 ")}
+							{(!CompanyContext.CurrentResourceIsAdmin ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
+							where fia.id is null and {objectClause}
+							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 							";
-						}
 
 						//sort by relationship type then by asset
 						_orderBy = "cast(RelationshipSideData.RelationshipTypeName as nvarchar(850)),cast(RelationshipSideData.AssetPath as nvarchar(850))";
