@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
@@ -41,6 +42,9 @@ namespace igx.jobs.responsibilityruleprocessor
 
 				var companies = GetCompaniesByCurrentSlot(Region);
 
+				// Only want to log this to the app instance console, which can be seen on the KUDU console.  [sitename].scm.azurewebsites.net/DebugConsole
+				Console.WriteLine($"Running for {companies.Count} environments in the {Region} region.");
+				
 				foreach (var c in companies)
 				{
 					var logProperties = new Dictionary<string, object> {
