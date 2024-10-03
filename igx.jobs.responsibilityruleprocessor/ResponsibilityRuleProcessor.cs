@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.extensions;
+﻿using d360.extensions;
 using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
