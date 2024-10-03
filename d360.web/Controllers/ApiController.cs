@@ -1142,8 +1142,6 @@ namespace d360.web.Controllers
 			bool hasParentType = gridReader.Read<int>().FirstOrDefault() > 0;
 			gridReader.Dispose();
 
-			var hasProfiling = FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()) ? hasAssetDataProfileData : false;
-
 			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
 			switch (type)
@@ -1433,7 +1431,7 @@ namespace d360.web.Controllers
 				TopLevelFilterColumns = topLevelFilterFields,
 				IsReadOnly = isReadOnly,
 				ScoreAllocations = scoreAllocations,
-				HasProfiling = hasProfiling
+				HasProfiling = hasAssetDataProfileData
 			});
 		}
 

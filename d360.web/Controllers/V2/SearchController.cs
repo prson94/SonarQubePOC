@@ -821,10 +821,6 @@ namespace d360.web.Controllers.V2
 				return;
 			}
 
-			// FeatureFlags
-			var dataProfilingEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser());
-			var semanticTypesEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser());
-
 			//Determine which results have asset tyoes with search fields defined
 			List<Guid> assetTypeUidWithFields = GetAssetTypeUidWithField(results);
 
@@ -905,77 +901,65 @@ namespace d360.web.Controllers.V2
 					result.Status = augment.Status;
 					result.Object = augment.Object;
 					result.ObjectId = augment.ObjectId;
-					result.HasProfiling = dataProfilingEnabled ? augment.HasProfiling : false;
+					result.HasProfiling = augment.HasProfiling;
 				}
 
-				result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
-
-				//Semantic Type information is included in the index, so a rebuild isn't nessecary when changing the Semantic Type Flag
-				//So when the flag is not set, the information is removed from the results
-				if(!semanticTypesEnabled)
-				{
-					result.SemanticName = null;
-					result.SemanticQualifier = null;
-					result.SemanticUid = null;
-				}
+				result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();				
 			}
+			
+			List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
+			List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
 
-			if (semanticTypesEnabled)
+			if (semantics.Any())
 			{
-				List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
-				List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
-
-				if (semantics.Any())
+				foreach (var result in results.Where(r => r.Group == "Semantic Type"))
 				{
-					foreach (var result in results.Where(r => r.Group == "Semantic Type"))
+					result.Object = "Semantic Type";
+
+					var semantic = semantics.Find(s => s.Uid == result.Uid);
+
+					if (semantic != null)
 					{
-						result.Object = "Semantic Type";
+						result.AssetPath = new List<PathComponent> { new PathComponent {
+						AssetType = null,
+						Key = new string[] { semantic.Name }
+					}};
 
-						var semantic = semantics.Find(s => s.Uid == result.Uid);
-
-						if (semantic != null)
+						result.Status = semantic.Status.ToString();
+						result.Fields = new List<IndexFieldDisplay>
+					{
+						new IndexFieldDisplay
 						{
-							result.AssetPath = new List<PathComponent> { new PathComponent {
-							AssetType = null,
-							Key = new string[] { semantic.Name }
-						}};
-
-							result.Status = semantic.Status.ToString();
-							result.Fields = new List<IndexFieldDisplay>
+							Name = "Qualifier",
+							Label = "Qualifier",
+							Type = "Text",
+							Value = semantic.Qualifier
+						},
+						new IndexFieldDisplay
 						{
-							new IndexFieldDisplay
-							{
-								Name = "Qualifier",
-								Label = "Qualifier",
-								Type = "Text",
-								Value = semantic.Qualifier
-							},
-							new IndexFieldDisplay
-							{
-								Name = "Threshold",
-								Label = "Threshold",
-								Type = "Text",
-								Value = semantic.Threshold.ToString() + " %",
-							},
-							new IndexFieldDisplay
-							{
-								Name = "Priority",
-								Label = "Priority",
-								Type = "Text",
-								Value = semantic.Priority.ToString()
-							},
-							new IndexFieldDisplay
-							{
-								Name = "BaseType",
-								Label = "Base Type",
-								Type = "Text",
-								Value = semantic.BaseType.ToString()
-							}
-						};
+							Name = "Threshold",
+							Label = "Threshold",
+							Type = "Text",
+							Value = semantic.Threshold.ToString() + " %",
+						},
+						new IndexFieldDisplay
+						{
+							Name = "Priority",
+							Label = "Priority",
+							Type = "Text",
+							Value = semantic.Priority.ToString()
+						},
+						new IndexFieldDisplay
+						{
+							Name = "BaseType",
+							Label = "Base Type",
+							Type = "Text",
+							Value = semantic.BaseType.ToString()
 						}
+					};
 					}
 				}
-			}
+			}			
 		}
 
 		#endregion

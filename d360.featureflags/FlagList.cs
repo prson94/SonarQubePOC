@@ -8,9 +8,7 @@
 		public static readonly string PERM_IS_DISTRIBUTED_CACHE = "GovernDistributedCachePerm";
 		public static readonly string PERM_IS_DASHBOARDING_ENABLED = "govern-dashboarding-functionality-permanent";
 
-		public static readonly string PERM_DATA_PROFILING = "GovernDataProfilingPerm";
 		public static readonly string PERM_DATA_PROFILING_UI = "GovernDataProfileUiPerm";
-		public static readonly string PERM_SEMANTIC_TYPES = "GovernSemanticTypesPerm";
 		public static readonly string PERM_SEMANTIC_TYPES_API = "GovernSemanticTypesApiPerm";
 		public static readonly string PERM_SEMANTIC_TYPES_UI = "GovernSemanticTypesUiPerm";
 
