@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.extensions;
+﻿using d360.extensions;
 using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
@@ -41,6 +40,9 @@ namespace igx.jobs.responsibilityruleprocessor
 
 				var companies = GetCompaniesByCurrentSlot(Region);
 
+				// Only want to log this to the app instance console, which can be seen on the KUDU console.  [sitename].scm.azurewebsites.net/DebugConsole
+				Console.WriteLine($"Running for {companies.Count} environments in the {Region} region.");
+				
 				foreach (var c in companies)
 				{
 					var logProperties = new Dictionary<string, object> {
