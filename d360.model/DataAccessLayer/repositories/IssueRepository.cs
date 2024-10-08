@@ -212,7 +212,7 @@ namespace d360.model.DataAccessLayer
 
 				assetJoins.Add("inner Join IssueTypeRelation ITR on IT.ID = ITR.IssueTypeID");
 				assetJoins.Add("inner Join AssetType AT on AT.ID = ITR.AssetTypeID");
-				assetJoins.Add("left Join Asset A on A.AssetTypeID = AT.ID");
+				
 
 				issueJoins.Add("cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C");
 
@@ -264,6 +264,7 @@ namespace d360.model.DataAccessLayer
 
 				if (hasAssetParam || hasResourceParam)
 				{
+					assetJoins.Add("inner Join Asset A on A.AssetTypeID = AT.ID");
 					if (hasResourceParam)
 					{
 						resourceSql = $@"UNION 
