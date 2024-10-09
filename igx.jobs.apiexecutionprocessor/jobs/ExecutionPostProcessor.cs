@@ -202,7 +202,28 @@ from	reporting.Global_FieldAudit i_p
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id 
 			cross apply openjson(l.Payload) with (Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
-			{maxVersionSql("p.Object", "p.ObjectID")};";
+			{maxVersionSql("p.Object", "p.ObjectID")}
+	where l.subtask is null;
+
+
+{INSERT_SQL}
+	select	p.Object, 
+			p.ObjectId,
+			p.ObjectName, 
+			@r, 
+			@dt, 
+			mv.[Version],
+			'Deleted', 
+			'Intersect',
+			p.IntersectId,
+			p.TypeName, 
+			'Relationship', 
+			'This relationship has been removed.' 
+	from	api.ExecutionLog l
+			inner join api.Execution e on e.Id = l.ExecutionId 
+			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p 
+			{maxVersionSql("p.Object", "p.ObjectId")}
+	where l.ExecutionId = @Id and l.subtask = 'R';";
 		}
 
 		string historyDeleteGroups()

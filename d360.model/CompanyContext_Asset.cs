@@ -348,7 +348,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#region Delete Intersects
 
-			Connection.Execute($@"
+			string strintersect = $@"
 								declare @totalcount bigint = 0,
 									@runcount bigint = 0,
 									@struncount bigint = 0,
@@ -366,24 +366,24 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									create nonclustered index [cix_tempexecdelass2] on #tempexecdelass (IntersectID);
 
 									drop table if exists #tempintersect;
-									create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int); 
+									create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int, IntersecttypeID int,IsSubject bit default 0); 
 									create Clustered index [cix_tempintersect] on #tempintersect(IntersectID);
 
 									if(@predicateType = 1)
 									begin
-										insert into #tempintersect (IntersectID)
-										select T.ID
+										insert into #tempintersect (IntersectID,IntersecttypeID)
+										select T.ID,T.IntersecttypeID
 										from [Intersect] T 
 										where exists (select 1 from #tempexecdelass S where S.IntersectID = T.ID and S.IntersectID is not null);
 									end;
 
-									insert into #tempintersect (IntersectID)
-									select T.ID
+									insert into #tempintersect (IntersectID,IntersecttypeID)
+									select T.ID,T.IntersecttypeID
 									from [Intersect] T 
 									where exists (select 1 from #tempexecdelass S where S.AssetID = T.SubjectAssetID);
 
-									insert into #tempintersect (IntersectID)
-									select T.ID
+									insert into #tempintersect (IntersectID,IntersecttypeID)
+									select T.ID,T.IntersecttypeID
 									from [Intersect] T 
 									where exists (select 1 from #tempexecdelass S where S.AssetID = T.ObjectAssetID);
 
@@ -393,6 +393,48 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										from #tempintersect t1
 										where t.IntersectID = t1.IntersectID
 										);
+
+
+									update t
+									set IsSubject = 1
+									from #tempintersect t
+									inner join [Intersecttype] it on t.IntersecttypeID = it.Id and it.subjectassettypeid = @assetTypeID;
+
+
+									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
+										select	@Id,
+												(select t.IntersectId,
+														A.Object, 
+														A.ObjectId,
+														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+														TName.[Name] as TypeName
+												for json path
+												) as Payload,
+												'R'
+										from	#tempintersect t
+										inner join [intersect] i on t.IntersectID = i.ID
+										inner join Asset a on (a.Id = I.ObjectAssetID)
+										left join AssetDisplayValue d on d.AssetID = a.Id
+										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
+										where IsSubject = 1;
+
+			
+									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
+										select	@Id,
+												(select t.IntersectId,
+														A.Object, 
+														A.ObjectId,
+														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+														TName.[Name] as TypeName
+												for json path
+												) as Payload,
+												'R'
+										from	#tempintersect t
+										inner join [intersect] i on t.IntersectID = i.ID
+										inner join Asset a on (a.Id = I.SubjectAssetID)
+										left join AssetDisplayValue d on d.AssetID = a.Id
+										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
+										where IsSubject = 0;
 
 									select @totalcount = count(id) from #tempintersect;
 									while (@runcount <= @totalcount)
@@ -409,8 +451,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									end;
 
 									drop table if exists #tempexecdelass;
-									drop table if exists #tempintersect;",
-			new { execution.ExecutionID, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0 }, transaction: trans, commandTimeout: timeout);
+									drop table if exists #tempintersect;";
+			Connection.Execute(strintersect, new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0, assetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
 
 			sw.Restart();
 
