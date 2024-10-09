@@ -286,24 +286,22 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				drop table if exists #changelogs;
 				drop table if exists #FieldMaxVersion;
 
-				select gfa.FieldName, gfa.Value, ga.Version
+				select gfa.FieldName,0 FieldTypeID, max(gfa.AuditID) AuditID, max(ga.Version) MaxVersion
 				into #changelogs
 				from reporting.Global_Audit GA
-				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
+				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID and gfa.FieldTypeID = 0
 				where Object = @object and ObjectID = @objectId {(useOnlyObjectCheck ? "" : "and ActionObject = @object and ActionObjectID = @objectId")}
+				group by gfa.FieldName;
 
-				create clustered index cx_changelogs on #changelogs (FieldName,[Version]);
+				create clustered index cx_changelogs on #changelogs (AuditID, FieldTypeID, FieldName);
 
-				select fieldname,max(version) MaxVersion
-				into #FieldMaxVersion
-				from #changelogs
-				group by fieldname;
-
-				create clustered index cx_FieldMaxVersion on #FieldMaxVersion (FieldName);
-
-				select logs.*,l.MaxVersion
+				select  logs.FieldName, 
+						gfa.Value,
+						logs.MaxVersion [Version], 
+						logs.MaxVersion
 				from #changelogs logs
-				inner join #FieldMaxVersion l on l.fieldname = logs.FieldName and logs.Version = l.MaxVersion;";
+				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = logs.AuditID and gfa.FieldTypeID = logs.FieldTypeID and gfa.fieldname = logs.FieldName;
+				";
 		}
 	}
 

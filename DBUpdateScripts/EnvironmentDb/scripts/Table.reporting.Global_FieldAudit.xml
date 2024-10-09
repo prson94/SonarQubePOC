@@ -49,4 +49,19 @@ end
   </sql>
  </changeSet>
 
+   <changeSet author="Puneet Gupta" id="Table.reporting.Global_FieldAudit.Indices-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Global_FieldAudit_FieldName_FieldID_WhereClause')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Global_FieldAudit_FieldName_FieldID_WhereClause] ON [reporting].[Global_FieldAudit] ( [AuditID] ASC) INCLUDE (FieldName,FieldTypeID)
+	Where FieldTypeID = 0
+END
+]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>
