@@ -84,7 +84,7 @@ namespace d360.web.Controllers
 					Required = true,
 					FieldName = "Password",
 					Name = "Password",
-					FieldType = DataType.Password.ToString(),
+					FieldType = "Password",
 					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Password",
 										required: true,

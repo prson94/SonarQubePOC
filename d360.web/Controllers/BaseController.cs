@@ -656,7 +656,6 @@ namespace d360.web.Controllers
 			DataType.Path.ToString(),
 			DataType.ComplexRelationLookup.ToString(),
 			DataType.FieldFromRelationship.ToString(),
-			DataType.DataTableSelect.ToString(),
 			DataType.OwnershipLookup.ToString(),
 			DataType.RefListRelationship.ToString(),
 			DataType.JsonElement.ToString(),

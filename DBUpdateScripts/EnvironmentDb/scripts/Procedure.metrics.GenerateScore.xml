@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v4.01">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v5">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -165,17 +165,27 @@ begin
 
 	-- Get the current score for the asset.
 	declare		@CurrentScore decimal(8,6),
-				@CurrentHash varchar(50) = '';
+				@CurrentHash varchar(50) = '',
+				@MostRecentEndDate date; -- will be used to determine if we should reactivate dead score.
 	
 	-- Determine what the previous score and fingerprint (hash) of the score was.
 	select		top 1 
 				@CurrentScore = [Value],
-				@CurrentHash = coalesce(VersionValueHash, '')
+				@CurrentHash = coalesce(VersionValueHash, ''),
+				@MostRecentEndDate = EndDate
 	from		metrics.Score
 	where		AllocationUid = @allocationUid
 				and AssetUid = @assetUid
 				and EffectiveDate <= @effectiveDate
 	order by	EffectiveDate desc;
+
+	declare @Current date = getutcdate(),
+			@DateDifference int;
+	set	@DateDifference = DATEDIFF(dd, @MostRecentEndDate, @Current);
+	if @DateDifference <= 1
+	begin
+		set @isCurrentDate = 1
+	end
 
 --	select @CurrentScore as [Current], @Score as [New] -- DEBUG PURPOSES
 	

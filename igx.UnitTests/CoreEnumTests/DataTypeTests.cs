@@ -39,7 +39,7 @@ namespace igx.UnitTests.CoreEnumTests
         {
             var dataTypes = DataType.Text.GetDataTypeInfoList();
 
-            Assert.True(dataTypes.Count == 28, "Data types have been added / removed make sure they are unit tested.");
+            Assert.True(dataTypes.Count == 23, "Data types have been added / removed make sure they are unit tested.");
         }
 
         [Fact]
@@ -52,140 +52,137 @@ namespace igx.UnitTests.CoreEnumTests
 
         private void ValidateDataTypes(List<DataTypeInfo> dataTypes)
         {
-            Assert.True(dataTypes[0].ID == DataType.Boolean);
-            Assert.True(dataTypes[0].Description == "True/False");
-            Assert.True(dataTypes[0].ReadOnly == false);
-            Assert.True(dataTypes[0].Name == "Boolean");
+			int ix = 0;
+            Assert.True(dataTypes[ix].ID == DataType.Boolean);
+            Assert.True(dataTypes[ix].Description == "True/False");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Boolean");
 
-            Assert.True(dataTypes[1].ID == DataType.Date);
-            Assert.True(dataTypes[1].Description == "Date");
-            Assert.True(dataTypes[1].ReadOnly == false);
-            Assert.True(dataTypes[1].Name == "Date");
+			ix = 1;
+			Assert.True(dataTypes[ix].ID == DataType.Date);
+            Assert.True(dataTypes[ix].Description == "Date");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Date");
 
-            Assert.True(dataTypes[2].ID == DataType.DateTime);
-            Assert.True(dataTypes[2].Description == "Date With Time");
-            Assert.True(dataTypes[2].ReadOnly == false);
-            Assert.True(dataTypes[2].Name == "DateTime");
+			ix = 2;
+			Assert.True(dataTypes[ix].ID == DataType.DateTime);
+            Assert.True(dataTypes[ix].Description == "Date With Time");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "DateTime");
 
-            Assert.True(dataTypes[3].ID == DataType.File);
-            Assert.True(dataTypes[3].Description == "File");
-            Assert.True(dataTypes[3].ReadOnly == true);
-            Assert.True(dataTypes[3].Name == "File");
+			ix = 3;
+			Assert.True(dataTypes[ix].ID == DataType.Hidden);
+            Assert.True(dataTypes[ix].Description == "Hidden");
+            Assert.True(dataTypes[ix].ReadOnly == true);
+            Assert.True(dataTypes[ix].Name == "Hidden");
 
-            Assert.True(dataTypes[4].ID == DataType.Hidden);
-            Assert.True(dataTypes[4].Description == "Hidden");
-            Assert.True(dataTypes[4].ReadOnly == true);
-            Assert.True(dataTypes[4].Name == "Hidden");
+			ix = 4;
+			Assert.True(dataTypes[ix].ID == DataType.Html);
+            Assert.True(dataTypes[ix].Description == "Html/Richtext");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Html");
 
-            Assert.True(dataTypes[5].ID == DataType.Html);
-            Assert.True(dataTypes[5].Description == "Html/Richtext");
-            Assert.True(dataTypes[5].ReadOnly == false);
-            Assert.True(dataTypes[5].Name == "Html");
+			ix = 5;
+			Assert.True(dataTypes[ix].ID == DataType.Number);
+            Assert.True(dataTypes[ix].Description == "Number");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Number");
 
-            Assert.True(dataTypes[6].ID == DataType.Number);
-            Assert.True(dataTypes[6].Description == "Number");
-            Assert.True(dataTypes[6].ReadOnly == false);
-            Assert.True(dataTypes[6].Name == "Number");
+			ix = 6;
+			Assert.True(dataTypes[ix].ID == DataType.Decimal);
+            Assert.True(dataTypes[ix].Description == "Decimal Number");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Decimal");
 
-            Assert.True(dataTypes[7].ID == DataType.Decimal);
-            Assert.True(dataTypes[7].Description == "Decimal Number");
-            Assert.True(dataTypes[7].ReadOnly == false);
-            Assert.True(dataTypes[7].Name == "Decimal");
+			ix = 7;
+			Assert.True(dataTypes[ix].ID == DataType.Lookup);
+            Assert.True(dataTypes[ix].Description == "List");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Lookup");
 
-            Assert.True(dataTypes[8].ID == DataType.Lookup);
-            Assert.True(dataTypes[8].Description == "List");
-            Assert.True(dataTypes[8].ReadOnly == false);
-            Assert.True(dataTypes[8].Name == "Lookup");
+			ix = 8;
+			Assert.True(dataTypes[ix].ID == DataType.Text);
+            Assert.True(dataTypes[ix].Description == "Simple Text");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Text");
 
-            Assert.True(dataTypes[9].ID == DataType.Text);
-            Assert.True(dataTypes[9].Description == "Simple Text");
-            Assert.True(dataTypes[9].ReadOnly == false);
-            Assert.True(dataTypes[9].Name == "Text");
+			ix = 9;
+			Assert.True(dataTypes[ix].ID == DataType.Link);
+            Assert.True(dataTypes[ix].Description == "Link");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Link");
 
-            Assert.True(dataTypes[10].ID == DataType.Password);
-            Assert.True(dataTypes[10].Description == "Password");
-            Assert.True(dataTypes[10].ReadOnly == true);
-            Assert.True(dataTypes[10].Name == "Password");
+			ix = 10;
+			Assert.True(dataTypes[ix].ID == DataType.Color);
+            Assert.True(dataTypes[ix].Description == "Color Picker");
+            Assert.True(dataTypes[ix].ReadOnly == true);
+            Assert.True(dataTypes[ix].Name == "Color");
 
-            Assert.True(dataTypes[11].ID == DataType.Link);
-            Assert.True(dataTypes[11].Description == "Link");
-            Assert.True(dataTypes[11].ReadOnly == false);
-            Assert.True(dataTypes[11].Name == "Link");
+			ix = 11;
+			Assert.True(dataTypes[ix].ID == DataType.Path);
+            Assert.True(dataTypes[ix].Description == "Asset Path");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Path");
 
-            Assert.True(dataTypes[12].ID == DataType.UncLink);
-            Assert.True(dataTypes[12].Description == "UNC/File Link");
-            Assert.True(dataTypes[12].ReadOnly == true);
-            Assert.True(dataTypes[12].Name == "UncLink");
+			ix = 12;
+			Assert.True(dataTypes[ix].ID == DataType.ComplexRelationLookup);
+            Assert.True(dataTypes[ix].Description == "Relation Lookup");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "ComplexRelationLookup");
 
-            Assert.True(dataTypes[13].ID == DataType.Color);
-            Assert.True(dataTypes[13].Description == "Color Picker");
-            Assert.True(dataTypes[13].ReadOnly == true);
-            Assert.True(dataTypes[13].Name == "Color");
+			ix = 13;
+			Assert.True(dataTypes[ix].ID == DataType.OwnershipLookup);
+            Assert.True(dataTypes[ix].Description == "Ownership Lookup");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "OwnershipLookup");
 
-            Assert.True(dataTypes[14].ID == DataType.Path);
-            Assert.True(dataTypes[14].Description == "Asset Path");
-            Assert.True(dataTypes[14].ReadOnly == false);
-            Assert.True(dataTypes[14].Name == "Path");
+			ix = 14;
+			Assert.True(dataTypes[ix].ID == DataType.Relationship);
+            Assert.True(dataTypes[ix].Description == "Relationship");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Relationship");
 
-            Assert.True(dataTypes[15].ID == DataType.ComplexRelationLookup);
-            Assert.True(dataTypes[15].Description == "Relation Lookup");
-            Assert.True(dataTypes[15].ReadOnly == false);
-            Assert.True(dataTypes[15].Name == "ComplexRelationLookup");
+			ix = 15;
+			Assert.True(dataTypes[ix].ID == DataType.FieldFromRelationship);
+            Assert.True(dataTypes[ix].Description == "Field from Relationship");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "FieldFromRelationship");
 
-            Assert.True(dataTypes[16].ID == DataType.Percentage);
-            Assert.True(dataTypes[16].Description == "Percentage");
-            Assert.True(dataTypes[16].ReadOnly == true);
-            Assert.True(dataTypes[16].Name == "Percentage");
+			ix = 16;
+			Assert.True(dataTypes[ix].ID == DataType.RefListRelationship);
+            Assert.True(dataTypes[ix].Description == "Reference Item List from Relationship");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "RefListRelationship");
 
-            Assert.True(dataTypes[17].ID == DataType.DataTableSelect);
-            Assert.True(dataTypes[17].Description == "DataTableSelect");
-            Assert.True(dataTypes[17].ReadOnly == true);
-            Assert.True(dataTypes[17].Name == "DataTableSelect");
+			ix = 17;
+			Assert.True(dataTypes[ix].ID == DataType.JSON);
+            Assert.True(dataTypes[ix].Description == "JSON");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "JSON");
 
-            Assert.True(dataTypes[18].ID == DataType.OwnershipLookup);
-            Assert.True(dataTypes[18].Description == "Ownership Lookup");
-            Assert.True(dataTypes[18].ReadOnly == false);
-            Assert.True(dataTypes[18].Name == "OwnershipLookup");
+			ix = 18;
+			Assert.True(dataTypes[ix].ID == DataType.JsonElement);
+            Assert.True(dataTypes[ix].Description == "JSON Attribute");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "JsonElement");
 
-            Assert.True(dataTypes[19].ID == DataType.Relationship);
-            Assert.True(dataTypes[19].Description == "Relationship");
-            Assert.True(dataTypes[19].ReadOnly == false);
-            Assert.True(dataTypes[19].Name == "Relationship");
+			ix = 19;
+			Assert.True(dataTypes[ix].ID == DataType.Tag);
+            Assert.True(dataTypes[ix].Description == "Tag");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Tag");
 
-            Assert.True(dataTypes[20].ID == DataType.FieldFromRelationship);
-            Assert.True(dataTypes[20].Description == "Field from Relationship");
-            Assert.True(dataTypes[20].ReadOnly == false);
-            Assert.True(dataTypes[20].Name == "FieldFromRelationship");
+			ix = 20;
+			Assert.True(dataTypes[ix].ID == DataType.Score);
+            Assert.True(dataTypes[ix].Description == "Score");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Score");
 
-            Assert.True(dataTypes[21].ID == DataType.RefListRelationship);
-            Assert.True(dataTypes[21].Description == "Reference Item List from Relationship");
-            Assert.True(dataTypes[21].ReadOnly == false);
-            Assert.True(dataTypes[21].Name == "RefListRelationship");
-
-            Assert.True(dataTypes[22].ID == DataType.JSON);
-            Assert.True(dataTypes[22].Description == "JSON");
-            Assert.True(dataTypes[22].ReadOnly == false);
-            Assert.True(dataTypes[22].Name == "JSON");
-
-            Assert.True(dataTypes[23].ID == DataType.JsonElement);
-            Assert.True(dataTypes[23].Description == "JSON Attribute");
-            Assert.True(dataTypes[23].ReadOnly == false);
-            Assert.True(dataTypes[23].Name == "JsonElement");
-
-            Assert.True(dataTypes[24].ID == DataType.Tag);
-            Assert.True(dataTypes[24].Description == "Tag");
-            Assert.True(dataTypes[24].ReadOnly == false);
-            Assert.True(dataTypes[24].Name == "Tag");
-
-            Assert.True(dataTypes[25].ID == DataType.Score);
-            Assert.True(dataTypes[25].Description == "Score");
-            Assert.True(dataTypes[25].ReadOnly == false);
-            Assert.True(dataTypes[25].Name == "Score");
-
-            Assert.True(dataTypes[26].ID == DataType.Counter);
-            Assert.True(dataTypes[26].Description == "Counter");
-            Assert.True(dataTypes[26].ReadOnly == false);
-            Assert.True(dataTypes[26].Name == "Counter");
+			ix = 21;
+			Assert.True(dataTypes[ix].ID == DataType.Counter);
+            Assert.True(dataTypes[ix].Description == "Counter");
+            Assert.True(dataTypes[ix].ReadOnly == false);
+            Assert.True(dataTypes[ix].Name == "Counter");
         }
 
         [Fact]
