@@ -720,20 +720,21 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		let ret = true;
 		const filterchange = params.filter !== this.previousFilter;
 		this.previousFilter = params.filter;
-		if (this.currentField.Values?.length > 0 && !params.filter && !filterchange) {
+		if (this.currentField.Values?.length > 0 && !filterchange) {
 			ret = this.currentField.Values.slice(+params.skip, +params.skip + +params.take).some((x) => !x);
 		}
 		return ret;
 	}
 
 	loadLookupValues(params: LookupValuesAPIParameters) {
-		if (!this.checkIfLoadLookupValues(params)) {
-			return;
-		}
 		if (+params["take"] < 40) {
 			//prime table event sometimes tries to load less than 40 results and after that assumes there is no more new items to fetch
 			//forcing to take min 40 items resolves an issue
 			params["take"] = 40;
+		}
+
+		if (!this.checkIfLoadLookupValues(params)) {
+			return;
 		}
 
 		if (this.lazyLoadSubscription) {
@@ -753,7 +754,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	private consumeLoadedLookupValues(res: LookupValuesAPIModel, params: LookupValuesAPIParameters) {
-		if (!this.currentField.Values || this.currentField.Values.length === 0) {
+		if (!this.currentField.Values || this.currentField.Values.length === 0 || this.currentField.Values.length !== res.count) {
 			this.currentField.Values = Array.from({ length: res.count });
 		}
 
@@ -767,8 +768,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				loadedData.push({ title: str, value: str });
 			}
 		});
-		
-		if (loadedData.length <= params.take) {
+
+		if (res.count <= params.take) {
 			this.currentField.Values = loadedData;
 		}
 		else {
