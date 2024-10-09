@@ -2339,7 +2339,18 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			//Resolve Type from origing field in fields from relationships
-			fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null).ForEach(f => f.Type = CompanyContext.FieldTypes.Where(ft => ft.ID == f.LookupObjectFieldTypeID).FirstOrDefault().Type);
+			foreach (var ft in fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null))
+			{
+				var type = CompanyContext.Filter<FieldType>(f => f.ID == ft.LookupObjectFieldTypeID).FirstOrDefault()?.Type;
+				if (type == null)
+				{
+					ft.Type = DataType.Text.ToString();
+				}
+				else
+				{
+					ft.Type = type;
+				}
+			}
 
 			var rowData = results.items.ToList();
 
@@ -2601,7 +2612,18 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			fields = tempFields;
 
 			//Resolve Type from origing field in fields from relationships
-			fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null).ForEach(f => f.Type = CompanyContext.FieldTypes.Where(ft => ft.ID == f.LookupObjectFieldTypeID).FirstOrDefault().Type);
+			foreach (var ft in fields.Where(f => f.Type == DataType.FieldFromRelationship.ToString() && f.LookupObjectFieldTypeID != null))
+			{
+				var type = CompanyContext.Filter<FieldType>(f => f.ID == ft.LookupObjectFieldTypeID).FirstOrDefault()?.Type;
+				if (type == null)
+				{
+					ft.Type = DataType.Text.ToString();
+				}
+				else
+				{
+					ft.Type = type;
+				}
+			}
 
 			foreach (var field in fieldsToRemove)
 			{
