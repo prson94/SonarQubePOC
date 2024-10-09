@@ -67,18 +67,6 @@ namespace d360.model
     [DbConfigurationType(typeof(AzureConfiguration))]
     public abstract class BaseContext : DbContext, IDisposable, IDbContext, IBaseContext
     {
-        public int CurrentResourceID { get; set; }
-        
-        public int CurrentClientID { get; set; }
-        
-        public int CurrentCompanyID { get; set; }
-        
-        public int CurrentDomainSettingID { get; set; }
-        
-        public string CurrentCompanyDomain { get; set; }
-        
-        public bool CurrentResourceIsAdmin { get; set; }
-
         public string CompanyConnectionString { get; set; }		
 
 		internal ICachingProvider Caching;

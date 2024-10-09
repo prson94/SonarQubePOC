@@ -55,7 +55,7 @@ namespace igx.functions.consumption
 						ResourceID = 0,
 						IsAdministrator = true,
 					};
-					using (var community = new CommunityContext(ConnString, Cache, Queue, context))
+					using (var community = new CommunityContext(ConnString, Cache, context))
 					{
 						using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 						{

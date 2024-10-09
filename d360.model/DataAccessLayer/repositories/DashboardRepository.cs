@@ -27,12 +27,13 @@ namespace d360.model.DataAccessLayer
 		internal ICommunityContext Community;
 
 		public DashboardRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
 			ICommunityContext community, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -311,7 +312,7 @@ namespace d360.model.DataAccessLayer
 			var dbArgs = new DynamicParameters();
 
 			dbArgs.Add("assettypeid", assetTypeId);
-			dbArgs.Add("resourceid", CompanyContext.CurrentResourceID);
+			dbArgs.Add("resourceid",  SecurityContext.ResourceID);
 			dbArgs.Add("assetid", asset?.ID);
 
 			if (!isTypePage)
@@ -392,7 +393,7 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 				Object = "Report",
 				ObjectID = current.ID,
 				ObjectName = current.Name,
-				ResourceID = (int)((int)current.UpdatedBy == 0 ? CompanyContext.CurrentResourceID : current.UpdatedBy),
+				ResourceID = (int)((int)current.UpdatedBy == 0 ?  SecurityContext.ResourceID : current.UpdatedBy),
 				Version = 0
 			};
 

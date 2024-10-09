@@ -37,7 +37,7 @@ namespace igx.jobs.apiexecutionprocessor
 
 			using (log.BeginScope(logProperties))
 			{
-				var community = new Community(ConnString);
+				var community = new Community(ConnString, ConnString);
 				var tenantConnectionString = await community.GetConnectionStringForTenantAsync(info.CompanyId);
 				using (var conn = new SqlConnection(tenantConnectionString))
 				{

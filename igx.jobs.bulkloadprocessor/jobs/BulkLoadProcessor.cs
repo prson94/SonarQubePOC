@@ -73,13 +73,13 @@ namespace igx.jobs.bulkloadprocessor
 						CompanyPrefix = _c.UrlPrefix,
 						IsAdministrator = true
 					};
-					using (var community = new CommunityContext(ConnString, Cache, Queue, context))
+					using (var community = new CommunityContext(ConnString, Cache, context))
 					{
 						using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 						{
-							var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
-							var tagRepository = new TagRepository(company, FeatureFlags, Queue);
-							var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
+							var assetRepository = new AssetRepository(company, context,  Queue, Storage, community, FeatureFlags);
+							var tagRepository = new TagRepository(company, context, FeatureFlags, Queue);
+							var relationshipRepository = new RelationshipRepository(community, company, context, Queue, Storage, FeatureFlags);
 
 							#endregion
 

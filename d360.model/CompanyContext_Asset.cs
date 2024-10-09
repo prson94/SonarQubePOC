@@ -183,7 +183,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			left join AssetDisplayValue d on d.AssetID = a.Id
 	where	{querySuffix} and S.Object is not null and S.ObjectID is not null";
 
-			Connection.Execute(logSql, new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+			Connection.Execute(logSql, new { execution.ExecutionID, r = SecurityContext.ResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 			addMeasurement(metrics, $"De-index queue / Audit>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
 
@@ -786,7 +786,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
 						{fieldsSelectSql}
 				",
-				new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+				new { executionID, r = SecurityContext.ResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 			}
 			else
 			{
@@ -805,7 +805,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									when		not matched by target then
 									insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 									values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-				new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+				new { executionID, r = SecurityContext.ResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 			}
 		}
 
@@ -1533,7 +1533,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																		inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 																{updateAssetInfoOnExecutionRecordsSql}",
-											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
+											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = SecurityContext.ResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
 											addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
 										else
@@ -1555,7 +1555,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																update	api.ExecutionAsset
 																set		IsNew = 0
 																where	{executionAssetWhereSql};",
-											new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+											new { execution.ExecutionID, R = SecurityContext.ResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 											addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
 									}
@@ -1626,7 +1626,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 																	{updateAssetInfoOnExecutionRecordsSql}",
-												new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
+												new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = SecurityContext.ResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
 											addMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
 										else
@@ -1645,7 +1645,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																	update	api.ExecutionAsset
 																	set		IsNew = 0
 																	where	{executionAssetWhereSql};",
-										new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+										new { execution.ExecutionID, R = SecurityContext.ResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 											addMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
 									}
@@ -1741,7 +1741,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																									inner join Asset P on P.ID = I.SubjectAssetID;
 
 																						select distinct [uid],operation from #ParentChildRelationships",
-											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
+											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = SecurityContext.ResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
 											.ToList();
 										addMeasurement(metrics, $"Parent/Child Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
@@ -1782,7 +1782,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																delete  i
 																from    [intersect] i 
 																		inner join #DeletedRelationships d on d.ID = i.ID;",
-																new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+																new { beginItemNumber, endItemNumber, execution.ExecutionID, R = SecurityContext.ResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
 											addMeasurement(metrics, $"Parent/Child Delete Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
@@ -2142,17 +2142,17 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 					if (sendAssetGraphPostExecutionEvent)
 					{
-						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetPaths, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetPaths, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 					}
 
 					if (!isInsert)
 					{
-						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetLookupValues, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetLookupValues, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 					}
 
 					if (sendWorkflowEvents)
@@ -2908,7 +2908,7 @@ where	T.ExecutionID = @ExecutionID
 							DECLARE @inserted TABLE (id INT);
 							insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
 							output inserted.id into @inserted
-							values (@object, @objectId,@displayValue, @resourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated by workflow.', @nextVersion)
+							values (@object, @objectId,@displayValue, @ResourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated by workflow.', @nextVersion)
 
 
 							declare @auditId int = (select top 1 id from @inserted)
@@ -2923,7 +2923,7 @@ where	T.ExecutionID = @ExecutionID
 							fieldTypeId = fieldType.ID,
 							fieldTypeName = fieldType.Name,
 							previousValue,
-							resourceID = CurrentResourceID
+							resourceID = SecurityContext.ResourceID
 						});
 				}
 

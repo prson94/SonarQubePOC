@@ -25,11 +25,12 @@ namespace d360.model.DataAccessLayer
 
 		public CommentRepository(
 			ICompanyContext companyContext, 
+			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
 			ICommunityContext community, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Community = community;
 			Queue = queue;
@@ -124,14 +125,14 @@ namespace d360.model.DataAccessLayer
 			var dbComment = new Comment
 			{
 				CommentType = commentType,
-				CreatedBy = CompanyContext.CurrentResourceID,
+				CreatedBy = SecurityContext.ResourceID,
 				CreatedOn = DateTime.UtcNow,
 				IsDeleted = false,
 				AssetID = assetId.Value,
 				Body = comment.Body,
 				ParentID = parentId,
 				Uid = Guid.NewGuid(),
-				UpdatedBy = CompanyContext.CurrentResourceID,
+				UpdatedBy = SecurityContext.ResourceID,
 				UpdatedOn = DateTime.UtcNow
 			};
 			var commentAdded = CompanyContext.Add(dbComment);
@@ -149,7 +150,7 @@ namespace d360.model.DataAccessLayer
 
 					await CompanyContext.SaveChangesAsync();
 
-					await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = commentId });
+					await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int> { CompanyId = SecurityContext.CompanyID, CompanyPrefix = SecurityContext.CompanyPrefix, Payload = commentId });
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -217,7 +218,7 @@ namespace d360.model.DataAccessLayer
 				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 			}
 
-			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID && !CompanyContext.CurrentResourceIsAdmin)
+			if (dbComment.CreatedBy != SecurityContext.ResourceID && !SecurityContext.IsAdministrator)
 			{
 				throw new GenericException(System.Net.HttpStatusCode.Forbidden, CommentErrors.CommentUpdatePermissionAdmin, CommentErrors.CommentUpdatePermissionAdmin);
 			}
@@ -226,7 +227,7 @@ namespace d360.model.DataAccessLayer
 			if (CompanyContext.Any<Comment>(c => c.ParentID == dbComment.ID))
 			{
 				dbComment.IsDeleted = true;
-				dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
+				dbComment.UpdatedBy = SecurityContext.ResourceID;
 				dbComment.UpdatedOn = DateTime.UtcNow;
 
 				commentUpdated = CompanyContext.Update(dbComment);
@@ -279,13 +280,13 @@ namespace d360.model.DataAccessLayer
 				throw new NotFoundException(CommentErrors.comment);
 			}
 
-			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID)
+			if (dbComment.CreatedBy != SecurityContext.ResourceID)
 			{
 				throw new GenericException(System.Net.HttpStatusCode.Forbidden, CommentErrors.CommentUpdatePermission, CommentErrors.CommentUpdatePermission);
 			}
 
 			dbComment.Body = comment.Body;
-			dbComment.UpdatedBy = CompanyContext.CurrentResourceID;
+			dbComment.UpdatedBy = SecurityContext.ResourceID;
 			dbComment.UpdatedOn = DateTime.UtcNow;
 
 			var commentUpdated = CompanyContext.Update(dbComment);
@@ -596,7 +597,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else if (followerCurrResUidPresent)
 			{
-				followerresourceID = CompanyContext.CurrentResourceID;
+				followerresourceID = SecurityContext.ResourceID;
 			}
 
 			if (followerresourceID > -1)
@@ -610,7 +611,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 )");
 			}
 
-			dbArgs.Add("@currentUser", CompanyContext.CurrentResourceID);
+			dbArgs.Add("@currentUser", SecurityContext.ResourceID);
 			whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where (PermissionsBitMask & {(int)Permission.ReadAsset}) = 0 and AssetID is not null)");
 			whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
@@ -809,7 +810,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
 				if (commentCreator != null)
 				{
-					Queue.CreateMessage(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = comment.ID });
+					Queue.CreateMessage(constants.Queue.Notification, new QueueMessage<int> { CompanyId = SecurityContext.CompanyID, CompanyPrefix = SecurityContext.CompanyPrefix, Payload = comment.ID });
 				}
 			}
 		}

@@ -33,11 +33,12 @@ namespace d360.model.DataAccessLayer
 
 		public MembershipRepository(
 			ICompanyContext companyContext, 
+			ISecurityContextProvider securityContext,
 			ICommunityContext communityContext, 
 			IAssetRepository assetRepository, 
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			CommunityContext = communityContext;
 			AssetRepository = assetRepository;
@@ -215,7 +216,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidUser, string.Format(MemberShipErrors.UserUidSystemUser, model.Uid));
 					}
 
-					model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == CompanyContext.CurrentCompanyID && r.ResourceID == model.Resource.ResourceID);
+					model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == SecurityContext.CompanyID && r.ResourceID == model.Resource.ResourceID);
 
 					if (model.CompanyResource == null)
 					{
@@ -253,7 +254,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 	from	reporting.Global_Resource res
 			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
 	where	res.resourceid = @resourceId", 
-						new { r = CompanyContext.CurrentResourceID, resourceId = model.Resource.ResourceID }
+						new { r = SecurityContext.ResourceID, resourceId = model.Resource.ResourceID }
 					).ToList();
 				}
 				int limit = 25;
@@ -265,7 +266,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 					uids.RemoveRange(0, removecount);
 					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
-						CompanyID = CompanyContext.CurrentCompanyID,
+						CompanyID = SecurityContext.CompanyID,
 						Category = "Resource",
 						To = QueueAction.RemoveFromIndex,
 						BatchOperation = ReindexBatchOperation.Delete,
@@ -407,6 +408,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 							ItemNumber int,
 							Username nvarchar(500),
 							Email nvarchar(500),
+
 							ResourceID int,
 							[uid] uniqueidentifier,
 							CompanyResourceState int
@@ -440,7 +442,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 						from #UserResources U
 						left join [CompanyResource] R on R.ResourceID = U.ResourceID and R.CompanyID = @companyId
 						left join [Resource] CR on CR.ID = R.ResourceID;
-						", new { companyId = CompanyContext.CurrentCompanyID }, transaction: trans);
+						", new { companyId = SecurityContext.CompanyID }, transaction: trans);
 
 					var communityResults = await CommunityContext.Connection.QueryAsync<dynamic>(@"select * from #UserResources", transaction: trans);
 
@@ -997,7 +999,7 @@ where	ExecutionID = @executionID",
 									if ((string.Compare(upsertUser.Username, resource.Username, true) != 0) || string.Compare(upsertUser.Email, resource.Email, true) != 0)
 									{
 										//disallow changing the email/username if the current user is not an admin
-										if (CompanyContext.CurrentResourceIsAdmin == false)
+										if (SecurityContext.IsAdministrator == false)
 										{
 											validationResult.Success = false;
 											validationResult.uid = upsertUser.uid;
@@ -1047,12 +1049,12 @@ where	ExecutionID = @executionID",
 								CompanyResource companyResource;
 								if (upsertUser.CompanyResourceState.HasValue)
 								{
-									companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == upsertUser.ResourceID);
+									companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == SecurityContext.CompanyID && c.ResourceID == upsertUser.ResourceID);
 
 									if (companyResource != null)
 									{
 										//disallow changing the admin flag if the current user is not an admin
-										if (CompanyContext.CurrentResourceIsAdmin == false && upsertUser.IsAdministrator != companyResource.IsAdministrator)
+										if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator != companyResource.IsAdministrator)
 										{
 											validationResult.Success = false;
 											validationResult.uid = upsertUser.uid;
@@ -1071,7 +1073,7 @@ where	ExecutionID = @executionID",
 								else
 								{
 									//disallow creating admin users if the current user is not an admin
-									if (CompanyContext.CurrentResourceIsAdmin == false && upsertUser.IsAdministrator == true)
+									if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator)
 									{
 										validationResult.Success = false;
 										validationResult.uid = upsertUser.uid;
@@ -1084,7 +1086,7 @@ where	ExecutionID = @executionID",
 									companyResource = new CompanyResource()
 									{
 										ResourceID = (int)upsertUser.ResourceID,
-										CompanyID = CompanyContext.CurrentCompanyID,
+										CompanyID = SecurityContext.CompanyID,
 										State = CompanyResourceState.Active,
 										IsAdministrator = upsertUser.IsAdministrator
 									};
@@ -1129,7 +1131,7 @@ where	ExecutionID = @executionID",
 								var userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == upsertUser.ResourceID);
 								if (userAsset != null)
 								{
-									userAsset.UpdatedBy = CompanyContext.CurrentResourceID;
+									userAsset.UpdatedBy = SecurityContext.ResourceID;
 									userAsset.UpdatedOn = DateTime.UtcNow;
 									CompanyContext.Update(userAsset);
 								}
@@ -1138,8 +1140,8 @@ where	ExecutionID = @executionID",
 									if (userAssetType != null)
 									{
 										CompanyContext.Connection.Execute(
-											"insert into Asset (AssetTypeID, State, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @ResourceID, @Dt, @CurrentResourceID, @Dt, @CurrentResourceID, @uid)",
-											new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, CompanyContext.CurrentResourceID, uid = (Guid)upsertUser.uid }
+											"insert into Asset (AssetTypeID, State, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @ResourceID, @Dt, @r, @Dt, @r, @uid)",
+											new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, r = SecurityContext.ResourceID, uid = (Guid)upsertUser.uid }
 										);
 									}
 								}
@@ -1348,8 +1350,8 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.UpsertUsers);
 
-			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			return results;
 		}
@@ -1358,8 +1360,8 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID
 			};
@@ -1468,88 +1470,6 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 		public async Task DeleteFavorites(int resourceID, List<int> favoriteIds)
 		{
 			await CompanyContext.DeleteAsync<Favorite>(i => i.ResourceID == resourceID && favoriteIds.Contains(i.ID));
-		}
-
-		public async Task AddClaim(ClaimPostApiModel claim)
-		{
-			var newClaim = new ClaimMapping();
-			var companyDomainSetting = CommunityContext
-				.CompanyDomainSettings
-				.FirstOrDefault(d =>
-					d.CompanyID == CompanyContext.CurrentCompanyID
-					&& d.DomainSettingID == CompanyContext.CurrentDomainSettingID);
-
-			if (claim.Location == ClaimLocation.Environment)
-			{
-				newClaim.ClientId = CompanyContext.CurrentClientID;
-				newClaim.CompanyId = CompanyContext.CurrentCompanyID;
-				newClaim.DomainSettingId = 0;
-			}
-			else if (claim.Location == ClaimLocation.Idp)
-			{
-				newClaim.ClientId = CompanyContext.CurrentClientID;
-				newClaim.CompanyId = CompanyContext.CurrentCompanyID;
-				newClaim.DomainSettingId = CompanyContext.CurrentDomainSettingID;
-			}
-			else if (claim.Location == ClaimLocation.Client)
-			{
-				newClaim.ClientId = CompanyContext.CurrentClientID;
-				newClaim.CompanyId = 0;
-				newClaim.DomainSettingId = 0;
-			}
-			else
-			{
-				newClaim.ClientId = 0;
-				newClaim.CompanyId = 0;
-				newClaim.DomainSettingId = 0;
-			}
-
-			newClaim.ClaimType = claim.ClaimType;
-			newClaim.AuthenticationType = companyDomainSetting.AuthenticationType;
-			newClaim.Action = claim.Action;
-			newClaim.Path = claim.Path;
-			newClaim.IsArray = claim.IsArray;
-
-			CommunityContext.ClaimMappings.Add(newClaim);
-			CommunityContext.SaveChanges();
-
-		}
-		public async Task UpdateClaim(int id, ClaimPutApiModel claim)
-		{
-			var existingClaim = CommunityContext.ClaimMappings.FirstOrDefault(c => c.Id == id);
-			if (existingClaim != null)
-			{
-				existingClaim.Action = claim.Action;
-				existingClaim.Path = claim.Path;
-				existingClaim.IsArray = claim.IsArray;
-
-				CommunityContext.SaveChanges();
-			}
-		}
-
-		public async Task DeleteClaim(int id)
-		{
-			var existingClaim = CommunityContext.ClaimMappings.FirstOrDefault(c => c.Id == id);
-			if (existingClaim != null)
-			{
-				CommunityContext.ClaimMappings.Remove(existingClaim);
-				CommunityContext.SaveChanges();
-			}
-		}
-
-		public async Task<IEnumerable<ClaimApiViewModel>> GetClaims()
-		{
-			var sql = @"
-				select 0 as Location, C.* from ClaimMapping C where ClientID = 0 and CompanyID = 0 and DomainSettingID = 0
-				union all
-				select 1 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = 0 and DomainSettingID = 0
-				union all
-				select 2 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = @CurrentCompanyID and DomainSettingID = 0
-				union all
-				select 3 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = @CurrentCompanyID and DomainSettingID = @CurrentDomainSettingID
-			";
-
-			return CommunityContext.Query<ClaimApiViewModel>(sql, new { CompanyContext.CurrentClientID, CompanyContext.CurrentDomainSettingID, CompanyContext.CurrentCompanyID });
 		}
 	}
 }

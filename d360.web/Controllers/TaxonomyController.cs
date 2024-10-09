@@ -88,7 +88,7 @@ namespace d360.web.Controllers
 			var editRightsColumnStatement = "cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete,";
 			var editRightsJoinStatement = "";
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				editRightsColumnStatement = " cast(IIF(S_E.[Count] = 0, 0, 1) as bit) as P_CanEdit, cast(IIF(S_D.[Count] = 0, 0, 1) as bit) as P_CanDelete, ";
 				editRightsJoinStatement = $@"cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.EditAsset} = {(int)Permission.EditAsset}) as S_E 
@@ -124,7 +124,7 @@ namespace d360.web.Controllers
 								and A.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})
 						{orderBySql} ";
 
-			var models = Company.Query<dynamic>(sql, new { id, r = Company.CurrentResourceID });
+			var models = Company.Query<dynamic>(sql, new { id, r = SecurityContext.ResourceID });
 
 			return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
 		}

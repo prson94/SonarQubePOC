@@ -246,7 +246,7 @@ namespace d360.web
 		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context)
 		{
 			string authority = await getJwtAuthority(context);
-			var authenticationSettings = context.Request.Get<CompanyOpenIdAuthenticationSettings>("AuthenticationSettings");
+			var authenticationSettings = context.Request.Get<OidcAuthenticationSettings>("AuthenticationSettings");
 			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
 			Log.LogTrace($"JWT Authority : {authority}");

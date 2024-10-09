@@ -4,7 +4,6 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
-using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
 using d360.featureflags;
@@ -18,7 +17,6 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using repositories;
-using repositories.azure;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -32,7 +30,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Mvc;
 
@@ -98,7 +95,9 @@ namespace d360.web.Controllers
 
 		ICompanyContext Company { get; set; }
 
-		ICommunityContext Community { get; set; }
+		ICommunity Community { get; set; }
+
+		ISecurityContextProvider SecurityContext { get; set; }
 
 		ILogger Log { get; set; }
 
@@ -119,7 +118,9 @@ namespace d360.web.Controllers
 
 		public ICompanyContext Company { get; set; }
 
-		public ICommunityContext Community { get; set; }
+		public ICommunity Community { get; set; }
+
+		public ISecurityContextProvider SecurityContext { get; set; }
 
 		public ILogger Log { get; set; }
 
@@ -135,8 +136,9 @@ namespace d360.web.Controllers
 
 		public CoreComponentSet(
 			ICachingProvider cache,
-			ICommunityContext community,
+			ICommunity community,
 			ICompanyContext company,
+			ISecurityContextProvider securityContext,
 			IEnumerable<ICatalog> catalogs,
 			ILogger log,
 			IMailProvider mail,
@@ -156,6 +158,7 @@ namespace d360.web.Controllers
 			ThemeRepository = themeRepository;
 			RuntimeInfo = runtimeInfo;
 			Workspace = workspace;
+			SecurityContext = securityContext;
 		}
 	}
 
@@ -164,11 +167,11 @@ namespace d360.web.Controllers
 		internal IFeatureFlagService FeatureFlags { get; set; }
 		internal ICatalog Catalog { get; set; }
 		internal ICompanyContext Company;
-		internal ICommunityContext Community;
+		internal ICommunity Community;
 		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
 		internal IWorkspaces Workspace;
-
+		internal ISecurityContextProvider SecurityContext;
 		internal ICachingProvider Cache;
 
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
@@ -222,24 +225,35 @@ namespace d360.web.Controllers
 			FeatureFlags = set.FeatureFlags;
 			Workspace = set.Workspace;
 			Cache = set.Cache;
+			SecurityContext = set.SecurityContext;
 		}
 
-		internal ClientUserModel GetFeatureFlagUser()
+		internal async Task<ClientUserModel> GetFeatureFlagUser()
 		{
-			return Company.GetFeatureFlagUser();
+			var listKey = "ClientUserModels";
+			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
+			ClientUserModel userModel = null;
+			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
+			{
+				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
+			}
+			if (userModel == null)
+			{
+				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			}
+			if (userModel != null)
+			{
+				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
+				{
+					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
+				}
+			}
+			return userModel;
 		}
 
 		protected internal async Task<bool> GetHideData3SixtyUsers()
 		{
 			return await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
-		}
-
-		protected internal IQueryable<Resource> GetCompanyResources()
-		{
-			return from cr in Community.Table<CompanyResource>()
-				   join r in Community.Table<Resource>() on cr.ResourceID equals r.ID
-				   where cr.CompanyID == Company.CurrentCompanyID
-				   select r;
 		}
 
 		protected virtual void ValidateParameters(string message = null)
@@ -405,7 +419,7 @@ namespace d360.web.Controllers
 
 			if (!properties.ContainsKey("CompanyID"))
 			{
-				properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+				properties.Add("CompanyID", SecurityContext.CompanyID.ToString());
 			}
 
 			telemetry.TrackEvent(eventName, properties, metrics);
@@ -428,7 +442,7 @@ namespace d360.web.Controllers
 
 		internal async Task<List<SettingInfo>> GetCachedSettings()
 		{
-			string cacheKey = $"Settings_{Company.CurrentCompanyID}";
+			string cacheKey = $"Settings_{SecurityContext.CompanyID}";
 			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
 			if (settings == null)
 			{
@@ -626,7 +640,7 @@ namespace d360.web.Controllers
 				Action = action,
 				Route = Request?.RequestUri?.LocalPath,
 				Method = Request?.Method?.Method,
-				ResourceID = Company.CurrentResourceID,
+				ResourceID = SecurityContext.ResourceID,
 				Total = total,
 				Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
 				Error = 0,
@@ -644,13 +658,14 @@ namespace d360.web.Controllers
 	{
 		internal ICatalog Catalog;
 		internal ICompanyContext Company;
-		internal ICommunityContext Community;
+		internal ICommunity Community;
 		internal ILogger Log;
 		internal IMailProvider Mail;
 		internal IFeatureFlagService FeatureFlags;
 		internal IThemeRepository ThemeRepository;
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
+		internal ISecurityContextProvider SecurityContext;
 
 		internal List<string> limitedFieldTypes = new List<string> {
 			DataType.Path.ToString(),
@@ -685,7 +700,7 @@ namespace d360.web.Controllers
 			Mail = set.Mail;
 			ThemeRepository = set.ThemeRepository;
 			Workspace = set.Workspace;
-
+			SecurityContext = set.SecurityContext;
 			Cache = set.Cache;
 		}
 
@@ -765,7 +780,7 @@ namespace d360.web.Controllers
 
 		internal async Task<List<SettingInfo>> GetCachedSettings()
 		{
-			string cacheKey = $"Settings_{Company.CurrentCompanyID}";
+			string cacheKey = $"Settings_{SecurityContext.CompanyID}";
 			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
 			if (settings == null)
 			{
@@ -795,12 +810,12 @@ namespace d360.web.Controllers
 
 		internal string GetNoReadSqlStatement(string identifier = null)
 		{
-			return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+			return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? SecurityContext.ResourceID.ToString() : identifier)}";
 		}
 
 		internal string GetAssetTypeNoReadSqlStatement(string identifier = null)
 		{
-			return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+			return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? SecurityContext.ResourceID.ToString() : identifier)}";
 		}
 
 		internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null, int? Precision = null)
@@ -1570,7 +1585,7 @@ namespace d360.web.Controllers
 
 			if (!properties.ContainsKey("CompanyID"))
 			{
-				properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+				properties.Add("CompanyID", SecurityContext.CompanyID.ToString());
 			}
 
 			telemetry.TrackException(ex, properties, metrics);
@@ -2187,11 +2202,11 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			return sql;
 		}
 
-		protected void ResetResourcePassword(int resourceId, string firstName, string email, string fullName)
+		protected async Task ResetResourcePassword(int resourceId, string firstName, string email, string fullName)
 		{
 			var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
 
-			Community.ChangePassword(resourceId, "", generatedPassword);
+			await Community.ChangePasswordAsync(resourceId, generatedPassword);
 
 			var templateValues = new Dictionary<string, string>();
 			string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
@@ -2208,9 +2223,8 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 
 		protected async Task<bool> IsSingleSignOn()
 		{
-			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
-
-			return !(authModel == AuthenticationType.Forms);
+			var authModel = await Community.ReadAuthenticationTypeByTenantUrlAsync(SecurityContext.CompanyID, SecurityContext.CompanyPrefix);
+			return !(authModel.Data == AuthenticationType.Forms);
 		}
 
 		protected FileContentResult ExcelDocumentAsFile(ExcelDocument document)
@@ -2226,9 +2240,27 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			}
 		}
 
-		internal ClientUserModel GetFeatureFlagUser()
+		internal async Task<ClientUserModel> GetFeatureFlagUser()
 		{
-			return Company.GetFeatureFlagUser();
+			var listKey = "ClientUserModels";
+			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
+			ClientUserModel userModel = null;
+			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
+			{
+				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
+			}
+			if (userModel == null) 
+			{
+				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			}
+			if (userModel != null)
+			{
+				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
+				{
+					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
+				}
+			}
+			return userModel;
 		}
 
 		protected async Task AppendSettingsToViewData(HttpContext httpContext = null)

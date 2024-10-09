@@ -222,7 +222,7 @@ namespace igx.jobs.indexer
 				ResourceID = 0,
 				IsAdministrator = true
 			};
-			var community = new CommunityContext(ConnString, Cache, Queue, context);
+			var community = new CommunityContext(ConnString, Cache, context);
 			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 			int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);

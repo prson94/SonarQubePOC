@@ -27,8 +27,7 @@ using System.Web.UI.WebControls;
 
 namespace d360.web.Controllers.V2
 {
-	[ValidateModel]
-	[ValidateCompanyState]
+	[ValidateModel] // [ValidateCompanyState]
 	public class BaseV2ApiController : BaseApiController
 	{
 		public BaseV2ApiController(ICoreComponentSet set) : base(set)

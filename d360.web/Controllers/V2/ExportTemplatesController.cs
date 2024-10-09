@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
 				e = template.ExportViewType, 
 				url = template.IncludeUrl, 
 				parent = template.IncludeParent, 
-				upd = Company.CurrentResourceID, 
+				upd = SecurityContext.ResourceID, 
 				updOn = DateTime.UtcNow, 
 				notes = template.UsageNotes 
 			});
@@ -516,7 +516,7 @@ namespace d360.web.Controllers.V2
 				desc = model.Description, 
 				exp = model.ExportViewType, 
 				notes = model.UsageNotes, 
-				updatedBy = Company.CurrentResourceID, 
+				updatedBy = SecurityContext.ResourceID, 
 				updatedOn = DateTime.UtcNow 
 			});
 

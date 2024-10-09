@@ -38,7 +38,7 @@ namespace d360.web.Controllers.V2
 
 		private bool IsNewPermissions
 		{
-			get { return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, GetFeatureFlagUser()); }
+			get { return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, GetFeatureFlagUser().Result); }
 		}
 
         public PermissionsController(ICoreComponentSet set, IAssetRepository repository, ISecurity security) : base(set)
@@ -85,7 +85,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-				if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
+				if (!SecurityContext.IsAdministrator && permissions.Count == 0)
 				{
 					//If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
 					permissions.Add(Permission.ReadAsset.GetPermissionInfo());
@@ -149,7 +149,7 @@ namespace d360.web.Controllers.V2
             Dictionary<string, bool> permissionsList = new Dictionary<string, bool>();
 
             // mark true for any matching entries in the passed permissions list.
-            bool isAdmin = Company.CurrentResourceIsAdmin;
+            bool isAdmin = SecurityContext.IsAdministrator;
             permissions.ForEach(p =>
             {
                 p.Selected = objectPermissions.Exists(t => t.ID == p.ID);

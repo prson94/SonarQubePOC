@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.extensions;
 using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
@@ -17,7 +18,7 @@ namespace d360.model.DataAccessLayer
 {
 	public class ConnectorLabelRepository : BaseRepository, IConnectorLabelRepository
 	{
-		public ConnectorLabelRepository(ICompanyContext company, IFeatureFlagService ff) : base(company, ff)
+		public ConnectorLabelRepository(ICompanyContext company, ISecurityContextProvider securityContext, IFeatureFlagService ff) : base(company, securityContext, ff)
 		{
 		}
 
@@ -185,12 +186,12 @@ namespace d360.model.DataAccessLayer
 			else
 			{
 				label.State = State.Active;
-				label.CreatedBy = label.UpdatedBy = CompanyContext.CurrentResourceID;
+				label.CreatedBy = label.UpdatedBy =  SecurityContext.ResourceID;
 				label.CreatedOn = label.UpdatedOn = DateTime.UtcNow;
 				CompanyContext.SaveChanges();
 			}
 
-			var user = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == CompanyContext.CurrentResourceID);
+			var user = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID ==  SecurityContext.ResourceID);
 
 			result.uid = label.uid;
 			result.UpdatedOn = label.UpdatedOn.GetValueOrDefault();
@@ -220,7 +221,7 @@ namespace d360.model.DataAccessLayer
 			{
 				result.CreatedByUid = createUser.Uid;
 			}
-			var updateUser = CompanyContext.GlobalReportingResources.First(x => x.ResourceID == CompanyContext.CurrentResourceID);
+			var updateUser = CompanyContext.GlobalReportingResources.First(x => x.ResourceID ==  SecurityContext.ResourceID);
 			if (updateUser != null)
 			{
 				result.UpdatedByUid = updateUser.Uid;
@@ -524,7 +525,7 @@ namespace d360.model.DataAccessLayer
 				return false;
 			}
 
-			if (CompanyContext.CurrentResourceIsAdmin || CompanyContext.CurrentResourceID == connectorLabel.CreatedBy)
+			if (SecurityContext.IsAdministrator ||  SecurityContext.ResourceID == connectorLabel.CreatedBy)
 			{
 				return true;
 			}

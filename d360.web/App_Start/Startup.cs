@@ -2,6 +2,7 @@
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using d360.core;
+using d360.core.enums;
 using d360.core.types;
 using d360.extensions;
 using d360.featureflags;
@@ -147,7 +148,10 @@ namespace d360.web
 						if (req != null)
 						{
 							var ctx = req.GetOwinContext();
+							i.Instance.AuthenticationType = ctx.Get<AuthenticationType>("AuthenticationType");
+							i.Instance.AllowNewUserLogin = ctx.Get<bool>("AllowNewUserLogin");
 							i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
+							i.Instance.PrimaryCompanyPrefix = ctx.Get<string>("PrimaryCompanyPrefix");
 							i.Instance.ClientID = ctx.Get<int>("ClientID");
 							i.Instance.CompanyID = ctx.Get<int>("CompanyID");
 							i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
@@ -194,17 +198,33 @@ namespace d360.web
 					var cache = o.Resolve<ICachingProvider>();
 					var queue = o.Resolve<IQueueSource>();
 					var ctx = o.Resolve<ISecurityContextProvider>();
-					return new CommunityContext(connectionString, cache, queue, ctx);
+					return new CommunityContext(connectionString, cache, ctx);
 					}).As<ICommunityContext>().InstancePerRequest();
 
-				builder.Register(c =>
+				builder.Register(async i =>
 				{
-					var community = c.Resolve<ICommunityContext>();
-					var connectionString = community.GetCompanyConnectionString();
+					var community = i.Resolve<ICommunity>();
+					var ctx = i.Resolve<ISecurityContextProvider>();
+					var cache = i.Resolve<ICachingProvider>();
+					string connectionString = "";
+					string cacheKey = "Company_ConnectionStrings";
+					if (cache.ListItemExists<string, int>(cacheKey, ctx.CompanyID))
+					{
+						connectionString = cache.GetItemInListByID<string, int>(cacheKey, ctx.CompanyID);
+					}
+					if (string.IsNullOrEmpty(connectionString))
+					{
+						connectionString = await community.GetConnectionStringForTenantAsync(ctx.CompanyID);
+						cache.SetItemInListByID(cacheKey, ctx.CompanyID, connectionString);
+					}
+
 					return new repositories.azure.DapperConnectionProvider { ConnectionString = connectionString };
 				}).InstancePerRequest();
 
-				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
+				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest().OnActivating(i => {
+					var cnn = i.Context.Resolve<repositories.azure.DapperConnectionProvider>();
+					i.Instance.CompanyConnectionString = cnn.ConnectionString;
+				}); ;
 
 				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
@@ -215,6 +235,13 @@ namespace d360.web
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.Register(c => {
+					string rw = Config.GetValue<string>("ReadWriteConnectionString");
+					string ro = Config.GetValue<string>("ReadOnlyConnectionString");
+					var repo = new repositories.azure.Community(rw, ro);
+					return repo;
+				}).InstancePerRequest();
+
 				builder.RegisterType<repositories.azure.Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();

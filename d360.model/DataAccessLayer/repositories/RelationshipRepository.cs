@@ -33,11 +33,12 @@ namespace d360.model.DataAccessLayer
 
 		public RelationshipRepository(
 			ICommunityContext communityContext, 
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			Storage = storageProvider;
@@ -1472,9 +1473,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.PostRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1495,9 +1496,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				SendWorkflowEvents = triggerWorkflow
 			};
@@ -1574,7 +1575,7 @@ from	IntersectType I
 
 			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				IntersectIDs = intersects,
 				BatchOperation = IsDelete ? ReindexBatchOperation.Delete : ReindexBatchOperation.Update
 			});
@@ -1605,7 +1606,7 @@ from	IntersectType I
 			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{ 
 				Action = PostExecutionQueueMessageAction.History, 
-				CompanyID = CompanyContext.CurrentCompanyID, 
+				CompanyID = SecurityContext.CompanyID, 
 				ExecutionId = execution.Id 
 			});
 
@@ -1634,9 +1635,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.DeleteRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1658,7 +1659,7 @@ from	IntersectType I
 			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, sendWorkflowEvents, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1683,7 +1684,7 @@ from	IntersectType I
 			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1713,7 +1714,7 @@ from	IntersectType I
 				results = CompanyContext.RemovePredicates(execution, predicates);
 				
 				// Send change log request.
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				
 				// Close execution record.
 				execution.Processed = results.Count;

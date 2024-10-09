@@ -304,7 +304,7 @@ insert into #ids (AssetUid)
 				CompanyPrefix = companyDomainPrefix,
 				IsAdministrator = false
 			};
-			var community = new CommunityContext(ConnString, Cache, Queue, context);
+			var community = new CommunityContext(ConnString, Cache, context);
 			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();

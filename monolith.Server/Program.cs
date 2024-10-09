@@ -27,7 +27,7 @@ builder
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICommunity>(o => {
 	var config = o.GetRequiredService<AppSettings>();
-	return new Community(config.CommunityConnectionString);
+	return new Community(config.CommunityConnectionString, config.CommunityConnectionString);
 });
 
 builder.AddWorkspaceContext();	// Gets the Govern workspace.

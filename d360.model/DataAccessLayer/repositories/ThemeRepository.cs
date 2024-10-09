@@ -28,12 +28,13 @@ namespace d360.model.DataAccessLayer
         internal ICommunityContext Community;
 
         public ThemeRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
 			ICommunityContext community, 
 			IFeatureFlagService ff)
-            : base(companyContext, ff)
+            : base(companyContext, securityContext, ff)
         {
 			Community = community;
             Queue = queue;
@@ -115,7 +116,7 @@ namespace d360.model.DataAccessLayer
         {
             if (content != null && content.Length > 0)
             {
-                var path = $"{CompanyContext.CurrentCompanyID}/{uid}_{fileSuffix}{extension}";
+                var path = $"{SecurityContext.CompanyID}/{uid}_{fileSuffix}{extension}";
                 var contentType = MimeTypeExtensionsMap.GetMimeType(extension);
                 var stream = new MemoryStream(content);
                 Storage.CreateFile("themes", path, stream, contentType);
@@ -124,7 +125,7 @@ namespace d360.model.DataAccessLayer
 
         private void deleteStorageFile(Guid uid, string fileSuffix, string extension)
         {
-            var path = $"{CompanyContext.CurrentCompanyID}/{uid}_{fileSuffix}{extension}";
+            var path = $"{SecurityContext.CompanyID}/{uid}_{fileSuffix}{extension}";
             Storage.DeleteFile("themes", path);
         }
 
@@ -206,7 +207,7 @@ namespace d360.model.DataAccessLayer
 
                 apiModels = dbModels
                     .ToList()
-                    .Select(m => m.t.ToGetModel(baseUri, m.c, m.u, CompanyContext.CurrentCompanyID))
+                    .Select(m => m.t.ToGetModel(baseUri, m.c, m.u, SecurityContext.CompanyID))
                     .OrderBy(t => t.Name)
                     .ToList();
             }).ConfigureAwait(false);
@@ -219,7 +220,7 @@ namespace d360.model.DataAccessLayer
             var themeSql = @"
 							set nocount on;
 							declare @userThemeId int;
-							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @CurrentResourceID
+							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @ResourceID
 
 							if @userThemeId is not null
 							begin
@@ -229,7 +230,7 @@ namespace d360.model.DataAccessLayer
 							begin
 								select top 1 * from Theme where IsCurrent = 1
 							end";
-            var theme = CompanyContext.Query<Theme>(themeSql, new { CompanyContext.CurrentResourceID }).SingleOrDefault();
+            var theme = CompanyContext.Query<Theme>(themeSql, new { SecurityContext.ResourceID }).SingleOrDefault();
 
             return (theme != null) ? theme.CustomCss + "" : "";
         }
@@ -241,7 +242,7 @@ namespace d360.model.DataAccessLayer
 							declare @userThemeId int,
 									@createdBy int,
 									@updatedBy int;
-							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @CurrentResourceID
+							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @ResourceID
 
 							if @userThemeId is not null
 							begin
@@ -259,7 +260,7 @@ namespace d360.model.DataAccessLayer
             var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
                 new CommandDefinition(
                     themeSql,
-                    new { CompanyContext.CurrentResourceID },
+                    new { SecurityContext.ResourceID },
                     commandTimeout: ApiTimeout
                     )
                 );
@@ -282,7 +283,7 @@ namespace d360.model.DataAccessLayer
                 throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoCurrentThemes);
             }
 
-            return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, CompanyContext.CurrentCompanyID);
+            return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, SecurityContext.CompanyID);
         }
 
         public Theme GetThemeByUid(Guid uid)
@@ -319,7 +320,7 @@ namespace d360.model.DataAccessLayer
 
         public async Task<GetTheme> PostThemeAsync(PostTheme theme, bool validationOnly = false)
         {
-            var repoTheme = theme.ToRepositoryModel(CompanyContext.CurrentResourceID);
+            var repoTheme = theme.ToRepositoryModel( SecurityContext.ResourceID);
             repoTheme.Validate();
 
             if (CompanyContext.Any<Theme>(t => t.Name.ToLower() == repoTheme.Name.ToLower()))
@@ -348,9 +349,9 @@ namespace d360.model.DataAccessLayer
             }).ConfigureAwait(false);
 
             var baseUri = Storage.GetBaseUri("themes");
-            var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == CompanyContext.CurrentResourceID).SingleOrDefault();
+            var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID ==  SecurityContext.ResourceID).SingleOrDefault();
 
-            return repoTheme.ToGetModel(baseUri, resource, resource, CompanyContext.CurrentCompanyID);
+            return repoTheme.ToGetModel(baseUri, resource, resource, SecurityContext.CompanyID);
         }
 
         public async Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme)
@@ -374,7 +375,7 @@ namespace d360.model.DataAccessLayer
                 throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeIsLocked);
             }
 
-            existingTheme = theme.ToRepositoryModel(existingTheme, CompanyContext.CurrentResourceID);
+            existingTheme = theme.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
             existingTheme.Validate();
 
             if (CompanyContext.Any<Theme>(t => t.Uid != existingTheme.Uid && t.Name.ToLower() == existingTheme.Name.ToLower()))
@@ -416,7 +417,7 @@ namespace d360.model.DataAccessLayer
             var updatedBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.UpdatedBy).SingleOrDefault();
             var baseUri = Storage.GetBaseUri("themes");
 
-            return existingTheme.ToGetModel(baseUri, createdBy, updatedBy, CompanyContext.CurrentCompanyID);
+            return existingTheme.ToGetModel(baseUri, createdBy, updatedBy, SecurityContext.CompanyID);
         }
     }
 }

@@ -73,7 +73,14 @@ namespace igx.UnitTests
 
 		#region Mock Interfaces
 
-        public ICommunityContext GetCommunity()
+		public ICommunity GetCommunity()
+		{
+			var mock = new Mock<ICommunity>();
+
+			return mock.Object;
+		}
+
+		public ICommunityContext GetCommunityContext()
         {
             var mock = new Mock<ICommunityContext>();
 
@@ -83,7 +90,6 @@ namespace igx.UnitTests
 		public static ICompanyContext GetCompany()
         {
             var mock = new Mock<ICompanyContext>();
-            mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<int>(), Permission.ReadAsset)).Returns(
                 (int id, Permission p) =>
                 {
@@ -269,7 +275,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage(), GetCommunityContext(), GetFeatureFlagService());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(

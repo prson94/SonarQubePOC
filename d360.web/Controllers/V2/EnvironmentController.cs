@@ -62,8 +62,8 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
-		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser()); } }
-		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true); } }
+		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser().Result); } }
+		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser().Result, true); } }
 
 
 		public EnvironmentController(
@@ -138,8 +138,8 @@ namespace d360.web.Controllers.V2
 		[HttpGet, Route("uservariables"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<HttpResponseMessage> GetUserVariables()
 		{
-			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
-			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
+			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
+			var authModel = (await Community.ReadAuthenticationTypeByTenantUrlAsync(SecurityContext.CompanyID, SecurityContext.CompanyPrefix)).Data;
 			var isSSO = authModel != AuthenticationType.Forms;
 
 			var data = new
@@ -228,7 +228,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (string.IsNullOrEmpty(data))
 			{
-				var filesToDelete = _storage.ListFilenamesByPrefix(folder, $"{Company.CurrentCompanyID}.");
+				var filesToDelete = _storage.ListFilenamesByPrefix(folder, $"{SecurityContext.CompanyID}.");
 				filesToDelete.ForEach(f =>
 				{
 					_storage.DeleteFile(folder, f).Wait();
@@ -237,7 +237,7 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				var info = data.GetFileFromDataUrl();
-				var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, info.Item1);
+				var imgFileName = string.Format("{0}{1}", SecurityContext.CompanyID, info.Item1);
 				await _storage.CreateFile(folder, imgFileName, info.Item2).ConfigureAwait(false);
 				data = $"{url}{imgFileName}";
 			}
@@ -508,7 +508,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFeatureFlagInfo()
 		{
-			var userModel = Company.GetFeatureFlagUser();
+			var userModel = await GetFeatureFlagUser();
 			var user = new FeatureFlagUser
 			{
 				key = userModel.Key,
@@ -523,14 +523,7 @@ namespace d360.web.Controllers.V2
 			};
 				
 			var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
-			return await Task.FromResult(
-				ResponseMessage(
-					Request.CreateResponse(HttpStatusCode.OK, new
-					{
-						clientId = ClientId,
-						user
-					}))
-				).ConfigureAwait(false);
+			return Ok(new { clientId = ClientId, user });
 		}
 
 		/// <summary>
@@ -973,7 +966,7 @@ select	r.uid as ResourceUid,
 					"@AssetUid, @AssetTypeUid, @DashboardUid, @IssueUid, @SemanticUid, @TagUid, " +
 					"@Sidebar, @Tab", new
 					{
-						UserId = Company.CurrentResourceID,
+						UserId = SecurityContext.ResourceID,
 						Browser = (int)value.Browser,
 						Action = (int)value.Action,
 						Timestamp = DateTime.UtcNow,
@@ -1570,7 +1563,7 @@ select	r.uid as ResourceUid,
 
 				css.AppendLine("}");
 
-				if (Company.CurrentResourceID > 0)
+				if (SecurityContext.ResourceID > 0)
 				{
 					//https://jira.syncsort.com/browse/GOV-21052
 					//Limited / Low-risk information disclosure via CSS overrides
@@ -2121,7 +2114,7 @@ select	r.uid as ResourceUid,
 			{
 				using (var stream = new MemoryStream())
 				{
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
 				}
@@ -2132,7 +2125,7 @@ select	r.uid as ResourceUid,
 				using (var stream = new MemoryStream())
 				{
 
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
 				}
@@ -2142,7 +2135,7 @@ select	r.uid as ResourceUid,
 			{
 				using (var stream = new MemoryStream())
 				{
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
 				}
@@ -2523,7 +2516,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2696,11 +2689,11 @@ select	r.uid as ResourceUid,
 
 			if (model.LanguageCode == null)
 			{
-				await this.ResourceSettingRepository.DeleteGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage");
+				await this.ResourceSettingRepository.DeleteGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage");
 			}
 			else
 			{
-				await this.ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage", model.LanguageCode);
+				await this.ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage", model.LanguageCode);
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK);
@@ -2743,7 +2736,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
 			{
-				var groupName = Guid.NewGuid().ToString();//$"D3S{Company.CurrentCompanyID}";
+				var groupName = Guid.NewGuid().ToString();//$"D3S{SecurityContext.CompanyID}";
 				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
 				await Workspace.UpsertSettingAsync(Setting.PowerBIGroupId, res.Id.ToString());
 
@@ -2865,7 +2858,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				var settings = await ResourceSettingRepository.GetSettings(Company.CurrentResourceID, AssetTypeUID);
+				var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
 			}
@@ -2908,7 +2901,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				await ResourceSettingRepository.UpsertSetting(Company.CurrentResourceID, assetTypeUid, setting, value);
+				await ResourceSettingRepository.UpsertSetting(SecurityContext.ResourceID, assetTypeUid, setting, value);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 			}
@@ -2950,7 +2943,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				await ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, setting, value);
+				await ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, setting, value);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 			}

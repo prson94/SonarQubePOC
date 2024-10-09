@@ -27,7 +27,13 @@ namespace d360.model.DataAccessLayer
 		internal IStorageProvider Storage;
 		internal IQueueSource QueueSource;
 
-		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage, IQueueSource queueSource, IFeatureFlagService ff) : base(context, ff)
+		public ProcessRepository(
+			ICompanyContext context, 
+			ISecurityContextProvider securityContext,
+			IAssetRepository assetRepository, 
+			IStorageProvider storage, 
+			IQueueSource queueSource, 
+			IFeatureFlagService ff) : base(context, securityContext, ff)
 		{
 			AssetRepository = assetRepository;
 			Storage = storage;
@@ -481,7 +487,7 @@ namespace d360.model.DataAccessLayer
 								when		not matched by target then
 								insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 								values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());", 
-					new { executionId = execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID },
+					new { executionId = execution.ExecutionID, resourceId = SecurityContext.ResourceID },
 					transaction: trans);
 
 					if (isDiagramReplace)
@@ -578,7 +584,7 @@ namespace d360.model.DataAccessLayer
 									{
 										assetId = targetAssetId,
 										diagram = (simpleModel.nodeDataArray.Count > 0 || simpleModel.linkDataArray.Count > 0) ? JsonConvert.SerializeObject(simpleModel) : null,
-										resourceId = CompanyContext.CurrentResourceID
+										resourceId = SecurityContext.ResourceID
 									}, transaction: trans);
 
 					//call new procedure.
@@ -662,7 +668,7 @@ namespace d360.model.DataAccessLayer
 
 			// TODO: Add event grid calls here.
 
-			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			return validationRes;
 		}
@@ -741,7 +747,7 @@ namespace d360.model.DataAccessLayer
 							from #intersectMap IM
 								inner join Field F on F.IntersectID = IM.intersectFromId
 
-							", new { execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID, json = relJson }, transaction: trans);
+							", new { execution.ExecutionID, resourceId = SecurityContext.ResourceID, json = relJson }, transaction: trans);
 		}
 		private void CopyTags(ApiExecution execution, List<ProcessDiagramCopyMapper> copyMappers, SqlConnection conn, SqlTransaction trans)
 		{
@@ -766,7 +772,7 @@ namespace d360.model.DataAccessLayer
 					inner join Asset NewAsset on NewAsset.uid = eda.uid
 					inner join AssetTag ATAG on ATAG.AssetId = A.Id
 					where eda.executionid = @executionid and eda.Action <> 'Delete'
-							", new { execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID, assetMap }, transaction: trans);
+							", new { execution.ExecutionID, resourceId = SecurityContext.ResourceID, assetMap }, transaction: trans);
 		}
 
 		public IEnumerable<ProcessDiagramBadge> GetDiagramAssetBadges(Guid assetUid)

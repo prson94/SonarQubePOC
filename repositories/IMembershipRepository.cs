@@ -30,11 +30,5 @@ namespace repositories
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
         
         List<GroupResponseResult> AddGroups(ApiExecution execution, List<UpdateGroupModel> groups);
-        
-		Task AddClaim(ClaimPostApiModel claim);
-		Task UpdateClaim(int id, ClaimPutApiModel claim);
-		Task DeleteClaim(int id);
-		Task<IEnumerable<ClaimApiViewModel>> GetClaims();
-
 	}
 }

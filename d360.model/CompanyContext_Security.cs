@@ -153,7 +153,7 @@ namespace d360.model
 		/// </summary>
 		private bool HasAssetDefaultReadPermission(string type, int id)
 		{
-			bool hasPermission = CurrentResourceIsAdmin;
+			bool hasPermission = SecurityContext.IsAdministrator;
 			if (!hasPermission)
 			{
 				int assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
@@ -185,7 +185,7 @@ namespace d360.model
 																						else
 																						begin
 																							select 1;
-																						end", new { t = assetTypeId, r = CurrentResourceID });
+																						end", new { t = assetTypeId, r = SecurityContext.ResourceID });
 		}
 
 		private bool HasPermission(long assetId, int assetTypeId, Permission permission)
@@ -198,7 +198,7 @@ namespace d360.model
 
 				if (permission == Permission.ReadAsset)
 				{
-					return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, CurrentResourceID);
+					return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, SecurityContext.ResourceID);
 				}
 
 				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
@@ -212,7 +212,7 @@ namespace d360.model
 																else
 																	begin
 																		select 0;
-																end", new { assetId, t = assetTypeId, r = CurrentResourceID });
+																end", new { assetId, t = assetTypeId, r = SecurityContext.ResourceID });
 			}
 		}
 
@@ -229,7 +229,7 @@ namespace d360.model
 																						else
 																						begin
 																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
+																						end", new { type, id = objectId, t = assetTypeId, r = SecurityContext.ResourceID });
 		}
 
 
@@ -242,7 +242,7 @@ namespace d360.model
 		/// <returns></returns>
 		private bool HasReadPermission(string type, int objectId, int assetTypeId)
 		{
-			return HasUserReadPermission(type, objectId, assetTypeId, CurrentResourceID);
+			return HasUserReadPermission(type, objectId, assetTypeId, SecurityContext.ResourceID);
 		}
 
 		/// <summary>
@@ -392,7 +392,7 @@ group by A.Uid";
 						{
 							Enqueue(constants.Queue.Search, new ReindexModel
 							{
-								CompanyID = CurrentCompanyID,
+								CompanyID = SecurityContext.CompanyID,
 								AssetTypeUid = assetTypeUid,
 								Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
 							});
@@ -569,7 +569,7 @@ where R.ID = @ID
 						{
 							Enqueue(constants.Queue.Search, new ReindexModel
 							{
-								CompanyID = CurrentCompanyID,
+								CompanyID = SecurityContext.CompanyID,
 								AssetTypeUid = assetTypeUid,
 								Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
 							});
@@ -955,10 +955,10 @@ where R.ID = @ID
 											,ERTROI.SecurityAsset
 											,ERTROI.SecurityAssetID
 											,ERTROI.Context
-											,@CurrentResourceID
+											,@ResourceID
 											,GETDATE())                               
 										OUTPUT  inserted.ID INT, ERTROI.ItemNumber INTO #mergeResultTable;                                                                                   
-											", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+											", new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
 
@@ -1195,7 +1195,7 @@ from	api.ExecutionDeletedGroup EG
 where	EG.Success is null 
 		and EG.ExecutionID = @ExecutionID 
 		and EG.ItemNumber between @beginItemNumber and @endItemNumber;",
-									new { execution.ExecutionID, execution.Id, CurrentResourceID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
+									new { execution.ExecutionID, execution.Id, SecurityContext.ResourceID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
 								);
 
 								trans.Commit();
@@ -1225,8 +1225,8 @@ where	EG.Success is null
 					}
 				}
 
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 				results.AddRange(
 								Query<GroupResponseResult>(
@@ -1269,12 +1269,12 @@ where	EG.Success is null
 
 		public string GetNoReadSqlStatement(Permission permission, string identifier = null)
 		{
-			return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? CurrentResourceID.ToString() : identifier)}";
+			return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? SecurityContext.ResourceID.ToString() : identifier)}";
 		}
 
 		public string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null)
 		{
-			return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? CurrentResourceID.ToString() : identifier)}";
+			return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? SecurityContext.ResourceID.ToString() : identifier)}";
 		}
 
 		public List<PermissionInfo> GetTypePermissions(string type, int typeID)
@@ -1290,10 +1290,10 @@ where	EG.Success is null
 
 							select distinct R.PermissionsBitMask
 							from [dbo].ResponsibilityDetailByAssetTypeIDAssetID(@AssetTypeID,0) R
-							where ResourceID = @CurrentResourceID;
+							where ResourceID = @ResourceID;
 							";
 
-			List<int> responsibilityAssignments = Query<int>(qry, new { type, typeID, CurrentResourceID }).ToList();
+			List<int> responsibilityAssignments = Query<int>(qry, new { type, typeID, SecurityContext.ResourceID }).ToList();
 
 			permissions.ForEach(p =>
 			{
@@ -1320,8 +1320,7 @@ where	EG.Success is null
 			select PermissionsBitMask from UserAssetPermissionsByAssetID(@r,@assetTypeId,@assetId)
 
 			--check default read access if there are no permissions set and if user is not an administrator
-			if 
-				@CurrentResourceIsAdmin = 0 and
+			if @IsAdministrator = 0 and
 				(select max(val) from @permissionValues) = 0 and 
 				(select DefaultPermissions from AssetType where id = @assetTypeId) = 0
 			begin
@@ -1336,7 +1335,7 @@ where	EG.Success is null
 		{
 			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
 
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = CurrentResourceID, assetTypeId, assetId, CurrentResourceIsAdmin });
+			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
 
 			if (responsibilityAssignments.Any())
 			{
@@ -1358,7 +1357,7 @@ where	EG.Success is null
 
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = CurrentResourceID, assetTypeId, assetId, CurrentResourceIsAdmin });
+			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
 
 			if (responsibilityAssignments.Any())
 			{
@@ -1978,7 +1977,7 @@ where id = @IntersectTypeID";
 
 		public bool HasAssetPermission(string type, int id, Permission permission)
 		{
-			bool hasPermission = CurrentResourceIsAdmin;
+			bool hasPermission = SecurityContext.IsAdministrator;
 
 			if (!hasPermission)
 			{
@@ -2030,7 +2029,7 @@ where id = @IntersectTypeID";
 
 		public bool HasAssetPermission(long id, Permission permission)
 		{
-			bool hasPermission = CurrentResourceIsAdmin;
+			bool hasPermission = SecurityContext.IsAdministrator;
 
 			if (!hasPermission)
 			{
@@ -2043,7 +2042,7 @@ where id = @IntersectTypeID";
 
 		public bool HasAssetPermissionByUid(Guid uid, Permission permission)
 		{
-			bool hasPermission = CurrentResourceIsAdmin;
+			bool hasPermission = SecurityContext.IsAdministrator;
 
 			if (!hasPermission)
 			{
@@ -2061,7 +2060,7 @@ where id = @IntersectTypeID";
 
 		public bool HasAssetTypePermission(string type, int id, Permission permission)
 		{
-			bool hasPermission = CurrentResourceIsAdmin;
+			bool hasPermission = SecurityContext.IsAdministrator;
 			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
 
 
@@ -2084,7 +2083,7 @@ where id = @IntersectTypeID";
 																			else
 																				begin
 																					select 0;
-																				end", new { id, type, r = CurrentResourceID });
+																				end", new { id, type, r = SecurityContext.ResourceID });
 				}
 			}
 
@@ -2921,12 +2920,12 @@ update  set
 		G.Description = TRIM(S.Description),
 		G.PrimaryOwnerResourceID = PrimaryID,
 		G.SecondaryOwnerResourceID = SecondaryID,
-		G.UpdatedBy = @CurrentResourceID,
+		G.UpdatedBy = @ResourceID,
 		G.UpdatedOn = @date,
 		G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
 when	not matched then
 insert	(Uid, Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID, IsActiveDirectoryGroup, UpdatedOn, UpdatedBy)
-values	(coalesce(S.GroupUid, newid()), TRIM(S.Name), TRIM(S.Description), S.PrimaryID, S.SecondaryID, S.IsActiveDirectoryGroup, @date, @CurrentResourceID)
+values	(coalesce(S.GroupUid, newid()), TRIM(S.Name), TRIM(S.Description), S.PrimaryID, S.SecondaryID, S.IsActiveDirectoryGroup, @date, @ResourceID)
 output	inserted.ID, $action, inserted.Name, S.ExecutionItemUid into #mergeResultTable;
 
 INSERT	INTO Asset (
@@ -2956,7 +2955,7 @@ FROM	#mergeResultTable M
 WHERE	EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
 
 update  A
-set		A.UpdatedBy = @CurrentResourceID,
+set		A.UpdatedBy = @ResourceID,
 		A.UpdatedOn = @date
 from	Asset A
 		inner join #mergeResultTable R on A.Object = 'Group' and A.ObjectID = R.GroupID and R.[Action] = 'UPDATE';
@@ -3044,7 +3043,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									Connection.Execute(
 										insertSQL,
-										new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, CurrentResourceID, date }, transaction: trans, commandTimeout: timeout
+										new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, SecurityContext.ResourceID, date }, transaction: trans, commandTimeout: timeout
 									);
 
 									if (hasCounterField)
@@ -3084,7 +3083,7 @@ where   {querySuffix}
 									{
 										Connection.Execute(
 											$"INSERT INTO Field (FieldTypeID, [Value], FormattedValue, UpdatedOn, UpdatedBy, AssetID) {fieldValuesSql}", 
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout
+											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout
 										);
 									}
 									else
@@ -3102,7 +3101,7 @@ WHERE	EF.Ignore is null
 		and F.FieldTypeID = EF.FieldTypeID
 		and EF.FieldValue is null 
 		and EF.LookupValue is null;",
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout
+											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout
 										);
 
 										Connection.Execute($@"
@@ -3116,7 +3115,7 @@ update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = 
 when		not matched by target then
 insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
 values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID);",
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, date }, transaction: trans, commandTimeout: timeout
+											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID, date }, transaction: trans, commandTimeout: timeout
 										);
 									}
 
@@ -3166,8 +3165,8 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				}
 			}
 
@@ -3578,7 +3577,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 										where executionresponsibilityrule.executionid = mr.executionid and executionresponsibilityrule.itemnumber = mr.itemnumber";
 
 									Connection.Execute(insertSQL,
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 									Connection.Execute(
 										$"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix};",
@@ -3856,10 +3855,10 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 											set RT.Name = S.Name,
 											RT.Description = S.Description,
 											UpdatedOn = getutcdate(),
-											UpdatedBy = @CurrentResourceID
+											UpdatedBy = @ResourceID
 										when not matched then
 											insert (Name, Description, Uid, CreatedOn, CreatedBy)
-											values (S.Name,S.Description, ISNULL(S.Uid,newid()), getutcdate(), @CurrentResourceID)
+											values (S.Name,S.Description, ISNULL(S.Uid,newid()), getutcdate(), @ResourceID)
 										output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
 										update RT
@@ -3871,7 +3870,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 										where RT.ExecutionID = @ExecutionID and RT.Success is null";
 
 									Connection.Execute(insertSQL,
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+											new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 									#region Execution Log
 									try
@@ -3939,7 +3938,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 												or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 
 
-										Connection.Execute(logSqlR, new { execution.ExecutionID, beginItemNumber, endItemNumber, r = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+										Connection.Execute(logSqlR, new { execution.ExecutionID, beginItemNumber, endItemNumber, r = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 									}
 									catch
 									{
@@ -4002,7 +4001,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 		{
 			int deleteSameValue = action == "Updated" ? 1 : 0;
 			DateTime UpdatedOn = DateTime.Now;
-			int UpdatedBy = CurrentResourceID;
+			int UpdatedBy = SecurityContext.ResourceID;
 
 			if ((action == "Created" || (action == "Updated")) && current != null)
 			{

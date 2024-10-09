@@ -21,8 +21,8 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 
-		public ScoringRepository(ICompanyContext companyContext, IQueueSource queue, IFeatureFlagService ff)
-			: base(companyContext, ff)
+		public ScoringRepository(ICompanyContext companyContext, ISecurityContextProvider securityContext, IQueueSource queue, IFeatureFlagService ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Queue = queue;
 		}
@@ -289,7 +289,7 @@ namespace d360.model.DataAccessLayer
 			if (alloc != null)
 			{
 				alloc.State = State.Active;
-				alloc.UpdatedBy = CompanyContext.CurrentResourceID;
+				alloc.UpdatedBy =  SecurityContext.ResourceID;
 				alloc.IsExternallyCalculated = model.isExternallyCalculated;
 				alloc.UpdatedOn = DateTime.UtcNow;
 				alloc.LowerThreshold = model.lowerThreshold.Value;
@@ -303,7 +303,7 @@ namespace d360.model.DataAccessLayer
 					AssetTypeUid = model.assetTypeUid,
 					ScoreType = model.scoreType
 				};
-				alloc.CreatedBy = alloc.UpdatedBy = CompanyContext.CurrentResourceID;
+				alloc.CreatedBy = alloc.UpdatedBy =  SecurityContext.ResourceID;
 				alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
 				alloc.IsExternallyCalculated = model.isExternallyCalculated;
 				alloc.LowerThreshold = model.lowerThreshold.Value;
@@ -343,8 +343,8 @@ select @id";
 			
 			var executionId = CompanyContext.Query<int>(logSql, 
 				new { 
-					alloc.Uid, 
-					CompanyContext.CurrentResourceID, 
+					alloc.Uid,
+					CureentResourceID = SecurityContext.ResourceID, 
 					action = (int)ApiExecutionAction.PostScoreAllocation, 
 					CalculationMethod = alloc.CalculationMethod.ToString(),
 					ScoreType = alloc.ScoreType.ToString()
@@ -352,7 +352,7 @@ select @id";
 
 			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { 
 				Action = PostExecutionQueueMessageAction.History, 
-				CompanyID = CompanyContext.CurrentCompanyID, 
+				CompanyID = SecurityContext.CompanyID, 
 				ExecutionId = executionId
 			});
 
@@ -386,7 +386,7 @@ select @id";
 		{
 			alloc.AssetTypeUid = model.assetTypeUid;
 			alloc.ScoreType = model.scoreType;
-			alloc.UpdatedBy = CompanyContext.CurrentResourceID;
+			alloc.UpdatedBy =  SecurityContext.ResourceID;
 			alloc.IsExternallyCalculated = model.isExternallyCalculated;
 			alloc.LowerThreshold = model.lowerThreshold.Value;
 			alloc.UpperThreshold = model.upperThreshold.Value;
@@ -426,7 +426,7 @@ select @id";
 				new
 				{
 					alloc.Uid,
-					CompanyContext.CurrentResourceID,
+					CurrentResourceID = SecurityContext.ResourceID,
 					action = (int)ApiExecutionAction.PutScoreAllocation,
 					CalculationMethod = alloc.CalculationMethod.ToString(),
 					ScoreType = alloc.ScoreType.ToString()
@@ -435,7 +435,7 @@ select @id";
 			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				ExecutionId = executionId
 			});
 
@@ -466,7 +466,7 @@ select @id";
 
 		public void DeleteAllocation(MetricAllocation alloc)
 		{
-			alloc.UpdatedBy = CompanyContext.CurrentResourceID;
+			alloc.UpdatedBy =  SecurityContext.ResourceID;
 			alloc.UpdatedOn = DateTime.UtcNow;
 			alloc.State = State.Deleted;
 			CompanyContext.SaveChanges();
@@ -496,14 +496,14 @@ select @id";
 				new
 				{
 					alloc.Uid,
-					CompanyContext.CurrentResourceID,
+					CurrentResourceID = SecurityContext.ResourceID,
 					action = (int)ApiExecutionAction.DeleteScoreAllocation
 				}).Single();
 
 			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				ExecutionId = executionId
 			});
 
@@ -691,8 +691,8 @@ drop table #TempDataProcess
 			{
 				var info = new ScoreQueueInfo
 				{
-					CompanyID = CompanyContext.CurrentCompanyID,
-					ResourceID = CompanyContext.CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					ResourceID = SecurityContext.ResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
 					Payload = new AssetRescoreRequestModel { AssetUid = unique.AssetUid, EffectiveDate = unique.EffectiveDate, ScoreType = ScoreType.Governance },
 					StartedOn = DateTime.UtcNow
@@ -762,7 +762,7 @@ drop table #TempDataProcess
 
 			//Add the default query items
 			dbArgs.Add("@scoreItemUid", scoreItemUid);
-			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+			dbArgs.Add("@userId",  SecurityContext.ResourceID);
 			whereStatements.Insert(0, "E.scoreItemUid = @scoreItemUid");
 
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "OAN.DisplayPath");

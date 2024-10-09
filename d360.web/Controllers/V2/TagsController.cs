@@ -624,7 +624,7 @@ namespace d360.web.Controllers.V2
 				int[] tagIDs = assetTags.Select(x => x.TagID).ToArray();
 				var tags = Company.Tags.Where(x => tagIDs.Contains(x.ID)).ToList();
 
-				if (Company.HasAssetPermission(asset.ID, Permission.AddAsset) || Company.HasAssetPermission(asset.ID, Permission.EditAsset) || Company.CurrentResourceIsAdmin)
+				if (Company.HasAssetPermission(asset.ID, Permission.AddAsset) || Company.HasAssetPermission(asset.ID, Permission.EditAsset) || SecurityContext.IsAdministrator)
 				{
 					foreach (var tag in tags)
 					{
@@ -642,7 +642,7 @@ namespace d360.web.Controllers.V2
 					{
 						result.Add(new TagPermissionItem()
 						{
-							CanDelete = tag.CreatedBy == Company.CurrentResourceID,
+							CanDelete = tag.CreatedBy == SecurityContext.ResourceID,
 							uid = tag.uid,
 							Value = tag.Value
 						});

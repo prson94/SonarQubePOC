@@ -391,13 +391,13 @@ namespace d360.web.Controllers
 							return Json(new { title = "Error!", message = ApiMessages.AssetValidateWithAssetType, type = "error" });
 						}
 
-						f = Company.Filter<FollowDetail>(i => i.AssetID == asset.ID && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+						f = Company.Filter<FollowDetail>(i => i.AssetID == asset.ID && i.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
 					}
 				}
 
 				if (f == null && assetTypeUid != Guid.Empty && assetUid == Guid.Empty)
 				{
-					f = Company.Filter<FollowDetail>(i => i.AssetTypeID == assetType.ID && i.AssetID == null && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+					f = Company.Filter<FollowDetail>(i => i.AssetTypeID == assetType.ID && i.AssetID == null && i.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
 				}
 				
 				if (f != null)

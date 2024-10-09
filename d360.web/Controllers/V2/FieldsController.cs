@@ -2163,7 +2163,7 @@ else
 						f.ColumnOrder = j++;
 					}
 
-					Company.Database.Connection.UpdateFieldMove(list, Company.CurrentResourceID);
+					Company.Database.Connection.UpdateFieldMove(list, SecurityContext.ResourceID);
 					list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 				}
 
@@ -2219,11 +2219,11 @@ else
 					if (fieldFromMove != null && fieldFromMove.ID != 0)
 					{
 						fieldFromMove.ColumnOrder = currentPosition;
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+						Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, SecurityContext.ResourceID);
 					}
 					else
 					{
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+						Company.Database.Connection.UpdateFieldMove(fieldToMove, null, SecurityContext.ResourceID);
 					}
 				}
 
@@ -2513,7 +2513,7 @@ else
 						}
 						else
 						{
-							if (Company.CurrentResourceIsAdmin)
+							if (SecurityContext.IsAdministrator)
 							{
 								sql += $@"
 								select 
@@ -2641,7 +2641,7 @@ else
 						}
 					}
 
-					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid, userId = Company.CurrentResourceID });
+					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid, userId = SecurityContext.ResourceID });
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 

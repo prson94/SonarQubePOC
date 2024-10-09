@@ -19,7 +19,7 @@ namespace d360.web.Controllers.V2
             {
                 var requestScope = actionContext.Request.GetDependencyScope();
                 var communityContext = requestScope.GetService(typeof(ICommunityContext)) as ICommunityContext;
-                isCompanyActive = communityContext.CurrentCompanySsoModel.IsCompanyActive;
+				isCompanyActive = false;// communityContext.CurrentCompanySsoModel.IsCompanyActive;
             }
             catch
             {

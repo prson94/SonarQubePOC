@@ -803,7 +803,7 @@ namespace d360.web.Controllers
 			}
 
 			var sql = $@"select [Object], ObjectID from ResponsibilityDetail where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @resId and ({dynamicSql})";
-			dbParams.Add("resId", Company.CurrentResourceID);
+			dbParams.Add("resId", SecProvider.ResourceID);
 
 			return (await Company.QueryAsync<AssetWithoutReadPermission>(sql, dbParams)).ToList();
 		}
@@ -1466,22 +1466,21 @@ namespace d360.web.Controllers
 		}
 
 		[Route("authenticationModel")]
-		public HttpResponseMessage GetAuthenticationModel()
+		public async Task<IHttpActionResult> GetAuthenticationModel()
 		{
-			var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
+			var response = (await Community.ReadDomainSettingsByTenantAsync(SecProvider.CompanyID)).Data.ToList();
 			var authType = "sso";
 
-			foreach (var settings in c.CompanyDomainSettings)
+			foreach (var settings in response)
 			{
 				if (SecProvider.CompanyPrefix == settings.UrlPrefix)
 				{
 					authType = settings.AuthenticationType == AuthenticationType.Forms ? "forms" : "sso";
-
 					break;
 				}
 			}
 
-			return Request.CreateResponse<dynamic>(
+			return Ok(
 				new Dictionary<string, object>() {
 					{ "model", authType },
 					{ "prefix", SecProvider.CompanyPrefix }
@@ -1501,7 +1500,7 @@ namespace d360.web.Controllers
 			bool addModifySynonym = true;
 			bool deleteSynonym = true;
 
-			if (!Company.CurrentResourceIsAdmin && json != null)
+			if (!SecProvider.IsAdministrator && json != null)
 			{
 				long assetId = long.Parse(json.GetValue("AssetID").ToString());
 				string objectType = SystemObjects.Artifact.ToString();
@@ -1592,7 +1591,7 @@ namespace d360.web.Controllers
 				if @assettypeid is not null and @assetid is null
 				begin
 					insert into @results
-					select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @CurrentResourceID
+					select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @ResourceID
 				end
 
 				if @assetid is not null
@@ -1604,11 +1603,11 @@ namespace d360.web.Controllers
 					if not exists (select top 1 1 from @results)
 					begin
 						insert into @results
-						select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @CurrentResourceID
+						select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @ResourceID
 					end
 
 				end
-				select * from @results", new { assetTypeUid, assetUid, Company.CurrentResourceID })).FirstOrDefault();
+				select * from @results", new { assetTypeUid, assetUid, SecProvider.ResourceID })).FirstOrDefault();
 
 			return new
 			{
@@ -1834,7 +1833,7 @@ namespace d360.web.Controllers
 				int count = 0;
 				var dbArgs = new Dictionary<string, object>
 				{
-					{ "resourceId", Company.CurrentResourceID },
+					{ "resourceId", SecProvider.ResourceID },
 					{ "assetUid", asset.uid },
 					{ "object", asset.Object },
 					{ "objectId", asset.ObjectID },
@@ -1890,8 +1889,10 @@ namespace d360.web.Controllers
 			var sType = type.ToString();
 			var values = new List<ReadOnlyFieldValue>();
 
-			var intersects = (await Company.QueryAsync<GetRenderRelationshipFieldModel>($"exec [dbo].[GetRenderRelationshipField] @typeID, @id, @FieldTypeID, @CurrentResourceIsAdmin, @CurrentResourceID",
-															new { typeID = sType, id, FieldTypeID = ft.ID, Company.CurrentResourceIsAdmin, Company.CurrentResourceID })).ToList();
+			var intersects = (await Company.QueryAsync<GetRenderRelationshipFieldModel>(
+				"exec [dbo].[GetRenderRelationshipField] @typeID, @id, @FieldTypeID, @IsAdministrator, @ResourceID",
+				new { typeID = sType, id, FieldTypeID = ft.ID, SecProvider.IsAdministrator, SecProvider.ResourceID })
+			).ToList();
 
 			if (intersects == null)
 			{
@@ -2380,7 +2381,7 @@ namespace d360.web.Controllers
 			var showUsers = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 
 			//check that current user is an admin or the company settings allow users to be listed
-			if (!Company.CurrentResourceIsAdmin && !showUsers)
+			if (!SecProvider.IsAdministrator && !showUsers)
 			{
 				return errorMessageResponse(HttpStatusCode.NotFound, "");
 			}
@@ -2475,7 +2476,7 @@ namespace d360.web.Controllers
 		public async Task<IHttpActionResult> GetResource(int typeID, int id)
 		{
 			// See if user can see other users profiles by checking that current user is an admin or the company settings allow users to be listed.
-			if (id != Company.CurrentResourceID)
+			if (id != SecProvider.ResourceID)
 			{
 				if (!(await GetCachedSettingValueById<bool>(Setting.ShowResources)))
 				{
@@ -2490,13 +2491,10 @@ namespace d360.web.Controllers
 				return errorMessageResponse(HttpStatusCode.NotFound, "");
 			}
 
-			var model = Community.GetById<Resource>(id);
-			if (model == null)
-			{
-				return errorMessageResponse(HttpStatusCode.NotFound, "");
-			}
-
-			return Ok(model);
+			var model = await Community.ReadUserByIdAsync(id);
+			return model.IsSuccess ? 
+				Ok(model) :
+				errorMessageResponse(HttpStatusCode.NotFound, model.Message);
 		}
 
 		#endregion
@@ -2840,14 +2838,14 @@ namespace d360.web.Controllers
 					from    Asset A 
 							inner join AssetDisplayValue V on V.AssetID = A.ID 
 							inner join AssetType T on T.ID = A.AssetTypeID 
-					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID });
+					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = SecProvider.ResourceID });
 			var metadata = metadataResult.FirstOrDefault();
 
 			if (metadata != null)
 			{
 				var perms = Company.GetPermissions((long)metadata.AssetID, (int)metadata.AssetTypeID);
 
-				if ((perms.Count > 0 && !perms.Any(x => x.ID == Permission.ReadAsset)) && !Company.CurrentResourceIsAdmin)
+				if ((perms.Count > 0 && !perms.Any(x => x.ID == Permission.ReadAsset)) && !SecProvider.IsAdministrator)
 				{
 					return new DetailReadOnlyModel()
 					{
@@ -2857,7 +2855,7 @@ namespace d360.web.Controllers
 
 				model.HasAccess = true;
 
-				if (perms.Any(x => x.ID == Permission.ReadResponsibilities) || perms.Count == 0 || Company.CurrentResourceIsAdmin)
+				if (perms.Any(x => x.ID == Permission.ReadResponsibilities) || perms.Count == 0 || SecProvider.IsAdministrator)
 				{
 					model.HasResponsibilityReadAccess = true;
 				}
@@ -2867,7 +2865,7 @@ namespace d360.web.Controllers
 				}
 
 				model.CanEdit = true;
-				if (!Company.CurrentResourceIsAdmin && !perms.Any(x => x.ID == Permission.EditAsset))
+				if (!SecProvider.IsAdministrator && !perms.Any(x => x.ID == Permission.EditAsset))
 				{
 					model.CanEdit = false;
 				}
@@ -2963,7 +2961,7 @@ namespace d360.web.Controllers
 									var checkReadPermission = Company.GetPermissionsRead(parentAsset.ID, parentAsset.AssetTypeID);
 									bool HasAssetReadAccess;
 
-									if (checkReadPermission || Company.CurrentResourceIsAdmin)
+									if (checkReadPermission || SecProvider.IsAdministrator)
 									{
 										HasAssetReadAccess = true;
 									}
@@ -3202,7 +3200,7 @@ namespace d360.web.Controllers
 								groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
 							}
 
-							var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
+							var groupOwners = (await Community.ReadUsersByTenantAsync(SecProvider.CompanyID, groupOwnerIDs)).Data.ToList();
 
 							var row = new DetailReadOnlyRowModel();
 							ReadOnlyField primaryRow = null;
@@ -4523,7 +4521,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 				#endregion
 				case SystemObjects.ResourceType:
 					#region Fields
-					var resourceType = Community.Filter<AssetType>(i => i.ObjectID == id && i.Object == "ResourceType").SingleOrDefault();
+					var resourceType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "ResourceType").SingleOrDefault();
 					if (resourceType != null)
 					{
 						model.columns = 1;
@@ -4927,7 +4925,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("{type}/{id:int}/permissions")]
 		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, int id)
 		{
-			var isAdmin = Company.CurrentResourceIsAdmin;
+			var isAdmin = SecProvider.IsAdministrator;
 			AssetDetail asset = null;
 
 			if (!isAdmin)
@@ -5133,11 +5131,11 @@ where v.id = {0}", id)).FirstOrDefault();
 			var sql = @"select * from AssetDetail a where a.AssetTypeID = @assetTypeId ";
 			dbArgs.Add("@assetTypeId", assetTypeId);
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecProvider.IsAdministrator)
 			{
 				sql += "and not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID) ";
 				sql += "and not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID) ";
-				dbArgs.Add("@userId", Company.CurrentResourceID);
+				dbArgs.Add("@userId", SecProvider.ResourceID);
 			}
 
 			if (days != 0)
@@ -5155,7 +5153,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		{
 			//Social count has been moved to V2 Social controller and should be got from there
 			var areaName = (area ?? string.Empty).ToUpper();
-			var resourceId = id > 0 ? id : Company.CurrentResourceID;
+			var resourceId = id > 0 ? id : SecProvider.ResourceID;
 
 			switch (areaName)
 			{
@@ -5174,7 +5172,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		public async Task<IEnumerable<CountModel>> GetTheCounts(int days, int id = -1)
 		{
 			//Social count has been moved to V2 Social controller and should be got from there
-			var resourceId = id > 0 ? id : Company.CurrentResourceID;
+			var resourceId = id > 0 ? id : SecProvider.ResourceID;
 
 			return await LoadSocialActivityCount(days, resourceId);
 		}
@@ -5186,11 +5184,11 @@ where v.id = {0}", id)).FirstOrDefault();
 			string innerQuery;
 			var whereClauses = new List<string>();
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecProvider.IsAdministrator)
 			{
 				whereClauses.Add("not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID)");
 				whereClauses.Add("not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID)");
-				dbArgs.Add("@userId", Company.CurrentResourceID);
+				dbArgs.Add("@userId", SecProvider.ResourceID);
 			}
 
 			if (days != 0)
@@ -5394,7 +5392,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		[HttpGet, Route("referenceItems/{typeID:int}/items.json")]
 		public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
 		{
-			var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
+			var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {SecProvider.ResourceID}");
 
 			return Request.CreateResponse(HttpStatusCode.OK, models);
 		}
@@ -5417,7 +5415,7 @@ where v.id = {0}", id)).FirstOrDefault();
 					where	Type = 'ReferenceItemType'
 							and rt.uid = @uid
 							and PermissionsBitMask & @p = 0
-							and ResourceID = @resource", new { uid, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset });
+							and ResourceID = @resource", new { uid, resource = SecProvider.ResourceID, p = (int)Permission.ReadAsset });
 
 			return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
 		}

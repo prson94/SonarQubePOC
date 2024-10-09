@@ -81,7 +81,7 @@ namespace d360.model
                 }
                 else
                 {
-                    status = new CompanyRebuildJobStatus { JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
+                    status = new CompanyRebuildJobStatus { JobToken = jobToken, LastStartedBy = SecurityContext.ResourceID, LastStartedOn = DateTime.UtcNow, State = state };
                     Add(status);
                     returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
                 }

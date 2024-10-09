@@ -71,20 +71,20 @@ namespace igx.jobs.apiexecutionprocessor
 					CompanyPrefix = info.CompanyDomainPrefix,
 					IsAdministrator = false
 				};
-				using (var community = new CommunityContext(ConnString, Cache, Queue, context))
+				using (var community = new CommunityContext(ConnString, Cache, context))
 				{
 					using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 					{
-						var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
+						var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == context.ResourceID);
 						if (resource != null)
 						{
-							company.CurrentResourceIsAdmin = resource.IsAdministrator;
+							context.IsAdministrator = resource.IsAdministrator;
 						}
 
-						var fieldsRepository = new FieldsRepository(company, Queue, Storage, FeatureFlags);
-						var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
-						var membershipRepository = new MembershipRepository(company, community, assetRepository, Queue, Storage, FeatureFlags);
-						var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
+						var fieldsRepository = new FieldsRepository(company, context, Queue, Storage, FeatureFlags);
+						var assetRepository = new AssetRepository(company, context, Queue, Storage, community, FeatureFlags);
+						var membershipRepository = new MembershipRepository(company, context, community, assetRepository, Queue, Storage, FeatureFlags);
+						var relationshipRepository = new RelationshipRepository(community, company, context, Queue, Storage, FeatureFlags);
 
 						#endregion
 
@@ -126,7 +126,7 @@ namespace igx.jobs.apiexecutionprocessor
 												log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
 												resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
 
-												await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, log);
+												await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, context, log);
 
 												resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 											}
@@ -148,7 +148,7 @@ namespace igx.jobs.apiexecutionprocessor
 												log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
 												resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
 
-												await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, log);
+												await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, context, log);
 
 												resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 											}
@@ -243,14 +243,14 @@ namespace igx.jobs.apiexecutionprocessor
 											resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 											break;
 										case ApiExecutionAction.PostCrossReferences:
-											var connectionString = community.GetCompanyConnectionString();
+											var connectionString = community.GetCompanyConnectionString(info.CompanyID);
 											ICatalog catalog = new Catalog(new DapperConnectionProvider { ConnectionString = connectionString });
 											var postCrossReferences = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
 											await catalog.CreateCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
 											resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 											break;
 										case ApiExecutionAction.PostDataQualityResults:
-											var metricsRepository = new MetricsRepository(company, Queue, Storage, FeatureFlags);
+											var metricsRepository = new MetricsRepository(company, context, Queue, Storage, FeatureFlags);
 											var postDataQualityResultsRequest = await Storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
 											metricsRepository.InsertDataQualityResult(postDataQualityResultsRequest, dbExecutionItem, true);
 											resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
@@ -291,7 +291,7 @@ namespace igx.jobs.apiexecutionprocessor
 											resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
 											break;
 										case ApiExecutionAction.PatchCatalog:
-											var execRepo = new ExecutionsRepository(company, Queue, Storage, FeatureFlags);
+											var execRepo = new ExecutionsRepository(company, context, Queue, Storage, FeatureFlags);
 											log.LogTrace($"Get PatchCatalog payload: {DateTime.UtcNow:hh:mm:ss}");
 											var patchCatalogPayload = await Storage.DeserializeJsonObjectFromBlobAsync<PatchBulkCatalogRequestModel>(info.StorageFolder, info.RequestFileName);
 
@@ -348,7 +348,7 @@ namespace igx.jobs.apiexecutionprocessor
 							try
 							{
 								// We open a new connection here because we can run into issues with the EF context object where the underlying connection object is in an unstable state. 
-								var companyConnectionString = community.GetCompanyConnectionString(true);
+								var companyConnectionString = community.GetCompanyConnectionString(info.CompanyID, true);
 								using (var exceptionConnection = new SqlConnection(companyConnectionString))
 								{
 									if (dbExecutionItem.RetryCount >= maxRetryCount)
@@ -409,7 +409,7 @@ namespace igx.jobs.apiexecutionprocessor
 				new { dbExecutionItem.ErrorMessage, dbExecutionItem.CompletedOn, dbExecutionItem.Id });
 		}
 
-		private async Task processLoadBulkTagging(ApiExecution dbExecutionItem, int assetTypeId, ICompanyContext c, ILogger log)
+		private async Task processLoadBulkTagging(ApiExecution dbExecutionItem, int assetTypeId, ICompanyContext c, ISecurityContextProvider context, ILogger log)
 		{
 			try
 			{
@@ -424,7 +424,7 @@ namespace igx.jobs.apiexecutionprocessor
 						var bulkTags = await c.GetBulkTagAssetsAsync(load.ID, dbExecutionItem.ExecutionID);
 						if (bulkTags.Any())
 						{
-							var repo = new TagRepository(c, FeatureFlags, Queue);
+							var repo = new TagRepository(c, context, FeatureFlags, Queue);
 							await repo.BulkTagAssets(bulkTags, load.UpdatedBy ?? 0);
 						}
 					}

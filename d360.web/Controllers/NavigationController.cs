@@ -75,19 +75,19 @@ namespace d360.web.Controllers
 			return items;
 		}
 
-		internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren, bool hasDataCatalog)
+		internal async Task<List<TopNavigationItem>> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren, bool hasDataCatalog)
 		{
 			if (!hasTechAssets)
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, await GetFeatureFlagUser(), true))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Dashboards").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser(), false))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser(), false))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
@@ -163,7 +163,7 @@ namespace d360.web.Controllers
 				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;")).First();
 
 			var showChildren = await GetCachedSettingValueById<bool>(Setting.ShowNavigationChildren);
-			var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
+			var menuItems = await GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = SecurityContext.ResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record
@@ -186,7 +186,7 @@ namespace d360.web.Controllers
 				Data = new
 				{
 					MenuItems = menuItems,
-					IsAdmin = Company.CurrentResourceIsAdmin
+					IsAdmin = SecurityContext.IsAdministrator
 				},
 				Formatting = Newtonsoft.Json.Formatting.None
 			};
@@ -226,7 +226,7 @@ namespace d360.web.Controllers
 		[HttpGet, Route("GetSiteNavItems")]
 		public JsonNetResult GetSiteNavItems()
 		{
-			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser());			
+			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser().Result);			
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
@@ -443,7 +443,7 @@ namespace d360.web.Controllers
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.menuicon.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						model.Folder.ImageIconUrl = $"{imageFileName}";
@@ -718,7 +718,7 @@ namespace d360.web.Controllers
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.menuicon.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
@@ -991,12 +991,12 @@ namespace d360.web.Controllers
 
 			try
 			{
-				if (admin && !Company.CurrentResourceIsAdmin)
+				if (admin && !SecurityContext.IsAdministrator)
 				{
 					throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
 				}
 
-				var resid = admin ? 0 : Company.CurrentResourceID;
+				var resid = admin ? 0 : SecurityContext.ResourceID;
 
 				var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
 
@@ -1045,7 +1045,7 @@ namespace d360.web.Controllers
 		public async Task<JsonNetResult> GetCounts()
 		{
 			var ItemCounts = await Company.QueryAsync<dynamic>("GetSiteNavigationCounts @ResourceID",
-				new { ResourceID = Company.CurrentResourceID });
+				new { ResourceID = SecurityContext.ResourceID });
 
 			return new JsonNetResult
 			{
@@ -1413,7 +1413,7 @@ namespace d360.web.Controllers
 				responseModel.Uid = model.AssetUid.Value;
 			}
 
-			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser()))
+			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser()))
 			{
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
@@ -1451,7 +1451,7 @@ namespace d360.web.Controllers
 					model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
 				}
 
-				var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+				var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = SecurityContext.ResourceID, isAdmin = SecurityContext.IsAdministrator }).ToList();
 				responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
 
 				if (responseModel != null)
@@ -1490,7 +1490,7 @@ namespace d360.web.Controllers
 				}
 			}
 
-			if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
+			if (responseModel != null && !SecurityContext.IsAdministrator && model.ObjectType != SystemObjects.SemanticType.ToString())
 			{
 				if (model.AssetUid != null)
 				{
@@ -1498,7 +1498,7 @@ namespace d360.web.Controllers
 
 					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
 					{
-						if ((responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() || responseModel?.Object == SystemObjects.Resource.ToString()) && !Company.CurrentResourceIsAdmin)
+						if ((responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() || responseModel?.Object == SystemObjects.Resource.ToString()) && !SecurityContext.IsAdministrator)
 						{
 							responseModel.Items.HasOwnership = false;
 						}
@@ -1520,7 +1520,7 @@ namespace d360.web.Controllers
 
 					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
 					{
-						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !SecurityContext.IsAdministrator)
 						{
 							responseModel.Items.HasOwnership = false;
 						}
