@@ -21,9 +21,7 @@ namespace d360.featureflags
 
 		Context GetContext(ClientUserModel user)
 		{
-			var itemKey = $"{user.ClientId}.{user.TenantId}.{user.UserId}";
-
-			var b = Context.Builder(itemKey);
+			var b = Context.Builder(user.Key);
 			b.Set("FirstName", user.FirstName)
 				.Set("LastName", user.LastName)
 				.Set("Email", user.Email)
