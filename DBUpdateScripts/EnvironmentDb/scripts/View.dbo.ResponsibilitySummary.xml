@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet" id="View.dbo.ResponsibilitySummary-v1">
+  <changeSet author="Puneet" id="View.dbo.ResponsibilitySummary-v2.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,20 +18,22 @@
 				rasset.AssetID,
 				rasset.AssetTypeID,
 				r.ApplyToType,
-				RES.ResourceID
+				RES.ResourceID,
+				R.ID RuleID
 		from	responsibilitytyperelationrule r
 				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
 				inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 				inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 				inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
-		where 	RES.State=1
+		where 	RES.State=1 and r.Isvisible = 1
 		union All
 		select	RT.Uid as ResponsibilityTypeUid,
 				RT.ID as ResponsibilityTypeID,
 				rasset.AssetID,
 				rasset.AssetTypeID,
 				r.ApplyToType,
-				RES.ResourceID
+				RES.ResourceID,
+				R.ID RuleID
 		from	responsibilitytyperelationrule r
 				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
 				inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
@@ -39,14 +41,15 @@
 				inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
 				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
-		where 	RES.State=1
+		where 	RES.State=1 and r.Isvisible = 1
 		union all
 		select	RT.Uid as ResponsibilityTypeUid,
 				RT.ID as ResponsibilityTypeID,
 				oride.AssetID,
 				att.ID as AssetTypeID,
 				cast(0 as bit) as ApplyToType,
-				RES.ResourceID
+				RES.ResourceID,
+				0 RuleID
 		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
 				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)
@@ -58,7 +61,8 @@
 				oride.AssetID,
 				att.ID as AssetTypeID,
 				cast(0 as bit) as ApplyToType,
-				RES.ResourceID
+				RES.ResourceID,
+				0 RuleID
 		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
 				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)

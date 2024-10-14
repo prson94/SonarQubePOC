@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v1.6">
+  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v1.7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -99,12 +99,12 @@ begin
 	outer apply (
 				select MAX(A.CreatedOn) 
 				from Asset A  WITH (NOLOCK)
-				where A.AssetTypeID = cte.AssetTypeID and A.CreatedOn > cte.LastRunOn
+				where A.AssetTypeID = cte.AssetTypeID
 				)MaxDateC(CreatedOn)
 	outer apply (
 				select MAX(A.UpdatedOn) 
 				from Asset A  WITH (NOLOCK)
-				where A.AssetTypeID = cte.AssetTypeID and A.UpdatedOn > cte.LastRunOn
+				where A.AssetTypeID = cte.AssetTypeID
 				)MaxDateU(UpdatedOn)
 	option(recompile);
 				
@@ -167,7 +167,7 @@ begin
 	cross apply (
 				select MAX(F.UpdatedOn) 
 				from Field F  WITH (NOLOCK)
-				where F.FieldTypeID = cte.FieldTypeID and F.UpdatedOn > cte.LastRunOn
+				where F.FieldTypeID = cte.FieldTypeID
 				)MaxDate(UpdatedOn)
 	option(recompile);
 				
@@ -220,8 +220,7 @@ begin
 	from cte
 	cross apply (select MAX(I.UpdatedOn) 
 				from [Intersect] I WITH (NOLOCK)
-				where I.IntersectTypeID = cte.IntersectTypeID
-				and I.UpdatedOn > cte.LastRunOn)MaxDate(UpdatedOn)
+				where I.IntersectTypeID = cte.IntersectTypeID)MaxDate(UpdatedOn)
 	option(recompile);
 
 	merge @relationshipUpdates as target
