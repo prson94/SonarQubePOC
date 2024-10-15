@@ -1453,10 +1453,10 @@ where	EG.Success is null
 												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}' )  ");
 												break;
 											case Operator.Populated:
-												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (coalesce(FormattedValue,'') != '' or LEN(FormattedValue)>0) ) ");
 												break;
 											case Operator.NotPopulated:
-												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
+												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (coalesce(FormattedValue,'') != '' or LEN(FormattedValue)>0) ) ");
 												break;
 											default:
 												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");
@@ -1624,10 +1624,10 @@ where	EG.Success is null
 											fieldWhere = $"  {clausestring}  {fieldtypeclause} coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.Populated:
-											fieldWhere = $" {clausestring} {fieldtypeclause} (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is not null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))>0)";  // all field types plus single select list
+											fieldWhere = $" {clausestring} {fieldtypeclause} (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue},'') !='' or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))>0)";  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											fieldWhere = $" {clausestring} {fieldtypeclause} (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))=0)";  // all field types plus single select list
+											fieldWhere = $" {clausestring} {fieldtypeclause} (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue},'') = ''  or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))=0)";  // all field types plus single select list
 											break;
 										default:
 											fieldWhere = $" {clausestring} {fieldtypeclause} coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = {dbParameterName}";  // all field types plus single select list
@@ -1720,19 +1720,79 @@ where	EG.Success is null
 
 					if (w.CheckType == "R")
 					{
-						whenWhereConditions.Add(
-							$@"( 
-								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
-										SELECT TargetAsset.Uid as TargetAssetId
-										FROM [Asset] TargetAsset
-										left join [Intersect] Isubj on Isubj.IntersectTypeID = {w.IntersectTypeID} and Isubj.SubjectAssetId = A.Id and Isubj.ObjectAssetId = TargetAsset.Id
-										left join [Intersect] Iobj on Iobj.IntersectTypeID = {w.IntersectTypeID} and Iobj.ObjectAssetId = A.Id and Iobj.SubjectAssetId = TargetAsset.Id
-										WHERE TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID}
-										and (Isubj.IntersectTypeID is not null or Iobj.IntersectTypeID is not null)
-										)
-							)"
-							);
 
+						string sqlToExecute = $@"
+Declare @AssetID bigint,
+@AssetTypeID int;
+
+select @AssetID = ID ,@AssetTypeID = AssetTypeID 
+from asset 
+where object = @TargetObject and ObjectID = @TargetObjectID;
+
+select @AssetID AssetID, 
+case when SubjectAssetTypeID = @AssetTypeID and ObjectAssetTypeID = @AssetTypeID then 1 else 0 end IsBothSide,
+case when SubjectAssetTypeID = @AssetTypeID then 1 else 0 end IsSubject
+from IntersectType t
+where id = @IntersectTypeID";
+
+						var data = (await Connection.QueryAsync<dynamic>(
+							sqlToExecute,
+							new { w.TargetObject, w.TargetObjectID, w.IntersectTypeID }
+						)).SingleOrDefault();
+
+						bool IsSubject = false;
+						bool IsBothSide = false;
+						long AssetID = 0;
+						if ( data != null )
+						{
+							IsSubject = data?.IsSubject == 1 ? true : false;
+							IsBothSide = data?.IsBothSide == 1 ? true : false;
+							AssetID = data?.AssetID;
+						}
+
+						if (IsBothSide)
+						{
+							whenWhereConditions.Add(
+								$@"( 
+								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
+										SELECT 1
+										FROM [Intersect] Isubj 
+										where Isubj.IntersectTypeID = {w.IntersectTypeID} and Isubj.SubjectAssetId = A.ID and Isubj.ObjectAssetId = {AssetID}
+										union all
+										select 1 
+										from [Intersect] Iobj 
+										where Iobj.IntersectTypeID = {w.IntersectTypeID} and Iobj.ObjectAssetId = A.ID and Iobj.SubjectAssetId = {AssetID}
+										)
+									)"
+								);
+						}
+						else
+						{
+							if (IsSubject)
+							{
+								whenWhereConditions.Add(
+									$@"( 
+								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
+										select 1 
+										from [Intersect] Iobj 
+										where Iobj.IntersectTypeID = {w.IntersectTypeID} and Iobj.ObjectAssetId = A.ID and Iobj.SubjectAssetId = {AssetID}
+										)
+									)"
+									);
+							}
+							else
+							{
+								whenWhereConditions.Add(
+									$@"( 
+								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
+										SELECT 1
+										FROM [Intersect] Isubj 
+										where Isubj.IntersectTypeID = {w.IntersectTypeID} and Isubj.SubjectAssetId = A.ID and Isubj.ObjectAssetId = {AssetID}
+										)
+									)"
+									);
+							}
+						}
 						rCount++;
 					}
 				}
