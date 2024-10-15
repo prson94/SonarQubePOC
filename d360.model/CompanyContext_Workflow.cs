@@ -1452,7 +1452,7 @@ namespace d360.model
 				}
 				else if (item.CurrentDate)
 				{
-					string val = DateTime.UtcNow.Date.ToShortDateString();
+					string val = (fieldType.Type == "DateTime") ? DateTime.UtcNow.ToString("u") : DateTime.UtcNow.Date.ToShortDateString();
 					await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 				}
 				else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
