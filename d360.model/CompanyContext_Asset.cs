@@ -2519,9 +2519,12 @@ where	T.ExecutionID = @ExecutionID
 																				A.Object,
 																				A.ObjectID, 
 																				S.IntersectID,
-																				0 as [Level]
+																				0 as [Level],
+																				AST.ObjectId as ObjectTypeId,
+																				AST.Object as ObjectType
 																		from	api.ExecutionDeletedAsset S
 																				inner join Asset A on  A.ID = S.AssetID
+																				inner join AssetType AST on AST.ID = A.AssetTypeID
 																		where	S.AssetID is not null
 																				and {querySuffix}
 																		union all
@@ -2532,13 +2535,16 @@ where	T.ExecutionID = @ExecutionID
 																				C.Object,
 																				C.ObjectID, 
 																				I.IntersectID,
-																				P.[Level] + 1 as [Level]
+																				P.[Level] + 1 as [Level],
+																				AST.ObjectId as ObjectTypeId,
+																				AST.Object as ObjectType
 																		from	PredicateIntersect I 
 																				inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.AssetID = I.SubjectAssetID 
 																				inner join Asset C on C.ID = I.ObjectAssetID 
+																				inner join AssetType AST on AST.ID = C.AssetTypeID
 																		where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
 																	)
-																	insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Object], [ObjectID], [Level])
+																	insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Object], [ObjectID], [Level], [ObjectTypeId], [ObjectType])
 																		select  distinct 
 																				ExecutionID, 
 																				ItemNumber, 
@@ -2548,7 +2554,9 @@ where	T.ExecutionID = @ExecutionID
 																				1,
 																				Object,
 																				ObjectID,
-																				[Level]
+																				[Level],
+																				[ObjectTypeId],
+																				[ObjectType]
 																		from    h 
 																		where   IntersectID is not null 
 																				and [Level] > 0 
@@ -2737,7 +2745,7 @@ where	T.ExecutionID = @ExecutionID
 
 							results.AddRange(
 								Query<DatabaseBulkAssetResult>(
-									"select ItemNumber, uid, ExecutionItemUid, Message, Success, Object, ObjectID, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+									"select ItemNumber, uid, ExecutionItemUid, Message, Success, Object, ObjectID, 3 as ChangeType, ObjectType, ObjectTypeId from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
 									new { execution.ExecutionID, beginItemNumber, endItemNumber }
 								)
 							);

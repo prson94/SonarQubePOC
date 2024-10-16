@@ -63,5 +63,41 @@ end
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.api.ExecutionDeletedAsset-v3">
+    <sql>
+	<![CDATA[
+		IF NOT EXISTS (
+			SELECT 	
+				* 		
+			FROM   	
+				sys.columns 
+			WHERE  	
+				object_id = OBJECT_ID(N'[api].[ExecutionDeletedAsset]') 
+				AND 
+				name = 'ObjectType')
+		BEGIN
+			ALTER TABLE [api].[ExecutionDeletedAsset] ADD [ObjectType] varchar(50) NULL		
+		END
+			
+		IF NOT EXISTS (
+			SELECT 	
+				* 		
+			FROM   	
+				sys.columns 
+			WHERE  	
+				object_id = OBJECT_ID(N'[api].[ExecutionDeletedAsset]') 
+				AND 
+				name = 'ObjectTypeId')
+		BEGIN
+			ALTER TABLE [api].[ExecutionDeletedAsset] ADD [ObjectTypeId] [int] NULL		
+		END			
+	]]>
+	</sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>  
+  </changeSet>
 
 </databaseChangeLog>
