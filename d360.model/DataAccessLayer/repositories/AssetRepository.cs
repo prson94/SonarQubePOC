@@ -3605,8 +3605,13 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				
+				var distinctTypes = results.GroupBy(r => new { r.ObjectTypeID, r.ObjectType }).Select(grp => grp.First());
 
-				CompanyContext.SendWorkflowEvents(assetType.Object, assetType.ObjectID, results, core.enums.Workflow.ChangeType.Delete);
+				foreach (var type in distinctTypes)
+				{
+					CompanyContext.SendWorkflowEvents(type.ObjectType, type.ObjectTypeID.Value, results.Where(r => r.ObjectTypeID == type.ObjectTypeID && r.ObjectType == type.ObjectType), core.enums.Workflow.ChangeType.Delete);
+				}
 
 				// DQ Scoring - send to engine to determine what scores need to be recalculated.
 				if (assetType.Class == AssetTypeClass.Rule)

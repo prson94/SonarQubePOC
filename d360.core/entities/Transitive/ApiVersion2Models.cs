@@ -415,6 +415,10 @@ namespace d360.core.entities
 		public int ObjectID { get; set; }
 
 		public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+
+		public string ObjectType { get; set; }
+
+		public int? ObjectTypeID { get; set; }
 	}
 
 	[DataContract]
