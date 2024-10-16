@@ -541,7 +541,8 @@ namespace d360.model.DataAccessLayer
 							create clustered index ix_filteredIntersectAssets on #filteredIntersectAssets(ID);
 
 							insert into #filteredIntersectAssets
-							select  I.ID,
+							select  {(!CompanyContext.CurrentResourceIsAdmin ? " distinct " : "")}
+									I.ID,
 									P.Name + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
 									ISNULL(AP.DisplayPath,OT2.Name) AssetPath
 							from [Intersect] I
@@ -558,7 +559,8 @@ namespace d360.model.DataAccessLayer
 							option(recompile);
 
 							insert into #filteredIntersectAssets
-							select  I.ID,
+							select  {(!CompanyContext.CurrentResourceIsAdmin ? " distinct " : "")}
+									I.ID,
 									P.Inverse + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
 									ISNULL(AP.DisplayPath,ST2.Name) AssetPath
 							from [Intersect] I
