@@ -2496,6 +2496,8 @@ where id = @IntersectTypeID";
 			{
 				throw new ApplicationException(ruleExceptionMessages);
 			}
+
+			ProcessAssetReindexForResponsibilityChanges();
 		}
 
 		public async Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber)
@@ -2543,6 +2545,7 @@ where id = @IntersectTypeID";
 				throw new ApplicationException(ruleExceptionMessages);
 			}
 
+			ProcessAssetReindexForResponsibilityChanges();
 		}
 
 		public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)
@@ -2619,6 +2622,31 @@ where id = @IntersectTypeID";
 
 			// If you made it this far, then send to scoring engine.
 			CreateRescoreRequests(impactedAssets, ScoreType.Governance);
+			ProcessAssetReindexForResponsibilityChanges();
+		}
+
+		public void ProcessAssetReindexForResponsibilityChanges()
+		{
+			var batchID = randomNumberGenerator.Next(15000);
+
+			Execute(@"update queue.task
+				set MachineAssigned = @batchID
+				where Action = 'ObjectIndex' and Custom = 'U' and MachineAssigned is null", new { batchID });
+
+			var impactedAssets = Query<Guid>(@"
+				select distinct a.uid
+				from asset a
+				inner join queue.task q on a.id = q.AssetID
+				where q.Action = 'ObjectIndex' and q.Custom = 'U' and q.MachineAssigned = @batchID",
+				new { batchID });
+
+			if (impactedAssets.Any())
+			{
+				CreateAssetReindexRequest(impactedAssets.ToList(), ReindexBatchOperation.Update);
+
+				Execute(@"delete queue.task
+					where MachineAssigned = @batchID", new { batchID });
+			}
 		}
 
 		public List<GroupResponseResult> UpsertGroups(ApiExecution execution, List<UpdateGroupModel> groups)
