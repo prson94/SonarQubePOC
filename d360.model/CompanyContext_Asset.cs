@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
 using d360.core.resources;
+using d360.core.queue;
 using Dapper;
 using Newtonsoft.Json;
 using repositories;
@@ -2928,6 +2929,15 @@ where	T.ExecutionID = @ExecutionID
 			}
 		}
 
+		public void CreateAssetReindexRequest(List<Guid> assets, ReindexBatchOperation operation)
+		{
+			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
+			{
+				CompanyID = CurrentCompanyID,
+				BatchUids = assets,
+				BatchOperation = operation
+			});
+		}
 		#endregion
 	}
 }

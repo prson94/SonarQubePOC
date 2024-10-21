@@ -1541,6 +1541,8 @@ namespace d360.model
 						 ResourceID = CurrentResourceID,
 						 op = "Updated"
 					 });
+
+			CreateAssetReindexRequest(new List<Guid> { asset.uid }, ReindexBatchOperation.Update);
 		}
 
 		private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
