@@ -651,6 +651,21 @@ namespace d360.web.Controllers
 			return execution;
 		}
 
+		protected internal ApiExecutionInfo saveExecution(ApiExecution execution)
+		{
+			var executionInfo = new ApiExecutionInfo
+			{
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
+				ExecutionID = execution.ExecutionID,
+				ResourceID = execution.ResourceID
+			}; execution.ExecutionID = executionInfo.ExecutionID;
+			
+			Company.Add(execution);
+			
+			return executionInfo;
+		}
+
 		#endregion
 	}
 

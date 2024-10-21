@@ -12,11 +12,9 @@ namespace repositories
     {
         Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
         
-        WorkHttpStatus DeleteResources(ApiExecution execution, IEnumerable<UserApiDeleteModel> resources);
+        Task<IEnumerable<UserApiModel>> UpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
         
-        Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
-        
-        Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
+        Task<IEnumerable<UserApiModel>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
         
         Task<ApiExecutionInfo> UpsertBulkUsers(ApiExecution execution, UserUpsertModel model);
 

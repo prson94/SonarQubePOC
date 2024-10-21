@@ -6,51 +6,13 @@ using d360.core.enums;
 
 namespace d360.core.entities.Membership
 {
-    public class UserApiDeleteModel
-    {
-        public Guid Uid { get; set; }
-
-        public CompanyResource CompanyResource { get; set; }
-
-        public GlobalReportingResource Resource { get; set; }
-    }
-
     public class UserUpsertModel
     {
-        public IEnumerable<UserApiUpdateModel> Users { get; set; }
+        public IEnumerable<UserApiModel> Users { get; set; }
 
         public bool LookupFieldsPassedByValue { get; set; }
 
         public bool IsInsert { get; set; }
-    }
-
-    public interface IUserApiUpsertModel : IExecutionItem
-    {
-        Guid? uid { get; set; }
-
-		string Email { get; set; }
-
-		string Username { get; set; }
-
-        string FirstName { get; set; }
-
-        string LastName { get; set; }
-
-        string Password { get; set; }
-
-        bool IsAdministrator { get; set; }
-
-        CompanyResourceState? State { get; set; }
-
-        Dictionary<string, string> Fields { get; set; }
-
-        bool IsNew { get; set; }
-
-        int? ResourceID { get; set; }
-
-        CompanyResourceState? CompanyResourceState { get; set; }
-
-        int ItemNumber { get; set; }
     }
 
     public class UpdateGroupModel
@@ -70,47 +32,7 @@ namespace d360.core.entities.Membership
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
-    public class UserApiInsertModel : IUserApiUpsertModel
-    {
-        public Guid? uid { get; set; }
-
-        [DataMember]
-        public string Username { get; set; }
-
-		[DataMember]
-		public string Email { get; set; }
-		
-		[DataMember]
-        public string FirstName { get; set; }
-
-        [DataMember]
-        public string LastName { get; set; }
-
-        [DataMember]
-        public string Password { get; set; }
-
-        [DataMember]
-        public bool IsAdministrator { get; set; }
-
-        [DataMember]
-        public Guid? ExecutionItemUid { get; set; }
-
-        [DataMember]
-        public CompanyResourceState? State { get; set; }
-
-        [DataMember]
-        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
-
-        public bool IsNew { get; set; }
-
-        public int? ResourceID { get; set; }
-
-        public CompanyResourceState? CompanyResourceState { get; set; }
-
-        public int ItemNumber { get; set; }
-    }
-
-    public class UserApiUpdateModel : IUserApiUpsertModel
+    public class UserApiModel
     {
         [DataMember]
         public Guid? uid { get; set; }
@@ -168,10 +90,12 @@ namespace d360.core.entities.Membership
         [DataMember]
         public bool Success { get; set; }
     }
+
     public class DeleteGroupModel
     {
         public Guid Uid { get; set; }
     }
+
     public class DeleteUserModel
     {
         public Guid Uid { get; set; }

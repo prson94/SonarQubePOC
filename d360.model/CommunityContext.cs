@@ -1,30 +1,21 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.extensions;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.helpers;
-using d360.extensions;
-
-using Dapper;
 
 namespace d360.model
 {
-    [DbConfigurationType(typeof(AzureConfiguration))]
+	[DbConfigurationType(typeof(AzureConfiguration))]
     public class CommunityContext : BaseContext, ICommunityContext
     {
-        public CommunityContext(string connectionString, ICachingProvider caching, ISecurityContextProvider context)
+        public CommunityContext(string connectionString, ISecurityContextProvider context)
             : base(connectionString)
         {
-            Database.SetInitializer<CommunityContext>(null); //dont create any tables if they dont exist.
-            Caching = caching;
+            Database.SetInitializer<CommunityContext>(null); // don't create any tables if they dont exist.
         }
 
         public DbSet<CompanyResource> CompanyResources { get; set; }
@@ -84,33 +75,6 @@ namespace d360.model
             ChangeTracker.DetectChanges();
 
             return SaveChanges() > 0;
-        }
-
-        public string GetCompanyConnectionString(int companyId, bool skipCacheCheck = false)
-        {
-            string cs;
-
-            if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, companyId) && !skipCacheCheck)
-            {
-                cs = Caching.GetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, companyId);
-				if (cs != null)
-				{
-					return cs;
-				}
-            }
-            
-            dynamic res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
-                            inner join DatabaseServer s on s.ID = c.DatabaseServerID 
-                            where c.ID = @companyId", new { companyId = companyId });
-
-            cs = CompanyConnectionStringHelper.ConnectionString(companyId, res.Server, res.Username, res.Password);
-
-            if (!skipCacheCheck)
-            {
-                Caching.SetItemInListByID(CACHE_KEY_CONNECTION_STRINGS, companyId, cs);
-            }
-
-            return cs;
         }
     }
 }

@@ -62,8 +62,6 @@ namespace igx.jobs.apiexecutionprocessor
 
 			using (log.BeginScope(logProperties))
 			{
-				#region More Dependency Injection
-
 				var context = new UriSecurityContextProvider
 				{
 					CompanyID = info.CompanyID,
@@ -71,7 +69,8 @@ namespace igx.jobs.apiexecutionprocessor
 					CompanyPrefix = info.CompanyDomainPrefix,
 					IsAdministrator = false
 				};
-				using (var community = new CommunityContext(ConnString, Cache, context))
+
+				using (var community = new CommunityContext(ConnString, context))
 				{
 					using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
 					{
@@ -85,8 +84,6 @@ namespace igx.jobs.apiexecutionprocessor
 						var assetRepository = new AssetRepository(company, context, Queue, Storage, community, FeatureFlags);
 						var membershipRepository = new MembershipRepository(company, context, community, assetRepository, Queue, Storage, FeatureFlags);
 						var relationshipRepository = new RelationshipRepository(community, company, context, Queue, Storage, FeatureFlags);
-
-						#endregion
 
 						var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
 						List<DatabaseBulkAssetResult> resultdata = new List<DatabaseBulkAssetResult>();
@@ -243,7 +240,7 @@ namespace igx.jobs.apiexecutionprocessor
 											resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 											break;
 										case ApiExecutionAction.PostCrossReferences:
-											var connectionString = community.GetCompanyConnectionString(info.CompanyID);
+											var connectionString = GetCompanyConnectionString(info.CompanyID);
 											ICatalog catalog = new Catalog(new DapperConnectionProvider { ConnectionString = connectionString });
 											var postCrossReferences = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
 											await catalog.CreateCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
@@ -348,7 +345,7 @@ namespace igx.jobs.apiexecutionprocessor
 							try
 							{
 								// We open a new connection here because we can run into issues with the EF context object where the underlying connection object is in an unstable state. 
-								var companyConnectionString = community.GetCompanyConnectionString(info.CompanyID, true);
+								var companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var exceptionConnection = new SqlConnection(companyConnectionString))
 								{
 									if (dbExecutionItem.RetryCount >= maxRetryCount)

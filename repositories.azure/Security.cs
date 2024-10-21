@@ -1,9 +1,11 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.enums;
-using d360.core.resources;
 using d360.core.security;
 using Dapper;
-using DocumentFormat.OpenXml.EMMA;
+using System.Data;
+using Dapper.Contrib.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,149 @@ namespace repositories.azure
 		List<string> VALID_FIELDS = new List<string> { "Boolean", "Date", "DateTime", "Number", "Decimal", "Lookup", "Text" };
 
 		public Security(DapperConnectionProvider provider) : base(provider) { }
+
+		public async Task<List<UserApiUpsertResult>> CreateOrUpdateUsersAsync(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false)
+		{
+			var executionID = execution.ExecutionID;
+			var results = new List<UserApiModel>();
+			var validationResults = new List<UserApiUpsertResult>();
+
+			//var fieldTypes = CompanyContext.GetAssetTypeFieldTypesCore("ResourceType", 1);
+
+			//var hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
+
+			#region Data Tables
+
+			var userTable = new DataTable();
+			var fieldTable = new DataTable();
+
+			userTable.Columns.Add("ItemNumber", typeof(int));
+			userTable.Columns.Add("ResourceID", typeof(int));
+			userTable.Columns.Add("Uid", typeof(Guid));
+			userTable.Columns.Add("Username", typeof(string));
+			userTable.Columns.Add("Email", typeof(string));
+			userTable.Columns.Add("FirstName", typeof(string));
+			userTable.Columns.Add("LastName", typeof(string));
+			userTable.Columns.Add("State", typeof(int));
+			userTable.Columns.Add("IsAdministrator", typeof(bool));
+
+			fieldTable.Columns.Add("ItemNumber", typeof(int));
+			fieldTable.Columns.Add("FieldName", typeof(string));
+			fieldTable.Columns.Add("FieldValue", typeof(string));
+			fieldTable.Columns.Add("FieldTypeID", typeof(int));
+			//fieldTable.Columns.Add("LookupValue", typeof(string));
+
+			#endregion
+
+			users.ForEach(u => {
+				var userRow = userTable.NewRow();
+				userRow["ItemNumber"] = u.ItemNumber;
+				userRow["ResourceID"] = u.ResourceID;
+				userRow["Uid"] = u.uid;
+				userRow["Username"] = u.Username;
+				userRow["Email"] = u.Email;
+				userRow["FirstName"] = u.FirstName;
+				userRow["LastName"] = u.LastName;
+				userRow["State"] = u.State;
+				userRow["IsAdministrator"] = u.IsAdministrator;
+				userTable.Rows.Add(userRow);
+
+				u.Fields.ForEach(f =>
+				{
+					var ft = fieldTypes.FirstOrDefault(o => o.Name == f.Key.Trim());
+					if (ft != null)
+					{
+						var fieldRow = fieldTable.NewRow();
+
+						fieldRow["ItemNumber"] = u.ItemNumber;
+						fieldRow["FieldName"] = f.Key.Trim();
+						fieldRow["FieldValue"] = f.Value;
+						fieldRow["FieldTypeID"] = ft.ID;
+
+						fieldTable.Rows.Add(fieldRow);
+					}
+				});
+			});
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				using (SqlTransaction trans = connection.BeginTransaction())
+				{
+					await connection.ExecuteAsync(@"
+create table #Users (
+	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
+	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit
+);
+
+create table #Fields (
+	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
+	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit
+);", transaction: trans);
+
+					SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, trans)
+					{
+						DestinationTableName = "#Users"
+					};
+
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+					bulkCopy.ColumnMappings.Add("Uid", "Uid");
+					bulkCopy.ColumnMappings.Add("Username", "Username");
+					bulkCopy.ColumnMappings.Add("Email", "Email");
+					bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+					bulkCopy.ColumnMappings.Add("LastName", "LastName");
+					bulkCopy.ColumnMappings.Add("State", "State");
+					bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+					await bulkCopy.WriteToServerAsync(userTable);
+
+
+					bulkCopy.DestinationTableName = "#Fields";
+					bulkCopy.ColumnMappings.Clear();
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+					await bulkCopy.WriteToServerAsync(fieldTable);
+
+					try
+					{
+						await connection.ExecuteAsync(@"", transaction: trans);
+
+						//var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
+
+						//foreach (var result in results)
+						//{
+						//	var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
+						//	if (user != null)
+						//	{
+						//		user.ResourceID = result.ResourceID;
+						//		user.uid = user.IsNew ? result.uid : user.uid;
+						//		user.CompanyResourceState = CompanyResourceState.Active;
+						//	}
+						//}
+
+						trans.Commit();
+					}
+					catch
+					{
+						try
+						{
+							if (trans != null)
+							{
+								trans.Rollback();
+							}
+						}
+						catch
+						{
+						}
+
+						throw;
+					}
+				}
+			}
+
+			//return users;
+		}
 
 		public async Task<RepositoryResponse<ReadSecurityPolicy>> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
@@ -365,7 +510,6 @@ select @Permissions";
 			return response;
 		}
 
-
 		public async Task<RepositoryResponse<IEnumerable<AssetOwnerModel>>> ReadVisibleOwnersByAssetAsync(Guid assetUid) 
 		{
 			RepositoryResponse<IEnumerable<AssetOwnerModel>> response = new(200);
@@ -692,6 +836,42 @@ order by p.DisplayPath",
 					"delete [security].[Role] where Id = @roleId; ",
 					new { roleId }
 				);
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<int>> RemoveUsersAsync(List<Guid> resourceUids)
+		{
+			RepositoryResponse<int> response;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var recordsImpacted = await connection.ExecuteAsync(
+@"insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
+	select	distinct
+			'Resource', 
+			res.ResourceId,
+			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			@r, 
+			getutcdate(), 
+			'Deleted', 
+			'Resource', 
+			res.ResourceId,
+			'Resource', 
+			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			'This user has been removed.',
+			mv.[Version]
+	from	reporting.Global_Resource res
+			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
+	where	res.uid in @resourceUids; 
+
+update	reporting.Global_Resource
+set		State = state
+where	uid in @resourceUids;", new { resourceUids, state = (int)CompanyResourceState.Deleted }
+				);
+
+				response = new(recordsImpacted, 200, true);
 			}
 
 			return response;

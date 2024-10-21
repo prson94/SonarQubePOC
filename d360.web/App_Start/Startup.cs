@@ -195,10 +195,9 @@ namespace d360.web
 
 				builder.Register(o => {
 					var connectionString = Config.GetValue<string>(constants.Setting.Community);
-					var cache = o.Resolve<ICachingProvider>();
 					var queue = o.Resolve<IQueueSource>();
 					var ctx = o.Resolve<ISecurityContextProvider>();
-					return new CommunityContext(connectionString, cache, ctx);
+					return new CommunityContext(connectionString, ctx);
 					}).As<ICommunityContext>().InstancePerRequest();
 
 				builder.Register(async i =>

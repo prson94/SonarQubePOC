@@ -197,105 +197,14 @@ namespace d360.model.DataAccessLayer
 			return new GroupApiModels() { items = results, Total = count };
 		}
 
-		public WorkHttpStatus DeleteResources(ApiExecution execution, IEnumerable<UserApiDeleteModel> resources)
-		{
-			try
-			{
-				List<UserApiDeleteModel> models = new List<UserApiDeleteModel>();
-				foreach (var model in resources)
-				{
-					model.Resource = CompanyContext.GlobalReportingResources.SingleOrDefault(r => r.Uid == model.Uid && r.State != CompanyResourceState.Deleted);
-
-					if (model.Resource == null)
-					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
-					}
-
-					if (model.Resource.ResourceID < 1)
-					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidUser, string.Format(MemberShipErrors.UserUidSystemUser, model.Uid));
-					}
-
-					model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == SecurityContext.CompanyID && r.ResourceID == model.Resource.ResourceID);
-
-					if (model.CompanyResource == null)
-					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.NotFound, string.Format(MemberShipErrors.UserUidNotFound, model.Uid));
-					}
-				}
-
-				CompanyContext.Add(execution);
-				CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-				var uids = resources.Select(r => r.Uid).ToList();
-				foreach (var model in resources)
-				{
-					model.Resource.State = CompanyResourceState.Deleted;
-					model.CompanyResource.State = CompanyResourceState.Deleted;
-
-					CompanyContext.Update(model.Resource);
-					CommunityContext.Update(model.CompanyResource);
-
-					CompanyContext.Query<int>($@"
-insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
-	select	distinct
-			'Resource', 
-			res.ResourceId,
-			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-			@r, 
-			getutcdate(), 
-			'Deleted', 
-			'Resource', 
-			res.ResourceId,
-			'Resource', 
-			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-			'This user has been removed.',
-			mv.[Version]
-	from	reporting.Global_Resource res
-			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
-	where	res.resourceid = @resourceId", 
-						new { r = SecurityContext.ResourceID, resourceId = model.Resource.ResourceID }
-					).ToList();
-				}
-				int limit = 25;
-				var subset = new List<Guid>();
-				while (uids.Count > 0)
-				{
-					subset = uids.Take(limit).ToList();
-					var removecount = subset.Count();
-					uids.RemoveRange(0, removecount);
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						Category = "Resource",
-						To = QueueAction.RemoveFromIndex,
-						BatchOperation = ReindexBatchOperation.Delete,
-						BatchUids = subset
-					});
-				}
-
-				execution.Processed = resources.Count();
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
-			}
-			catch (Exception ex)
-			{
-				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
-				return new WorkHttpStatus(HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
-			}
-
-			return new WorkHttpStatus(HttpStatusCode.OK, AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
-		}
-
-		public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
+		public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false)
 		{
 			CompanyContext.Add(execution);
 			IEnumerable<UserApiUpsertResult> results;
 
 			try
 			{
-				results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert, IsChangePasswordReqeust).ConfigureAwait(false);
+				results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
@@ -306,12 +215,12 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 			return results;
 		}
 
-		public async Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
+		public async Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false)
 		{
 			const int ResourceTypeID = 1;
 
 			var executionID = execution.ExecutionID;
-			var results = new List<UserApiUpsertResult>();
+			var results = new List<UserApiModel>();
 			var validationResults = new List<UserApiUpsertResult>();
 
 			var fieldTypes = CompanyContext.GetAssetTypeFieldTypesCore("ResourceType", 1);
@@ -320,177 +229,107 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 
 			#region Data Tables
 
-			var resourceTable = new DataTable();
 			var userTable = new DataTable();
 			var fieldTable = new DataTable();
 
-			resourceTable.Columns.Add("ExecutionID", typeof(Guid));
-			resourceTable.Columns.Add("ItemNumber", typeof(int));
-			resourceTable.Columns.Add("ResourceID", typeof(int));
-			resourceTable.Columns.Add("Username", typeof(string));
-			resourceTable.Columns.Add("Email", typeof(string));
-			resourceTable.Columns.Add("uid", typeof(Guid));
-
-			userTable.Columns.Add("ExecutionID", typeof(Guid));
-			userTable.Columns.Add("Uid", typeof(Guid));
-			userTable.Columns.Add("ResourceID", typeof(int));
-
-			userTable.Columns.Add("ExecutionItemUid", typeof(Guid));
 			userTable.Columns.Add("ItemNumber", typeof(int));
+			userTable.Columns.Add("ResourceID", typeof(int));
+			userTable.Columns.Add("Uid", typeof(Guid));
 			userTable.Columns.Add("Username", typeof(string));
+			userTable.Columns.Add("Email", typeof(string));
 			userTable.Columns.Add("FirstName", typeof(string));
 			userTable.Columns.Add("LastName", typeof(string));
-			userTable.Columns.Add("Password", typeof(string));
 			userTable.Columns.Add("State", typeof(int));
 			userTable.Columns.Add("IsAdministrator", typeof(bool));
-			userTable.Columns.Add("IsNew", typeof(bool));
-			userTable.Columns.Add("Success", typeof(bool));
-			userTable.Columns.Add("Message", typeof(string));
-			userTable.Columns.Add("Object", typeof(string));
-			userTable.Columns.Add("ObjectID", typeof(int));
-			userTable.Columns.Add("ObjectType", typeof(string));
-			userTable.Columns.Add("ObjectTypeID", typeof(int));
 
-			fieldTable.Columns.Add("ExecutionID", typeof(Guid));
 			fieldTable.Columns.Add("ItemNumber", typeof(int));
 			fieldTable.Columns.Add("FieldName", typeof(string));
 			fieldTable.Columns.Add("FieldValue", typeof(string));
 			fieldTable.Columns.Add("FieldTypeID", typeof(int));
-			fieldTable.Columns.Add("LookupValue", typeof(string));
+			//fieldTable.Columns.Add("LookupValue", typeof(string));
 
 			#endregion
 
-			#region Process Community
+			users.ForEach(u => {
+				var userRow = userTable.NewRow();
+				userRow["ItemNumber"] = u.ItemNumber;
+				userRow["ResourceID"] = u.ResourceID;
+				userRow["Uid"] = u.uid;
+				userRow["Username"] = u.Username;
+				userRow["Email"] = u.Email;
+				userRow["FirstName"] = u.FirstName;
+				userRow["LastName"] = u.LastName;
+				userRow["State"] = u.State;
+				userRow["IsAdministrator"] = u.IsAdministrator;
+				userTable.Rows.Add(userRow);
 
-			int itemNumber = 0;
-			foreach (var user in users)
-			{
-				itemNumber++;
-				user.ItemNumber = itemNumber;
-
-				var row = resourceTable.NewRow();
-
-				user.Username = (string.IsNullOrWhiteSpace(user.Username) ? user.Email : user.Username);
-				user.Email = (string.IsNullOrWhiteSpace(user.Email) ? user.Username : user.Email);
-
-				user.Username = (string.IsNullOrWhiteSpace(user.Username) ? "" : user.Username);
-				user.Email = (string.IsNullOrWhiteSpace(user.Email) ? "" : user.Email);
-
-
-				row["ExecutionID"] = executionID;
-				row["ItemNumber"] = itemNumber;
-				row["Username"] = user.Username;
-				row["email"] = user.Email;
-				if (user.uid.HasValue)
+				u.Fields.ForEach(f =>
 				{
-					row["uid"] = user.uid;
-				}
+					var ft = fieldTypes.FirstOrDefault(o => o.Name == f.Key.Trim());
+					if (ft != null)
+					{
+						var fieldRow = fieldTable.NewRow();
 
-				resourceTable.Rows.Add(row);
+						fieldRow["ItemNumber"] = u.ItemNumber;
+						fieldRow["FieldName"] = f.Key.Trim();
+						fieldRow["FieldValue"] = f.Value;
+						fieldRow["FieldTypeID"] = ft.ID;
+
+						fieldTable.Rows.Add(fieldRow);
+					}
+				});
+			});
+
+			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
+			{
+				await CompanyContext.Connection.ExecuteAsync(@"
+create table #Users (
+	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
+	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit
+);
+
+create table #Fields (
+	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
+	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit
+);", transaction: trans);
+
+				SqlBulkCopy bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans)
+				{
+					DestinationTableName = "#Users"
+				};
+
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+				bulkCopy.ColumnMappings.Add("Uid", "Uid");
+				bulkCopy.ColumnMappings.Add("Username", "Username");
+				bulkCopy.ColumnMappings.Add("Email", "Email");
+				bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+				bulkCopy.ColumnMappings.Add("LastName", "LastName");
+				bulkCopy.ColumnMappings.Add("State", "State");
+				bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+				await bulkCopy.WriteToServerAsync(userTable);
+
+				
+				bulkCopy.DestinationTableName = "#Fields";
+				bulkCopy.ColumnMappings.Clear();
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+				bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+				bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+				await bulkCopy.WriteToServerAsync(fieldTable);
+
+
+
 			}
 
-			if (CommunityContext.Connection.State == ConnectionState.Closed)
-			{
-				await CommunityContext.Connection.OpenAsync();
-			}
 
-			CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-			using (SqlTransaction trans = CommunityContext.Connection.BeginTransaction())
-			{
-				try
-				{
-					await CommunityContext.Connection.ExecuteAsync(@"
-						drop table if exists #UserResources;
-						create table #UserResources
-						(
-							ExecutionID uniqueidentifier,
-							ItemNumber int,
-							Username nvarchar(500),
-							Email nvarchar(500),
-
-							ResourceID int,
-							[uid] uniqueidentifier,
-							CompanyResourceState int
-						)
-						", transaction: trans);
-
-					SqlBulkCopy bulkCopy = new SqlBulkCopy(CommunityContext.Connection, SqlBulkCopyOptions.Default, trans)
-					{
-						DestinationTableName = "#UserResources"
-					};
-
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("Username", "Username");
-					bulkCopy.ColumnMappings.Add("Email", "Email");
-					bulkCopy.ColumnMappings.Add("uid", "uid");
-
-					await bulkCopy.WriteToServerAsync(resourceTable);
-
-					await CommunityContext.Connection.ExecuteAsync(@"
-						update  U
-						set     U.ResourceID = coalesce(R2.ID, R.ID, R3.ID)
-						from    #UserResources U
-								left join [Resource] R on R.Username = U.Username
-								left join [Resource] R2 on R2.[uid] = U.[uid]
-								left join [Resource] R3 on R.Email = U.Email;
-
-						update  U
-						set U.CompanyResourceState = R.[State],
-							U.uid = CR.uid
-						from #UserResources U
-						left join [CompanyResource] R on R.ResourceID = U.ResourceID and R.CompanyID = @companyId
-						left join [Resource] CR on CR.ID = R.ResourceID;
-						", new { companyId = SecurityContext.CompanyID }, transaction: trans);
-
-					var communityResults = await CommunityContext.Connection.QueryAsync<dynamic>(@"select * from #UserResources", transaction: trans);
-
-					foreach (var result in communityResults)
-					{
-						var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
-						if (user != null)
-						{
-							user.ResourceID = result.ResourceID;
-							user.uid = user.IsNew ? result.uid : user.uid;
-							user.CompanyResourceState = (CompanyResourceState?)result.CompanyResourceState;
-						}
-					}
-
-					await CommunityContext.Connection.ExecuteAsync(@"drop table if exists #UserResources", transaction: trans);
-
-					trans.Commit();
-				}
-				catch (Exception)
-				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-					}
-					catch
-					{
-					}
-
-					throw;
-				}
-			}
-
-			#endregion
 
 			foreach (var user in users)
 			{
 				var row = userTable.NewRow();
-				var CurrPassword = "";
-				var NewPassword = "";
 
 				var success = true;
 				var messages = new List<string>();
-
-				user.FirstName = user.FirstName.SanitizeHtml();
-				user.LastName = user.LastName.SanitizeHtml();
 
 				if (user.IsNew)
 				{
@@ -544,44 +383,6 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 						messages.Add(MemberShipErrors.ResourceUidNotFound);
 					}
 
-					//Password Change
-					if (IsChangePasswordReqeust)
-					{
-						NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
-						CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
-
-						if (NewPassword == null)
-						{
-							success = false;
-							messages.Add(MemberShipErrors.ResourceUidNotFound);
-						}
-						else
-						{
-							user.Password = NewPassword;
-						}
-
-						if (CurrPassword == null)
-						{
-							success = false;
-							messages.Add(MemberShipErrors.MissingCurrentPasswordParameter);
-						}
-
-						var CurrPasswordHash = PasswordHelper.HashPassword(CurrPassword);
-						var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
-
-						if (existing == null)
-						{
-							success = false;
-							messages.Add(MemberShipErrors.CurrentPasswordWrong);
-						}
-
-						if (NewPassword == CurrPassword)
-						{
-							success = false;
-							messages.Add(MemberShipErrors.NewAndCurrentNotSame);
-						}
-					}
-
 					if (!string.IsNullOrEmpty(user.Password))
 					{
 						if (!validatePassword(user.Password))
@@ -608,53 +409,7 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 						}
 					}
 
-					if (string.IsNullOrEmpty(user.FirstName))
-					{
-						success = false;
-						messages.Add(MemberShipErrors.FirstNameMissing);
-					}
-
-					if (string.IsNullOrEmpty(user.LastName))
-					{
-						success = false;
-						messages.Add(MemberShipErrors.LastNameMissing);
-					}
 				}
-
-				if (user.FirstName != null && user.FirstName.Length > 250)
-				{
-					success = false;
-					messages.Add(MemberShipErrors.FirstNameTooLong);
-				}
-
-				if (user.LastName != null && user.LastName.Length > 250)
-				{
-					success = false;
-					messages.Add(MemberShipErrors.LastNameTooLong);
-				}
-
-				if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
-				{
-					success = false;
-					messages.Add(MemberShipErrors.InvalidEmail);
-				}
-				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
-				{
-					success = false;
-					messages.Add(MemberShipErrors.UsernameDuplicate);
-				}
-
-				if (user.Username != user.Email && ( string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b")))
-				{
-					success = false;
-					messages.Add(MemberShipErrors.InvalidEmail);
-				}
-				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
-				{
-					success = false;
-					messages.Add(MemberShipErrors.UsernameDuplicate);
-				}
-
 
 				if (user.CompanyResourceState.HasValue)
 				{
@@ -1433,32 +1188,6 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 			}
 
 			return results;
-		}
-
-		private string RoutePrefixToObjectType(string prefix)
-		{
-			switch (prefix)
-			{
-				case "artifact":
-				case "domain":
-				case "policy":
-				case "reference":
-					return char.ToUpper(prefix[0]) + prefix.ToLower().Substring(1);
-				case "admin/lookups":
-					return "Lookup";
-				case "quality/rule":
-					return "Rule";
-				case "model":
-					return "Taxonomy";
-				case "resource":
-				case "resource/list":
-					return "Resource";
-				case "group":
-				case "groups":
-					return "Group";
-				default:
-					return "";
-			}
 		}
 
 		[Obsolete]

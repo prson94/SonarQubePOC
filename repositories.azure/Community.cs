@@ -1,15 +1,17 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.enums;
+using d360.core.helpers;
+using d360.core.resources;
+using Dapper;
+using Dapper.Contrib.Extensions;
+using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper;
-using d360.core.entities;
-using d360.core.helpers;
-using Dapper.Contrib.Extensions;
-using d360.core.enums;
-using System.Linq;
 
 namespace repositories.azure
 {
@@ -57,7 +59,6 @@ namespace repositories.azure
 
 			return response;
 		}
-
 
 		public async Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request)
 		{
@@ -111,6 +112,157 @@ namespace repositories.azure
 
 			return response;
 		}
+
+		public async Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users)
+		{
+			var tbl = new DataTable();
+			tbl.Columns.Add("ItemNumber", typeof(int));
+			tbl.Columns.Add("ResourceID", typeof(int));
+			tbl.Columns.Add("Username", typeof(string));
+			tbl.Columns.Add("Email", typeof(string));
+			tbl.Columns.Add("FirstName", typeof(string));
+			tbl.Columns.Add("LastName", typeof(string));
+			tbl.Columns.Add("uid", typeof(Guid));
+			tbl.Columns.Add("State", typeof(int));
+			tbl.Columns.Add("IsAdministrator", typeof(bool));
+
+			int itemNumber = 0;
+			foreach (var user in users)
+			{
+				itemNumber++;
+				user.ItemNumber = itemNumber;
+
+				var row = tbl.NewRow();
+
+				row["ItemNumber"] = itemNumber;
+				row["Username"] = user.Username;
+				row["Email"] = user.Email;
+				row["FirstName"] = user.FirstName;
+				row["LastName"] = user.LastName;
+				row["IsAdministrator"] = user.IsAdministrator;
+				row["State"] = user.State ?? CompanyResourceState.Active;
+
+				if (user.uid.HasValue)
+				{
+					row["uid"] = user.uid;
+				}
+
+				tbl.Rows.Add(row);
+			}
+
+			using (var connection = Connect())
+			{
+				using (SqlTransaction trans = ((SqlConnection)connection).BeginTransaction())
+				{
+					try
+					{
+						await connection.ExecuteAsync(@"
+						create table #Users
+						(
+							ItemNumber int,
+							Username nvarchar(500),
+							Email nvarchar(500),
+							FirstName nvarchar(250),
+							LastName nvarchar(250),
+
+							ResourceID int,
+							[uid] uniqueidentifier,
+							IsAdministrator bit,
+							[State] int
+						)", transaction: trans);
+
+						SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)connection, SqlBulkCopyOptions.Default, trans)
+						{
+							DestinationTableName = "#Users"
+						};
+
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("Username", "Username");
+						bulkCopy.ColumnMappings.Add("Email", "Email");
+						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+						bulkCopy.ColumnMappings.Add("LastName", "LastName");
+						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+						bulkCopy.ColumnMappings.Add("State", "State");
+						bulkCopy.ColumnMappings.Add("uid", "uid");
+
+						await bulkCopy.WriteToServerAsync(tbl);
+
+						// NOTE: We need to ensure we are not auto-joining any users we should not be, and resetting their data. Make sure to check if user is already part of client we are on.
+						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
+
+						await connection.ExecuteAsync(@"
+update  U
+set     U.ResourceID = coalesce(R2.ID, R.ID, R3.ID)
+from    #Users U
+		left join [Resource] R on R.Username = U.Username
+		left join [Resource] R2 on R2.[uid] = U.[uid]
+		left join [Resource] R3 on R.Email = U.Email;
+
+update	T
+set		T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Email = S.Email
+from	[Resource] T
+		inner join #Users S on S.ResourceID = T.ID;
+
+insert into [Resource] (Username, [Password], LastName, FirstName, Email, Uid)
+	select	Username, '{None}', LastName, FirstName, Email, Uid
+	from	#Users
+	where	ResourceID is null;
+
+update  U
+set     U.ResourceID = R.ID
+from    #Users U
+		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null;
+
+merge	CompanyResource as T
+using	(select * from #Users) as S
+on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
+when	matched then
+update  set
+		T.IsAdministrator = S.IsAdministrator,
+		T.State = S.State
+when	not matched by target then
+insert	(CompanyID, ResourceID, IsAdministrator, State)
+values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);", 
+						new { companyId}, transaction: trans);
+
+						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
+
+						foreach (var result in results)
+						{
+							var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
+							if (user != null)
+							{
+								user.ResourceID = result.ResourceID;
+								user.uid = user.IsNew ? result.uid : user.uid;
+								user.CompanyResourceState = CompanyResourceState.Active;
+							}
+						}
+
+						trans.Commit();
+					}
+					catch
+					{
+						try
+						{
+							if (trans != null)
+							{
+								trans.Rollback();
+							}
+						}
+						catch
+						{
+						}
+
+						throw;
+					}
+				}
+			}
+
+			return users;
+		}
+
 
 		public string GenerateOpenIdRequestValue(int length = 5)
 		{
@@ -498,6 +650,72 @@ from	CompanyResource CR
 			return success;
 		}
 
+		public async Task<RepositoryResponse<int>> RemoveUsersFromTenantAsync(int companyId, List<Guid> resourceUids)
+		{
+			RepositoryResponse<int> response;
+
+			using (var connection = Connect())
+			{
+				var recordsImpacted = await connection.ExecuteAsync(
+					"update	t " +
+					"set	t.State = @state " +
+					"from	CompanyResource t " +
+					"		inner join [Resource] s on s.ID = t.ResourceID and t.CompanyID = @companyId and s.[Uid] in @resourceUids;", 
+					new { companyId, resourceUids, state = (int)CompanyResourceState.Deleted }
+				);
+
+				response = new(recordsImpacted, 200, true);
+			}
+
+			return response;
+		}
+
+		async Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword)
+		{
+			RepositoryResponse<bool> response = new(200, "");
+
+			if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(currentPassword))
+			{
+				response = new(400, MemberShipErrors.MissingCurrentPasswordParameter);
+				return response;
+			}
+
+			if (string.IsNullOrEmpty(newPassword) || string.IsNullOrWhiteSpace(newPassword))
+			{
+				response = new(400, MemberShipErrors.PasswordRule);
+				return response;
+			}
+
+			currentPassword = currentPassword.Trim();
+			newPassword = newPassword.Trim();
+			
+			if (currentPassword.Equals(newPassword))
+			{
+				response = new(400, MemberShipErrors.PasswordRule);
+				return response;
+			}
+
+			var newPasswordHash = PasswordHelper.HashPassword(newPassword);
+			var currentPasswordHash =  PasswordHelper.HashPassword(currentPassword);
+
+			using (var connection = Connect())
+			{
+				var user = await connection.QueryFirstAsync<Resource>("select * from [Resource] where ID = @resourceId;", new { resourceId });
+
+				if (user.Password != currentPasswordHash)
+				{
+					response = new(400, MemberShipErrors.PasswordRule);
+				}
+				else 
+				{
+					await connection.ExecuteAsync("update [Resource] set [Password] = @newPasswordHash where ID = @resourceId", new { resourceId, newPasswordHash });
+					response = new(true, 200, true);
+				}
+			}
+
+			return response;
+		}
+
 		public async Task<bool> UpdateClaimAsync(int claimId, ClaimAction action, string path, bool isArray)
 		{
 			bool response = false;
@@ -537,7 +755,6 @@ select * from [Resource] where ID = @userId";
 
 			return response;
 		}
-
 
 		public async Task<RepositoryResponse<int>> UpdateUserAsync(Resource user)
 		{

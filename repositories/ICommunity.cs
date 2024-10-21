@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ namespace repositories
 		Task<RepositoryResponse<int>> CreateUserAsync(Resource user);
 
 		Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users);
 
 		/// <summary>
 		/// Used to generate a state or nonce value.
@@ -58,6 +61,10 @@ namespace repositories
 		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
 
 		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
+
+		Task<RepositoryResponse<int>> RemoveUsersFromTenantAsync(int companyId, List<Guid> resourceUids);
+
+		Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword);
 
 		Task<bool> UpdateClaimAsync(int claimId, ClaimAction action, string path, bool isArray);
 

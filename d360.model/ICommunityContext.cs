@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using d360.core.entities;
+using System;
 using System.Data.Entity;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-
-using d360.core.entities;
 
 namespace d360.model
 {
-    public interface ICommunityContext : IBaseContext
+	public interface ICommunityContext : IBaseContext
     {
         DbSet<CompanyResource> CompanyResources { get; set; }
         
@@ -19,8 +16,6 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         
         new bool Delete<T>(T entity) where T : BaseObject;
-        
-        string GetCompanyConnectionString(int companyId, bool skipCacheCheck = false);
         
         int SaveChanges();
         

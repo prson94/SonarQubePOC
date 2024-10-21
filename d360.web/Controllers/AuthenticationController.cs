@@ -566,9 +566,9 @@ namespace d360.web.Controllers
 					Processed = 0,
 					ApplicationId = "AllowNewUserLogin"
 				};
-				var users = new List<UserApiInsertModel>
+				var users = new List<UserApiModel>
 								{
-									new UserApiInsertModel
+									new UserApiModel
 									{
 										FirstName = resource.FirstName,
 										LastName = resource.LastName,
