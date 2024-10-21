@@ -1737,7 +1737,8 @@ where id = @IntersectTypeID";
 
 						var data = (await Connection.QueryAsync<dynamic>(
 							sqlToExecute,
-							new { w.TargetObject, w.TargetObjectID, w.IntersectTypeID }
+							new { w.TargetObject, w.TargetObjectID, w.IntersectTypeID },
+							transaction
 						)).SingleOrDefault();
 
 						bool IsSubject = false;
