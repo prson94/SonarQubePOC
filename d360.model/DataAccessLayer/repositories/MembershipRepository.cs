@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -271,6 +272,7 @@ namespace d360.model.DataAccessLayer
 						var fieldRow = fieldTable.NewRow();
 
 						fieldRow["ItemNumber"] = u.ItemNumber;
+						fieldRow["ResourceID"] = u.ResourceID;
 						fieldRow["FieldName"] = f.Key.Trim();
 						fieldRow["FieldValue"] = f.Value;
 						fieldRow["FieldTypeID"] = ft.ID;
@@ -279,6 +281,8 @@ namespace d360.model.DataAccessLayer
 					}
 				});
 			});
+
+			SqlBulkCopy bulkCopy = null;
 
 			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
 			{
@@ -289,15 +293,11 @@ create table #Users (
 );
 
 create table #Fields (
-	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
-	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit
+	ItemNumber int, ResourceID int, 
+	FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)
 );", transaction: trans);
 
-				SqlBulkCopy bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans)
-				{
-					DestinationTableName = "#Users"
-				};
-
+				bulkCopy = CompanyContext.Connection.CreateBulkCopy("#Users", 1000, 1200, trans);
 				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 				bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
 				bulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -309,246 +309,36 @@ create table #Fields (
 				bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
 				await bulkCopy.WriteToServerAsync(userTable);
 
-				
-				bulkCopy.DestinationTableName = "#Fields";
-				bulkCopy.ColumnMappings.Clear();
+				bulkCopy = CompanyContext.Connection.CreateBulkCopy("#Fields", 1000, 1200, trans);
 				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
 				bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
 				bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
 				bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 				await bulkCopy.WriteToServerAsync(fieldTable);
 
-
-
-			}
-
-
-
-			foreach (var user in users)
-			{
-				var row = userTable.NewRow();
-
-				var success = true;
-				var messages = new List<string>();
-
-				if (user.IsNew)
-				{
-					if (user.ResourceID.HasValue)
-					{
-						if (user.CompanyResourceState.HasValue && user.CompanyResourceState != CompanyResourceState.Deleted)
-						{
-							success = false;
-							messages.Add(MemberShipErrors.ResourceUserNameExists);
-						}
-					}
-
-					if (user.State.HasValue)
-					{
-						success = false;
-						messages.Add(MemberShipErrors.CanNotProvideStateOfNewUser);
-					}
-
-					if (!string.IsNullOrEmpty(user.Password))
-					{
-						if (!validatePassword(user.Password))
-						{
-							success = false;
-							messages.Add(MemberShipErrors.PasswordRule);
-						}
-					}
-
-					if (string.IsNullOrEmpty(user.FirstName))
-					{
-						success = false;
-						messages.Add(MemberShipErrors.FirstNameMissing);
-					}
-
-					if (string.IsNullOrEmpty(user.LastName))
-					{
-						success = false;
-						messages.Add(MemberShipErrors.LastNameMissing);
-					}
-				}
-				else
-				{
-					if (!user.uid.HasValue)
-					{
-						success = false;
-						messages.Add(MemberShipErrors.ProvideUserUid);
-					}
-
-					if (!user.ResourceID.HasValue && user.uid.HasValue)
-					{
-						success = false;
-						messages.Add(MemberShipErrors.ResourceUidNotFound);
-					}
-
-					if (!string.IsNullOrEmpty(user.Password))
-					{
-						if (!validatePassword(user.Password))
-						{
-							success = false;
-							messages.Add(MemberShipErrors.PasswordRule);
-						}
-					}
-
-					if (user.uid != null)
-					{
-						Guid currentUser = (Guid)user.uid;
-						var isUser = AssetRepository.GetAssetByUID(currentUser);
-
-						if (isUser == null || isUser.Object != "Resource")
-						{
-							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.Uid == currentUser);
-
-							if (globalResource == null)
-							{
-								success = false;
-								messages.Add(string.Format(MemberShipErrors.UserUidNotFound, user.uid));
-							}
-						}
-					}
-
-				}
-
-				if (user.CompanyResourceState.HasValue)
-				{
-					if (user.IsNew)
-					{
-						user.State = CompanyResourceState.Active;
-						user.IsNew = false;
-					}
-				}
-
-				row["ExecutionID"] = executionID;
-
-				if (user.uid.HasValue)
-				{
-					row["Uid"] = user.uid;
-				}
-
-				if (user.ResourceID.HasValue)
-				{
-					row["ResourceID"] = user.ResourceID;
-				}
-
-				if (user.ExecutionItemUid.HasValue)
-				{
-					row["ExecutionItemUId"] = user.ExecutionItemUid;
-				}
-
-				row["ItemNumber"] = user.ItemNumber;
-				row["Username"] = user.Username;
-
-				row["FirstName"] = user.FirstName;
-				row["LastName"] = user.LastName;
-
-				row["Password"] = user.Password;
-
-				if (user.State.HasValue && !IsChangePasswordReqeust)
-				{
-					row["State"] = (int)user.State;
-				}
-
-				row["IsAdministrator"] = user.IsAdministrator;
-				row["IsNew"] = user.IsNew;
-				row["Object"] = "Resource";
-				row["ObjectID"] = user.ResourceID ?? 0;
-				row["ObjectType"] = "ResourceType";
-				row["ObjectTypeID"] = ResourceTypeID;
-
-				userTable.Rows.Add(row);
-
-				if (user.Fields != null && !IsChangePasswordReqeust)
-				{
-					foreach (var field in user.Fields.Keys)
-					{
-						var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
-
-						if (fieldType == null)
-						{
-							success = false;
-							messages.Add(string.Format(MemberShipErrors.FieldTypeKeyNotFound, field));
-						}
-
-						var fieldRow = fieldTable.NewRow();
-						fieldRow["ExecutionID"] = executionID;
-						fieldRow["ItemNumber"] = user.ItemNumber;
-						fieldRow["FieldName"] = field;
-						fieldRow["FieldValue"] = user.Fields[field];
-						fieldRow["FieldTypeID"] = fieldType != null ? fieldType.ID : (object)DBNull.Value;
-
-						fieldTable.Rows.Add(fieldRow);
-					}
-				}
-
-				if (!success)
-				{
-					row["Success"] = false;
-				}
-
-				row["Message"] = messages.Any() ? string.Join(". ", messages) + ". " : "";
-			}
-
-			#region Bulk Copy Company
-
-			if (CompanyContext.Connection.State == ConnectionState.Closed)
-			{
-				await CompanyContext.Connection.OpenAsync();
+				await CompanyContext.Connection.ExecuteAsync(@"
+merge	reporting.Global_Resource as T
+using	(select * from #Users) as S
+on		(T.ResourceID = S.ResourceID)
+when	matched then
+update  set
+		T.IsAdministrator = S.IsAdministrator,
+		T.State = S.State,
+		T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Email = S.Email
+when	not matched by target then
+insert	(ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, State, Uid, UpdatedOn)
+values	(S.ResourceID, S.FirstName, S.LastName, S.IsAdministrator, getutcdate(), S.State, Uid, getutcdate());
+", transaction: trans);
 			}
 
 			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
 			{
 				try
 				{
-					await CompanyContext.Connection.ExecuteAsync(@"
-drop table if exists #UserFields;
-create table #UserFields
-(
-	ExecutionID uniqueidentifier not null,
-	ItemNumber int not null,
-	FieldName nvarchar(250),
-	FieldValue nvarchar(max),
-	FieldTypeID int,
-	LookupValue nvarchar(max)
-);",
-						transaction: trans
-					);
 
-					var bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionUser", 1000, 1200, trans);
-
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("Username", "Username");
-					bulkCopy.ColumnMappings.Add("Uid", "Uid");
-					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
-
-					bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
-					bulkCopy.ColumnMappings.Add("LastName", "LastName");
-					bulkCopy.ColumnMappings.Add("State", "State");
-					bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
-					bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
-					bulkCopy.ColumnMappings.Add("Success", "Success");
-					bulkCopy.ColumnMappings.Add("Message", "Message");
-					bulkCopy.ColumnMappings.Add("Object", "Object");
-					bulkCopy.ColumnMappings.Add("ObjectID", "ObjectID");
-					bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
-					bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
-
-					await bulkCopy.WriteToServerAsync(userTable);
-
-
-					bulkCopy = CompanyContext.Connection.CreateBulkCopy("#UserFields", 1000, 1200, trans);
-
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
-					bulkCopy.ColumnMappings.Add("LookupValue", "LookupValue");
-
-					await bulkCopy.WriteToServerAsync(fieldTable);
 
 					#region Populate table values
 
@@ -565,71 +355,67 @@ where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;",
 
 					#region Validation
 
-					if (!IsChangePasswordReqeust)
+
+
+					if (lookupFieldsPassedByValue)
 					{
-						await CompanyContext.Connection.ExecuteAsync(@"
-update  U
-set     U.Success = 0,
-		U.Message = U.Message + 'Resource for this uid not found. '
-from    api.ExecutionUser U
-where   U.Success is null and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
+						CompanyContext.Database.Connection.Execute(@"
+update	T
+set		T.LookupValue = T.[FieldValue]
+from	#Fields T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup'", 
+							transaction: trans);
+					}
+					else
+					{
+						CompanyContext.Database.Connection.Execute(@"
+declare @listFieldTypes table (FieldTypeID int, AllowMultipleValues bit);
+declare @uniqueListValues table (FieldTypeID int, AllowMultipleValues bit, FieldValue nvarchar(max), LookupValue nvarchar(max))
 
-update  U
-set     U.Success = 0,
-		U.Message = U.Message + 'One or more field values supplied is missing a field type. '
-from    api.ExecutionUser U
-		cross apply (
-			select  count(*) as MissingCount 
-			from    #UserFields F 
-			where   F.ItemNumber = U.ItemNumber 
-					and F.ExecutionID = U.ExecutionID
-					and F.FieldTypeID is null
-		) C
-where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
+insert into @listFieldTypes
+	select	t.FieldTypeID, s.AllowMultipleValues
+	from	#Fields t
+			inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
+	group by t.FieldTypeID, s.AllowMultipleValues;
 
-update  U
-set     U.Success = 0,
-		U.Message = U.Message + 'Missing required fields. '
-from    api.ExecutionUser U
-		cross apply (
-			select  count(*) as MissingCount
-			from    FieldType F
-			where   F.Object = 'ResourceType' 
-					and F.ObjectID = @ResourceTypeID and F.IsRequired = 1
-					and not exists (
-						select  1 
-						from    #UserFields R 
-						where   R.ItemNumber = U.ItemNumber 
-								and R.ExecutionID = U.ExecutionID 
-								and R.FieldTypeID = F.ID
-					)
-		) C
-where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;",
-							new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans
-						);
+insert into @uniqueListValues
+	select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue
+	from	#Fields t
+			inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
+			cross apply string_split(t.FieldValue, ',') tmv
+	group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
 
-						if (lookupFieldsPassedByValue)
-						{
-							CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);
-						}
-						else
-						{
-							CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
-						}
+update	t
+set		t.LookupValue = t.[Value]
+from	@uniqueListValues t
+		inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
 
-						//validate lookup fields
-						await CompanyContext.Connection.ExecuteAsync(@"
+update	T
+set		T.LookupValue = T.[FieldValue]
+from	#Fields T
+		inner join @listFieldTypes ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup'
+
+
+update	T
+set		T.LookupValue = T.[FieldValue]
+from	#Fields T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup'",
+							transaction: trans);
+					}
+
+					//validate lookup fields
+					await CompanyContext.Connection.ExecuteAsync(@"
 update  U
 set     U.Success = 0,
 		U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
 from    api.ExecutionUser U
-inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
-inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
-where U.ExecutionID = @executionID and F.LookupValue is null and F.FieldValue is not null",
-							new { executionID }, transaction: trans
-						);
+		inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
+		inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+		where U.ExecutionID = @executionID and F.LookupValue is null and F.FieldValue is not null",
+						new { executionID }, transaction: trans
+					);
 
-						await CompanyContext.Connection.ExecuteAsync(@"
+					await CompanyContext.Connection.ExecuteAsync(@"
 insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
 	select  ExecutionID,
 			ItemNumber,
@@ -639,9 +425,8 @@ insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, 
 			LookupValue,
 			null as Ignore
 	from	#UserFields",
-							transaction: trans
-						);
-					}
+						transaction: trans
+					);
 
 					validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>(@"
 select	ItemNumber, 
@@ -675,8 +460,6 @@ where	ExecutionID = @executionID",
 				}
 			}
 
-			#endregion
-
 			#region Upsert records
 
 			if (validationResults.Count > 0)
@@ -693,31 +476,28 @@ where	ExecutionID = @executionID",
 
 						if (upsertUser != null)
 						{
-							if (!IsChangePasswordReqeust)
+							var requiredFieldNames = fieldTypes.Where(f => f.IsRequired && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+
+							CompanyContext.ValidateFields("ResourceType",
+								ResourceTypeID,
+								isInsert,
+								fieldTypes,
+								requiredFieldNames,
+								upsertUser.Fields,
+								executionID,
+								upsertUser.ItemNumber,
+								null,
+								out bool success,
+								out string message);
+
+							if (success == false)
 							{
-								var requiredFieldNames = fieldTypes.Where(f => f.IsRequired && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
+								validationResult.Success = false;
+								validationResult.Message += message;
 
-								CompanyContext.ValidateFields("ResourceType",
-								   ResourceTypeID,
-								   isInsert,
-								   fieldTypes,
-								   requiredFieldNames,
-								   upsertUser.Fields,
-								   executionID,
-								   upsertUser.ItemNumber,
-								   null,
-								   out bool success,
-								   out string message);
+								results.Add(validationResult);
 
-								if (success == false)
-								{
-									validationResult.Success = false;
-									validationResult.Message += message;
-
-									results.Add(validationResult);
-
-									continue;
-								}
+								continue;
 							}
 
 							// Add resource.
@@ -797,38 +577,16 @@ where	ExecutionID = @executionID",
 								}
 							}
 
-							if (!IsChangePasswordReqeust)
+							// Handle CompanyResource record in Community.
+							CompanyResource companyResource;
+							if (upsertUser.CompanyResourceState.HasValue)
 							{
+								companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == SecurityContext.CompanyID && c.ResourceID == upsertUser.ResourceID);
 
-								// Handle CompanyResource record in Community.
-								CompanyResource companyResource;
-								if (upsertUser.CompanyResourceState.HasValue)
+								if (companyResource != null)
 								{
-									companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == SecurityContext.CompanyID && c.ResourceID == upsertUser.ResourceID);
-
-									if (companyResource != null)
-									{
-										//disallow changing the admin flag if the current user is not an admin
-										if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator != companyResource.IsAdministrator)
-										{
-											validationResult.Success = false;
-											validationResult.uid = upsertUser.uid;
-											validationResult.Message += "Non-administrator users cannot update the administrator flag. ";
-											results.Add(validationResult);
-
-											continue;
-										}
-
-										companyResource.IsAdministrator = upsertUser.IsAdministrator;
-										companyResource.State = upsertUser.State ?? companyResource.State;
-
-										CommunityContext.Update(companyResource);
-									}
-								}
-								else
-								{
-									//disallow creating admin users if the current user is not an admin
-									if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator)
+									//disallow changing the admin flag if the current user is not an admin
+									if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator != companyResource.IsAdministrator)
 									{
 										validationResult.Success = false;
 										validationResult.uid = upsertUser.uid;
@@ -838,70 +596,88 @@ where	ExecutionID = @executionID",
 										continue;
 									}
 
-									companyResource = new CompanyResource()
-									{
-										ResourceID = (int)upsertUser.ResourceID,
-										CompanyID = SecurityContext.CompanyID,
-										State = CompanyResourceState.Active,
-										IsAdministrator = upsertUser.IsAdministrator
-									};
+									companyResource.IsAdministrator = upsertUser.IsAdministrator;
+									companyResource.State = upsertUser.State ?? companyResource.State;
 
-									CommunityContext.Add(companyResource);
+									CommunityContext.Update(companyResource);
 								}
-
-
-								// Handle GlobalResource record in Environment.
-								var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == upsertUser.ResourceID);
-								if (globalResource != null)
-								{
-									globalResource.FirstName = upsertUser.FirstName;
-									globalResource.LastName = upsertUser.LastName;
-									globalResource.Email = upsertUser.Email;
-									globalResource.IsAdministrator = upsertUser.IsAdministrator;
-									globalResource.State = upsertUser.State ?? companyResource.State;
-									globalResource.UpdatedOn = DateTime.UtcNow;
-
-									CompanyContext.Update(globalResource);
-								}
-								else
-								{
-									globalResource = new GlobalReportingResource
-									{
-										IsAdministrator = upsertUser.IsAdministrator,
-										ResourceID = (int)upsertUser.ResourceID,
-										Email = upsertUser.Email,
-										FirstName = upsertUser.FirstName,
-										LastName = upsertUser.LastName,
-										State = upsertUser.State ?? companyResource.State,
-										UpdatedOn = DateTime.UtcNow,
-										Uid = (Guid)upsertUser.uid,
-										CreatedOn = DateTime.UtcNow
-									};
-
-									CompanyContext.Add(globalResource);
-								}
-
-
-								// Handle Asset record in Environment.
-								var userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == upsertUser.ResourceID);
-								if (userAsset != null)
-								{
-									userAsset.UpdatedBy = SecurityContext.ResourceID;
-									userAsset.UpdatedOn = DateTime.UtcNow;
-									CompanyContext.Update(userAsset);
-								}
-								else
-								{
-									if (userAssetType != null)
-									{
-										CompanyContext.Connection.Execute(
-											"insert into Asset (AssetTypeID, State, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @ResourceID, @Dt, @r, @Dt, @r, @uid)",
-											new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, r = SecurityContext.ResourceID, uid = (Guid)upsertUser.uid }
-										);
-									}
-								}
-
 							}
+							else
+							{
+								//disallow creating admin users if the current user is not an admin
+								if (!SecurityContext.IsAdministrator && upsertUser.IsAdministrator)
+								{
+									validationResult.Success = false;
+									validationResult.uid = upsertUser.uid;
+									validationResult.Message += "Non-administrator users cannot update the administrator flag. ";
+									results.Add(validationResult);
+
+									continue;
+								}
+
+								companyResource = new CompanyResource()
+								{
+									ResourceID = (int)upsertUser.ResourceID,
+									CompanyID = SecurityContext.CompanyID,
+									State = CompanyResourceState.Active,
+									IsAdministrator = upsertUser.IsAdministrator
+								};
+
+								CommunityContext.Add(companyResource);
+							}
+
+
+							// Handle GlobalResource record in Environment.
+							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == upsertUser.ResourceID);
+							if (globalResource != null)
+							{
+								globalResource.FirstName = upsertUser.FirstName;
+								globalResource.LastName = upsertUser.LastName;
+								globalResource.Email = upsertUser.Email;
+								globalResource.IsAdministrator = upsertUser.IsAdministrator;
+								globalResource.State = upsertUser.State ?? companyResource.State;
+								globalResource.UpdatedOn = DateTime.UtcNow;
+
+								CompanyContext.Update(globalResource);
+							}
+							else
+							{
+								globalResource = new GlobalReportingResource
+								{
+									IsAdministrator = upsertUser.IsAdministrator,
+									ResourceID = (int)upsertUser.ResourceID,
+									Email = upsertUser.Email,
+									FirstName = upsertUser.FirstName,
+									LastName = upsertUser.LastName,
+									State = upsertUser.State ?? companyResource.State,
+									UpdatedOn = DateTime.UtcNow,
+									Uid = (Guid)upsertUser.uid,
+									CreatedOn = DateTime.UtcNow
+								};
+
+								CompanyContext.Add(globalResource);
+							}
+
+
+							// Handle Asset record in Environment.
+							var userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == upsertUser.ResourceID);
+							if (userAsset != null)
+							{
+								userAsset.UpdatedBy = SecurityContext.ResourceID;
+								userAsset.UpdatedOn = DateTime.UtcNow;
+								CompanyContext.Update(userAsset);
+							}
+							else
+							{
+								if (userAssetType != null)
+								{
+									CompanyContext.Connection.Execute(
+										"insert into Asset (AssetTypeID, State, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @ResourceID, @Dt, @r, @Dt, @r, @uid)",
+										new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, r = SecurityContext.ResourceID, uid = (Guid)upsertUser.uid }
+									);
+								}
+							}
+
 						}
 					
 						validationResult.Message = null;
@@ -1004,57 +780,54 @@ from	api.ExecutionUser U
 						transaction: trans
 					);
 
-					if (!IsChangePasswordReqeust)
-					{
-						bool isInsertForMergeField = isInsert;
+					bool isInsertForMergeField = isInsert;
 
-						if (isInsert == true)
-						{
-							var UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
+					if (isInsert == true)
+					{
+						var UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
 select	count(1) 
 from	api.ExecutionUser U
-		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0", 
-								new { executionID }, transaction: trans)
-							);
-							var UserUpdateCount = UserUpdateCountResult.First();
+	inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0", 
+							new { executionID }, transaction: trans)
+						);
+						var UserUpdateCount = UserUpdateCountResult.First();
 
-							if (UserUpdateCount > 0)
-							{
-								isInsertForMergeField = false;
-							}
-						}
-
-						CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", SystemObjects.Resource, "A.AssetID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
-
-						if (hasRelationshipFieldTypes)
+						if (UserUpdateCount > 0)
 						{
-							CompanyContext.ImportRelationships(execution, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+							isInsertForMergeField = false;
 						}
+					}
 
-						await CompanyContext.Connection.ExecuteAsync(@"
+					CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", SystemObjects.Resource, "A.AssetID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
+
+					if (hasRelationshipFieldTypes)
+					{
+						CompanyContext.ImportRelationships(execution, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+					}
+
+					await CompanyContext.Connection.ExecuteAsync(@"
 insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	@Id,
-			(select U.ResourceID as ObjectId,
-					U.AssetId,
-					U.ItemNumber,
-					U.FirstName,
-					U.LastName, 
-					U.Username,
-					U.IsAdministrator,
-					coalesce(U.FirstName + ' ' + U.LastName, U.Username) as ObjectName,
-					@isInsert as IsNew
-			for json path
-			) as Payload
-	from	api.ExecutionUser U
-			inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null;
+select	@Id,
+		(select U.ResourceID as ObjectId,
+				U.AssetId,
+				U.ItemNumber,
+				U.FirstName,
+				U.LastName, 
+				U.Username,
+				U.IsAdministrator,
+				coalesce(U.FirstName + ' ' + U.LastName, U.Username) as ObjectName,
+				@isInsert as IsNew
+		for json path
+		) as Payload
+from	api.ExecutionUser U
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null;
 
 update	U
 set		U.Success = 1
 from	api.ExecutionUser U
-		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null", 
-							new { executionID, execution.Id, isInsert }, transaction: trans
-						);
-					}
+	inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null", 
+						new { executionID, execution.Id, isInsert }, transaction: trans
+					);
 
 					trans.Commit();
 				}

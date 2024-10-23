@@ -1,7 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.queue;
-using d360.core.validators;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,9 +11,9 @@ namespace repositories
     {
         Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
         
-        Task<IEnumerable<UserApiModel>> UpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
+        Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false);
         
-        Task<IEnumerable<UserApiModel>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false);
+        Task<IEnumerable<UserApiUpsertResult>> ProcessUpsertUsers(ApiExecution execution, IEnumerable<UserApiModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false);
         
         Task<ApiExecutionInfo> UpsertBulkUsers(ApiExecution execution, UserUpsertModel model);
 
