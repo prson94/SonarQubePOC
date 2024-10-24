@@ -2540,7 +2540,7 @@ namespace d360.web.Controllers
 
 			DynamicParameters dbParams = new DynamicParameters();
 
-			var sql = $@"select 
+			var sql = $@"select top 100
 										c.[Object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
