@@ -1,10 +1,10 @@
-import { debounceTime } from 'rxjs/operators';
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { debounceTime, switchMap, distinctUntilChanged } from 'rxjs/operators';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
 import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { Subject, SubscriptionLike as ISubscription } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -27,29 +27,45 @@ import { CompanySettingsService } from '../../../services/settings.service';
     providers: [TagService],
 })
 
-export class SocialTagInputComponent extends BaseComponent  implements OnDestroy{
+export class SocialTagInputComponent extends BaseComponent  implements OnInit, OnDestroy{
     @Output() selectTag = new EventEmitter();
         
     tags: Tag[] = [];
     tag: Tag;
+
+	private searchTerm$ = new Subject<string>();
 
     private searchSub: ISubscription;
     constructor(
         protected settingsService: CompanySettingsService,
         private tagService: TagService) {
         super(settingsService);
-    }
+	}
+
+	ngOnInit(): void {
+		this.createSubscription();
+	}
 
     ngOnDestroy(): void {
         if (this.searchSub) {this.searchSub.unsubscribe();}
-    }
+	}
 
-    search(event) {
-        this.searchSub = this.tagService.getTags(event.query).pipe(
-            debounceTime(400))
-            .subscribe((data) => {
-            this.tags = data;
-        }); 
+	createSubscription() {
+		if (this.searchSub) { this.searchSub.unsubscribe(); }
+
+		this.searchSub = this.searchTerm$.pipe(
+			debounceTime(400),
+			distinctUntilChanged(),
+			switchMap((term) => {
+				return this.tagService.getTags(term);
+			})
+		).subscribe((data) => {
+			this.tags = data;
+		});
+	}
+	
+	search(event) {
+		this.searchTerm$.next(event.query);
     }
 
     selectItem() {
