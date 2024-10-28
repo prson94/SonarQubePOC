@@ -34,7 +34,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({

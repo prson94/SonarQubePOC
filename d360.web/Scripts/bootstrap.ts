@@ -3,7 +3,6 @@ import { enableProdMode } from '@angular/core';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 import 'zone.js';
-import 'zone.js/dist/long-stack-trace-zone';
 import '@angular/localize/init';
 
 /* eslint-disable no-console */

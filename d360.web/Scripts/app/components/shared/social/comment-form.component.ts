@@ -7,7 +7,7 @@ import { SocialService } from "../../../services/social.service";
 import { BaseComponent } from "../base.component";
 import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from "../../../services/settings.service";
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 @Component({
     selector: "d3s-comment-form",

@@ -28,7 +28,7 @@ import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { Subject } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 @Component({
     selector: 'd3s-dynamic-editor',

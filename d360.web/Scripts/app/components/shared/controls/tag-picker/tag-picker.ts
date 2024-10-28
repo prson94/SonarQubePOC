@@ -23,7 +23,7 @@ import { TagPermissionItem, TagType } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 import { escape } from "lodash-es";
 
 

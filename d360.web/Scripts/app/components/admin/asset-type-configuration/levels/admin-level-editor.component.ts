@@ -4,7 +4,7 @@ import { LevelsService } from '../../../../services/levels.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { BaseComponent } from '../../../shared/base.component';
 import { cloneDeep } from 'lodash-es';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
     selector: 'd3s-admin-level-editor',

@@ -27,7 +27,7 @@ import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
     selector: 'd3s-dynamic-field',

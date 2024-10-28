@@ -59,8 +59,7 @@
 				"quill",
 				"codemirror",
 				"codemirror/*",
-				"flat",
-				"zone.js/dist/long-stack-trace-zone"
+				"flat"
 			],
             "scripts": [
             ],
@@ -100,7 +99,7 @@
 			"development": {
 				"optimization": false,
 				"outputHashing": "none",
-				"sourceMap": false,
+				"sourceMap": true,
 				"namedChunks": true,
 				"extractLicenses": true,
 				"vendorChunk": true,

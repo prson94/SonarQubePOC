@@ -29,7 +29,7 @@ import { AssetService } from '../../../../services/asset.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { RelationshipType } from "../../../../models/relationship.model";
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 
 @Component({

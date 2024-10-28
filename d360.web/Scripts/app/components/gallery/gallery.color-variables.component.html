@@ -7,7 +7,7 @@
 <div class="tile tile-detail">
     <header>Core colors</header>
     <div *ngFor="let item of basecolors;" class="colorsample" [ngClass]="'ig-'+item" [attr.id]="getClassName(item, 'Base')">
-        @ig-{{item}}<br />
+        &#64;ig-{{item}}<br />
         .ig-{{item}}<br />
         {{getHex(item, 'Base')}}
     </div>
@@ -23,7 +23,7 @@
         </tr>
         <tr *ngFor="let base of tintedbasecolors">
             <td *ngFor="let ts of tintsshaded" class="colorsample" [ngClass]="getClassName(base, ts)">
-                @{{getClassName(base, ts)}}<br />
+                &#64;{{getClassName(base, ts)}}<br />
                 .{{getClassName(base, ts)}}<br />
                 {{getHex(base, ts)}}
             </td>
@@ -38,21 +38,21 @@
     </p>
     <code>
         // text and link colors<br />
-        @ig-color-text: @ig-black;<br />
-        @ig-color-placeholder-text: @ig-grey;<br />
-        @ig-color-link: @ig-midblue;<br />
-        @ig-color-link-hover: @ig-midblue-s1;<br />
-        @ig-color-link-active: @ig-midblue-s2;<br />
+        &#64;ig-color-text: &#64;ig-black;<br />
+        &#64;ig-color-placeholder-text: &#64;ig-grey;<br />
+        &#64;ig-color-link: &#64;ig-midblue;<br />
+        &#64;ig-color-link-hover: &#64;ig-midblue-s1;<br />
+        &#64;ig-color-link-active: &#64;ig-midblue-s2;<br />
         // field colors<br />
-        @ig-color-field-required: @ig-lightblue-t4;<br />
-        @ig-color-field-invalid: @ig-red-t5;<br />
-        @ig-color-field-invalid-message: @ig-red-s1;<br />
-        @ig-color-field-border: rgba(0, 0, 0, 0.21);<br />
-        @ig-color-field-button: rgba(0, 0, 0, 0.07);<br />
-        @ig-color-field-button-hover: rgba(0, 0, 0, 0.14);<br />
-        @ig-color-field-button-active: rgba(0, 0, 0, 0.21);<br />
+        &#64;ig-color-field-required: &#64;ig-lightblue-t4;<br />
+        &#64;ig-color-field-invalid: &#64;ig-red-t5;<br />
+        &#64;ig-color-field-invalid-message: &#64;ig-red-s1;<br />
+        &#64;ig-color-field-border: rgba(0, 0, 0, 0.21);<br />
+        &#64;ig-color-field-button: rgba(0, 0, 0, 0.07);<br />
+        &#64;ig-color-field-button-hover: rgba(0, 0, 0, 0.14);<br />
+        &#64;ig-color-field-button-active: rgba(0, 0, 0, 0.21);<br />
         // menu/table/dropdown colors<br />
-        @ig-color-item-hover: @ig-orange-t4;<br />
-        @ig-color-item-active: @ig-orange-t3;<br />
+        &#64;ig-color-item-hover: &#64;ig-orange-t4;<br />
+        &#64;ig-color-item-active: &#64;ig-orange-t3;<br />
     </code>
 </div>

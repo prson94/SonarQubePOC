@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import * as DOMPurify from 'dompurify';
 
 @Injectable({
     providedIn: 'root'

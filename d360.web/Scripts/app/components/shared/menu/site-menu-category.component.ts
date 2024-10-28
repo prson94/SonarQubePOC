@@ -14,7 +14,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 import { escape } from "lodash-es";
 
 @Component({

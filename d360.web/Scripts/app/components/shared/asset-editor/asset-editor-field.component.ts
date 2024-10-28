@@ -105,7 +105,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     showLookupSearchField: boolean = false;
     hadInitialLazyLoad: boolean = false;
 
-    @ViewChild('dropdown', { static: false }) dropdown: Dropdown & MultiSelect;
+    @ViewChild('dropdown', { static: false }) dropdown: Dropdown | MultiSelect;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
 

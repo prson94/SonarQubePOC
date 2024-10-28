@@ -7,7 +7,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DashboardService } from '../../../services/dashboard.service';
 import { DashboardDefinition, DashboardLocation, DashboardModel, DashboardType } from '../../../models/dashboard.model';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
 	selector: 'd3s-admin-dashboards-editor',

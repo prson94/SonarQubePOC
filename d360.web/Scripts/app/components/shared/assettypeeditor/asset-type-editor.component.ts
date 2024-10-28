@@ -4,7 +4,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass, AssetTypeEditorModel, FlowObjectType } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
     selector: 'd3s-asset-type-editor',

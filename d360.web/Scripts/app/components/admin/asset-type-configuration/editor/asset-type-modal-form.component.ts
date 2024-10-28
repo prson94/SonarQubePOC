@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 import { SelectItem } from "primeng/api";
 import { forkJoin, Subscription, of } from "rxjs";
 import { AssetType, AssetTypeApiModel, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
