@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID-v4">
+  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -55,7 +55,7 @@ CREATE OR ALTER FUNCTION [dbo].[ResponsibilityDetailByAssetTypeIDAssetID]
 				RES.uid as ResourceUid,
 				RES.uid as SecurityAssetUid
 		from	AssetRule rasset
-				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID and R.Isvisible = 1)
+				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
 				inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 				inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 				inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
@@ -81,7 +81,7 @@ CREATE OR ALTER FUNCTION [dbo].[ResponsibilityDetailByAssetTypeIDAssetID]
 				RES.uid as ResourceUid,
 				secasset.uid as SecurityAssetUid
 		from	AssetRule rasset
-				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID and R.Isvisible = 1)
+				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
 				inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 				inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 				inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID

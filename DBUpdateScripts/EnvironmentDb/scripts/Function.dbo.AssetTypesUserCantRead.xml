@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,Puneet" id="Function.dbo.AssetTypesUserCantRead-v3">
+  <changeSet author="TDuric" id="Function.dbo.AssetTypesUserCantRead-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -23,7 +23,7 @@ CREATE OR ALTER FUNCTION [dbo].[AssetTypesUserCantRead]
 				      Ast.ID as AssetTypeID
 			      from 
 				      [dbo].[ResponsibilityTypeRelation] RR
-				      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID and R.Isvisible = 1)	
+				      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
 				      inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
 				      inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = 0 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
 			      where 
