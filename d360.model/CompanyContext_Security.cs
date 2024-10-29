@@ -1871,7 +1871,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)		
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int)
@@ -1882,7 +1882,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
@@ -1927,7 +1927,7 @@ where id = @IntersectTypeID";
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
-						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2 and r.IsVisible = 1
+						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
 								and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int) and att.id = cast(@{typeParam} as int)
 						option (recompile);
 	
@@ -1941,7 +1941,7 @@ where id = @IntersectTypeID";
 								inner join [dbo].[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
 								inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
 								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
-						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2 and r.IsVisible = 1
+						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
 								and RG.ResourceID = cast(@{userParam} as int) and att.id = cast(@{typeParam} as int)
 						option (recompile);
 	
