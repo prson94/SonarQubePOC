@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v3.2">
+  <changeSet author="Pappas" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v4">
     <comment>GOV-15702</comment>
 	<comment>GOV-21440</comment>
     <sql dbms="mssql"
