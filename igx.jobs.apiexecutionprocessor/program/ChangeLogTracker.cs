@@ -289,7 +289,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				select gfa.FieldName,0 FieldTypeID, max(gfa.AuditID) AuditID, max(ga.Version) MaxVersion
 				into #changelogs
 				from reporting.Global_Audit GA
-				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID and gfa.FieldTypeID = 0
+				inner join reporting.Global_FieldAudit gfa WITH (INDEX(IX_Global_FieldAudit_FieldName_FieldID_WhereClause)) on gfa.AuditID = ga.ID and gfa.FieldTypeID = 0
 				where Object = @object and ObjectID = @objectId {(useOnlyObjectCheck ? "" : "and ActionObject = @object and ActionObjectID = @objectId")}
 				group by gfa.FieldName;
 

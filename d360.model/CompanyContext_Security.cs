@@ -253,7 +253,7 @@ namespace d360.model
 		/// <returns></returns>
 		private async Task MarkResponsibilityRuleAsRan(int ruleId, SqlTransaction transaction)
 		{
-			await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction);
+			await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction, commandTimeout: timeout);
 		}
 
 		private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results, int timeout = 3600)
@@ -370,7 +370,7 @@ where R.ID = @ID
 							
 							drop table if exists #tempdataruleThen;
 						";
-							await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
+							await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction, commandTimeout: timeout);
 						}
 
 						// Get impacted assets, for rescoring purposes.
@@ -381,7 +381,7 @@ from    #changes C
 		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
 where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT') 
 group by A.Uid";
-						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid, IsAssetForRescoring }, transaction: transaction)).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid, IsAssetForRescoring }, transaction: transaction, commandTimeout: timeout)).ToList();
 
 						//drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
@@ -1738,7 +1738,7 @@ where id = @IntersectTypeID";
 						var data = (await Connection.QueryAsync<dynamic>(
 							sqlToExecute,
 							new { w.TargetObject, w.TargetObjectID, w.IntersectTypeID },
-							transaction
+							transaction, commandTimeout: timeout
 						)).SingleOrDefault();
 
 						bool IsSubject = false;
