@@ -2041,8 +2041,6 @@
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
-    <TypeScriptCompile Include="Scripts\polyfills.ts" />
-    <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
@@ -2101,9 +2099,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-fields.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-style-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-template-styles.component.ts" />
@@ -2215,9 +2210,6 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets\assets.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets\assets.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\assets\assets.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.routes.ts" />
@@ -2945,7 +2937,6 @@
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\policies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\predicates.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\previewpopup-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reference.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\relationships.service.ts" />
@@ -2962,7 +2953,6 @@
     <TypeScriptCompile Include="Scripts\app\services\settings\default-table-settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\side-panel.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
@@ -3029,7 +3019,6 @@
     <None Include="Scripts\app\components\admin\branding\theme-editor.component.html" />
     <None Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.html" />
     <None Include="Scripts\app\components\admin\dashboards\admin-dashboards.component.html" />
-    <None Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.html" />
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-template-fields.component.html" />
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-template-style-form.component.html" />
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-template-styles.component.html" />

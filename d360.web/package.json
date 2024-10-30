@@ -31,7 +31,7 @@
     "@angular/platform-server": "17.3.12",
     "@angular/router": "17.3.12",
     "@ctrl/ngx-codemirror": "5.1.1",
-    "@precisely/di-suite-ng": "16.0.153",
+    "@precisely/di-suite-ng": "17.0.5",
     "@precisely/prism-ng": "17.0.7",
     "angular-split": "^17.2.0",
     "codemirror": "5.64.0",
