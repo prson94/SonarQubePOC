@@ -1524,6 +1524,12 @@ where	EG.Success is null
 					if (rule.StructuredDefinition.Then.Object == "ResourceType")
 					{
 						thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
+
+						thenSql.Append($" where O.[State] = 1");
+						if (IsHideData3SixtyUsers)
+						{
+							thenSql.Append(" and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com' and O.Email not like '%@precisely.com')");
+						}
 					}
 				}
 			}
