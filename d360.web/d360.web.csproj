@@ -2041,6 +2041,7 @@
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
+    <TypeScriptCompile Include="Scripts\polyfills.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
