@@ -29,10 +29,8 @@ namespace d360.model.DataAccessLayer
 	{
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
-		private readonly ICommunityContext CommunityContext;
 
 		public RelationshipRepository(
-			ICommunityContext communityContext, 
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
@@ -42,7 +40,6 @@ namespace d360.model.DataAccessLayer
 		{
 			QueueSource = queueSource;
 			Storage = storageProvider;
-			CommunityContext = communityContext;
 		}
 
 		public Intersect GetRelationshipByUID(Guid relationshipUid)
@@ -485,7 +482,7 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
 						var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
-						dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
+						dbArgs.Add("@CurrentResourceID", SecurityContext.ResourceID);
 						dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
 						var subjectClause = "";
 						var objectClause = "";
@@ -554,9 +551,9 @@ namespace d360.model.DataAccessLayer
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
 							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							{(!CompanyContext.CurrentResourceIsAdmin ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
 							where {subjectClause}
-							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
@@ -573,9 +570,9 @@ namespace d360.model.DataAccessLayer
 							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							{(!CompanyContext.CurrentResourceIsAdmin ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
 							where fia.id is null and {objectClause}
-							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 							";
 

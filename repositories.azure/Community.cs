@@ -5,6 +5,7 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -263,7 +264,6 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 			return users;
 		}
 
-
 		public string GenerateOpenIdRequestValue(int length = 5)
 		{
 			var builder = new StringBuilder(length);
@@ -284,14 +284,15 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 			return builder.ToString().ToLower();
 		}
 
-		public async Task<string> GetConnectionStringForTenantAsync(int companyId)
+		public string GetConnectionStringForTenantAsync(int companyId)
 		{
 			string connectionString = "";
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@companyId", companyId);
 			using (var connection = Connect(true))
 			{
-				var server = await connection.QueryFirstOrDefaultAsync<DatabaseServer>("select d.* from DatabaseServer d inner join Company c on c.DatabaseServerId = d.Id and c.Id = @companyId", dbArgs);
+				var server = connection.QueryFirstOrDefault<DatabaseServer>(
+					"select d.* from DatabaseServer d inner join Company c on c.DatabaseServerId = d.Id and c.Id = @companyId", dbArgs, commandTimeout: 10);
 				if (server != null)
 				{
 					connectionString = $"server={server.Server};Database=D3S_{companyId};User ID={server.Username};Password={server.Password};MultipleActiveResultSets=True;ConnectRetryCount=5;ConnectRetryInterval=10;Connection Timeout=180;";
@@ -450,6 +451,30 @@ where	u.UrlPrefix = @prefix",
 			return response;
 		}
 
+		public async Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null)
+		{
+			IEnumerable<CompanyDigestExecution> response = null;
+
+			string regionJoin = string.IsNullOrEmpty(region) ? "" : "inner join DatabaseServer d on d.ID = e.DatabaseServerID and d.RegionCode = @region";
+			string sql = $@"
+select	* 
+from	CompanyDigestExecution e
+		inner join	(
+					select	ex.CompanyID,
+							max(ex.LastExecuted) as LastExecuted
+					from	CompanyDigestExecution ex
+							inner join Company e on e.ID = ex.CompanyID and e.EnvironmentLevel = @slot {regionJoin}
+					group by ex.CompanyID
+					) g on g.CompanyID = e.CompanyID and g.LastExecuted= e.LastExecuted";
+
+			using (var connection = Connect(true))
+			{
+				response = await connection.QueryAsync<CompanyDigestExecution>(sql, new { slot = (int)slot, region });
+			}
+
+			return response;
+		}
+
 		public async Task<bool> ReadShouldUserBeAutoAdminByGroupMembershipAsync(int companyId, int domainSettingId, List<string> groups)
 		{
 			bool response = false;
@@ -460,6 +485,64 @@ where	u.UrlPrefix = @prefix",
 						$"select cast(iif(exists(select 1 from CompanyDomainGroup where CompanyID = @companyId and DomainSettingID = @domainSettingId and GroupName in @groups and IsAdministrator = 1), 1, 0) as bit)",
 						new { companyId, domainSettingId, groups }
 					);
+			}
+
+			return response;
+		}
+
+		public async Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null)
+		{
+			IEnumerable<CompanyWithDatabaseServerSettings> response = null;
+
+			string sql = @"
+select  c.ID as CompanyID, 
+        c.ClientID,
+        ds.Server, 
+        ds.Username, 
+        ds.Password,                             
+        ds.SearchServer, 
+        c.EnvironmentLevel,
+        CDS.UrlPrefix,
+        c.Priority,
+        ds.RegionCode,
+		ds.[Region]
+from    company c 
+        inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
+        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1
+where	c.EnvironmentLevel = @slot" + (string.IsNullOrEmpty(region) ? "" : " and ds.RegionCode = @region");
+
+			using (var connection = Connect(true))
+			{
+				response = await connection.QueryAsync<CompanyWithDatabaseServerSettings>(sql, new { slot = (int)slot, region });
+			}
+
+			return response;
+		}
+
+		public async Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId)
+		{
+			CompanyWithDatabaseServerSettings response = null;
+
+			string sql = @"
+select  c.ID as CompanyID, 
+        c.ClientID,
+        ds.Server, 
+        ds.Username, 
+        ds.Password,                             
+        ds.SearchServer, 
+        c.EnvironmentLevel,
+        CDS.UrlPrefix,
+        c.Priority,
+        ds.RegionCode,
+		ds.[Region]
+from    company c 
+        inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
+        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1
+where	c.ID = @companyId";
+
+			using (var connection = Connect(true))
+			{
+				response = await connection.QueryFirstAsync<CompanyWithDatabaseServerSettings>(sql, new { companyId });
 			}
 
 			return response;
@@ -670,7 +753,7 @@ from	CompanyResource CR
 			return response;
 		}
 
-		async Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword)
+		public async Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword)
 		{
 			RepositoryResponse<bool> response = new(200, "");
 
@@ -777,9 +860,7 @@ select * from [Resource] where ID = @userId";
 				"update CompanyResource " +
 				"set	IsAdministrator = @isAdministrator, " +
 				"		LastLoggedInOn = @loggedInOn " +
-				"where	CompanyID = @companyId and ResourceID = @resourceId; " +
-				"insert into CompanyResourceState (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
-				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
+				"where	CompanyID = @companyId and ResourceID = @resourceId; ";
 			using (var connection = Connect())
 			{
 				int recordsCount = await connection.ExecuteAsync(
@@ -797,6 +878,25 @@ select * from [Resource] where ID = @userId";
 			}
 
 			return response;
+		}
+
+		public async Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId)
+		{
+			using (var connection = Connect())
+			{
+				if (existingId.HasValue)
+				{
+					await connection.ExecuteAsync(
+						"update CompanyDigestExecution set InstanceID = @invocationId, LastExecuted = getutcdate() where ID = @id", 
+						new { invocationId, id = existingId.Value });
+				}
+				else
+				{
+					await connection.ExecuteAsync(
+						"insert into CompanyDigestExecution (CompanyID, InvocationID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
+						new { companyId, invocationId });
+				}
+			}
 		}
 
 		public async Task<Resource> ValidateResourceAsync(string username, string password, int? companyId)

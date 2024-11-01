@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace igx.jobs.scoreprocessor
         const string FUNCTION_NAME = "Scoring_CalculateRollupPaths_Timer";
         const string TIMER_SETTINGS = "0 */30 * * * *"; //every 30 minutes
 
-		public CalculateRollupPaths(IConfiguration config): base(config)
+		public CalculateRollupPaths(IConfiguration config, ICommunity community): base(community, config)
 		{
 				
 		}
@@ -23,9 +24,9 @@ namespace igx.jobs.scoreprocessor
         {
             try
             {
-                var companies = GetCompaniesByCurrentSlot();
-
-                foreach(var c in companies)
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+                foreach(var c in tenants)
                 {
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },

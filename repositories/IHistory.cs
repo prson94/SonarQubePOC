@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace repositories
 {
-	public interface ICatalogHistory
+	public interface IHistory
 	{
 		Platform Platform { get; }
 

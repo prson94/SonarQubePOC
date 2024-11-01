@@ -37,20 +37,17 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-		internal ICommunityContext Community;
 
 		public AssetRepository(
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource,
 			IStorageProvider storageProvider,
-			ICommunityContext community,
 			IFeatureFlagService ff)
 			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
-			Community = community;
 		}
 
 		public Asset GetAssetByObjectId(string obj, int objId)
@@ -3609,8 +3606,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				results = CompanyContext.RemoveAssets(execution, assetType, assets);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssets);
 
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				
 				var distinctTypes = results.GroupBy(r => new { r.ObjectTypeID, r.ObjectType }).Select(grp => grp.First());
 
@@ -4203,13 +4200,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			var includedAssetClasses = new List<AssetTypeClass>() {
 				AssetTypeClass.BusinessAsset,
 				AssetTypeClass.Diagram,
-				AssetTypeClass.Group,
 				AssetTypeClass.Model,
 				AssetTypeClass.Policy,
 				AssetTypeClass.Reference,
 				AssetTypeClass.Rule,
-				AssetTypeClass.TechnicalAsset,
-				AssetTypeClass.User
+				AssetTypeClass.TechnicalAsset
 			};
 
 			//total asset count

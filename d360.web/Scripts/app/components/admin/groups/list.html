@@ -1,0 +1,195 @@
+﻿<d3s-page-header [icon]="icon" [header]="header"></d3s-page-header>
+<!--BREADCRUMBS-->
+<d3s-tabs [items]="tabs"></d3s-tabs>
+
+<div class="row admin-group-list">
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="sidePanelService.draggableAreaWidth"
+              class="col s12 overflow-container split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="tile tile-detail main-panel">
+            <div class="actions-header">
+                <div class="simple-search">
+                    <ig-search-field mode="Keypress"
+                                     [debounce]="600"
+                                     (onSearch)="onSimpleSearch($event)"
+                                     [(ngModel)]="simpleTextFilter"
+                                     [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
+                    </ig-search-field>
+                </div>
+                <div class="grid-action-buttons">
+                    <button igButton
+                            pTooltip="{{createButtonLabel}}"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            (click)="add()">
+                    </button>
+                </div>
+            </div>
+
+            <div id="List">
+                <p-table #dt
+                         [value]="groupItems"
+                         selectionMode="single"
+                         [metaKeySelection]="true"
+                         [globalFilterFields]="['Name']"
+                         [paginator]="true"
+                         [lazy]="true"
+                         (onLazyLoad)="lazyLoadGroups($event)"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [totalRecords]="totalRecords"
+                         [(selection)]="selectedRow"
+                         [style]="{'width':'100%'}"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         (onPage)="setRowsPerPage($event)">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th *ngFor="let col of columns"
+                                [pSortableColumn]="col.sortable ? col.apiName : null"
+                                [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                {{ col.text }}
+                                <d3s-sortIcon *ngIf="col.sortable"
+                                              [field]="col.apiName"></d3s-sortIcon>
+                            </th>
+                            <th style="width: 48px"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body"
+                                 let-item>
+                        <tr (dblclick)="selectRow(item)"
+                            [pSelectableRow]="item"
+                            (focus)="selectRow(item)">
+                            <td *ngFor="let col of columns; let i=index"
+                                [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                                <ng-container *ngIf="i != linkColumnIndex; else linked">
+                                    <div style="display:block; word-wrap:break-word">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </div>
+                                </ng-container>
+                                <ng-template #linked>
+                                    <a (click)="selectRow(item)"
+                                       style="word-wrap:break-word;">
+                                        <d3s-dynamic-field-value [column]="col"
+                                                                 [fields]="fields"
+                                                                 [item]="item"
+                                                                 [useApiName]="true"
+                                                                 styleClass="cell-link"
+                                                                 [isDateUTC]="true"></d3s-dynamic-field-value>
+                                    </a>
+                                </ng-template>
+
+                            </td>
+                            <td class="asset-grid-tools"
+                                (click)="selectRow(item)"
+                                style="width: 48px">
+                                <div style="display:inline-block">
+                                    <button igButton
+                                            type="button"
+                                            icon="fa-ellipsis-v"
+                                            (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                                   [items]="menuItems"
+                                                   #linkMenu
+                                                   [tabIndex]="1"></ig-popup-menu>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selectedRow"
+                        [panelApplies]="true"
+                        [hasProfiling]="false"
+                        [setMinMaxWidth]="false"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelOpen && selectedRow != null">
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                                         #assetDetail
+                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedRow.Uid"
+                                         [objectType]="selectedAsset ? selectedAsset.type : 'Group'"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [interceptLinkClick]="true"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hideLinks]="true"
+                                         [hideClassName]="selectedAsset ? false : true"
+                                         [groupMembersReadOnlyMode]="false"></ig-asset-detail>
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+            </side-panel>
+        </as-split-area>
+    </as-split>
+</div>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="deleteModalTitle"
+           [isVisible]="showDelete">
+    <div class="content" i18n>
+        Please confirm that you wish to delete the group <strong>{{selectedRow.Name}}</strong>. Please note that this operation cannot be undone.
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="{{labelCancel}}" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="{{labelDelete}}" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selectedRow ? selectedRow.Uid : null"
+                  [objectType]="'Group'"
+                  [title]="selectedRow ? editLabel + ' '+selectedRow.Name : createButtonLabel"
+                  [selection]="selectedRow"
+                  [rowID]="rowID"
+                  [objectTypeUid]="'00000001-0000-0000-0000-B00000000012'"
+                  [hidePath]="true"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+
+</d3s-modal>

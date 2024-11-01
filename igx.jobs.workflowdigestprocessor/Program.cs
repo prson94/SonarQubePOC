@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using repositories;
+using repositories.azure;
 
 namespace igx.jobs.workflowdigestprocessor
 {
@@ -24,6 +26,7 @@ namespace igx.jobs.workflowdigestprocessor
 					c.AddExecutionContextBinding();
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) =>
 				{
 					services.AddScoped<IQueueSource, DummyQueueSource>();

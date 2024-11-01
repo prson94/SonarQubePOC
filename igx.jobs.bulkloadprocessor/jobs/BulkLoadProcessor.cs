@@ -36,7 +36,7 @@ namespace igx.jobs.bulkloadprocessor
 		readonly IStorageProvider Storage;
 		readonly IFeatureFlagService FeatureFlags;
 
-		public BulkLoadProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(config)
+		public BulkLoadProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(community, config)
 		{
 			Cache = cache;
 			FeatureFlags = ff;
@@ -61,10 +61,7 @@ namespace igx.jobs.bulkloadprocessor
 			{ 
 				try
 				{
-					#region Create EF connection
-
-					var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == loadInfo.CompanyID);
-
+					var _c = await Community.ReadTenantConnectionSettingsByIdAsync(loadInfo.CompanyID);
 
 					var context = new UriSecurityContextProvider
 					{
@@ -73,20 +70,16 @@ namespace igx.jobs.bulkloadprocessor
 						CompanyPrefix = _c.UrlPrefix,
 						IsAdministrator = true
 					};
-					using (var community = new CommunityContext(ConnString, Cache, context))
+					using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo {  ConnectionString = _c.GetConnectionString() }))
 					{
-						using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+						var assetRepository = new AssetRepository(company, context,  Queue, Storage, FeatureFlags);
+						var tagRepository = new TagRepository(company, context, FeatureFlags, Queue);
+						var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage, FeatureFlags);
+
+						try
 						{
-							var assetRepository = new AssetRepository(company, context,  Queue, Storage, community, FeatureFlags);
-							var tagRepository = new TagRepository(company, context, FeatureFlags, Queue);
-							var relationshipRepository = new RelationshipRepository(community, company, context, Queue, Storage, FeatureFlags);
-
-							#endregion
-
-							try
-							{
-								var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID, ConnString);
-
+							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(_c.CompanyID, _c.Server, _c.Username, _c.Password))
+							{ 
 								#region Create Load Items from Load file
 
 								load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
@@ -378,7 +371,7 @@ namespace igx.jobs.bulkloadprocessor
 									select fieldtypeid,[Value],[Text] into  #TempBulkLookupValues 
 									from FieldLookupValue flv
 									where exists (select 1 from #tempLookupColumns templ
-												  where templ.fieldtypeid = flv.fieldtypeid);
+													where templ.fieldtypeid = flv.fieldtypeid);
 
 									select @maxlen = max(len(text)) from #TempBulkLookupValues
 
@@ -447,20 +440,19 @@ namespace igx.jobs.bulkloadprocessor
 								companyConnection.Close();
 
 								load.DateCompleted = DateTime.UtcNow;
-								company.Update(load);
-							}
-							catch (Exception ex)
-							{
-								if (load != null)
-								{
-									load.DateCompleted = DateTime.UtcNow;
-									company.Update(load);
-								}
-								log.LogError(ex, "Error occured while processing load");
+								company.Update(load);							
 							}
 						}
+						catch (Exception ex)
+						{
+							if (load != null)
+							{
+								load.DateCompleted = DateTime.UtcNow;
+								company.Update(load);
+							}
+							log.LogError(ex, "Error occured while processing load");
+						}
 					}
-
 				}
 				catch (Exception ex)
 				{
@@ -734,7 +726,8 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
 
 			#region Process in Community database.
 
-			using (var community = new SqlConnection(ConnString))
+			string rwConnectionString = Configuration["ReadWriteConnectionString"];
+			using (var community = new SqlConnection(rwConnectionString))
 			{
 				community.Open();
 				using (var trans = community.BeginTransaction())

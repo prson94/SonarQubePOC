@@ -13,7 +13,8 @@ namespace igx.UnitTests.V2ControllerTests
 	public abstract class CoreComponentSetControllerTestBase : BaseTest
 	{
 		protected readonly Mock<ICompanyContext> MockCompanyContext;
-		protected readonly Mock<ICommunityContext> MockCommunityContext;
+		protected readonly Mock<ICommunity> MockCommunity;
+		protected readonly Mock<ISecurityContextProvider> MockSecurityContext;
 		protected readonly Mock<List<ICatalog>> MockCatalogs;
 		protected readonly Mock<ILogger> MockLog;
 		protected readonly Mock<IMailProvider> MockMailProvider;
@@ -28,7 +29,8 @@ namespace igx.UnitTests.V2ControllerTests
 		{
 			
 			MockCompanyContext = new Mock<ICompanyContext>();
-			MockCommunityContext = new Mock<ICommunityContext>();
+			MockCommunity = new Mock<ICommunity>();
+			MockSecurityContext = new Mock<ISecurityContextProvider>();
 			MockCatalogs = new Mock<List<ICatalog>>();
 			MockCatalogs.Object.AddRange(GetCatalogs());
 			MockLog = new Mock<ILogger>();
@@ -41,8 +43,9 @@ namespace igx.UnitTests.V2ControllerTests
 
 			CoreComponentSet = new CoreComponentSet(
 				MockCache.Object,
-				MockCommunityContext.Object, 
+				MockCommunity.Object, 
 				MockCompanyContext.Object,
+				MockSecurityContext.Object,
 				MockCatalogs.Object,
 				MockLog.Object,
 				MockMailProvider.Object, 

@@ -22,6 +22,7 @@ namespace igx.jobs.indexer
 					 .AddAzureStorageQueues();
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, DummyQueueSource>();
 					services.AddScoped<IStorageProvider, DummyStorageProvider>();

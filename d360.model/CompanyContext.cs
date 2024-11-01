@@ -48,7 +48,6 @@ namespace d360.model
 		internal IMailProvider Mail;
 		internal IQueueSource QueueSource;
 		internal ISecurityContextProvider SecurityContext;
-		private readonly CommunityContext Community;
 
 		private bool IsEventingEnabled;
 		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
@@ -61,18 +60,15 @@ namespace d360.model
 		#region Ctors
 
 		public CompanyContext(
-			ICommunityContext community,
 			ICachingProvider caching,
 			IQueueSource queueSource,
 			IMailProvider mail,
 			ISecurityContextProvider context,
 			ILogger log,
-			bool skipCacheCheck = false)
-		//	: base(community.GetCompanyConnectionString(skipCacheCheck))
+			TenantConnectionInfo connectionInfo): base(connectionInfo.ConnectionString)
 		{
 			Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
-			Community = (CommunityContext)community;
 			Caching = caching;
 			Log = log;
 			Mail = mail;
@@ -1665,32 +1661,6 @@ from	IntersectType I
 								OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					}
 
-					break;
-				case AssetTypeClass.User:
-					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.Id");
-					formattedIntersectJoin = string.Format(intersectJoin, "A.Id");
-
-					countSql = $@"
-							select	count(*) 
-							from	reporting.Global_Resource R 
-									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
-									inner join [IntersectType] IT on IT.Id = @intersectTypeID
-									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									{formattedCardinalityCheck}";
-
-					sql = $@"
-							select	R.ResourceID as Value, 
-									R.LastName + ', ' + R.FirstName as Text, 
-									case when I.ID is not null then 1 else 0 end as Selected 
-							from	reporting.[Global_Resource] R
-									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
-									inner join [IntersectType] IT on IT.Id = @intersectTypeID
-									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									{formattedCardinalityCheck} 
-							order by 3 desc, R.LastName + ', ' + R.FirstName asc 
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
 				default:
 					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");

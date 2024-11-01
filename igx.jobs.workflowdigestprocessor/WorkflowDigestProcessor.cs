@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,10 +28,11 @@ namespace igx.jobs.workflowdigestprocessor
 
 		readonly ICachingProvider Cache;
 		readonly IMailProvider Mail;
-		readonly IQueueSource Queue;		
+		readonly IQueueSource Queue;
 
-		public WorkflowDigestProcessor(ICachingProvider cache, IConfiguration config, IMailProvider mail, IQueueSource queue): base(config)
+		public WorkflowDigestProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue): base(community, config)
 		{
+			Community = community;
 			Cache = cache;
 			Mail = mail;
 			Queue = queue;
@@ -45,8 +47,11 @@ namespace igx.jobs.workflowdigestprocessor
 				var rand = new Random();
 				Thread.Sleep(rand.Next(30) * 1000);
 
-				var companies = GetCompaniesByCurrentSlot();
-				foreach (var c in companies)
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+				var lastestDigestExecutions = (await Community.ReadMostRecentWorkflowDigestStatusBySlotAsync(slot)).ToList();
+
+				foreach (var c in tenants)
 				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },
@@ -58,46 +63,33 @@ namespace igx.jobs.workflowdigestprocessor
 					{
 						try
 						{
-							var context = new UriSecurityContextProvider {
-								CompanyID = c.CompanyID,
-								CompanyPrefix = c.UrlPrefix,
-								ResourceID = 0,
-								IsAdministrator = true
-							};
-							using (var community = new CommunityContext(ConnString, Cache, context))
-							{
-								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+							var latestExecution = lastestDigestExecutions.SingleOrDefault(o => o.CompanyID == c.CompanyID);
+							
+							// Check if digest was already sent today
+							bool shouldContinueProcessing = (latestExecution == null) || 
+								(latestExecution != null && latestExecution?.LastExecuted?.DayOfWeek != DateTime.UtcNow.DayOfWeek);
+
+							if (shouldContinueProcessing)
+							{ 								
+								int? id = null;
+								if (latestExecution == null)
 								{
-									CompanyDigestExecution lastExecution = community.CompanyDigestExecution.Where(x => x.CompanyID == c.CompanyID).OrderByDescending(x => x.LastExecuted).FirstOrDefault();
+									id = latestExecution.ID;
+								}
+								await Community.UpsertWorkflowDigestStatusAsync(c.CompanyID, executionContext.InvocationId, id);
 
-									//Check if digest was already sent today
-									if (lastExecution != null && lastExecution?.LastExecuted?.DayOfWeek == DateTime.UtcNow.DayOfWeek)
-									{
-										continue;
-									}
-
-									if (lastExecution == null)
-									{
-										lastExecution = new CompanyDigestExecution
-										{
-											CompanyID = c.CompanyID,
-											InstanceID = executionContext.InvocationId,
-											LastExecuted = DateTime.UtcNow,
-										};
-
-										community.Add(lastExecution);
-									}
-									else
-									{
-										lastExecution.LastExecuted = DateTime.UtcNow;
-										lastExecution.InstanceID = executionContext.InvocationId;
-										community.Update(lastExecution);
-									}
-
+								var context = new UriSecurityContextProvider
+								{
+									CompanyID = c.CompanyID,
+									CompanyPrefix = c.UrlPrefix,
+									ResourceID = 0,
+									IsAdministrator = true
+								};
+								using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() } ))
+								{
 									await company.SendDigestEmails(c.EnvironmentLevel);
 								}
 							}
-							
 						}
 						catch (Exception ex)
 						{

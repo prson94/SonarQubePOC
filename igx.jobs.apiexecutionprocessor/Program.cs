@@ -29,6 +29,7 @@ namespace igx.jobs.apiexecutionprocessor
 					 });
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource

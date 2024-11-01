@@ -26,20 +26,17 @@ namespace d360.model.DataAccessLayer
 
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-		internal ICommunityContext Community;
 
 		public SemanticsRepository(
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
-			ICommunityContext community, 
 			IFeatureFlagService ff)
 			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
-			Community = community;
 		}
 
 		#endregion

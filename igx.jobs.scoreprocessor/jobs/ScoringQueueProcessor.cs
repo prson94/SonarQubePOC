@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -27,7 +28,7 @@ namespace igx.jobs.scoreprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 
-		public ScoringQueueProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		public ScoringQueueProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -48,7 +49,7 @@ namespace igx.jobs.scoreprocessor
 				try
 				{
 					string sql = "";
-					string companyConnectionString = "";
+					string companyConnectionString = await Community.GetConnectionStringForTenantAsync(info.CompanyID);
 					List<WorkflowScoredAsset> updatedAssets;
 
 					switch (info.ChangeType)
@@ -56,7 +57,6 @@ namespace igx.jobs.scoreprocessor
 						case ScoreQueueChangeType.RescoreRequest:
 							var rescorePayload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(info.Payload.ToString());
 							sql = getAssetRescoreSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -72,7 +72,6 @@ namespace igx.jobs.scoreprocessor
 							break;
 						case ScoreQueueChangeType.PatchCatalogExecution:
 							sql = getPatchExecutionSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -89,7 +88,6 @@ namespace igx.jobs.scoreprocessor
 							{ 
 								var measureChangedPayload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
 								sql = getMeasureChangedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -109,7 +107,6 @@ namespace igx.jobs.scoreprocessor
 							{
 								var measureRemovedPayload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
 								sql = getMeasureChangedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -127,7 +124,6 @@ namespace igx.jobs.scoreprocessor
 							break;
 						case ScoreQueueChangeType.RollupPathChanged:
 							sql = "exec metrics.CalculateRollups";
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -139,7 +135,6 @@ namespace igx.jobs.scoreprocessor
 							{
 								var ruleRemovedPayload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
 								sql = getRuleRemovedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -304,8 +299,7 @@ insert into #ids (AssetUid)
 				CompanyPrefix = companyDomainPrefix,
 				IsAdministrator = false
 			};
-			var community = new CommunityContext(ConnString, Cache, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+			var company = new CompanyContext(Cache, Queue, Mail, context, log, true);
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
 

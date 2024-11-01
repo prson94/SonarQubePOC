@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using constants;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -1240,7 +1241,7 @@ from    Asset A
 			//need to add a default Then if it was omitted even if the test is for When, since the parser expects the full rule model
 			if (testType == "when" && (test.Definition.Then == null || !test.Definition.Then.Any()))
 			{
-				test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid("00000001-0000-0000-0000-A00000000011") } };
+				test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid(CommonIdentifiers.ResourceTypeUid) } };
 			}
 
 			if (CompanyContext.Connection.State != ConnectionState.Open)

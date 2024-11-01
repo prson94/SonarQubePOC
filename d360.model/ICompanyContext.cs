@@ -235,10 +235,6 @@ namespace d360.model
         void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
 
         int GetObjectId(Guid uid, SystemObjects objectType);
-
-
-
-        
         
         string GetEscapedFilterString(string filter, bool isContains = false);
         
@@ -246,10 +242,7 @@ namespace d360.model
         
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
 
-
         void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null);
-        
-        
 
         bool LookupFieldHasColorItem(FieldType f);
         
@@ -316,14 +309,6 @@ namespace d360.model
         void UpsertSetting(Setting setting, string value);
 
         #endregion
-
-        #region Rebuild job status
-
-        Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses(int timeOutInHours);
-
-        Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
-
-		#endregion
 
 		#endregion
 

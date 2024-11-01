@@ -1,12 +1,14 @@
-﻿using d360.core.enums;
+﻿using d360.core;
+using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.extensions.info;
-using d360.model;
 using igx.jobs;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
+using repositories.azure;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,7 +30,7 @@ namespace igx.functions.consumption
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 
-		public DisplayValueChecker(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		public DisplayValueChecker(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -38,8 +40,9 @@ namespace igx.functions.consumption
 		[FunctionName(FUNCTION_NAME)]
         public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)
         {
-			var companies = GetCompaniesByCurrentSlot();
-			foreach (var c in companies)
+			var slot = GetEnvironmentLevelCurrentSlot();
+			var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+			foreach (var c in tenants)
 			{
 				var logProperties = new Dictionary<string, object> {
 					{ "Function", FUNCTION_NAME },
@@ -51,6 +54,9 @@ namespace igx.functions.consumption
 				{
 					try
 					{
+						var connectionString = CompanyConnectionStringHelper.ConnectionString(c.CompanyID, c.Server, c.Username, c.Password);
+						var workspace = new Workspaces(new DapperConnectionProvider() { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
+
 						var context = new UriSecurityContextProvider
 						{
 							CompanyID = c.CompanyID,
@@ -58,17 +64,11 @@ namespace igx.functions.consumption
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-						
-						using(var community = new CommunityContext(ConnString, Cache, context))
+
+						var rs = await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
+						if (rs.IsSuccess)
 						{
-							using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
-							{
-								var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
-								if (rs.StatusCode == System.Net.HttpStatusCode.OK)
-								{
-									await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
-								}
-							}
+							await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 						}
 					}
 					catch (Exception ex)

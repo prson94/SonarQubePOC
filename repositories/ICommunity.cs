@@ -26,7 +26,7 @@ namespace repositories
 		/// </summary>
 		string GenerateOpenIdRequestValue(int length = 5);
 
-		Task<string> GetConnectionStringForTenantAsync(int companyId);
+		string GetConnectionStringForTenantAsync(int companyId);
 
 		Task<OpenIdRequest> GetOpenIdRequestAsync(string state);
 
@@ -42,7 +42,13 @@ namespace repositories
 
 		Task<RepositoryResponse<IEnumerable<CompanyDomainSetting>>> ReadDomainSettingsByTenantAsync(int companyId);
 
+		Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null);
+
 		Task<bool> ReadShouldUserBeAutoAdminByGroupMembershipAsync(int companyId, int domainSettingId, List<string> groups);
+
+		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null);
+
+		Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId);
 
 		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
 
@@ -73,6 +79,8 @@ namespace repositories
 		Task<RepositoryResponse<int>> UpdateUserAsync(Resource user);
 
 		Task<RepositoryResponse<bool>> UpdateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
 	}

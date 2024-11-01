@@ -27,7 +27,7 @@ const routes: Routes = [
 			{ path: "responsibilities/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
             { path: 'resources', loadChildren: () => import('./resources/admin-resources.module').then( (m) => m.AdminResourcesModule) },
 			{ path: "resources/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
-            { path: 'groups', loadChildren: () => import('./groups/admin-groups.module').then( (m) => m.AdminGroupsModule) },          
+            { path: 'groups', loadChildren: () => import('./groups/_module').then( (m) => m.AdminGroupsModule) },          
 			{ path: "groups/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'configuration/WorkflowActions', loadChildren: () => import('./issuetypes/admin-issue-types.module').then((m) => m.AdminIssueTypesModule) },
 			{ path: "predicate", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },

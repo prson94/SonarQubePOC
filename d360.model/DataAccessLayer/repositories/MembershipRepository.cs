@@ -27,7 +27,6 @@ namespace d360.model.DataAccessLayer
 {
 	public class MembershipRepository : BaseRepository, IMembershipRepository
 	{
-		internal ICommunityContext CommunityContext;
 		internal IAssetRepository AssetRepository;
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
@@ -35,13 +34,11 @@ namespace d360.model.DataAccessLayer
 		public MembershipRepository(
 			ICompanyContext companyContext, 
 			ISecurityContextProvider securityContext,
-			ICommunityContext communityContext, 
 			IAssetRepository assetRepository, 
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, IFeatureFlagService ff)
 			: base(companyContext, securityContext, ff)
 		{
-			CommunityContext = communityContext;
 			AssetRepository = assetRepository;
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;

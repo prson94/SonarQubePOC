@@ -4,9 +4,11 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.databaseindexrebuilder
 {
@@ -20,20 +22,21 @@ namespace igx.jobs.databaseindexrebuilder
         const string TIMER_SETTINGS = "0 0 0 * * SAT";
 #endif
 
-		public DatabaseIndexRebuilder(IConfiguration config) : base(config)
+		public DatabaseIndexRebuilder(IConfiguration config, ICommunity community) : base(community, config)
 		{
 
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)
         {
             int commandTimeout = int.TryParse(Configuration["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
 
             try
             {
-                var companies = GetCompaniesByCurrentSlot().OrderBy(x => x.Priority);
-                foreach (var item in companies)
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+                foreach (var item in tenants.OrderBy(x => x.Priority))
                 {
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },
@@ -48,8 +51,8 @@ namespace igx.jobs.databaseindexrebuilder
 							var start = DateTime.Now;
 							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID, item.Server, item.Username, item.Password))
 							{
-								companyConnection.Open();
-								companyConnection.Execute(
+								await companyConnection.OpenAsync();
+								await companyConnection.ExecuteAsync(
 									"EXEC [dbo].[AzureSQLMaintenance]", 
 									new { 
 										Operation = "reindex", 

@@ -4,6 +4,7 @@ import { SiteMessage } from '../models/site-message.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { HeaderActionsService } from './header-actions.service';
 import { catchError, map } from "rxjs/operators";
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable({ providedIn: 'root' })
 export class MessagesObservableService {
@@ -37,6 +38,21 @@ export class MessagesObservableService {
         clearTimeout(this.timeout);
         this.timeout = window.setTimeout(() => { this.headerActionService.emitCountChange(); }, 200);
     }
+
+	showMessageForResult(result: JsonResult, defaultMessage?: string) {
+		if (defaultMessage == null) {
+			defaultMessage = $localize`Success`;
+		}
+
+		if (result.type === 'error') {
+			this.showError(result.title, result.message);
+		} else {
+			this.showInfoMessage(
+				result.title,
+				result.message != null ? result.message : defaultMessage
+			);
+		}
+	}
 
     saveClientError(error: HttpErrorResponse, handleAsAPIV2Error: boolean = false): Observable<any> {
         let objError: Error;

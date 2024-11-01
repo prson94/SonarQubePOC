@@ -79,13 +79,6 @@ namespace igx.UnitTests
 
 			return mock.Object;
 		}
-
-		public ICommunityContext GetCommunityContext()
-        {
-            var mock = new Mock<ICommunityContext>();
-
-            return mock.Object;
-        }
         
 		public static ICompanyContext GetCompany()
         {
@@ -275,7 +268,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage(), GetCommunityContext(), GetFeatureFlagService());
+            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(

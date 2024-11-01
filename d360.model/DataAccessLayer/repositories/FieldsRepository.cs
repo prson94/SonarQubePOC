@@ -1083,11 +1083,6 @@ namespace d360.model.DataAccessLayer
 
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
-					if (assetType.Class == AssetTypeClass.User)
-					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
-					}
-
 					if (f.Type.ComputedRelationshipLookup.Definition == null
 						|| !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
 						|| !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())

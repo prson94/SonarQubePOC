@@ -4,8 +4,10 @@ using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
@@ -21,7 +23,7 @@ namespace igx.jobs.responsibilityruleprocessor
 		readonly IQueueSource Queue;
 		readonly string Region;
 
-		public ResponsibilityRuleProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		public ResponsibilityRuleProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -38,12 +40,13 @@ namespace igx.jobs.responsibilityruleprocessor
 				// increase the default dapper timeout from 30 to 90 seconds
 				Dapper.SqlMapper.Settings.CommandTimeout = 90;
 
-				var companies = GetCompaniesByCurrentSlot(Region);
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot, Region)).ToList();
 
 				// Only want to log this to the app instance console, which can be seen on the KUDU console.  [sitename].scm.azurewebsites.net/DebugConsole
-				Console.WriteLine($"Running for {companies.Count} environments in the {Region} region.");
+				Console.WriteLine($"Running for {tenants.Count} environments in the {Region} region.");
 				
-				foreach (var c in companies)
+				foreach (var c in tenants)
 				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },
@@ -63,27 +66,24 @@ namespace igx.jobs.responsibilityruleprocessor
 								IsAdministrator = true
 							};
 
-							using (var community = new CommunityContext(ConnString, Cache, context))
+							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, true))
 							{
-								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+								try
 								{
-									try
-									{
-										company.ClearInvalidRelationRuleResults();
-									}
-									catch (Exception dex)
-									{
-										log.LogError(dex, "Error while clearing relation rules results.");
-									}
+									company.ClearInvalidRelationRuleResults();
+								}
+								catch (Exception dex)
+								{
+									log.LogError(dex, "Error while clearing relation rules results.");
+								}
 
-									try
-									{
-										await company.ProcessResponsibilityRelationRules();
-									}
-									catch (Exception ex)
-									{
-										log.LogError(ex, "Error while processing responsibility rules.");
-									}
+								try
+								{
+									await company.ProcessResponsibilityRelationRules();
+								}
+								catch (Exception ex)
+								{
+									log.LogError(ex, "Error while processing responsibility rules.");
 								}
 							}
 						}

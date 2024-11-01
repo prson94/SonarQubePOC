@@ -19,20 +19,17 @@ namespace d360.model.DataAccessLayer
 {
 	public class DataProfileRepository : BaseRepository, IDataProfileRepository
 	{
-		internal ICommunityContext Community;
 		internal IStorageProvider Storage;
 		internal IQueueSource Queue;
 
 		public DataProfileRepository(
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
-			ICommunityContext community, 
 			IStorageProvider storage, 
 			IQueueSource queue, 
 			IFeatureFlagService ff)
 			: base(companyContext, securityContext, ff)
 		{
-			Community = community;
 			Queue = queue;
 			Storage = storage;
 		}

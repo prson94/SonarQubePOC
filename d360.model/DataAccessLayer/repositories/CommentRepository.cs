@@ -21,18 +21,15 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 		internal IStorageProvider Storage;
-		internal ICommunityContext Community;
 
 		public CommentRepository(
 			ICompanyContext companyContext, 
 			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
-			ICommunityContext community, 
 			IFeatureFlagService ff)
 			: base(companyContext, securityContext, ff)
 		{
-			Community = community;
 			Queue = queue;
 			Storage = storage;
 		}

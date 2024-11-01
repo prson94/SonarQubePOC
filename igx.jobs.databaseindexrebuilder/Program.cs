@@ -13,9 +13,10 @@ namespace igx.jobs.databaseindexrebuilder
 				.ConfigureWebJobs(c => {
 					c.AddTimers();
 				})
-				.ConfigureGovernLogging();
+				.ConfigureGovernLogging()
+				.AddScopedCommunity();
 
-            using (var host = builder.Build())
+			using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

@@ -1278,7 +1278,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.ResourceTypeUid);
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1308,7 +1308,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
+					responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.GroupTypeUid);
 					responseModel.DisplayValue = PageNames.PredicatesPage;
 					responseModel.MainTabTitle = PageNames.PredicatesPage;
 					responseModel.Items.HasAudit = true;
@@ -1317,7 +1317,7 @@ namespace d360.web.Controllers
 				{
 					var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
-					FillResponseModelForResource(asset, resource);
+					FillResponseModelForResource(resource);
 				}
 			}
 
@@ -1329,7 +1329,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-B00000000012");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.GroupTypeUid);
 					responseModel.DisplayValue = PageNames.GroupsTab;
 					responseModel.MainTabTitle = PageNames.GroupsTab;
 					responseModel.Items.HasAudit = true;
@@ -1341,7 +1341,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.ResourceTypeUid);
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1396,9 +1396,8 @@ namespace d360.web.Controllers
 
 				if (asset != null && (asset.Object == "Resource"))
 				{
-					var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
-					FillResponseModelForResource(asset, resource);
+					FillResponseModelForResource(resource);
 				}
 			}
 
@@ -1551,19 +1550,19 @@ namespace d360.web.Controllers
 				Formatting = Newtonsoft.Json.Formatting.None
 			};
 
-			void FillResponseModelForResource(Asset asset, GlobalReportingResource resource)
+			void FillResponseModelForResource(GlobalReportingResource resource)
 			{
 				execProcedure = false;
-				responseModel.Object = asset.Object;
-				responseModel.ObjectID = asset.ObjectID;
+				responseModel.Object = "Resource";
+				responseModel.ObjectID = resource.ResourceID;
 				responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
 				responseModel.MainTabTitle = PageNames.ProfilePage;
 				responseModel.Items.HasItemOwn = true;
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;
 				responseModel.Items.HasFollowing = true;
-				responseModel.AssetTypeClass = AssetTypeClass.User;
-				responseModel.Uid = asset.uid;
+				//responseModel.AssetTypeClass = AssetTypeClass.User;
+				responseModel.Uid = resource.Uid;
 			}
 		}
 
