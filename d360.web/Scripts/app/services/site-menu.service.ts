@@ -231,17 +231,6 @@ export class SiteMenuService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
     }
-    getCounts() {
-        return this.http
-            .get(
-                'navigation/GetCounts',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
-            .pipe(
-                map((response) => <any[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
 
     getSecondaryNav(data: SecondaryNavPostModel, preloadTreeData = false) {
         const options = {
