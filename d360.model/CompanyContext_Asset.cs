@@ -408,7 +408,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														A.Object, 
 														A.ObjectId,
 														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-														TName.[Name] as TypeName
+														TName.[Name] as TypeName,
+														SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
 												for json path
 												) as Payload,
 												'R'
@@ -416,6 +417,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										inner join [intersect] i on t.IntersectID = i.ID
 										inner join Asset a on (a.Id = I.ObjectAssetID)
 										left join AssetDisplayValue d on d.AssetID = a.Id
+										left join AssetDisplayValue ado on ado.AssetID = I.SubjectAssetID
 										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
 										where IsSubject = 1;
 
@@ -426,7 +428,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														A.Object, 
 														A.ObjectId,
 														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-														TName.[Name] as TypeName
+														TName.[Name] as TypeName,
+														SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
 												for json path
 												) as Payload,
 												'R'
@@ -434,6 +437,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										inner join [intersect] i on t.IntersectID = i.ID
 										inner join Asset a on (a.Id = I.SubjectAssetID)
 										left join AssetDisplayValue d on d.AssetID = a.Id
+										left join AssetDisplayValue ado on ado.AssetID = I.ObjectAssetID
 										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
 										where IsSubject = 0;
 

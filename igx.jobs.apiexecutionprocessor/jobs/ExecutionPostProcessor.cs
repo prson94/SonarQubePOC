@@ -217,11 +217,11 @@ from	reporting.Global_FieldAudit i_p
 			'Intersect',
 			p.IntersectId,
 			p.TypeName, 
-			'Relationship', 
+			coalesce(p.ActionObjectName, 'Relationship'), 
 			'This relationship has been removed.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId 
-			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p 
+			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250),ActionObjectName nvarchar(250)) p 
 			{maxVersionSql("p.Object", "p.ObjectId")}
 	where l.ExecutionId = @Id and l.subtask = 'R';";
 		}
@@ -286,11 +286,11 @@ from	reporting.Global_FieldAudit i_p
 			'Intersect',
 			p.IntersectId,
 			p.TypeName, 
-			'Relationship', 
+			coalesce(p.ActionObjectName, 'Relationship'), 
 			'This relationship has been removed.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId 
-			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p 
+			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250) ,ActionObjectName nvarchar(250)) p 
 			{maxVersionSql("p.Object", "p.ObjectId")}
 	where l.ExecutionId = @Id;";
 		}

@@ -2055,24 +2055,68 @@ where   ER.ExecutionID = @ExecutionID
 								#region Execution Log
 
 								string logSql = @"
+drop table if exists #tempexeclog;
+drop table if exists #tempintersectname;
+
+select e.id,
+itemnumber,
+SubjectId,
+ObjectID,
+intersectId,
+I.IntersectTypeID
+into #tempexeclog
+from api.Execution e
+inner join api.ExecutionDeletedRelationship o on o.ExecutionID = e.ExecutionID 
+inner join [Intersect] I on I.ID = o.IntersectID
+where e.ExecutionID = @ExecutionID 
+and o.ItemNumber between @beginItemNumber and @endItemNumber 
+and o.Success is null;
+
+
+select distinct o.IntersectTypeID,
+cast(null as nvarchar(250)) TypeName
+into #tempintersectname
+from #tempexeclog o;
+
+update t
+set TypeName = substring(TName.[Name],1,250)
+from #tempintersectname t
+cross apply dbo.getIntersectTypeNames(t.IntersectTypeID) TName;
+
+create clustered index cx_tempintersectname on #tempintersectname (IntersectTypeID)
+
+
 insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	e.Id,
+	select	o.Id,
 			(select o.IntersectId,
 					A.Object, 
 					A.ObjectId,
 					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-					TName.[Name] as TypeName
+					TName.[TypeName],
+					SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
 			for json path
 			) as Payload
-	from	api.Execution e
-			inner join api.ExecutionDeletedRelationship o on o.ExecutionID = e.ExecutionID 
-				and e.ExecutionID = @ExecutionID 
-				and o.ItemNumber between @beginItemNumber and @endItemNumber 
-				and o.Success is null
-			inner join Asset a on (a.Id = o.SubjectID or a.Id = o.ObjectID)
-			left join AssetDisplayValue d on d.AssetID = a.Id
-			inner join [Intersect] I on I.ID = o.IntersectID
-			cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName";
+	from	#tempexeclog o
+	inner join Asset a on (a.Id = o.SubjectID)
+	left join AssetDisplayValue d on d.AssetID = a.Id
+	left join AssetDisplayValue ado on ado.AssetID = o.ObjectID
+	inner join #tempintersectname TName on TName.IntersectTypeID = o.IntersectTypeID;
+
+	insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	o.Id,
+			(select o.IntersectId,
+					A.Object, 
+					A.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					TName.[TypeName],
+					SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
+			for json path
+			) as Payload
+	from	#tempexeclog o
+	inner join Asset a on (a.Id = o.ObjectID)
+	left join AssetDisplayValue d on d.AssetID = a.Id
+	left join AssetDisplayValue ado on ado.AssetID = o.SubjectID
+	inner join #tempintersectname TName on TName.IntersectTypeID = o.IntersectTypeID";
 
 								Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
