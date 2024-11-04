@@ -124,14 +124,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
 
-    private rebuildCounts() {
-        this.siteMenuService.getCounts().subscribe((res) => {
-            this.countData = res;
-            this.siteMenu.forEach((menu) => {
-                this.loadCounts(menu, res);
-            });
-        });
-    }
 
     ngOnDestroy() {
         if (this.subSiteNav) {
@@ -310,11 +302,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.ref.markForCheck();
             }).add(() => {
                 //set the nav state for each of the siteMenu elements
-                this.siteMenuService.getCounts().subscribe((res) => {
                     this.siteMenu.forEach((menu) => {
                         this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
-                        this.loadCounts(menu, res);
-                    });
                     //set the nav state for the admin menu elements
                     if (this.adminMenu)
                         {this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);}
