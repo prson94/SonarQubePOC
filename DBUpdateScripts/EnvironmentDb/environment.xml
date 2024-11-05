@@ -112,7 +112,6 @@
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
 	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
-	<include file="scripts/Table.graph.Filter.xml"/>
 	<include file="scripts/Table.metrics.Allocation.xml"/>
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>

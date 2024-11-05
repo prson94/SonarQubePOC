@@ -32,7 +32,6 @@ import { AssetBrowserSettingsPanelComponent } from './assetbrowser/panels/settin
 
 import { AssetBrowserOverviewComponent } from './assetbrowser/tools/overview.component';
 import { AssetBrowserPanelsComponent } from './assetbrowser/tools/panels.component';
-import { AssetBrowserSavedFilterComponent } from './assetbrowser/tools/savedfilter.component';
 import { AssetBrowserSearchComponent } from './assetbrowser/tools/search.component';
 import { AssetBrowserViewChangeComponent } from './assetbrowser/tools/viewchange.component';
 import { AssetBrowserZoomComponent } from './assetbrowser/tools/zoom.component';
@@ -148,7 +147,6 @@ import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.mo
 
         AssetBrowserOverviewComponent,
         AssetBrowserPanelsComponent,
-        AssetBrowserSavedFilterComponent,
         AssetBrowserSearchComponent,
         AssetBrowserViewChangeComponent,
         AssetBrowserZoomComponent,

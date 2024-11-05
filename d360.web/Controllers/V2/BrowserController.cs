@@ -11,7 +11,6 @@ using System.Web.Http.Description;
 
 using d360.core;
 using d360.core.entities;
-using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -43,16 +42,9 @@ namespace d360.web.Controllers.V2
 	]
 	public class BrowserController : BaseV2ApiController
 	{
-		private readonly IGraphFilterRepository GraphFilterRepository;
-		private readonly GraphFilterValidator GraphFilterValidator;
-
 		public BrowserController(
-			ICoreComponentSet set, 
-			IGraphFilterRepository graphFilterRepository, 
-			GraphFilterValidator graphFilterValidator) : base(set)
+			ICoreComponentSet set) : base(set)
 		{
-			GraphFilterRepository = graphFilterRepository;
-			GraphFilterValidator = graphFilterValidator;
 		}
 
         private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal, bool checkDataLimit = true)
@@ -478,138 +470,6 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				ResponsibilityTypeOptions = responsibilityTypes
 			});
 		}
-
-
-		/// <summary>
-		/// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
-		/// </summary>
-		/// <returns>Lists of filters for the asset browser.</returns>
-		[
-			Route("filters/me"),
-			HttpGet,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public IHttpActionResult GetUserAssetBrowserFilters()
-		{
-			var fil = GraphFilterRepository.GetGraphFiltersByUser(Company.CurrentResourceID);
-			return Ok(fil);
-		}
-
-		/// <summary>
-		/// Create an asset browser filter
-		/// </summary>
-		/// <returns>The saved filter</returns>
-		[
-			HttpPost,
-			Route("filters"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.Created, "Filter created.", typeof(GraphFilter)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Request badly formatted.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "Unknown error.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "No permissions.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public async Task<IHttpActionResult> CreateAssetBrowserFilter(GraphFilter model)
-		{
-			var validationStatus = await GraphFilterValidator.ValidateFilterCreateOrUpdate(model);
-			if (validationStatus != null)
-			{
-				return errorMessageResponse(validationStatus);
-			}
-
-			if (GraphFilterRepository.CreateGraphFilter(model))
-			{
-				return Ok(model);
-			}
-			else
-			{
-				return Ok(new ApiStatusResponse { Message = ApiMessages.SaveFailedMessage, Success = false, Uid = Guid.Empty });
-			}
-		}
-
-		/// <summary>
-		/// Update asset browser filter
-		/// </summary>
-		/// <param name="uid">The public identifier for the filter.</param>
-		/// <param name="model"></param>
-		/// <returns>The saved filter</returns>
-		[
-			HttpPut,
-			Route("filters/{uid}"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-			SwaggerResponse(HttpStatusCode.Created, "Filter updated.", typeof(GraphFilter)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Request badly formatted.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "Unknown error.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "No permissions.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public async Task<IHttpActionResult> UpdateAssetBrowserFilterById(Guid uid, GraphFilter model)
-		{
-			var validationStatus = await GraphFilterValidator.ValidateFilterCreateOrUpdate(model);
-			if (validationStatus != null)
-			{
-				return errorMessageResponse(validationStatus);
-			}
-
-			GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);
-
-			if (orig == null)
-			{
-				return errorMessageNotFoundResponse(ApiMessages.FilterNotFound);
-			}
-
-			if (orig.OwnedBy != Company.CurrentResourceID)
-			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
-			}
-
-			orig.Name = model.Name;
-			orig.IsPublic = model.IsPublic;
-			orig.Settings = model.Settings;
-
-			GraphFilterRepository.UpdateGraphFilter(orig);
-
-			return Ok(orig);
-		}
-
-		/// <summary>
-		/// Allows you to remove a user filter based on its Uid.
-		/// </summary>
-		/// <param name="uid">The public identifier for the filter.</param>
-		/// <returns>A status for the DELETE request.</returns>
-		[
-			HttpDelete,
-			Route("filters/{uid}"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ApiStatusResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public IHttpActionResult DeleteAssetBrowserFilterById(Guid uid)
-		{
-			GraphFilter model = GraphFilterRepository.GetGraphFilterByUid(uid);
-
-			if (model == null)
-			{
-				return errorMessageNotFoundResponse(ApiMessages.FilterNotFound);
-			}
-
-			if (model.OwnedBy != Company.CurrentResourceID)
-			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, ApiMessages.FilterNotOwned));
-			}
-
-			GraphFilterRepository.DeleteGraphFilter(model);
-
-			return Ok(new ApiStatusResponse { Message = ApiMessages.FilterRemove, Success = true, Uid = Guid.Empty });
-		}
-
 		/// <summary>
 		/// Returns a list of available diagram types for the current user and asset, as well as the default view
 		/// </summary>
