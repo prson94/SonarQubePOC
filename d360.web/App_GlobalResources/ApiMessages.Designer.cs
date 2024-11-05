@@ -1402,6 +1402,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} value provided. Value must be greater than and equal 0..
+        /// </summary>
+        public static string MinLengthCheckGTEQZero {
+            get {
+                return ResourceManager.GetString("MinLengthCheckGTEQZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} value provided. Value must be greater than 0..
         /// </summary>
         public static string MinLengthCheckGTZero {

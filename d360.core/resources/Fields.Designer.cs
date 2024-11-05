@@ -223,6 +223,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fields sequence successfully updated..
+        /// </summary>
+        public static string FieldsSequenceUpdated {
+            get {
+                return ResourceManager.GetString("FieldsSequenceUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fields successfully updated..
         /// </summary>
         public static string FieldsUpdated {

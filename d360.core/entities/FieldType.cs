@@ -1361,6 +1361,15 @@ namespace d360.core.entities
 		public List<FieldColumnPosition> Position { get; set; }
 	}
 
+	public class FieldSequenceModel
+	{
+		[DataMember]
+		public Guid? TypeUid { get; set; }
+
+		[DataMember]
+		public List<FieldColumnPosition> Position { get; set; }
+	}
+
 	public class FieldColumnPosition
 	{
 		public string ApiName { get; set; }

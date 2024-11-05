@@ -765,4 +765,7 @@
   <data name="ValueNotExpectedRange" xml:space="preserve">
     <value>Value does not fall within the expected range</value>
   </data>
+  <data name="MinLengthCheckGTEQZero" xml:space="preserve">
+    <value>Invalid {0} value provided. Value must be greater than and equal 0.</value>
+  </data>
 </root>

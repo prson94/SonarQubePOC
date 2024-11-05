@@ -394,4 +394,7 @@
   <data name="FieldsUpdated" xml:space="preserve">
     <value>Fields successfully updated.</value>
   </data>
+  <data name="FieldsSequenceUpdated" xml:space="preserve">
+    <value>Fields sequence successfully updated.</value>
+  </data>
 </root>
