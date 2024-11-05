@@ -1877,7 +1877,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)		
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int)
@@ -1888,7 +1888,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
@@ -1959,7 +1959,7 @@ where id = @IntersectTypeID";
 							select distinct A.Id as AssetId 
 							into #resourceResponsibilities
 							from Asset a
-							inner join ResponsibilityDetail R on R.AssetID = A.ID and R.ResourceID = cast(@{userParam} as int)
+							inner join ResponsibilityDetail R on R.AssetID = A.ID and R.isvisible = 1 and R.ResourceID = cast(@{userParam} as int)
 							where a.AssetTypeId = cast(@{typeParam} as int)
 
 							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
