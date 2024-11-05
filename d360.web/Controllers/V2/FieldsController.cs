@@ -1867,6 +1867,229 @@ namespace d360.web.Controllers.V2
 		/// <summary>
 		/// Move a fields column order in the given direction
 		/// </summary>
+		/// <remarks>
+		/// -  ** Description **
+		/// * TypeUid - AssetTypeUID/IssueTypeUID/IntersectTypeUID.
+		/// * Position - Two properties APIName and ColumnOrder.
+		/// * Example
+		///   {
+		///		"TypeUid": "00000000-0000-0000-0000-000000000000",
+		///		"Position": [
+		///		{
+		///			"ApiName": "Name",
+		///			"ColumnOrder": "0"
+		///		},
+		///		{
+		///			"ApiName": "Field2",
+		///			"ColumnOrder": "1"
+		///		}]
+		///		}		
+		///</remarks>
+		/// <param name="model">Contains the nessasary parameters to move a fields sort order></param>
+		/// <returns>Success or Failure</returns>
+		[
+			HttpPost,
+			Route("FieldSequence"),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> PerformMoveAPI(FieldSequenceModel model)
+		{
+			SystemObjects type;
+			int id = 0;
+			string whereclause = "";
+
+			if (model ==  null || model?.Position == null)
+			{
+				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage);
+			}
+
+			var assetType = Company.Filter<AssetType>(x => x.uid == model.TypeUid).SingleOrDefault();
+			var actionType = Company.Filter<IssueType>(x => x.uid == model.TypeUid).SingleOrDefault();
+			var intersectType = Company.Filter<IntersectType>(i => i.uid == model.TypeUid).SingleOrDefault();
+			FieldType fieldTypes = null;
+
+			if (assetType != null)
+			{
+				Enum.TryParse(assetType.Object, out type);
+				id = assetType.ID;
+
+				whereclause = $"where assettypeid = {id}";
+			}
+			else if (actionType != null)
+			{
+				type = SystemObjects.IssueType;
+				id = actionType.ID;
+
+				whereclause = $"where IssueTypeID = {id}";
+			}
+			else if (intersectType != null)
+			{
+				type = SystemObjects.IntersectType;
+				id = intersectType.ID;
+
+				whereclause = $"where IntersectTypeID = {id}";
+			}
+			else
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.AssetNotFoundForAssetType, model.TypeUid.ToString()));
+			}
+
+			string errormessage = "";
+			StringBuilder stringBuildertemp = new StringBuilder();
+
+			int idx = 0;
+			var dbArgsp = new DynamicParameters();
+
+			foreach (var field in model.Position)
+			{
+				if (field != null)
+				{
+					int parsedValue;
+					if (!int.TryParse(field.ColumnOrder, out parsedValue))
+					{
+						errormessage +=  string.Format(ApiMessages.NumberValueMessage, field.ColumnOrder);
+					}
+
+					if (parsedValue < 0)
+					{
+						errormessage += string.Format(ApiMessages.MinLengthCheckGTEQZero, field.ColumnOrder);
+					}
+				}
+
+				if (string.IsNullOrEmpty(errormessage ))
+				{
+					dbArgsp.Add("ft_name_" + idx, field.ApiName);
+					dbArgsp.Add("ft_value_" + idx, field.ColumnOrder);
+					stringBuildertemp.AppendLine($@"insert into #tempcolumnorder values (@ft_name_{idx},@ft_value_{idx});" + Environment.NewLine);
+					idx++;
+				}
+			}
+
+			if (!string.IsNullOrWhiteSpace(errormessage))
+			{
+				throw new NotFoundBusinessLayerException(errormessage);
+			}
+
+			string sql = $@"
+declare @missingcolumn nvarchar(max);
+declare @duplicatecolumnorder nvarchar(max);
+declare @invalidcolumn nvarchar(max);
+
+
+
+drop table if exists #tempcolumnorder;
+create table #tempcolumnorder (Name nvarchar(250),ColumnOrder int)
+
+{stringBuildertemp.ToString()}
+
+drop table if exists #tempfieldtype;
+create table #tempfieldtype (Name nvarchar(250),ColumnOrder int)
+
+insert into #tempfieldtype
+select name,columnorder
+from FieldType ft
+{whereclause};
+
+-- Missing column
+select @missingcolumn = string_agg(ft.name,',') 
+from #tempfieldtype ft 
+left join #tempcolumnorder tc on ft.Name = tc.Name
+where tc.Name is null;
+
+-- duplicate ids
+select @duplicatecolumnorder = string_agg(ColumnOrder,',')
+from (select tc.ColumnOrder
+from #tempcolumnorder tc 
+group by tc.ColumnOrder
+having COUNT(1)>1) a;
+
+-- invalid column
+select @invalidcolumn = string_agg(tc.name,',')
+from  #tempcolumnorder tc
+left join #tempfieldtype ft on ft.Name = tc.Name
+where ft.Name is null;
+
+select @missingcolumn missingcol,@duplicatecolumnorder dupcolord,@invalidcolumn invcol;
+";
+
+			var result = await Company.Database.Connection.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgsp);
+
+			errormessage = "";
+
+			if (result != null)
+			{
+				if (result.missingcol != null)
+				{
+					errormessage += $"Missing Column Name should include in list ({result.missingcol}). ";
+				}
+				if (result.dupcolord != null)
+				{
+					errormessage += $"duplicate Column order should be unique in list ({result.dupcolord}). ";
+				}
+				if (result.invcol != null)
+				{
+					errormessage += $"Invalid Column Name should not include in list ({result.invcol}). ";
+				}
+				if (!string.IsNullOrWhiteSpace(errormessage))
+				{
+					throw new NotFoundBusinessLayerException(errormessage);
+				}
+			}
+
+
+			List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+			if (list != null)
+			{
+				string whereQuery = "";
+				int typeId = -1;
+
+				if (assetType != null)
+				{
+					whereQuery = " AssetTypeID = @typeId";
+					typeId = assetType.ID;
+				}
+				else if (intersectType != null)
+				{
+					whereQuery = " IntersectTypeID = @typeId";
+					typeId = intersectType.ID;
+				}
+				else if (actionType != null)
+				{
+					whereQuery = " IssueTypeID = @typeId";
+					typeId = actionType.ID;
+				}
+
+				var dbArgs = new DynamicParameters();
+				dbArgs.Add("typeId", typeId);
+				StringBuilder stringBuilder = new StringBuilder();
+				idx = 0;
+				foreach (var field in model.Position)
+				{
+					dbArgs.Add("ft_name_" + idx, field.ApiName);
+					dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
+					stringBuilder.AppendLine($@"update FieldType set ColumnOrder = @ft_value_{idx} where {whereQuery} and Name = @ft_name_{idx};");
+					idx++;
+				}
+
+				await Company.Database.Connection.ExecuteAsync(stringBuilder.ToString(), dbArgs);
+
+				return Ok(new ApiStatusResponse { Message = Fields.FieldsSequenceUpdated, Success = true, Uid = model.TypeUid ?? Guid.Empty});
+			}
+			else
+			{
+				throw new NotFoundBusinessLayerException(ApiMessages.FieldTypeNotFound);
+			}
+		}
+
+		/// <summary>
+		/// Move a fields column order in the given direction
+		/// </summary>
 		/// <param name="model">Contains the nessasary parameters to move a fields sort order></param>
 		/// <returns>Success or Failure</returns>
 		[
