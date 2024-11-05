@@ -136,4 +136,20 @@ GO
     </sql>
   </changeSet>
 
+ <changeSet author="Puneet Gupta" id="Table.dbo.Intersect-Indices-v7">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+	if exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+	begin
+		drop index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect]
+	end
+GO
+	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+	begin
+		create nonclustered index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect] ( [IntersectTypeID] ASC ) include ([UpdatedOn], [SubjectAssetID], [SubjectAssetTypeID], [ObjectAssetID], [ObjectAssetTypeID])
+	end
+GO
+]]>
+    </sql>
+  </changeSet>
 </databaseChangeLog>
