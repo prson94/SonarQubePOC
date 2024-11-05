@@ -12,6 +12,8 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Dapper;
+using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
@@ -1911,7 +1913,6 @@ namespace d360.web.Controllers.V2
 			var assetType = Company.Filter<AssetType>(x => x.uid == model.TypeUid).SingleOrDefault();
 			var actionType = Company.Filter<IssueType>(x => x.uid == model.TypeUid).SingleOrDefault();
 			var intersectType = Company.Filter<IntersectType>(i => i.uid == model.TypeUid).SingleOrDefault();
-			FieldType fieldTypes = null;
 
 			if (assetType != null)
 			{
@@ -1939,8 +1940,8 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.AssetNotFoundForAssetType, model.TypeUid.ToString()));
 			}
 
-			string errormessage = "";
 			StringBuilder stringBuildertemp = new StringBuilder();
+			StringBuilder stringBuildererror = new StringBuilder();
 
 			int idx = 0;
 			var dbArgsp = new DynamicParameters();
@@ -1952,16 +1953,16 @@ namespace d360.web.Controllers.V2
 					int parsedValue;
 					if (!int.TryParse(field.ColumnOrder, out parsedValue))
 					{
-						errormessage +=  string.Format(ApiMessages.NumberValueMessage, field.ColumnOrder);
+						stringBuildererror.Append(string.Format(ApiMessages.NumberValueMessage, field.ColumnOrder) + " ");
 					}
 
 					if (parsedValue < 0)
 					{
-						errormessage += string.Format(ApiMessages.MinLengthCheckGTEQZero, field.ColumnOrder);
+						stringBuildererror.Append(string.Format(ApiMessages.MinLengthCheckGTEQZero, field.ColumnOrder));
 					}
 				}
 
-				if (string.IsNullOrEmpty(errormessage ))
+				if (stringBuildererror.Length == 0)
 				{
 					dbArgsp.Add("ft_name_" + idx, field.ApiName);
 					dbArgsp.Add("ft_value_" + idx, field.ColumnOrder);
@@ -1970,9 +1971,9 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (!string.IsNullOrWhiteSpace(errormessage))
+			if (stringBuildererror.Length != 0)
 			{
-				throw new NotFoundBusinessLayerException(errormessage);
+				throw new NotFoundBusinessLayerException(stringBuildererror.ToString());
 			}
 
 			string sql = $@"
@@ -2019,7 +2020,7 @@ select @missingcolumn missingcol,@duplicatecolumnorder dupcolord,@invalidcolumn 
 
 			var result = await Company.Database.Connection.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgsp);
 
-			errormessage = "";
+			string errormessage = "";
 
 			if (result != null)
 			{
