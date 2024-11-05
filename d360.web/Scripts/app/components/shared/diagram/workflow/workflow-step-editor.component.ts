@@ -32,7 +32,7 @@ import { cloneDeep, includes } from "lodash-es";
 import * as go from 'gojs';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
     selector: 'd3s-workflow-step-editor',

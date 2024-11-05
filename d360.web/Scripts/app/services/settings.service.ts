@@ -16,7 +16,7 @@ import { Observable, of, firstValueFrom } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
-import { SettingsProviderService } from "@precisely/prism-ng/govern";
+import { SettingsProviderService } from "@precisely/di-suite-ng/govern";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;

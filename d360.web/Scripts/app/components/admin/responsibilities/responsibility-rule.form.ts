@@ -18,7 +18,7 @@ import { MessagesObservableService } from "../../../services/messages-observable
 import { CompanySettingsService } from "../../../services/settings.service";
 import { Operator } from "../../../models/operator.model";
 import { forkJoin } from "rxjs";
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 
 @Component({

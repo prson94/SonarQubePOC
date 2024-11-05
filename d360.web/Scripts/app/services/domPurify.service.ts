@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 @Injectable({
     providedIn: 'root'

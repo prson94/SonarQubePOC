@@ -17,7 +17,7 @@ import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { ApiResult } from '../../../models/apiresult.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../../services/href-click-service';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 /*global $localize*/
 

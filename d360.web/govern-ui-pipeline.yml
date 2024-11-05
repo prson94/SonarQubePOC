@@ -78,13 +78,18 @@ stages:
       displayName: 'Create UI Output Directory'
     - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/remote
       displayName: 'Create Remote Output Directory'
-    - script: yarn
+    - template: build/steps/step-azure-key-vault.yml@templates
+      parameters:
+        secretsFilter: governGitlabPat
+    - script: npm install
       workingDirectory: 'd360.web'
-      displayName: 'Run Yarn Install'
-    - script: yarn run build-dev-ops-prod-linux
+      displayName: 'Run NPM Install'
+      env:
+        GOVERN_GITLAB_TOKEN: $(governGitlabPat)
+    - script: npm run build-dev-ops-prod-linux
       workingDirectory: 'd360.web'
       displayName: 'Run build-dev-ops-prod-linux'
-    - script: yarn run build-fed-linux
+    - script: npm run build-fed-linux
       workingDirectory: 'd360.web'
       displayName: 'Run build-fed-linux'
     - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/dist

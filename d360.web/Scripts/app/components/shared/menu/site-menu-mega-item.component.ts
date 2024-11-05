@@ -4,7 +4,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { NavigationState, SiteMenuItem } from '../../../models/site-menu.model';
 import { CompanySettingsService } from "../../../services/settings.service";
-import * as DOMPurify from "dompurify";
+import * as DOMPurify from "isomorphic-dompurify";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',

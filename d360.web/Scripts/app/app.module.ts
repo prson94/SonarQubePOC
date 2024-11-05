@@ -16,7 +16,7 @@ import { HeaderModule } from './components/shared/header/header.module';
 import { NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
 
 import { DialogModule } from 'primeng/dialog';
-import { SettingsProviderService } from '@precisely/prism-ng/govern';
+import { SettingsProviderService } from '@precisely/di-suite-ng/govern';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 import { AngularSplitModule } from 'angular-split';

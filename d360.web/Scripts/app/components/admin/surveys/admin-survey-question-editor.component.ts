@@ -4,7 +4,7 @@ import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import { cloneDeep } from "lodash-es";
 import { UntypedFormGroup, NgForm } from '@angular/forms';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',

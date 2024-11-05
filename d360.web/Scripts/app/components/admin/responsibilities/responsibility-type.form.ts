@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnInit, Output, SimpleChange } from '@angular/core';
-import * as DOMPurify from 'dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
