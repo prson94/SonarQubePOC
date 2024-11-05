@@ -401,37 +401,6 @@ export class LoadedFilterTypesModel {
     Predicates: number[] = [];
     ResponsibilityTypes: number[] = [];
 }
-
-export class StoredAssetBrowserAssetTypeFilterModel {
-    uid: string;
-    class: string;
-}
-
-export class StoredAssetBrowserPredicateFilterModel {
-    uid: number;
-    type: string;
-}
-
-export class StoredAssetBrowserResponsibilityTypeFilterModel {
-    uid: number;
-    type: string;
-}
-
-export class StoredAssetBrowserFilterModel {
-    uid: string;
-    name: string;
-    assetTypes: StoredAssetBrowserAssetTypeFilterModel[] = [];
-    predicates: StoredAssetBrowserPredicateFilterModel[] = [];
-    responsibilityTypes: StoredAssetBrowserResponsibilityTypeFilterModel[] = [];
-	ancestryMode: number;
-	descendancy: number;
-    numberOfHops: number;
-    diagramType: number;
-    isDefault: boolean;
-    createdOn: string;
-    updatedOn: string;
-}
-
 //#endregion
 
 export class AssetBrowserLineageRequest {

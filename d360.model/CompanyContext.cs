@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
-using d360.core.entities.Graph;
 using d360.core.entities.Metric;
 using d360.core.entities.Views;
 using d360.core.enums;
@@ -129,8 +128,6 @@ namespace d360.model
 		public DbSet<Follow> Follows { get; set; }
 
 		public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
-
-		public DbSet<GraphFilter> GraphFilters { get; set; }
 
 		public DbSet<HelpResource> HelpResources { get; set; }
 

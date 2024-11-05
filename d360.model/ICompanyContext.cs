@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
-using d360.core.entities.Graph;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
@@ -52,8 +51,6 @@ namespace d360.model
         
         DbSet<Follow> Follows { get; set; }
                 
-        DbSet<GraphFilter> GraphFilters { get; set; }
-        
         DbSet<HelpResource> HelpResources { get; set; }
         
         DbSet<IntersectDetail> IntersectDetails { get; set; }

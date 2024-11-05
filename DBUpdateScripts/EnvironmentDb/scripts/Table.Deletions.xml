@@ -176,6 +176,15 @@ drop table if exists [dbo].SurveyType
 GO
 ]]>
   </sql>
- </changeSet>	
+ </changeSet>
+
+ <changeSet author="AmitYadav" id="Table.Deletions.[graph].Filter">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop table if exists [graph].Filter
+GO
+]]>
+  </sql>
+ </changeSet>
 	
 </databaseChangeLog>
