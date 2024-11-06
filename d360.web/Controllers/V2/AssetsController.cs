@@ -2865,6 +2865,7 @@ namespace d360.web.Controllers.V2
 		/// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
 		/// * You do not have to provide ExecutionItemUid values for all entries in a request.
 		/// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+		/// * A maximun of 35 asset types can be deleted per call.
 		/// </remarks>
 		/// <param name="assetTypes">The payload of your request.</param>
 		/// <returns>An HTTP status code and message.</returns>
@@ -2884,15 +2885,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
-				foreach (var asset in assetTypes)
-				{
-					if (governanceRole == asset.Uid)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.ReferenceUIDConfigureAsGovernRole, asset.Uid.ToString())));
-					}
-				}
-
 				if (assetTypes == null)
 				{
 					assetTypes = readRequestJsonContent<AssetTypeDeletes>(Request).Result;
@@ -2901,6 +2893,21 @@ namespace d360.web.Controllers.V2
 				if (assetTypes == null)
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+				}
+
+				var maxDeleteAssetTypes = 35;
+				if(assetTypes.Count > maxDeleteAssetTypes)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.RequestMaxAssetType, maxDeleteAssetTypes.ToString())));
+				}
+
+				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+				foreach (var asset in assetTypes)
+				{
+					if (governanceRole == asset.Uid)
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.ReferenceUIDConfigureAsGovernRole, asset.Uid.ToString())));
+					}
 				}
 
 				List<ApiExecutionFields_DeleteAssetTypes> typesForDelete = assetTypes.Select(x => new ApiExecutionFields_DeleteAssetTypes() { AssetTypeUid = x.Uid }).ToList();

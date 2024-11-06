@@ -279,6 +279,9 @@
   <data name="RequestMaxAsset" xml:space="preserve">
     <value>You may only provide a maximum of {0} assets in this request. Please call the BATCH API to submit more than {1} items.</value>
   </data>
+  <data name="RequestMaxAssetType" xml:space="preserve">
+    <value>You may only provide a maximum of {0} asset types in this request.</value>
+  </data>
   <data name="RestrictReadAssettype" xml:space="preserve">
     <value>You do not have permissions to read the specified asset type.</value>
   </data>
