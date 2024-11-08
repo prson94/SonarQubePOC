@@ -35,7 +35,7 @@ export class RelationshipFilterComponent {
 		if (!this.relationshipTypesResolvedNames || this.relationshipTypesResolvedNames.length === 0) {
 			return;
 		}
-		let compareVal = this.hasSelectedValue;
+		const compareVal = this.hasSelectedValue;
 		this.relationshipTypesResolvedNames.forEach((r) => {
 			r.isSelected = !(r.isSelected || compareVal); //nor
 		});
