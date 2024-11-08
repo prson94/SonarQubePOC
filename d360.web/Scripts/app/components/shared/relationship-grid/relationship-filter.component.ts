@@ -27,11 +27,11 @@ export class RelationshipFilterComponent {
         });
     }
 
-    toggleItem($event) {
+    toggleItem() {
         this.onFilterChange();
 	}
 
-	toggleAll($event) {
+	toggleAll() {
 		if (!this.relationshipTypesResolvedNames || this.relationshipTypesResolvedNames.length === 0) {
 			return;
 		}
