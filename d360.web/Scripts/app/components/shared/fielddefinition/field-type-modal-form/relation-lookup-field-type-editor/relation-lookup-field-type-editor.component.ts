@@ -984,7 +984,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if (item.relIdxRequired !== null) {
 			placeholder = $localize`Value required: relationship type ` + item.relIdxRequired;
 		}
-		ddl.placeholder = placeholder;
+		ddl.filterPlaceholder = placeholder;
 		return placeholder;
 	}
 
