@@ -1251,6 +1251,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
+
+	get showAllowAllLabel(): boolean {
+		if (this.fieldTypeForm.get('AllowAllValue').value === true) {
+			return true;
+		}
+		else {
+			this.fieldTypeForm.controls["AllowAllLabel"].removeValidators([Validators.required]);
+			this.fieldTypeForm.controls["AllowAllLabel"].updateValueAndValidity();
+			return false;
+		}
+	}
+
 	get showPersistInFilters(): boolean {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset
 			|| this.assetTypeClass === AssetTypeClass.ReferenceItemType
