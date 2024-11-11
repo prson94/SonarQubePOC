@@ -600,7 +600,9 @@ namespace d360.web.Controllers.V2
 			foreach (var m in resourceGroups)
 			{
 				Company.Add(m);
-				Company.Connection.Execute(@"insert into reporting.Global_Audit(Object,ObjectID,ObjectName,ResourceID,[date],[Action],ActionObject,ActionObjectID,ActionObjectTypeName,ActionObjectName,ActionDescription,[Version])
+				Company.Connection.Execute(@"insert into reporting.Global_Audit(Object,ObjectID,ObjectName,ResourceID,[Date],[Action],
+											ActionObject,ActionObjectID,ActionObjectTypeName,ActionObjectName,
+											ActionDescription,[Version])
 					select	distinct 
 							'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
 					from	[group] g 
