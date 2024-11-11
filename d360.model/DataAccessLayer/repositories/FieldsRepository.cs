@@ -857,11 +857,7 @@ namespace d360.model.DataAccessLayer
 					UpdatedBy = CompanyContext.CurrentResourceID
 				};
 
-				if (isNew)
-				{
-					newFieldType.ColumnOrder = ++maxColumnIndex;
-				}
-				else
+				if (!isNew)
 				{
 					newFieldType.ColumnOrder = existingColumnorder;
 				}
@@ -869,6 +865,12 @@ namespace d360.model.DataAccessLayer
 				if (f.Type.Boolean != null)
 				{
 					newFieldType.Type = DataType.Boolean.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder.HasValue ? f.Type.Boolean.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
 
 					if (f.Type.Boolean.DefaultValue.HasValue)
@@ -950,6 +952,10 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortOrder = f.Type.Score.SortOrder;
 					newFieldType.SortByAscending = f.Type.Score.SortByAscending;
 					newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Score.ColumnOrder.HasValue ? f.Type.Score.ColumnOrder.Value : ++maxColumnIndex;
+					}
 					newFieldType.DisplayInColumn = f.Type.Score.DisplayInColumn;
 
 					if (f.Type.Score.Description != null)
@@ -966,6 +972,11 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.OwnershipLookup.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder.HasValue ? f.Type.ComputedOwnershipLookup.ColumnOrder.Value : ++maxColumnIndex;
+					}
 
 					if (f.Type.ComputedOwnershipLookup.Description != null)
 					{
@@ -1005,7 +1016,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.ComputedRelationshipField != null)
 				{
 					newFieldType.Type = DataType.FieldFromRelationship.ToString();
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.ComputedRelationshipField.ColumnOrder.HasValue ? f.Type.ComputedRelationshipField.ColumnOrder.Value : ++maxColumnIndex;
+					}
 					newFieldType.ColumnWidth = f.Type.ComputedRelationshipField.ColumnWidth;
+
 
 					if (f.Type.ComputedRelationshipField.Description != null)
 					{
@@ -1076,6 +1092,11 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.ComplexRelationLookup.ToString();
+
+					if(isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder.HasValue ? f.Type.ComputedRelationshipLookup.ColumnOrder.Value : ++maxColumnIndex;
+					}
 
 					if (f.Type.ComputedRelationshipLookup.Description != null)
 					{
@@ -1294,6 +1315,11 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.Type = DataType.RefListRelationship.ToString();
 
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder.HasValue ? f.Type.ComputedRelationshipReferenceList.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.ComputedRelationshipReferenceList.Description.Display.SanitizeHtml();
@@ -1315,6 +1341,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Date != null)
 				{
 					newFieldType.Type = DataType.Date.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Date.ColumnOrder.HasValue ? f.Type.Date.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
 
 					if (f.Type.Date.DefaultValue.HasValue)
@@ -1363,6 +1395,10 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.DateTime != null)
 				{
 					newFieldType.Type = DataType.DateTime.ToString();
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder.HasValue ? f.Type.DateTime.ColumnOrder.Value : ++maxColumnIndex;
+					}
 					newFieldType.ColumnWidth = f.Type.DateTime.ColumnWidth;
 
 					if (f.Type.DateTime.DefaultValue.HasValue)
@@ -1407,6 +1443,10 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Decimal != null)
 				{
 					newFieldType.Type = DataType.Decimal.ToString();
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder.HasValue ? f.Type.Decimal.ColumnOrder.Value : ++maxColumnIndex;
+					}
 					newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
 
 					if (f.Type.Decimal.DefaultValue.HasValue)
@@ -1456,6 +1496,10 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Html != null)
 				{
 					newFieldType.Type = DataType.Html.ToString();
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Html.ColumnOrder.HasValue ? f.Type.Html.ColumnOrder.Value : ++maxColumnIndex;
+					}
 					newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.Html.DefaultValue))
@@ -1500,6 +1544,11 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.JSON.ToString();
+					
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : ++maxColumnIndex;
+					}
 
 					if (f.Type.Json.Description != null)
 					{
@@ -1522,6 +1571,12 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.JsonElement.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.JsonElement.ColumnWidth;
 
 					if (f.Type.JsonElement.Description != null)
@@ -1545,6 +1600,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Link != null)
 				{
 					newFieldType.Type = DataType.Link.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Link.ColumnOrder.HasValue ? f.Type.Link.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
 
 					if (f.Type.Link.DefaultValue != null)
@@ -1598,6 +1659,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Lookup != null)
 				{
 					newFieldType.Type = DataType.Lookup.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder.HasValue ? f.Type.Lookup.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
 
 					if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
@@ -1786,6 +1853,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Number != null)
 				{
 					newFieldType.Type = DataType.Number.ToString();
+					
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Number.ColumnOrder.HasValue ? f.Type.Number.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
 
 					if (f.Type.Number.DefaultValue.HasValue)
@@ -1833,6 +1906,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Path != null)
 				{
 					newFieldType.Type = DataType.Path.ToString();
+					
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
 
 					if (f.Type.Path.Definition != null)
@@ -1861,6 +1940,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Relationship != null)
 				{
 					newFieldType.Type = DataType.Relationship.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Relationship.ColumnOrder.HasValue ? f.Type.Relationship.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Relationship.ColumnWidth;
 
 					if (f.Type.Relationship.Description != null)
@@ -1901,6 +1986,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Text != null)
 				{
 					newFieldType.Type = DataType.Text.ToString();
+					
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Text.ColumnOrder.HasValue ? f.Type.Text.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.Text.DefaultValue))
@@ -1949,6 +2040,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Tag != null)
 				{
 					newFieldType.Type = DataType.Tag.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder.HasValue ? f.Type.Tag.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
 
 					if (f.Type.Tag.Description != null)
@@ -1972,6 +2069,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Counter != null)
 				{
 					newFieldType.Type = DataType.Counter.ToString();
+
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.Counter.ColumnOrder.HasValue ? f.Type.Counter.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.Counter.ColumnWidth;
 
 					if (f.Type.Counter.Description != null)
@@ -2003,6 +2106,12 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.System != null)
 				{
 					newFieldType.Type = DataType.System.ToString();
+					
+					if (isNew)
+					{
+						newFieldType.ColumnOrder = f.Type.System.ColumnOrder.HasValue ? f.Type.System.ColumnOrder.Value : ++maxColumnIndex;
+					}
+
 					newFieldType.ColumnWidth = f.Type.System.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.System.DefaultValue))

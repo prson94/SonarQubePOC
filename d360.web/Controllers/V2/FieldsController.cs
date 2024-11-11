@@ -1867,7 +1867,7 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// Move a fields column order in the given direction
+		/// Set a fields column order in desired sequence
 		/// </summary>
 		/// <remarks>
 		/// -  ** Description **
