@@ -23,7 +23,7 @@ import * as DOMPurify from 'isomorphic-dompurify';
 @Component({
     selector: 'd3s-admin-workflow-editor',
     providers: [WorkflowService, ResponsibilityTypeService],
-    templateUrl: './admin-workflow-editor.component.html'
+	templateUrl: './admin-workflow-editor.component.html'
 })
 
 export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewChecked {
@@ -66,7 +66,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         'ScoreType'
     ];
 
-    constructor(
+	constructor(
         private responsibilityService: ResponsibilityTypeService,
         private messageService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
@@ -77,7 +77,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     ngOnInit() {
-        this.defaultWorkflowObject.label = "";
+        this.defaultWorkflowObject.label = " ";
         this.defaultWorkflowObject.value = "";
 
         this.load();
@@ -151,23 +151,23 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
-                        if ((this.model.Event.ConditionObject == null || isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
-                            const conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
+						if ((this.model.Event.ConditionObject == null || isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+							const conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                             this.conditions = [];
                             conditions.forEach((c) => this.conditions.push(c));
                         }
-                        else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
-                            this.conditions = [];
-                            if (this.model.Event.ConditionObject.Condition.length == null)
+						else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
+							this.conditions = [];
+							if (this.model.Event.ConditionObject.Condition.length == null)
                                 {this.conditions.push(this.model.Event.ConditionObject.Condition);}
                             else
                                 {this.conditions = this.model.Event.ConditionObject.Condition;}
-                        }
+						}
                     }))))
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
-                    map((r) => {
-                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
+					map((r) => {
+						this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r.filter((i) => i.label !== null));
 
                         this.model.Event.IssueObject = '';
                         if (this.objectType === 'IssueType') {
@@ -202,7 +202,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                                     if (scoreIndex > -1) {
                                         this.model.Event.ScoreType = +this.conditions[scoreIndex]['@Value'];
-                                    }
+									}
                                     this.validate();
                                 });
                         }
@@ -241,9 +241,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-				map((r) => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
+				map((r) => {
+					this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r.filter((i) => i.label !== null));
+				})
+
 		).subscribe();
-    }
+	}
 
     changeTypeChanged(event) {
         this.model.Event.ChangeType = +event;
@@ -255,8 +258,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.loadObjects();
     }
 
-    selectObjectType(e: any) {
-        this.selectedObjectType = e;
+	selectObjectType(e: any) {
+		if (e === this.selectedObjectType) {
+			return; //selecting the current value, nothing changed.
+		}
+
+		this.selectedObjectType = e;
         this.showAddCondition = false;
         this.conditions = [];
         this.scoreTypes = [];
@@ -354,10 +361,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     addCondition(e: any) {
-        this.conditions.push(e);
+		this.conditions.push(e);
         this.conditions = this.conditions.slice();
         this.showAddCondition = false;
-        this.validate();
+		this.validate();
     }
 
     hasPendingWorkflowItems() {
@@ -465,12 +472,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.onSave.emit(this.model);
     }
 
-    validate() {
+	validate() {
         this.errorMessage = "";
 
         if (this.model == null) {return;}
         let hasConditionsError = false;
-        this.conditions.forEach((c) => {
+		this.conditions.forEach((c) => {
             if (c['@ContextualFieldID'] != null && this.excludedContextualFields.indexOf(c['@ContextualFieldID']) !== -1)
                 {return;}
 
@@ -588,7 +595,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             return;
         }
 
-        this.isValid = true;
+		this.isValid = true;
     }
 
     appendField(e: string) {
