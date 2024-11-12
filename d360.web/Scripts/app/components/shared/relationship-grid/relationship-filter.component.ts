@@ -14,7 +14,8 @@ import {
 export class RelationshipFilterComponent {
     @Input() relationshipTypesResolvedNames: any[] = [];
 
-    allSelected = true;
+	allSelected = true;
+
     constructor(private advFilterService: AdvancedFilteringService,
         private cdRef: ChangeDetectorRef) {
         this.advFilterService.onFilterUpdate().subscribe((data) => {
@@ -26,9 +27,20 @@ export class RelationshipFilterComponent {
         });
     }
 
-    toggleItem($event) {
+    toggleItem() {
         this.onFilterChange();
-    }
+	}
+
+	toggleAll() {
+		if (!this.relationshipTypesResolvedNames || this.relationshipTypesResolvedNames.length === 0) {
+			return;
+		}
+		const compareVal = this.hasSelectedValue;
+		this.relationshipTypesResolvedNames.forEach((r) => {
+			r.isSelected = !(r.isSelected || compareVal); //nor
+		});
+		this.onFilterChange();
+	}
 
     onFilterChange() {
         var ev = new AdvancedFilterUpdate();
