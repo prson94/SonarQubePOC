@@ -589,7 +589,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
 										case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
 										{(resolveUIDetails ? "case when FT.Type = 'Relationship' then ITName.Name else null end as 'Type.Relationship.IntersectTypeName'," : "")}
-										case when FT.Type = 'Relationship' then FT.IsRequired else null end as 'Type.Relationship.Validation.IsRequired',
+										case when FT.Type = 'Relationship' then Cast(0 as bit) else null end as 'Type.Relationship.Validation.IsRequired',
 										case when FT.Type = 'Relationship' then FT.IsDisplayable else null end as 'Type.Relationship.IsDisplayable',
 										case when FT.Type = 'Relationship' then FT.IsEditable else null end as 'Type.Relationship.IsEditable',
 										case when FT.Type = 'Relationship' then FT.IsListable else null end as 'Type.Relationship.IsListable',
@@ -1973,7 +1973,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
 					newFieldType.IsSubject = f.Type.Relationship.IsSubject;
-					newFieldType.IsRequired = f.Type.Relationship.Validation?.IsRequired ?? false;
+					newFieldType.IsRequired = false;
 
 					if (f.Type.Relationship.Search != null)
 					{

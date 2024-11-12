@@ -883,9 +883,6 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool IsSubject { get; set; }
-
-		[DataMember]
-		public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
 	}
 
 	public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
