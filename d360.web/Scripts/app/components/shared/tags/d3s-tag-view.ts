@@ -231,7 +231,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }
     }
 
-    checkKey(event, value) {
+	checkKey(event, value) {
         if (event.key === "Enter" && !this.savingTag) {
             // mostly value is string as it supposed to be
             // but in some cases when you pick existing tag from dropdown
@@ -245,7 +245,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }
     }
 
-    saveTag(event) {
+	saveTag($event) {
+		const event = ($event.originalEvent) ? $event.value : $event;
         this.savingTag = true;
         this.existingTag = false;
         var tags = Array<TagApiModel>();
