@@ -63,6 +63,7 @@ namespace d360.model.DataAccessLayer
 			int? assetTypeID = null;
 			int? issueTypeID = null;
 			int? intersectTypeID = null;
+			string categorydefvalue = "General";
 
 			bool includeId = false;
 			string objectTypeIdProperty = "@assetTypeID";
@@ -171,6 +172,8 @@ namespace d360.model.DataAccessLayer
 
 			if (issueTypeID.HasValue)
 			{
+				categorydefvalue = "Form Fields";
+
 				dbArgs.Add("@issueTypeID", issueTypeID.Value);
 				objectTypeIdProperty = "@issueTypeID";
 				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IssueTypeID] = @issueTypeID";
@@ -272,7 +275,7 @@ namespace d360.model.DataAccessLayer
 										{(includeId ? "FT.Id," : "")}
 										FT.Name,
 										FT.FriendlyName,
-										FT.Category,
+										coalesce(FT.Category,'{categorydefvalue}') Category,
 										IIF(FT.IssueTypeID is not null, O_I.Uid , null) as ActionTypeUid,
 										IIF(FT.AssetTypeID is not null, O_A.Uid , null) as AssetTypeUid,
 										IIF(FT.IntersectTypeID is not null, O_R.Uid , null) as RelationshipTypeUid,
