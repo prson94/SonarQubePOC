@@ -115,7 +115,7 @@
                                              [(ngModel)]="model.priority"></ig-number-input>
                             <div *ngIf="semanticForm.get('priority').invalid && (semanticForm.get('priority').dirty || semanticForm.get('priority').touched)">
                                 <div *ngIf="semanticForm.get('priority').errors?.underMin" class="ig-text-required" i18n>
-                                    Please enter a value greater than 0.
+                                    Please enter a value of 1 or greater.
                                 </div>
                                 <div *ngIf="semanticForm.get('priority').errors?.overMax" class="ig-text-required" i18n>
                                     Value exceeds maximum allowed.
