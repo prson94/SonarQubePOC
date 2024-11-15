@@ -360,7 +360,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		fieldTypeApiObject.Validation.Precision = this.fieldTypeForm.get("Precision").value ?? null;
 		fieldTypeApiObject.Increment = this.fieldTypeForm.get("Increment").value ?? null;
 
-		fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
+		if (this.selectedFieldType === 'Date') {
+			fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
+			if (fieldTypeApiObject.DefaultValue !== null) {
+				fieldTypeApiObject.DefaultValue = this.dateAddTimeZone(fieldTypeApiObject.DefaultValue );
+			}
+		}
+		else {
+			fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
+		}
+
 
 		if (this.selectedFieldType === 'Link') {
 			const hasLink: boolean = ((this.fieldTypeForm.get("LinkDefaultName").value ?? '') as string).length > 0;
@@ -717,6 +726,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (this.selectedFieldType === "Html") {
 					defaultValue = DOMPurify.sanitize(defaultValue);
 				}
+				else if (this.selectedFieldType === "Date") {
+					const effDate = this.dateRemoveTimeZone(new Date(defaultValue));
+					defaultValue = effDate;
+				}
+
 				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue);
 				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
 				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
@@ -1519,4 +1533,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.cdRef.markForCheck();
 			});
 	}
+	dateRemoveTimeZone(datevalue: Date) {
+		const tzoffset = datevalue.getTimezoneOffset() * 60000;
+		const effDate = new Date(datevalue.valueOf() + tzoffset);
+		return effDate;
+	}
+
+	dateAddTimeZone(datevalue: Date) {
+		const tzoffset = datevalue.getTimezoneOffset() * 60000;
+		const effDate = new Date(datevalue.valueOf() - tzoffset);
+		return effDate;
+	}
+
 }
