@@ -885,7 +885,8 @@ namespace d360.web.Controllers.V2
 						where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
 
 				Company.Query<int>(@"
-					insert into reporting.Global_Audit
+					insert into reporting.Global_Audit (Object,ObjectID,ObjectName,ResourceID,[date],[Action],ActionObject,ActionObjectID,
+					ActionObjectTypeName,ActionObjectName,ActionDescription,[Version])
 					select	distinct 
 							'Group', 
 							g.id, 
