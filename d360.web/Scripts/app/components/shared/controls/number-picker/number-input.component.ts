@@ -125,8 +125,8 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
         this.placeholder = this.placeholder == null ? (this.required ? $localize`Value required` : $localize`Optional`) : this.placeholder;
     }
 
-    validate(control: AbstractControl): ValidationErrors {
-        let result: any = null;
+    validate(control: AbstractControl): ValidationErrors | null {
+		let result: ValidationErrors | null = null;
         if (isNaN(parseInt(control.value))) {
             result = null;
         } else if (this.isOverMax()) {
