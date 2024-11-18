@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,Puneet" id="Procedure.api.ParseAssetPaths-v6">
+  <changeSet author="TDuric,Puneet" id="Procedure.api.ParseAssetPaths-v7">
     <comment>GOV-28603,GOV-33181</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -13,12 +13,20 @@ create or alter procedure [api].[ParseAssetPaths]
 as
 begin
 	set nocount on;
+	declare @IsBussOrTechClass bit = 0;
+	
 	
 	-- Comes from higher-level procedure
 	--#tbl ( GroupID bigint, AssetTypeID int, ID bigint, [Level] int, [Position] decimal(5,3), ParentID bigint, ParentLevel int, ParentPosition decimal(5,3), ColumnOrder int, FormattedValue nvarchar(max) )
 
 	drop table if exists #tblgrp
 	drop table if exists #illegalxml
+
+	if exists (select 1 from #tbl t
+	inner join AssetType att on att.id = t.assetTypeId and att.class in (1,8))
+	begin
+		set @IsBussOrTechClass = 1;
+	end
 
 	
 		
@@ -123,14 +131,64 @@ begin
 	when not matched by target then
 	insert	(Id, Segments)
 	values	(s.Id, s.Segments);
+
+			if (@IsBussOrTechClass = 1)
+			begin
+				drop table if exists #tbldtl;
+				
+				create table #tbldtl(AssetId bigint,AssetTypeID int,LevelAssetIDMax bigint, LevelMax int,FormattedValue nvarchar(4000))
+				create clustered index cx_tbldtl on #tbldtl(AssetId,assetTypeId);
+				
+				insert into #tbldtl(AssetId,assetTypeId,LevelAssetIDMax,LevelMax,FormattedValue)
+				select	t.GroupID,t.AssetTypeID,max(t.ID),
+				max(t.[Level]),
+				string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder) FormattedValue
+				from #tbl t
+				group by t.GroupID,t.AssetTypeID ;
+				
+				delete s
+				from #tbldtl s
+				inner join [dbo].[AssetPathSegmentDtl] t on (t.AssetId = s.AssetId and t.AssetTypeID = s.AssetTypeID )
+				where t.LevelAssetIDMax = s.LevelAssetIDMax and t.LevelMax = s.LevelMax and t.FormattedValue = s.FormattedValue;
+				
+				merge	[dbo].[AssetPathSegmentDtl] as t
+				using	(
+				select	*
+				from	#tbldtl
+				) as s
+				on		(t.AssetId = s.AssetId and t.AssetTypeID = s.AssetTypeID )
+				when	matched then
+				update	set t.FormattedValue = s.FormattedValue,
+				t.LevelAssetIDMax = s.LevelAssetIDMax,
+				t.LevelMax = s.LevelMax
+				when not matched by target then
+				insert	(AssetId,assetTypeId,LevelMax,FormattedValue)
+				values	(s.AssetId, s.assetTypeId,s.LevelMax,s.FormattedValue);
+				
+				drop table if exists #tbldtl;
+			end
 	end
 	else
 	begin
 		insert into AssetPath (Id, Segments)
 		select	S.GroupId as Id,S.XmlData as Segments
 		from	#tblgrp s;
+
+			if (@IsBussOrTechClass = 1)
+			begin
+				insert into [dbo].[AssetPathSegmentDtl] ([AssetID],[AssetTypeID],LevelAssetIDMax,[LevelMax],FormattedValue )
+				select	t.GroupID,t.AssetTypeID,
+				max(t.ID),
+				max(t.[Level]),
+				string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder) FormattedValue
+				from #tbl t
+				left join [dbo].[AssetPathSegmentDtl] s on (t.AssetId = s.AssetId and t.AssetTypeID = s.AssetTypeID )
+				where [dbo].[AssetPathSegmentDtl] is null
+				group by t.GroupID,t.AssetTypeID 
+			end
 	end
 				
+		drop table if exists #tbldtl;
 	drop table if exists #tblgrp
 	drop table if exists #illegalxml
 end
