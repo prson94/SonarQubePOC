@@ -8,6 +8,8 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
+import { TabsModule } from '../../shared/tabs/tabs.module';
+import { PageHeaderModule } from '../../shared/page-header/page-header.module';
 
 import { AdminTagsComponent } from './admin-tags.component';
 import { AdminTagsConsolidateComponent } from './admin-tags-consolidate.component';
@@ -26,11 +28,17 @@ import { AdminTagsActionModule } from './admin-tags-action.module';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { TagsHeaderComponent } from './tags-headers/tags-header.component';
+import { TagTypesPanelComponent } from './tag-types/tag-types.component';
+import { SiteMenuModule } from '../../shared/menu/site-menu.module';
+import { RouterModule } from '@angular/router';
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        RouterModule,
         
         AdminTagsRoutingModule,
 
@@ -41,6 +49,7 @@ import { TooltipModule } from 'primeng/tooltip';
         SharedModule,
         TableModule,
         TooltipModule,
+        AccordionModule,
 
         //d3s                
         CoreModule,                
@@ -53,11 +62,16 @@ import { TooltipModule } from 'primeng/tooltip';
         TagUsageInfoModule,
         AdvancedFiltersModule,
         SearchFieldModule,
-        AdminTagsActionModule
+        AdminTagsActionModule,
+        TabsModule,
+        PageHeaderModule,
+        SiteMenuModule,
     ],
     declarations: [
         AdminTagsComponent,
-        AdminTagsConsolidateComponent
+        AdminTagsConsolidateComponent,
+        TagsHeaderComponent,
+        TagTypesPanelComponent
     ],
     providers: [
         
