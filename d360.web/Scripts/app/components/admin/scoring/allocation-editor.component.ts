@@ -28,6 +28,9 @@ import { HelpService } from "../../../services/help.service";
         .separator{
             padding:0px 4px;
         }
+		:host ::ng-deep .ig-dropdown .p-dropdown-label {
+			padding-bottom: 7px;
+		}
     `],
 })
 
