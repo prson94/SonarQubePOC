@@ -1049,37 +1049,83 @@ select	r.uid as ResourceUid,
 
 
 				var contributorSql = @"
-                    DROP TABLE if exists #AssetTypesWithResponsibilities
-                    CREATE TABLE #AssetTypesWithResponsibilities
-                    (
-	                    AssetTypeID int
-                    )
-                    insert into #AssetTypesWithResponsibilities 
-                    SELECT DISTINCT AT.ID from AssetType AT 
-                    left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
-                    left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
-                    left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
-                    inner join Asset A on A.AssetTypeID = AT.ID 
-                    left join [dbo].[ResponsibilityTypeRelationOverrideItem] RTOR on a.Id = RTOR.AssetID
-                    WHERE A.ID = RTOR.AssetID
+					DROP TABLE if exists #AssetTypesWithResponsibilities;
+					CREATE TABLE #AssetTypesWithResponsibilities
+					(
+						AssetTypeID int
+					);
+					insert into #AssetTypesWithResponsibilities 
+					SELECT DISTINCT AT.ID from AssetType AT 
+					left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
+					left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
+					left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
+					inner join Asset A on A.AssetTypeID = AT.ID 
+					left join [dbo].[ResponsibilityTypeRelationOverrideItem] RTOR on a.Id = RTOR.AssetID
+					WHERE A.ID = RTOR.AssetID;
 
-
-                    SELECT count(1) from reporting.global_resource GR
-	                    where exists (
-		                    SELECT 
-                            1
-		                    from #AssetTypesWithResponsibilities AT
-			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
-			                    where ((permission.PermissionsBitMask is null and gr.IsAdministrator = 1)
-		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm > 0)
-		                               or (permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd))
-
-                    )   
-                    and gr.Email not like '%@infogix.com' 
-                    and gr.Email not like '%@data3sixty.com'  
-                    and gr.Email not like '%@precisely.com'
-                    and gr.State = 1
-                    and gr.IsAdministrator = 0
+					With AssetRule as
+					(
+						select a.AssetTypeID,
+								rasset.AssetID,
+								rasset.RuleID
+						from  [dbo].[asset] a
+						inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID)
+						inner join #AssetTypesWithResponsibilities atwr on atwr.AssetTypeID = a.assettypeid
+						union all 
+						select att.ID as AssetTypeID,
+								rasset.AssetID,
+								rasset.RuleID
+						from  [dbo].[assettype] att
+						inner join #AssetTypesWithResponsibilities atwr on atwr.AssetTypeID = att.id
+						inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = 0 and rasset.AssetTypeID = att.id)
+					)
+					select count(distinct gr.ResourceID)
+					from reporting.global_resource GR
+					inner join (
+						select	rel.PermissionsBitMask,
+								rresource.SecurityAssetID
+						from	AssetRule rasset
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+						where	rresource.SecurityAsset = 'R'
+						union all 
+						select	rel.PermissionsBitMask,
+								RG.ResourceID
+						from	AssetRule rasset
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
+						union all 
+						select	rr.PermissionsBitMask,
+								RES.ResourceID
+						from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+								inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+								inner join [dbo].asset a on (a.id = oride.assetID)
+								inner join [dbo].assettype att on (att.id = a.assettypeid)
+								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
+								inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
+								inner join #AssetTypesWithResponsibilities atwr on atwr.AssetTypeID = a.AssetTypeID
+						union all 
+						select	rr.PermissionsBitMask,
+								RG.ResourceID
+						from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+								inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+								inner join [dbo].asset a on (a.id = oride.assetID)
+								inner join [dbo].assettype att on (att.id = a.assettypeid)
+								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
+								inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
+								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+								inner join #AssetTypesWithResponsibilities atwr on atwr.AssetTypeID = a.AssetTypeID
+					) counts on counts.SecurityAssetID = gr.ResourceID
+					where (counts.PermissionsBitMask is not null and ( counts.PermissionsBitMask & @pm > 0 or counts.PermissionsBitMask & @pd = @pd))
+					and gr.Email not like '%@infogix.com' 
+					and gr.Email not like '%@data3sixty.com'  
+					and gr.Email not like '%@precisely.com'
+					and gr.State = 1
+					and gr.IsAdministrator = 0
                 ";
 
 				//Using ModifyAsset permission which is AddAsset | EditAsset - if PermissionsBitMask and'ed with this is greater than 0, the user has one or both
