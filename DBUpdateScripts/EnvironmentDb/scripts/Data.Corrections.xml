@@ -1374,7 +1374,7 @@ set @struncount = @runcount + 1;
 set @enruncount = @runcount + @batchsize;
 
 insert into AssetPathSegmentDtl (AssetID,AssetTypeID,LevelAssetIDMax,LevelMax,FormattedValue)
-select Ap.AssetID,F.[AssetTypeID],[LevelAssetIDMax],[LevelMax],F.FormattedValue
+select Ap.AssetID,F.[AssetTypeID],[LevelAssetIDMax],[LevelMax],substring(F.FormattedValue,1,4000)
 from #tempdata_32763_BA ap
 cross apply (
 SELECT AssetTypeId,max([AssetID]) [LevelAssetIDMax],mAX([Level]) [LevelMax],string_agg(Val, ' / ') within group(order by Position) FormattedValue
@@ -1434,7 +1434,7 @@ set @struncount = @runcount + 1;
 set @enruncount = @runcount + @batchsize;
 
 insert into AssetPathSegmentDtl (AssetID,AssetTypeID,LevelAssetIDMax,LevelMax,FormattedValue)
-select Ap.AssetID,F.[AssetTypeID],[LevelAssetIDMax],[LevelMax],F.FormattedValue
+select Ap.AssetID,F.[AssetTypeID],[LevelAssetIDMax],[LevelMax],substring(F.FormattedValue,1,4000)
 from #tempdata_32763_TA ap
 cross apply (
 SELECT AssetTypeId,max([AssetID]) [LevelAssetIDMax],mAX([Level]) [LevelMax],string_agg(Val, ' / ') within group(order by Position) FormattedValue

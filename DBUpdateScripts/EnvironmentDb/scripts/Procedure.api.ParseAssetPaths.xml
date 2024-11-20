@@ -142,7 +142,7 @@ begin
 				insert into #tbldtl(AssetId,assetTypeId,LevelAssetIDMax,LevelMax,FormattedValue)
 				select	t.GroupID,t.AssetTypeID,max(t.ID),
 				max(t.[Level]),
-				string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder) FormattedValue
+				substring(string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder),1,4000) FormattedValue
 				from #tbl t
 				group by t.GroupID,t.AssetTypeID ;
 				
@@ -180,7 +180,7 @@ begin
 				select	t.GroupID,t.AssetTypeID,
 				max(t.ID),
 				max(t.[Level]),
-				string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder) FormattedValue
+				substring(string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder),1,4000) FormattedValue
 				from #tbl t
 				left join [dbo].[AssetPathSegmentDtl] s on (t.AssetId = s.AssetId and t.AssetTypeID = s.AssetTypeID )
 				where [dbo].[AssetPathSegmentDtl] is null
