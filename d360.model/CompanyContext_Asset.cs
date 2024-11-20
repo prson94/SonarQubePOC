@@ -698,6 +698,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						)LastAuditValue(Value)
 
 						insert into reporting.Global_Audit
+						(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
 						output inserted.ID, inserted.ActionObject, inserted.ActionObjectID into @inserted_audits
 						select Object, ObjectId, ObjectName, ResourceId, Date, Action, ActionObject, ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, Version
 						from #audits
