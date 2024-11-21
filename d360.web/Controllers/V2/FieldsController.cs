@@ -1905,6 +1905,8 @@ namespace d360.web.Controllers.V2
 			int id = 0;
 			string whereclause = "";
 
+			string errormessage = "";
+
 			if (model ==  null || model?.Position == null)
 			{
 				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage);
@@ -1938,6 +1940,22 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.AssetNotFoundForAssetType, model.TypeUid.ToString()));
+			}
+
+			List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+			if (list == null)
+			{
+				throw new NotFoundBusinessLayerException(ApiMessages.FieldTypeNotFound);
+			}
+
+
+			var dupes = model.Position.Where(i => !string.IsNullOrEmpty(i.ApiName)).GroupBy(i => i.ApiName).Where(i => i.Count() > 1).Select(i => new { APIName = i.Key, Count = i.Count() }).ToList();
+			if (dupes.Any())
+			{
+				errormessage = $"Duplicate API name: {string.Join(", ", dupes.Select(i => i.APIName.ToString()))}. API Name must be unique within a batch.";
+
+				throw new NotFoundBusinessLayerException(errormessage);
 			}
 
 			StringBuilder stringBuildertemp = new StringBuilder();
@@ -1982,25 +2000,18 @@ declare @duplicatecolumnorder nvarchar(max);
 declare @invalidcolumn nvarchar(max);
 
 
-
 drop table if exists #tempcolumnorder;
 create table #tempcolumnorder (Name nvarchar(250),ColumnOrder int)
 
 {stringBuildertemp.ToString()}
 
 drop table if exists #tempfieldtype;
-create table #tempfieldtype (Name nvarchar(250),ColumnOrder int)
+create table #tempfieldtype (FieldTypeID int, Name nvarchar(250),ColumnOrder int,FriendlyName nvarchar(1000))
 
 insert into #tempfieldtype
-select name,columnorder
+select ft.id,ft.name,ft.columnorder,ft.FriendlyName
 from FieldType ft
 {whereclause};
-
--- Missing column
-select @missingcolumn = string_agg(ft.name,',') 
-from #tempfieldtype ft 
-left join #tempcolumnorder tc on ft.Name = tc.Name
-where tc.Name is null;
 
 -- duplicate ids
 select @duplicatecolumnorder = string_agg(ColumnOrder,',')
@@ -2015,77 +2026,56 @@ from  #tempcolumnorder tc
 left join #tempfieldtype ft on ft.Name = tc.Name
 where ft.Name is null;
 
-select @missingcolumn missingcol,@duplicatecolumnorder dupcolord,@invalidcolumn invcol;
+if (@duplicatecolumnorder is null and  @invalidcolumn is null)
+	begin
+		drop table if exists #temppostfieldord;
+
+		select identity(int,1,1) Seqid,
+		ft.fieldtypeID,
+		ft.Name,
+		ft.ColumnOrder,
+		coalesce(tc.ColumnOrder,ft.ColumnOrder) resetorder,
+		case when tc.ColumnOrder is not null then 1 else 99 end ischange
+		into #temppostfieldord
+		from #tempfieldtype ft
+		left join #tempcolumnorder tc on ft.Name = tc.Name
+		order by resetorder,ischange,ft.FriendlyName;
+
+		update ft
+		set ft.ColumnOrder  = tft.Seqid - 1
+		from FieldType ft
+		inner join #temppostfieldord tft on ft.ID = tft.FieldTypeID
+		where ft.ColumnOrder  != tft.Seqid - 1;
+
+		select @duplicatecolumnorder dupcolord,@invalidcolumn invcol;
+	end
+else
+	begin
+		select @duplicatecolumnorder dupcolord,@invalidcolumn invcol;
+	end
 ";
 
 			var result = await Company.Database.Connection.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgsp);
 
-			string errormessage = "";
+			errormessage = "";
 
 			if (result != null)
 			{
-				if (result.missingcol != null)
-				{
-					errormessage += $"Missing Column Name should include in list ({result.missingcol}). ";
-				}
-				if (result.dupcolord != null)
-				{
-					errormessage += $"duplicate Column order should be unique in list ({result.dupcolord}). ";
-				}
-				if (result.invcol != null)
-				{
-					errormessage += $"Invalid Column Name should not include in list ({result.invcol}). ";
-				}
-				if (!string.IsNullOrWhiteSpace(errormessage))
-				{
-					throw new NotFoundBusinessLayerException(errormessage);
-				}
+					if (result.dupcolord != null)
+					{
+						errormessage += $"duplicate Column order should be unique in list ({result.dupcolord}). ";
+					}
+					if (result.invcol != null)
+					{
+						errormessage += $"Invalid Column Name should not include in list ({result.invcol}). ";
+					}
+					if (!string.IsNullOrWhiteSpace(errormessage))
+					{
+						throw new NotFoundBusinessLayerException(errormessage);
+					}
 			}
 
-
-			List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-
-			if (list != null)
-			{
-				string whereQuery = "";
-				int typeId = -1;
-
-				if (assetType != null)
-				{
-					whereQuery = " AssetTypeID = @typeId";
-					typeId = assetType.ID;
-				}
-				else if (intersectType != null)
-				{
-					whereQuery = " IntersectTypeID = @typeId";
-					typeId = intersectType.ID;
-				}
-				else if (actionType != null)
-				{
-					whereQuery = " IssueTypeID = @typeId";
-					typeId = actionType.ID;
-				}
-
-				var dbArgs = new DynamicParameters();
-				dbArgs.Add("typeId", typeId);
-				StringBuilder stringBuilder = new StringBuilder();
-				idx = 0;
-				foreach (var field in model.Position)
-				{
-					dbArgs.Add("ft_name_" + idx, field.ApiName);
-					dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
-					stringBuilder.AppendLine($@"update FieldType set ColumnOrder = @ft_value_{idx} where {whereQuery} and Name = @ft_name_{idx};");
-					idx++;
-				}
-
-				await Company.Database.Connection.ExecuteAsync(stringBuilder.ToString(), dbArgs);
-
-				return Ok(new ApiStatusResponse { Message = Fields.FieldsSequenceUpdated, Success = true, Uid = model.TypeUid ?? Guid.Empty});
-			}
-			else
-			{
-				throw new NotFoundBusinessLayerException(ApiMessages.FieldTypeNotFound);
-			}
+			return Ok(new ApiStatusResponse { Message = Fields.FieldsSequenceUpdated, Success = true, Uid = model.TypeUid ?? Guid.Empty });
 		}
 
 		/// <summary>
