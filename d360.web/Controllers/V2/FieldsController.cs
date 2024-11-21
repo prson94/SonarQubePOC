@@ -1867,218 +1867,6 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// Set a fields column order in desired sequence
-		/// </summary>
-		/// <remarks>
-		/// -  ** Description **
-		/// * TypeUid - AssetTypeUID/IssueTypeUID/IntersectTypeUID.
-		/// * Position - Two properties APIName and ColumnOrder.
-		/// * Example
-		///   {
-		///		"TypeUid": "00000000-0000-0000-0000-000000000000",
-		///		"Position": [
-		///		{
-		///			"ApiName": "Name",
-		///			"ColumnOrder": "0"
-		///		},
-		///		{
-		///			"ApiName": "Field2",
-		///			"ColumnOrder": "1"
-		///		}]
-		///		}		
-		///</remarks>
-		/// <param name="model">Contains the nessasary parameters to move a fields sort order></param>
-		/// <returns>Success or Failure</returns>
-		[
-			HttpPost,
-			Route("FieldSequence"),
-			SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
-			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			RequireAdminPermissions
-		]
-		public async Task<IHttpActionResult> PerformMoveAPI(FieldSequenceModel model)
-		{
-			SystemObjects type;
-			int id = 0;
-			string whereclause = "";
-
-			string errormessage = "";
-
-			if (model ==  null || model?.Position == null)
-			{
-				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage);
-			}
-
-			var assetType = Company.Filter<AssetType>(x => x.uid == model.TypeUid).SingleOrDefault();
-			var actionType = Company.Filter<IssueType>(x => x.uid == model.TypeUid).SingleOrDefault();
-			var intersectType = Company.Filter<IntersectType>(i => i.uid == model.TypeUid).SingleOrDefault();
-
-			if (assetType != null)
-			{
-				Enum.TryParse(assetType.Object, out type);
-				id = assetType.ID;
-
-				whereclause = $"where assettypeid = {id}";
-			}
-			else if (actionType != null)
-			{
-				type = SystemObjects.IssueType;
-				id = actionType.ID;
-
-				whereclause = $"where IssueTypeID = {id}";
-			}
-			else if (intersectType != null)
-			{
-				type = SystemObjects.IntersectType;
-				id = intersectType.ID;
-
-				whereclause = $"where IntersectTypeID = {id}";
-			}
-			else
-			{
-				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.AssetNotFoundForAssetType, model.TypeUid.ToString()));
-			}
-
-			List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-
-			if (list == null)
-			{
-				throw new NotFoundBusinessLayerException(ApiMessages.FieldTypeNotFound);
-			}
-
-
-			var dupes = model.Position.Where(i => !string.IsNullOrEmpty(i.ApiName)).GroupBy(i => i.ApiName).Where(i => i.Count() > 1).Select(i => new { APIName = i.Key, Count = i.Count() }).ToList();
-			if (dupes.Any())
-			{
-				errormessage = $"Duplicate API name: {string.Join(", ", dupes.Select(i => i.APIName.ToString()))}. API Name must be unique within a batch.";
-
-				throw new NotFoundBusinessLayerException(errormessage);
-			}
-
-			StringBuilder stringBuildertemp = new StringBuilder();
-			StringBuilder stringBuildererror = new StringBuilder();
-
-			int idx = 0;
-			var dbArgsp = new DynamicParameters();
-
-			foreach (var field in model.Position)
-			{
-				if (field != null)
-				{
-					int parsedValue;
-					if (!int.TryParse(field.ColumnOrder, out parsedValue))
-					{
-						stringBuildererror.Append(string.Format(ApiMessages.NumberValueMessage, field.ColumnOrder) + " ");
-					}
-
-					if (parsedValue < 0)
-					{
-						stringBuildererror.Append(string.Format(ApiMessages.MinLengthCheckGTEQZero, field.ColumnOrder));
-					}
-				}
-
-				if (stringBuildererror.Length == 0)
-				{
-					dbArgsp.Add("ft_name_" + idx, field.ApiName);
-					dbArgsp.Add("ft_value_" + idx, field.ColumnOrder);
-					stringBuildertemp.AppendLine($@"insert into #tempcolumnorder values (@ft_name_{idx},@ft_value_{idx});" + Environment.NewLine);
-					idx++;
-				}
-			}
-
-			if (stringBuildererror.Length != 0)
-			{
-				throw new NotFoundBusinessLayerException(stringBuildererror.ToString());
-			}
-
-			string sql = $@"
-declare @missingcolumn nvarchar(max);
-declare @duplicatecolumnorder nvarchar(max);
-declare @invalidcolumn nvarchar(max);
-
-
-drop table if exists #tempcolumnorder;
-create table #tempcolumnorder (Name nvarchar(250),ColumnOrder int)
-
-{stringBuildertemp.ToString()}
-
-drop table if exists #tempfieldtype;
-create table #tempfieldtype (FieldTypeID int, Name nvarchar(250),ColumnOrder int,FriendlyName nvarchar(1000))
-
-insert into #tempfieldtype
-select ft.id,ft.name,ft.columnorder,ft.FriendlyName
-from FieldType ft
-{whereclause};
-
--- duplicate ids
-select @duplicatecolumnorder = string_agg(ColumnOrder,',')
-from (select tc.ColumnOrder
-from #tempcolumnorder tc 
-group by tc.ColumnOrder
-having COUNT(1)>1) a;
-
--- invalid column
-select @invalidcolumn = string_agg(tc.name,',')
-from  #tempcolumnorder tc
-left join #tempfieldtype ft on ft.Name = tc.Name
-where ft.Name is null;
-
-if (@duplicatecolumnorder is null and  @invalidcolumn is null)
-	begin
-		drop table if exists #temppostfieldord;
-
-		select identity(int,1,1) Seqid,
-		ft.fieldtypeID,
-		ft.Name,
-		ft.ColumnOrder,
-		coalesce(tc.ColumnOrder,ft.ColumnOrder) resetorder,
-		case when tc.ColumnOrder is not null then 1 else 99 end ischange
-		into #temppostfieldord
-		from #tempfieldtype ft
-		left join #tempcolumnorder tc on ft.Name = tc.Name
-		order by resetorder,ischange,ft.FriendlyName;
-
-		update ft
-		set ft.ColumnOrder  = tft.Seqid - 1
-		from FieldType ft
-		inner join #temppostfieldord tft on ft.ID = tft.FieldTypeID
-		where ft.ColumnOrder  != tft.Seqid - 1;
-
-		select @duplicatecolumnorder dupcolord,@invalidcolumn invcol;
-	end
-else
-	begin
-		select @duplicatecolumnorder dupcolord,@invalidcolumn invcol;
-	end
-";
-
-			var result = await Company.Database.Connection.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgsp);
-
-			errormessage = "";
-
-			if (result != null)
-			{
-					if (result.dupcolord != null)
-					{
-						errormessage += $"duplicate Column order should be unique in list ({result.dupcolord}). ";
-					}
-					if (result.invcol != null)
-					{
-						errormessage += $"Invalid Column Name should not include in list ({result.invcol}). ";
-					}
-					if (!string.IsNullOrWhiteSpace(errormessage))
-					{
-						throw new NotFoundBusinessLayerException(errormessage);
-					}
-			}
-
-			return Ok(new ApiStatusResponse { Message = Fields.FieldsSequenceUpdated, Success = true, Uid = model.TypeUid ?? Guid.Empty });
-		}
-
-		/// <summary>
 		/// Move a fields column order in the given direction
 		/// </summary>
 		/// <param name="model">Contains the nessasary parameters to move a fields sort order></param>
@@ -2199,10 +1987,24 @@ else
 					dbArgs.Add("typeId", typeId);
 					StringBuilder stringBuilder = new StringBuilder();
 					int idx = 0;
+					bool incnumbuone = false;
+
 					foreach (var field in model.Position)
 					{
+						if (idx == 0 && field.ColumnOrder == "0")
+						{
+							incnumbuone = true;
+						}
 						dbArgs.Add("ft_name_" + idx, field.ApiName);
-						dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
+						if (incnumbuone)
+						{
+							int columnordint = int.Parse(field.ColumnOrder);
+							dbArgs.Add("ft_value_" + idx, (columnordint + 1).ToString());
+						}
+						else
+						{
+							dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
+						}
 						stringBuilder.AppendLine($@"update FieldType set ColumnOrder = @ft_value_{idx} where {whereQuery} and Name = @ft_name_{idx};");
 						idx++;
 					}
