@@ -2938,7 +2938,7 @@ where	T.ExecutionID = @ExecutionID
 		{
 			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
-				CompanyID = CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				BatchUids = assets,
 				BatchOperation = operation
 			});
