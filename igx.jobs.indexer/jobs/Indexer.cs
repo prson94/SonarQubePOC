@@ -53,7 +53,7 @@ namespace igx.jobs.indexer
 			{
 				try
 				{
-					var connectionString = Community.GetConnectionStringForTenantAsync(reindex.CompanyID);
+					var connectionString = Community.GetConnectionStringForTenant(reindex.CompanyID);
 					var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
 					using (var company = new SqlConnection(connectionString))
 					{

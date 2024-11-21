@@ -4,21 +4,13 @@ using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Newtonsoft.Json.Linq;
-using repositories.resources;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace repositories.azure
@@ -26,9 +18,66 @@ namespace repositories.azure
 	public class Workspaces : Repository, IWorkspaces
 	{
 		public int CompanyId { get; set; }
+		
 		public string WorkspaceId { get; set; }
 
 		public Workspaces(DapperConnectionProvider provider): base(provider) { }
+
+		public async Task<RepositoryResponse<bool>> AddMembersToGroupAsync(Guid groupUid, List<Guid> userUids)
+		{
+			RepositoryResponse<bool> response = null;
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				int? groupId = await connection.QueryFirstOrDefaultAsync<int>("select ID from [Group] where Uid = @groupUid", new { groupUid });
+				if (groupId == null)
+				{
+					response = new(404, Error.GroupUidNotExists);
+				}
+
+				List<int> userIds = null;
+				if (response == null)
+				{
+					userIds = (await connection.QueryAsync<int>(
+						"select ResourceID from reporting.GlobalResource where Uid in @userUids", 
+						new { userUids })).ToList();
+					if (userIds.Count != userUids.Count)
+					{
+						response = new(404, Error.InvalidUserUids);
+					}				
+				}
+
+				if (response == null)
+				{
+					var rowsUpdated = await connection.ExecuteAsync(@"
+declare @date datetime = getutcdate();
+declare @notPresentUserIds table(ID int);
+insert into @notPresentUserIds
+	select	t.[value] as ResourceID 
+	from	@userIds t
+			left join ResourceGroup s on s.GroupID = @groupId and s.ResourceID = t.[value]
+	where	s.GroupID is null;
+
+insert into ResourceGroup
+	select	@groupId as GroupID,
+			t.ID
+	from	@notPresentUserIds t;
+
+insert into reporting.Global_Audit
+	(Object, ObjectID, ObjectName, ResourceID, [Date], [Action], ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
+select	distinct 
+		'Group', g.ID, G.Name, @CurrentUserId, @date, 'Added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
+from	[Group] g 
+		inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
+		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
+where	g.id = @groupId;
+", new { groupId, userIds, CurrentUserId });
+					response = new(200);
+				}
+			}
+
+			return response;
+		}
 
 		public async Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadGroupsAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
@@ -141,7 +190,6 @@ from	[Group] G
 
 			return response;
 		}
-
 
 		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync()
 		{
@@ -257,7 +305,8 @@ from	[Group] g
 where	g.ID in @ids;
 
 delete ResourceGroup where GroupID in (select ID from @ids);
-delete Field where GroupID in (select ID from @ids);
+delete Field where ObjectType = 'Group' and ObjectID in (select ID from @ids);
+delete Asset where Object = 'Group' and ObjectID in in (select ID from @ids);
 delete [Group] where ID in @ids;";
 
 			bool response;
@@ -283,18 +332,19 @@ begin
 	update [Group] set SecondaryOwnerResourceID = null where ID = @groupId and SecondaryOwnerResourceID = @userId;
 	delete ResourceGroup where GroupID = @groupId and ResourceID = @userId;
 
-	insert into reporting.Global_Audit
+	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, [date], [Action], ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 		select	distinct 
 				'Group', 
 				g.ID, 
 				G.Name, 
 				@CurrentUserId, 
 				GETUTCDATE(), 
-				'Member removed', 
+				'Removed', 
 				'Group', 
 				g.ID, 
 				'Group', 
-				G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
+				G.Name,
+				'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
 				mv.[Version]
 		from	[Group] g 
 				inner join reporting.Global_Resource gr on gr.ResourceUD = @userId
@@ -357,467 +407,19 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 			mv.[Version]
 	from	reporting.Global_Resource res
 			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
-	where	res.uid in @uids;
+	where	res.ResourceID in (select ID from @ids);
+
+update	Asset
+set		State = @assetState
+where	Object = 'Resource'
+		and ObjectID in (select ID from @ids);
 
 update	reporting.Global_Resource
-set		State = state
-where	uid in @uids;", new { uids, state = (int)CompanyResourceState.Deleted }
+set		State = @state
+where	ResourceID in (select ID from @ids);", new { uids, state = (int)CompanyResourceState.Deleted, assetState = (int)State.Deleted }
 				);
 
 				response = new(recordsImpacted, 200, true);
-			}
-
-			return response;
-		}
-
-		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> UpdateGroupsAsync(List<UpdateGroupModel> groups)
-		{
-			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(400);
-			List<GroupResponseResult> groupResults = [];
-
-			List<FieldType> fieldTypes = [];
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				fieldTypes = (await connection.QueryAsync<FieldType>("select * from FieldType where GroupTypeID = 1 and IsEditable = 1")).ToList();
-			}
-
-			#region Data Tables
-
-			var groupTable = new DataTable();
-			var fieldTable = new DataTable();
-
-			groupTable.Columns.Add("Uid", typeof(Guid));
-			groupTable.Columns.Add("Name", typeof(string));
-			groupTable.Columns.Add("Description", typeof(string));
-			groupTable.Columns.Add("PrimaryOwnerUid", typeof(Guid));
-			groupTable.Columns.Add("SecondaryOwnerUid", typeof(Guid));
-			groupTable.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
-
-			fieldTable.Columns.Add("Uid", typeof(int));
-			fieldTable.Columns.Add("FieldName", typeof(string));
-			fieldTable.Columns.Add("FieldValue", typeof(string));
-			fieldTable.Columns.Add("BooleanValue", typeof(bool));
-			fieldTable.Columns.Add("DateValue", typeof(DateTime));
-			fieldTable.Columns.Add("DecimalValue", typeof(decimal));
-			fieldTable.Columns.Add("LookupValue", typeof(string));
-			fieldTable.Columns.Add("NumberValue", typeof(long));
-			fieldTable.Columns.Add("TextValue", typeof(string));
-			fieldTable.Columns.Add("FieldTypeID", typeof(int));
-
-			var tempFieldTable = fieldTable.Copy();
-
-			#endregion
-
-			// Resolve Lookup Values.
-			var lookupFieldNames = fieldTypes.Where(ft => ft.Type == "Lookup").Select(ft => ft.Name);
-			var rawListValues = (from gr in groups
-								 from f in gr.Fields
-								 from fv in f.Value.Split(',')
-								 where lookupFieldNames.Contains(f.Key)
-								 select new { Name = f.Key, RawValue = fv }
-								).Distinct().ToList();
-
-			var lookupTable = new DataTable();
-			lookupTable.Columns.Add("Name", typeof(string));
-			lookupTable.Columns.Add("Value", typeof(string));
-			rawListValues.ForEach(l =>
-			{
-				var lookupRow = lookupTable.NewRow();
-				lookupRow["Name"] = l.Name;
-				lookupRow["Value"] = l.RawValue;
-				lookupTable.Rows.Add(lookupRow);
-			});
-
-			List<dynamic> validatedLookupItems = null;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.OpenAsync();
-				using (SqlTransaction trans = connection.BeginTransaction())
-				{
-					await connection.ExecuteAsync("create table #LookupTable ( ObjectID int, Name nvarchar(250), [Value] nvarchar(max) );", transaction: trans);
-
-					var bulkLookupTableCopy = connection.CreateBulkCopy("#LookupTable", trans: trans);
-					bulkLookupTableCopy.ColumnMappings.Add("Name", "Name");
-					bulkLookupTableCopy.ColumnMappings.Add("Value", "Value");
-					await bulkLookupTableCopy.WriteToServerAsync(lookupTable);
-
-					validatedLookupItems = (await connection.QueryAsync<dynamic>(@"
-update	t
-set		t.ObjectID = s.[Value]
-from	#LookupTable t
-		inner join FieldType ft on ft.GroupTypeID = 1 and ft.Name = t.Name and ft.[Type] = 'Lookup'
-		inner join FieldLookupValue s on s.FieldTypeID = ft.ID and s.[Text] = t.[Value];
-
-select ObjectID, Name, [Value] from #LookupTable;
-", transaction: trans
-)).ToList();
-
-					trans.Commit();
-				}
-			}
-
-			// Load user and field data into data tables.
-			groups.ForEach(g => {
-				List<string> errors = [];
-
-				fieldTypes.ForEach(ft =>
-				{
-					bool continueCheck = true;
-
-					if (!g.Fields.ContainsKey(ft.Name) && ft.IsRequired)
-					{
-						continueCheck = false;
-						errors.Add($"{ft.Name} is required, but not present");
-					}
-
-					if (continueCheck && g.Fields.ContainsKey(ft.Name))
-					{
-						string fieldValue = (g.Fields[ft.Name] ?? "").Trim();
-
-						var fieldRow = tempFieldTable.NewRow();
-
-						fieldRow["Uid"] = g.Uid;
-						fieldRow["FieldName"] = ft.Name;
-						fieldRow["FieldTypeID"] = ft.ID;
-
-						if (ft.IsRequired && string.IsNullOrEmpty(fieldValue))
-						{
-							continueCheck = false;
-							errors.Add($"{ft.Name} is required, but is empty");
-						}
-
-						if (continueCheck && ft.Type == DataType.Boolean.ToString())
-						{
-							if (bool.TryParse(fieldValue, out bool bValue))
-							{
-								fieldRow["BooleanValue"] = bValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a boolean value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Date.ToString())
-						{
-							if (DateTime.TryParse(fieldValue, out DateTime dValue))
-							{
-								fieldRow["DateValue"] = dValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a date value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.DateTime.ToString())
-						{
-							if (!DateTime.TryParse(fieldValue, out DateTime dtValue))
-							{
-								fieldRow["DateValue"] = dtValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a datetime value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Decimal.ToString())
-						{
-							if (!decimal.TryParse(fieldValue, out decimal decValue))
-							{
-								fieldRow["DecimalValue"] = decValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a decimal value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Lookup.ToString())
-						{
-							if (ft.AllowMultipleValues)
-							{
-								var splitValues = fieldValue.Split(',').ToList();
-								var splitLookupItems = validatedLookupItems.Where(v => splitValues.Contains(v.Value) && v.Name == ft.Name).ToList();
-								if (splitLookupItems.Count == splitValues.Count)
-								{
-									fieldRow["LookupValue"] = string.Join(",", splitLookupItems.Select(v => ((int)v.ObjectID).ToString()));
-								}
-								else 
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not contain a valid lookup value");
-								}
-							}
-							else 
-							{
-								var validatedLookupItem = validatedLookupItems.FirstOrDefault(v => v.Value == fieldValue && v.Name == ft.Name);
-								if (validatedLookupItem == null)
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not contain a valid lookup value");
-								}
-								else 
-								{
-									fieldRow["LookupValue"] = validatedLookupItem.ObjectID;
-								}
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Number.ToString())
-						{
-							if (!long.TryParse(fieldValue, out long lValue))
-							{
-								fieldRow["NumberValue"] = lValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a number value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Text.ToString())
-						{
-							if (ft.MinimumLength.HasValue)
-							{
-								if (fieldValue.Length < ft.MinimumLength.Value)
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not meet minimum length requirements");
-								}
-							}
-
-							if (continueCheck && ft.MaximumLength.HasValue)
-							{
-								if (fieldValue.Length > ft.MaximumLength.Value)
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not meet maximum length requirements");
-								}
-							}
-
-							if (continueCheck && ft.Length.HasValue)
-							{
-								if (fieldValue.Length != ft.Length.Value)
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not meet length requirements");
-								}
-							}
-
-							if (continueCheck && !string.IsNullOrEmpty(ft.Pattern))
-							{
-								if (!Regex.Match(fieldValue, ft.Pattern).Success)
-								{
-									continueCheck = false;
-									errors.Add($"{ft.Name} does not meet pattern requirements");
-								}
-							}
-
-							if (!long.TryParse(fieldValue, out long lValue))
-							{
-								fieldRow["TextValue"] = fieldValue;
-							}
-							else
-							{
-								continueCheck = false;
-								errors.Add($"{ft.Name} does not contain a number value");
-							}
-						}
-
-						if (continueCheck && ft.Type == DataType.Html.ToString())
-						{
-							fieldRow["TextValue"] = fieldValue;
-						}
-
-						if (continueCheck)
-						{
-							tempFieldTable.Rows.Add(fieldRow);
-						}
-					}
-				});
-
-				if (errors.Count == 0)
-				{
-					var row = groupTable.NewRow();
-					row["Uid"] = g.Uid;
-					row["Name"] = g.Name;
-					row["Description"] = g.Description;
-					row["PrimaryOwnerUid"] = g.PrimaryOwnerUid;
-					row["SecondaryOwnerUid"] = g.SecondaryOwnerUid;
-					row["IsActiveDirectoryGroup"] = g.IsActiveDirectoryGroup;
-					groupTable.Rows.Add(row);
-
-					// Copy all fields as the group passed validation.
-					foreach (DataRow r in tempFieldTable.Rows)
-					{
-						fieldTable.Rows.Add(r);
-					}
-					// Clear the temp table for the next pass.
-					tempFieldTable.Rows.Clear();
-				}
-				else 
-				{
-					// Place in reject pile.
-					groupResults.Add(new GroupResponseResult { Message = string.Join("; ", errors), Success = false, uid = g.Uid });
-				}
-			});
-
-			SqlBulkCopy bulkCopy = null;
-			var UpdatedOn = DateTime.UtcNow;
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.OpenAsync();
-				using (SqlTransaction trans = connection.BeginTransaction())
-				{
-					// Create temp tables.
-					await connection.ExecuteAsync(@"
-create table #Groups (
-	[Uid] uniqueidentifier, Name nvarchar(500), Description nvarchar(max),
-	PrimaryOwnerUid uniqueidentifier, SecondaryOwnerUid uniqueidentifier, IsActiveDirectoryGroup bit,
-	GroupId int, PrimaryOwnerId int, SecondaryOwnerId int,
-	IsValid bit, Message nvarchar(2500), IsSuccess bit
-);
-
-create table #Fields (
-	[Uid] uniqueidentifier, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), 
-	BooleanValue bit, DateValue datetime, DecimalValue decimal(18,6), LookupValue nvarchar(max), NumberValue bigint, TextValue nvarchar(max)
-);", transaction: trans);
-
-					bulkCopy = connection.CreateBulkCopy("#Groups", 1000, 1200, trans);
-					bulkCopy.ColumnMappings.Add("Uid", "Uid");
-					bulkCopy.ColumnMappings.Add("Name", "Name");
-					bulkCopy.ColumnMappings.Add("Description", "Description");
-					bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
-					bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
-					bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
-					await bulkCopy.WriteToServerAsync(groupTable);
-
-					bulkCopy = connection.CreateBulkCopy("#Fields", 1000, 1200, trans);
-					bulkCopy.ColumnMappings.Add("Uid", "Uid");
-					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
-					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-					bulkCopy.ColumnMappings.Add("BooleanValue", "BooleanValue");
-					bulkCopy.ColumnMappings.Add("DateValue", "DateValue");
-					bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
-					bulkCopy.ColumnMappings.Add("LookupValue", "LookupValue");
-					bulkCopy.ColumnMappings.Add("NumberValue", "NumberValue");
-					bulkCopy.ColumnMappings.Add("TextValue", "TextValue");
-					await bulkCopy.WriteToServerAsync(fieldTable);
-
-					// Group info Validation
-					await connection.ExecuteAsync(@"
-update	t
-set		t.GroupId = g.ID
-from	#Groups t
-		left join [Group] g on g.Uid = t.Uid;
-
-update	t
-set		t.PrimaryOwnerId = u.ResourceID
-from	#Groups t
-		left join reporting.Global_Resource u on u.Uid = t.PrimaryOwnerUid;
-
-update	t
-set		t.SecondaryOwnerId = u.ResourceID
-from	#Groups t
-		left join reporting.Global_Resource u on u.Uid = t.SecondaryOwnerUid;
-
-update	#Groups 
-set		IsValid = 0,
-		Message = 'Group not found based on Uid provided; '
-where	GroupId is null;
-
-update	#Groups 
-set		IsValid = 0,
-		Message = coalesce(Message,'') + 'Primary Owner not found based on Uid provided; '
-where	PrimaryOwnerUid is not null 
-		and PrimaryOwnerId is null;
-
-update	#Groups 
-set		IsValid = 0,
-		Message = coalesce(Message,'') + 'Secondary Owner not found based on Uid provided; '
-where	SecondaryOwnerUid is not null 
-		and SecondaryOwnerId is null;
-
-update	#Groups 
-set		IsValid = 1
-where	IsValid is null;
-", new { UpdatedOn, CurrentUserId }, transaction: trans);
-
-					await connection.ExecuteAsync(@"
-insert into ResourceGroup (ResourceID, GroupID)
-	select	g.PrimaryOwnerId, g.GroupId 
-	from	#Groups g 
-			left join ResourceGroup e on e.GroupID = g.GroupId and e.ResourceID = g.PrimaryOwnerId
-	where	g.IsValid = 1 
-			and g.PrimaryOwnerId is not null
-			and e.ResourceID is null;
-
-insert into ResourceGroup (ResourceID, GroupID)
-	select	g.SecondaryOwnerId, g.GroupId 
-	from	#Groups g 
-			left join ResourceGroup e on e.GroupID = g.GroupId and e.ResourceID = g.SecondaryOwnerId
-	where	g.IsValid = 1 
-			and g.SecondaryOwnerId is not null
-			and e.ResourceID is null;
-
-update	t
-set		t.Name = s.Name,
-		t.Description = s.Description,
-		t.PrimaryOwnerResourceID = s.PrimaryOwnerId,
-		t.SecondaryOwnerResourceID = s.SecondaryOwnerId,
-		t.IsActiveDirectoryGroup = s.IsActiveDirectoryGroup,
-		t.UpdatedOn = @UpdatedOn,
-		t.UpdatedBy = @CurrentUserId
-from	[Group] t
-		inner join #Groups s on s.GroupId = t.ID and s.IsValid = 1;
-", new { UpdatedOn, CurrentUserId }, transaction: trans);
-
-					// Save fields for groups.	
-					await connection.ExecuteAsync(@"
-merge	Field as t
-using	(
-		select	g.GroupID,
-				f.* 
-		from	#Fields f
-				inner join #Groups g on g.Uid = f.Uid
-		) as s
-on		(t.GroupID = s.GroupID and t.FieldTypeID = s.FieldTypeID)
-when	matched then
-update	set
-		t.Value = iif(s.LookupValue is null, null, s.LookupValue),
-		t.FormattedValue = iif(s.LookupValue is null, coalesce(s.BooleanValue, s.DateValue, s.DecimalValue, s.NumberValue, s.TextValue), null),
-		t.UpdatedBy = @CurrentUserId,
-		t.UpdatedOn = @UpdatedOn
-when	not matched by target then
-insert	(GroupID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-values	(
-		s.GroupID, 
-		'Group', s.GroupID, 
-		s.FieldTypeID, 
-		iif(s.LookupValue is null, null, s.LookupValue), 
-		iif(s.LookupValue is null, coalesce(s.BooleanValue, s.DateValue, s.DecimalValue, s.NumberValue, s.TextValue), null), 
-		@CurrentUserId, @UpdatedOn);",
-						new { CurrentUserId, UpdatedOn }, transaction: trans
-					);
-
-					response.Data = (await connection.QueryAsync<GroupResponseResult>(@"
-select	Uid, 
-		coalesce(IsValid, cast(1 as bit)) as Success 
-from	#Groups;", transaction: trans)
-					).ToList();
-					response.IsSuccess = true;
-
-					trans.Commit();
-				}
 			}
 
 			return response;
@@ -911,14 +513,16 @@ end";
 			return response;
 		}
 
-		public async Task<RepositoryResponse<IEnumerable<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, int resourceId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<RepositoryResponse<IEnumerable<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
 			RepositoryResponse<IEnumerable<UserApiUpsertResult>> response = new(null, 200, true);
 
 			List<dynamic> fieldTypes = new();
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				fieldTypes = (await connection.QueryAsync<dynamic>("select ID, Name from FieldType where ResourceTypeID = 1")).ToList();
+				fieldTypes = (await connection.QueryAsync<dynamic>(
+					"select f.ID, f.Name from FieldType f inner join AssetType a on a.Object = 'ResourceType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
+					)).ToList();
 			}
 
 			#region Data Tables
@@ -937,6 +541,7 @@ end";
 			userTable.Columns.Add("IsAdministrator", typeof(bool));
 
 			fieldTable.Columns.Add("ItemNumber", typeof(int));
+			fieldTable.Columns.Add("ResourceID", typeof(int));
 			fieldTable.Columns.Add("FieldName", typeof(string));
 			fieldTable.Columns.Add("FieldValue", typeof(string));
 			fieldTable.Columns.Add("FieldTypeID", typeof(int));
@@ -980,6 +585,7 @@ end";
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
+				connection.Open();
 				using (SqlTransaction trans = connection.BeginTransaction())
 				{
 					// Create temp tables.
@@ -987,10 +593,11 @@ end";
 create table #Users (
 	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
 	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit,
+	AssetID bigint,
 	IsValid bit, IsSuccess bit);
 
 create table #Fields (
-	ItemNumber int, ResourceID int, 
+	ItemNumber int, ResourceID int, AssetID bigint,
 	FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)
 );", transaction: trans);
 
@@ -1030,8 +637,35 @@ update  set
 		T.MostRecentExecutionId = @executionId
 when	not matched by target then
 insert	(ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, State, Uid, UpdatedOn, MostRecentExecutionId)
-values	(S.ResourceID, S.FirstName, S.LastName, S.IsAdministrator, getutcdate(), S.State, Uid, @UpdatedOn, @executionId);
+values	(S.ResourceID, S.FirstName, S.LastName, S.Email, S.IsAdministrator, @UpdatedOn, S.State, S.Uid, @UpdatedOn, @executionId);
 ", new { UpdatedOn, executionId }, transaction: trans);
+
+					// Merge into Asset table
+					await connection.ExecuteAsync(@"
+declare @assetTypeId int;
+select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+
+merge	dbo.Asset as T
+using	(select * from #Users) as S
+on		(T.Object = 'Resource' and T.ObjectID = S.ResourceID)
+when	matched then
+update  set
+		T.UpdatedOn = @UpdatedOn,
+		T.UpdatedBy = @CurrentUserId
+when	not matched by target then
+insert	([uid], [AssetTypeID], [State], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+values	(S.Uid, @assetTypeId, 1, 'Resource', S.ResourceID, @UpdatedOn, @CurrentUserId, @UpdatedOn, @CurrentUserId);
+
+update	T
+set		T.AssetID = A.ID
+from	#Users T
+		inner join dbo.Asset A on A.Object = 'Resource' and A.ObjectID = T.ResourceID;
+
+update	T
+set		T.AssetID = A.AssetID
+from	#Fields T
+		inner join #Users A on A.ResourceID = T.ResourceID;
+", new { UpdatedOn, executionId, CurrentUserId }, transaction: trans);
 
 					// Validate lookup fields.
 					if (lookupFieldsPassedByValue)
@@ -1091,17 +725,23 @@ merge	Field as t
 using	(
 		select * from #Fields
 		) as s
-on		(t.ResourceID = s.ResourceID and t.FieldTypeID = s.FieldTypeID)
+on		(t.ObjectType = 'Resource' and t.ObjectID = s.ResourceID and t.FieldTypeID = s.FieldTypeID)
 when	matched then
 update	set
 		t.Value = iif(s.LookupValue is null, null, s.LookupValue),
 		t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
-		t.UpdatedBy = @resourceId,
+		t.UpdatedBy = @CurrentUserId,
 		t.UpdatedOn = @UpdatedOn
 when	not matched by target then
-insert	(ResourceID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-values	(s.ResourceID, 'Resource', s.ResourceID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue)), iif(s.LookupValue is null, s.FieldValue, null), @resourceId, @UpdatedOn)",
-						new { resourceId, UpdatedOn }, transaction: trans
+insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
+values	(s.AssetID, 'Resource', s.ResourceID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @CurrentUserId, @UpdatedOn);
+
+update	F
+set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+from	Field F
+		inner join #Fields t on t.AssetID = F.AssetId and t.FieldTypeID = F.FieldTypeID and F.[Value] is not null
+		inner join FieldType FT on FT.ID = f.FieldTypeID and FT.Type = 'Lookup'",
+						new { CurrentUserId, UpdatedOn }, transaction: trans
 					);
 
 					response.Data = (await connection.QueryAsync<UserApiUpsertResult>(@"
@@ -1109,7 +749,7 @@ select	ItemNumber,
 		uid, 
 		'' as Message, 
 		coalesce(IsSuccess, cast(1 as bit)) as Success 
-from	#User;", transaction: trans)
+from	#Users;", transaction: trans)
 					).ToList();
 
 					trans.Commit();

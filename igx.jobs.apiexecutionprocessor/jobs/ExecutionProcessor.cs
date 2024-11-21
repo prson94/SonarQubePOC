@@ -69,7 +69,7 @@ namespace igx.jobs.apiexecutionprocessor
 					CompanyPrefix = info.CompanyDomainPrefix,
 					IsAdministrator = false
 				};
-				var connectionString = Community.GetConnectionStringForTenantAsync(info.CompanyID);
+				var connectionString = Community.GetConnectionStringForTenant(info.CompanyID);
 				
 				using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = connectionString }))
 				{
@@ -288,7 +288,7 @@ namespace igx.jobs.apiexecutionprocessor
 									case ApiExecutionAction.UpsertUsers:
 										var workspace = new Workspaces(dapperProvider);
 										UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
-										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, dbExecutionItem.ResourceID, model.Users.ToList(), model.LookupFieldsPassedByValue);
+										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, model.Users.ToList(), model.LookupFieldsPassedByValue);
 										await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, userResponse.Data);
 										resultsSql = "";// @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
 										break;

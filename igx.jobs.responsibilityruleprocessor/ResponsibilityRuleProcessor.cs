@@ -66,7 +66,7 @@ namespace igx.jobs.responsibilityruleprocessor
 								IsAdministrator = true
 							};
 
-							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, true))
+							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
 							{
 								try
 								{

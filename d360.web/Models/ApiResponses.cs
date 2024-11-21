@@ -1,15 +1,12 @@
-﻿using System;
+﻿using d360.core.entities;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-using d360.core;
-using d360.core.entities;
-
-using Newtonsoft.Json.Linq;
-
 namespace d360.web.Models
 {
-    public class ApplicationSetting
+	public class ApplicationSetting
     {
         public string Name { get; set; }
 

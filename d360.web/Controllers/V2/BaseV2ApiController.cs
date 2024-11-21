@@ -1018,16 +1018,17 @@ namespace d360.web.Controllers.V2
 			return ResponseMessage(result);
 		}
 
-		internal IHttpActionResult sendRepositoryResponse<T>(RepositoryResponse<T> result) 
+		internal IHttpActionResult sendRepositoryOkResponse<T>(RepositoryResponse<T> result) 
 		{
 			if (result.IsSuccess)
 			{
-				var message = new ResponseMessageResult(Request.CreateResponse((HttpStatusCode)result.StatusCode));
-				message.Response.ReasonPhrase = result.Message;
-				message.Response.Content = new StringContent(
-					JsonConvert.SerializeObject(result.Data), encoding: Encoding.UTF8, "application/json"
-					);
-				return message;
+				return Ok(result.Data);
+				//var message = new ResponseMessageResult(Request.CreateResponse((HttpStatusCode)result.StatusCode));
+				//message.Response.ReasonPhrase = result.Message;
+				//message.Response.Content = new StringContent(
+				//	JsonConvert.SerializeObject(result.Data), encoding: Encoding.UTF8, "application/json"
+				//	);
+				//return message;
 			}
 			else
 			{

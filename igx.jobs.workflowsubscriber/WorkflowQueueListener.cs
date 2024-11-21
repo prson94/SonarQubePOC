@@ -59,8 +59,8 @@ namespace igx.jobs.workflowsubscriber
 					ResourceID = info.ResourceID,
 					IsAdministrator = true
 				};
-
-				using (var company = new CompanyContext(Cache, Queue, Mail, context, log, true))
+				string connectionString = Community.GetConnectionStringForTenant(companyId);
+				using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = connectionString }))
 				{
 					try
 					{

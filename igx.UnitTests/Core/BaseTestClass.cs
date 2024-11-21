@@ -217,6 +217,7 @@ namespace igx.UnitTests
             mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
 			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
+			mock.Setup(s => s.SecurityContext).Returns(GetSecurity());
 			return mock.Object;
         }
 
@@ -258,7 +259,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public ICachingProvider GetCache()
+		public ICachingProvider GetCache()
         {
             var mock = new Mock<ICachingProvider>();
 

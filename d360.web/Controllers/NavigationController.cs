@@ -1,13 +1,12 @@
-﻿using System;
+﻿using constants;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Xml.Linq;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -17,7 +16,6 @@ using d360.featureflags;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
-
 using Resources;
 
 namespace d360.web.Controllers
@@ -162,7 +160,7 @@ namespace d360.web.Controllers
 
 				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;")).First();
 
-			var showChildren = await GetCachedSettingValueById<bool>(Setting.ShowNavigationChildren);
+			var showChildren = await GetCachedSettingValueById<bool>(core.enums.Setting.ShowNavigationChildren);
 			var menuItems = await GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = SecurityContext.ResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
 
 			//if db Titles are still defaults ones than load translation for them
@@ -1167,7 +1165,7 @@ namespace d360.web.Controllers
 					responseModel.Object = SystemObjects.TaskType.ToString();
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 
-					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(core.enums.Setting.GovernanceRoleReferenceListUid);
 
 					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 				}
@@ -1260,7 +1258,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
-					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(core.enums.Setting.GovernanceRoleReferenceListUid);
 
 					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
 					{

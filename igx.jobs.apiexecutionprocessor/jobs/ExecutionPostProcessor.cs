@@ -53,7 +53,7 @@ from	reporting.Global_FieldAudit i_p
 
 			using (log.BeginScope(logProperties))
 			{
-				string companyConnectionString = await Community.GetConnectionStringForTenantAsync(request.CompanyID);
+				string companyConnectionString = Community.GetConnectionStringForTenant(request.CompanyID);
 				using (var companyConnection = new SqlConnection(companyConnectionString))
 				{
 					await companyConnection.OpenIfClosed();

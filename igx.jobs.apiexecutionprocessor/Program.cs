@@ -52,7 +52,7 @@ namespace igx.jobs.apiexecutionprocessor
 					{
 						return new ElasticSearchSource
 						{
-							CommunityConnectionString = context.Configuration[constants.Setting.Community]
+							CommunityConnectionString = context.Configuration[constants.Setting.ReadOnlyConnection]
 						};
 					});
 					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {

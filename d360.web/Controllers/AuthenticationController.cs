@@ -580,7 +580,7 @@ namespace d360.web.Controllers
 									}
 								};
 
-				await MembershipRepository.UpsertUsers(execution, users, true, true, false);
+				await Workspace.UpsertUsersAsync(execution.Id, users, true);
 			}
 		}
 

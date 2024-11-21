@@ -114,7 +114,7 @@ namespace d360.web
 
 				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.Community);
+						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.ReadOnlyConnection);
 					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
@@ -215,7 +215,7 @@ namespace d360.web
 					}
 					if (string.IsNullOrEmpty(connectionString))
 					{
-						connectionString = community.GetConnectionStringForTenantAsync(ctx.CompanyID);
+						connectionString = community.GetConnectionStringForTenant(ctx.CompanyID);
 						cache.SetItemInListByID(cacheKey, ctx.CompanyID, connectionString);
 					}
 
@@ -239,12 +239,17 @@ namespace d360.web
 				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
-				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>()
+				builder.RegisterType<Catalog>().As<ICatalog>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.RegisterType<Security>().As<ISecurity>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();

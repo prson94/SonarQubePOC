@@ -68,7 +68,7 @@ namespace d360.web
 
 			try
 			{
-				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
+				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.ReadOnlyConnection]))
 				{
 					cnn.Open();
 					var baseSql = @"
@@ -329,13 +329,12 @@ namespace d360.web
 
 			if (!string.IsNullOrEmpty(userName))
 			{
-				using (SqlConnection community = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
+				using (SqlConnection community = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.ReadWriteConnection]))
 				{
 					community.Open();
 					resource = await community.QuerySingleOrDefaultAsync<Resource>("select * from Resource where username = @userName", new { userName });
 					companyResource = await community.QuerySingleOrDefaultAsync<CompanyResource>("select * from CompanyResource where ResourceID = @resourceId and CompanyID = @companyId and [State] = @activeState"
 						, new { resourceId = resource.ID, companyId, activeState = CompanyResourceState.Active });
-
 
 					bool isValidResource = resource != null && companyResource != null && resource.ID > 0;
 

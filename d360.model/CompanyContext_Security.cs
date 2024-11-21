@@ -1753,7 +1753,7 @@ where id = @IntersectTypeID";
 						{
 							IsSubject = data?.IsSubject == 1 ? true : false;
 							IsBothSide = data?.IsBothSide == 1 ? true : false;
-							AssetID = data?.AssetID;
+							AssetID = (data.AssetID != null) ? data.AssetID : 0;
 						}
 
 						if (IsBothSide)

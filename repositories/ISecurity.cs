@@ -44,8 +44,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid);
 
-		Task<RepositoryResponse<int>> RemoveUsersAsync(List<Guid> resourceUids);
-
 		Task<RepositoryResponse<ReadSecurityPolicy>> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model);
 
 		Task<RepositoryResponse<ReadSecurityPolicyOverride>> UpdatePolicyOverrideAsync(Guid uid, CreateSecurityPolicyOverride model);

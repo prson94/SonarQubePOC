@@ -808,15 +808,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Group UID provided is not a valid group UID. Group does not exist..
-        /// </summary>
-        public static string GroupUidNotExists {
-            get {
-                return ResourceManager.GetString("GroupUidNotExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Help menu items have been successfully created..
         /// </summary>
         public static string HelpItemsAdded {
@@ -1317,15 +1308,6 @@ namespace Resources {
         public static string InvalidUser {
             get {
                 return ResourceManager.GetString("InvalidUser", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more user UIDs passed in are not a user..
-        /// </summary>
-        public static string InvalidUserUids {
-            get {
-                return ResourceManager.GetString("InvalidUserUids", resourceCulture);
             }
         }
         

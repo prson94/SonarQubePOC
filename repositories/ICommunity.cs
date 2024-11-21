@@ -26,7 +26,7 @@ namespace repositories
 		/// </summary>
 		string GenerateOpenIdRequestValue(int length = 5);
 
-		string GetConnectionStringForTenantAsync(int companyId);
+		string GetConnectionStringForTenant(int companyId);
 
 		Task<OpenIdRequest> GetOpenIdRequestAsync(string state);
 

@@ -39,9 +39,9 @@ builder.Services.AddScoped(c =>
 	var connectionString = "";
 	if (community != null)
 	{
-		connectionString = community.GetConnectionStringForTenantAsync(workspaceContext.GovernCompanyId).Result;
+		connectionString = community.GetConnectionStringForTenant(workspaceContext.GovernCompanyId);
 	}
-	return new DapperConnectionProvider { ConnectionString = connectionString };
+	return new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString };
 });
 
 builder.Services.AddScoped<ICatalog, Catalog>();

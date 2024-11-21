@@ -47,7 +47,7 @@ namespace igx.jobs.indexer
 
 					ApiExecutionAction action = ApiExecutionAction.Miscellaneous;
 
-					var connectionString = await Community.GetConnectionStringForTenantAsync(message.CompanyID);
+					var connectionString = Community.GetConnectionStringForTenant(message.CompanyID);
 					using (var company = new SqlConnection(connectionString))
 					{
 						await company.OpenAsync();

@@ -143,16 +143,18 @@ namespace repositories.azure
 				row["IsAdministrator"] = user.IsAdministrator;
 				row["State"] = user.State ?? CompanyResourceState.Active;
 
-				if (user.uid.HasValue)
+				if (!user.uid.HasValue)
 				{
-					row["uid"] = user.uid;
+					user.uid = Guid.NewGuid();
 				}
+				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
 			}
 
 			using (var connection = Connect())
 			{
+				connection.Open();
 				using (SqlTransaction trans = ((SqlConnection)connection).BeginTransaction())
 				{
 					try
@@ -284,7 +286,7 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 			return builder.ToString().ToLower();
 		}
 
-		public string GetConnectionStringForTenantAsync(int companyId)
+		public string GetConnectionStringForTenant(int companyId)
 		{
 			string connectionString = "";
 			var dbArgs = new DynamicParameters();

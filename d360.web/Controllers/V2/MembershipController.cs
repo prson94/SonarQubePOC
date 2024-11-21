@@ -35,7 +35,6 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using System.Text.RegularExpressions;
 
 namespace d360.web.Controllers.V2
@@ -48,28 +47,28 @@ namespace d360.web.Controllers.V2
 	]
 	public class MembershipController : BaseV2ApiController
 	{
-		private readonly IMediator mediator;
-		private readonly IMembershipRepository membershipRepository;
-		private readonly IAssetRepository assetRepository;
-		private readonly ISecurity Security;
+		private readonly IMediator Mediator;
+		private readonly IMembershipRepository Membership;
+		private readonly IAssetRepository Assets;
+		//private readonly ISecurity Security;
 		private IQueueSource Queue;
 		private IStorageProvider Storage;
 
 		public MembershipController(
 			ICoreComponentSet set,
-			IMembershipRepository membershipRepository,
-			IAssetRepository assetRepository,
+			IMembershipRepository membership,
+			IAssetRepository assets,
 			IQueueSource queue,
 			IStorageProvider storage,
-			ISecurity security,
+			//ISecurity security,
 			IMediator mediator) : base(set)
 		{
-			this.mediator = mediator;
-			this.membershipRepository = membershipRepository;
-			this.assetRepository = assetRepository;
+			Mediator = mediator;
+			Membership = membership;
+			Assets = assets;
 
 			Queue = queue;
-			Security = security;
+			//Security = security;
 			Storage = storage;
 		}
 
@@ -618,26 +617,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
 		{
-			var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
-
 			if (groupUid == Guid.Empty)
 			{
 				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
-			}
-
-			var validGroups = await membershipRepository.GetGroups(kvpGroupUid);
-			List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
-
-			if (validGroups.Total != 1)
-			{
-				return errorMessageNotFoundResponse(ApiMessages.GroupUidNotExists);
-			}
-
-			var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
-
-			if (duplicatedUsers.Count() != 0)
-			{
-				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
 			}
 
 			if (users.Count == 0)
@@ -645,51 +627,17 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(ApiMessages.NoUserUIDProvided);
 			}
 
-			var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
-
-			foreach (var user in users)
+			bool duplicates = users.GroupBy(u => u.Uid).Any(g => g.Count() > 1);
+			if (duplicates)
 			{
-				var userUid = new Dictionary<string, string> { { "Uid", user.Uid.ToString() } };
-				bool isValid = IsValidGuid(userUid, "uid");
-
-				if (!isValid)
-				{
-					return errorMessageNotFoundResponse(ActionApiMessages.UidNotValid);
-				}
-
-				var isUser = assetRepository.GetAssetByUID(user.Uid);
-
-				if (isUser == null || isUser.Object != "Resource")
-				{
-					return errorMessageNotFoundResponse(ApiMessages.InvalidUserUids);
-				}
-
-				var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
-
-				if (isMember != null)
-				{
-					return errorMessageArgumentResponse(string.Format(ApiMessages.UserAlreadyMemberOfGroup, user.Uid.ToString()));
-				}
-
-				resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
+				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
 			}
 
-			foreach (var m in resourceGroups)
-			{
-				Company.Add(m);
-				Company.Connection.Execute(@"insert into reporting.Global_Audit(Object,ObjectID,ObjectName,ResourceID,[Date],[Action],
-											ActionObject,ActionObjectID,ActionObjectTypeName,ActionObjectName,
-											ActionDescription,[Version])
-					select	distinct 
-							'Group', g.id, G.Name, @CurrentResourceID, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
-					from	[group] g 
-							inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
-							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-					where	g.id = @groupid", 
-					new { m.GroupID, m.ResourceID, CurrentResourceID = SecurityContext.ResourceID });
-			}
+			var response = await Workspace.AddMembersToGroupAsync(groupUid, users.Select(u => u.Uid).ToList());
 
-			return Ok(users);
+			return response.IsSuccess ? 
+				Ok(users) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -857,12 +805,11 @@ namespace d360.web.Controllers.V2
 		   Route("groups/{groupId:int}"),
 		   ApiExplorerSettings(IgnoreApi = true)
 	   ]
-		public async Task<HttpResponseMessage> GetGroupUid(int groupId)
+		public async Task<IHttpActionResult> GetGroupUid(int groupId)
 		{
-			string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
+			string sql = $"SELECT uid FROM [dbo].[Group] where ID =" + groupId;
 			var results = await Company.QueryAsync<dynamic>(sql, ApiTimeout);
-
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -888,38 +835,10 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetGroups()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
-
-			if (!IsValidGuid(queryParams, "uid"))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
-			}
-
-			if (!IsValidGuid(queryParams, "resourceuid"))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
-			}
-
-			var pageSize = "10";
-			var pageNum = "1";
-			var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
-			var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
-			pageSize = pageSizeParam.Value ?? pageSize;
-			pageNum = pageNumParam.Value ?? pageNum;
-
-			Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-			var isValid = isPageSizeAndNumValid(queryParams);
-
-			if (!string.IsNullOrEmpty(isValid))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
-			}
-
-			var results = await membershipRepository.GetGroups(queryParams);
-
-			results.PageNum = int.Parse(pageNum);
-			results.PageSize = int.Parse(pageSize);
-
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+			var results = await Workspace.ReadGroupsAsync(queryParams);
+			return results.IsSuccess ? 
+				Ok(results.Data) : 
+				errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
 		}
 
 		/// <summary>
@@ -934,73 +853,15 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
 			RequireAdminPermissions
-
 		]
 		public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
 		{
-			try
-			{
-				var group = (await Company.QueryAsync<Group>(@"
-					select G.* from [Group] G 
-					inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
-					where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
-
-				var userId = Company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
-
-				if (group?.PrimaryOwnerResourceID == userId)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.PrimayOwnerOfGroupNotDelete)).ConfigureAwait(false);
-				}
-
-				var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
-						Update G set  G.SecondaryOwnerResourceID = null
-						from[Group] AS G
-						inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
-						where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
-
-				Company.Query<int>(@"
-					insert into reporting.Global_Audit (Object,ObjectID,ObjectName,ResourceID,[date],[Action],ActionObject,ActionObjectID,
-					ActionObjectTypeName,ActionObjectName,ActionDescription,[Version])
-					select	distinct 
-							'Group', 
-							g.id, 
-							G.Name, 
-							@CurrentResourceID, 
-							GETUTCDATE(), 
-							'Member removed', 
-							'Group', 
-							g.ID, 
-							'Group', 
-							G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
-							mv.[Version]
-					from	[group] g 
-							inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
-							inner join reporting.Global_Resource gr on gr.uid = @resourceUid
-							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-					where	a.uid = @groupUid", 
-					new { groupUid, resourceUid, CurrentResourceID = SecurityContext.ResourceID }).FirstOrDefault();
-
-				if (res > 0)
-				{
-					return successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage); // deleted
-				}
-				else
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists)).ConfigureAwait(false);
-				}
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", "Membership.DeleteGroupMember => " }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var response = await Workspace.RemoveMemberFromGroupAsync(groupUid, resourceUid);
+			return response ?
+				successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage) :
+				errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists);
 		}
 
 		/// <summary>
@@ -1027,7 +888,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var uids = users.Select(u => u.Uid).ToList();
-			var tenantResponse = await Security.RemoveUsersAsync(uids);
+			var tenantResponse = await Workspace.RemoveUsersAsync(uids);
 			var communityResponse = new RepositoryResponse<int>(400, "");
 			if (tenantResponse.IsSuccess)
 			{
@@ -1075,7 +936,7 @@ namespace d360.web.Controllers.V2
 			HttpPost,
 			Route("users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1094,9 +955,8 @@ namespace d360.web.Controllers.V2
 			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 			
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
-			var tenantResponse = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true);
-
-			return Ok(tenantResponse);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+			return sendRepositoryOkResponse(tenantResponse);
 		}
 
 		/// <summary>
@@ -1122,7 +982,7 @@ namespace d360.web.Controllers.V2
 			HttpPost,
 			Route("batch/users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1195,7 +1055,7 @@ namespace d360.web.Controllers.V2
 			RequireAdminPermissions,
 			Route("users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1214,16 +1074,15 @@ namespace d360.web.Controllers.V2
 			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
-			var tenantResponse = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false);
-
-			return Ok(tenantResponse);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+			return sendRepositoryOkResponse(tenantResponse);
 		}
 
 		[
 			HttpPut,
 			Route("users/me/password-reset"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiModel), typeof(UserApiModel)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserApiModel)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse))
 		]
 		public async Task<IHttpActionResult> ResetUserPassword(UserApiModel user, bool lookupFieldsPassedByValue = false)
@@ -1276,7 +1135,7 @@ namespace d360.web.Controllers.V2
 			HttpPut,
 			Route("batch/users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1322,8 +1181,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFavorites()
 		{
-			var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID });
-			
+			var favorites = await Mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID });
 			return Ok(favorites);
 		}
 
@@ -1341,24 +1199,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetHomePage()
 		{
-			var prefix = "Membership.GetHomePage => ";
-
-			try
-			{
-				var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID, HomePageOnly = true });
-				var homePage = favorites.SingleOrDefault();
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-			}
+			var favorites = await Mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID, HomePageOnly = true });
+			var homePage = favorites.SingleOrDefault();
+			return Ok(homePage);
 		}
 
 		/// <summary>
@@ -1376,7 +1219,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> ClearFavorites()
 		{
-			await membershipRepository.ClearFavorites(SecurityContext.ResourceID);
+			await Membership.ClearFavorites(SecurityContext.ResourceID);
 			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
 		}
 
@@ -1395,7 +1238,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
 		{
-			await membershipRepository.DeleteFavorites(SecurityContext.ResourceID, favoriteIds);
+			await Membership.DeleteFavorites(SecurityContext.ResourceID, favoriteIds);
 			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
 		}
 
@@ -1419,14 +1262,14 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
 			}
 
-			await mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
 			{
 				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 				IsHomePage = false
 			});
 
-			var favoriteId = await mediator.Send(new GetFavoriteId.Argument
+			var favoriteId = await Mediator.Send(new GetFavoriteId.Argument
 			{
 				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
@@ -1455,14 +1298,14 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
 			}
 
-			await mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
 			{
 				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 				IsHomePage = true
 			});
 
-			var favoriteId = await mediator.Send(new GetFavoriteId.Argument
+			var favoriteId = await Mediator.Send(new GetFavoriteId.Argument
 			{
 				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
@@ -1491,11 +1334,9 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
+			var result = Workspace.RemoveGroupsAsync(groups.Select(g => g.Uid).ToList());
 
-			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
-			var result = membershipRepository.DeleteGroups(execution, groups);
-
-			return Ok(result);
+			return Ok(new ConfirmResponse { message = (groups.Count == 1 ? "Group removed." : "Groups removed."), title = "Success" });
 		}
 
 		private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
@@ -1534,7 +1375,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
+		public IHttpActionResult UpdateGroup(List<UpdateGroupModel> groups)
 		{
 			if (groups.Count < 1)
 			{
@@ -1549,9 +1390,9 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
-			var result = membershipRepository.UpdateGroups(execution, groups);
+			var result = Membership.UpdateGroups(execution, groups);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -1590,7 +1431,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PostGroups);
-			var result = membershipRepository.AddGroups(execution, groups);
+			var result = Membership.AddGroups(execution, groups);
 			Company.CreateOrUpdateTypeDisplayValuesAsync(1, SystemObjects.GroupType.ToString());
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -1763,7 +1604,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+					var assetType = Assets.GetAssetTypeByUID(model.assetTypeUid.Value);
 					AssetTypeID = assetType.ID; 
 					name = assetType.Name;
 					includeChildren = true;
@@ -1928,7 +1769,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
 			}
 
-			var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+			var assetType = Assets.GetAssetTypeByUID(assetTypeUid);
 
 			if (assetUid != null)
 			{

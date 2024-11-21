@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
+	[Table("OpenIdRequest", Schema = "dbo")]
     public class OpenIdRequest
     {
         [Key]
