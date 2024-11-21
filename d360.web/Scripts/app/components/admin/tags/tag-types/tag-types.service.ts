@@ -8,7 +8,6 @@ import { TagTypesViewModel } from "./tag-types.model";
 @Injectable({
     providedIn: 'root'
 })
-
 export class TagTypesService {
 
     private _connectionError: BehaviorSubject<boolean> = new BehaviorSubject(false);
@@ -32,6 +31,12 @@ export class TagTypesService {
                     return ([]);
                 }))
             ;
+    }
+
+    addNewTagType(tagType: string): Observable<TagTypesViewModel> {
+        return this
+                .http
+                .post<TagTypesViewModel>('/api/v2/tags/tagTypes', { 'Value': tagType });
     }
 
 }

@@ -501,6 +501,9 @@ namespace d360.web.Controllers
 				case "TAG":
 					res = Tag_AddFields();
 					break;
+				case "TAGTYPES":
+					res = TagType_AddFields();
+					break;
 				case "GROUP":
 					res = await Group_AddFields();
 					break;
@@ -1798,6 +1801,17 @@ order by Sort, title";
 			var list = new List<EditableField>
 			{
 				new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) }
+			};
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		[Route("TagType_AddFields")]
+		public JsonResult TagType_AddFields()
+		{
+			var list = new List<EditableField>
+			{
+				new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) }
 			};
 
 			return Json(list, JsonRequestBehavior.AllowGet);

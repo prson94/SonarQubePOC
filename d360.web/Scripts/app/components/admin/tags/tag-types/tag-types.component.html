@@ -5,7 +5,7 @@
             (onSearch)="filterTagTypes($event)"
             ></ig-search-field>
 
-        <button class="p-element ig-button ig-button-icon-only ml-1">
+        <button class="p-element ig-button ig-button-icon-only ml-1" (click)="openEditor()">
             <span aria-hidden="true" class="ig-button-icon fa  fa-plus"></span>
         </button>
     </div>
@@ -27,4 +27,15 @@
             
         </ul>
     </div>
+
+    <d3s-dynamic-editor
+       [objectType]="'TagTypes'"
+       [title]="'Tag Type'"
+       (saveClick)="saveTagType($event)"
+       [showAsModal]="true"
+       [modalTitle]="'Add Tag Type'"
+       [isModalVisible]="showEditor"
+       (closeClick)="closeEditor()">
+
+            </d3s-dynamic-editor>
 </div>

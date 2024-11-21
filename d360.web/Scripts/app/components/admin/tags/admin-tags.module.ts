@@ -32,7 +32,7 @@ import { TagsHeaderComponent } from './tags-headers/tags-header.component';
 import { TagTypesPanelComponent } from './tag-types/tag-types.component';
 import { SiteMenuModule } from '../../shared/menu/site-menu.module';
 import { RouterModule } from '@angular/router';
-import { AccordionModule } from 'primeng/accordion';
+
 
 @NgModule({
     imports: [
@@ -49,7 +49,6 @@ import { AccordionModule } from 'primeng/accordion';
         SharedModule,
         TableModule,
         TooltipModule,
-        AccordionModule,
 
         //d3s                
         CoreModule,                
