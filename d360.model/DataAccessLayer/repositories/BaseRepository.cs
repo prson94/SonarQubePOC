@@ -99,11 +99,17 @@ namespace d360.model.DataAccessLayer.repositories
 			}
 		}
 
-		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID)
+		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID, AssetTypeClass assettypeClass)
 		{
 			if (assetTypeID != null)
 			{
-				return $@"
+				if (assettypeClass == AssetTypeClass.BusinessAsset || assettypeClass == AssetTypeClass.TechnicalAsset)
+				{
+					return $@" left outer join AssetPathSegmentDtl F{fieldType.ID} on F{fieldType.ID}.AssetID = a.id and F{fieldType.ID}.AssetTypeId = {assetTypeID} ";
+				}
+				else
+				{
+					return $@"
 					outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
 							 FROM (
 							 SELECT *
@@ -120,6 +126,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 ) segmentPath
 						  )F{fieldType.ID}(FormattedValue)
 				";
+				}
 			}
 			return "";
 		}
@@ -847,11 +854,14 @@ namespace d360.model.DataAccessLayer.repositories
 					 var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
 					 if (pathDefinition?.AssetTypeUid != null)
 					 {
-						 int? assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault()?.ID;
-						 string pathJoinStatement = GetPathJoinSql(f, assetTypeID);
-						 if (!string.IsNullOrEmpty(pathJoinStatement))
+						 var assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault();
+						 if (assetTypeID != null)
 						 {
-							 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
+							 string pathJoinStatement = GetPathJoinSql(f, assetTypeID.ID, assetTypeID.Class);
+							 if (!string.IsNullOrEmpty(pathJoinStatement))
+							 {
+								 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
+							 }
 						 }
 					 }
 				 }

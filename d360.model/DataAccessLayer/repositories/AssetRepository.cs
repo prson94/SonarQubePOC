@@ -413,7 +413,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			List<string> tempTablelist = new List<string>();
 			bool addOwnerShipDataIntoTemp = false;
 			List<bool> addOwnerShipDataIntolist = new List<bool>();
-
+			bool IsBusTechAssetType = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -428,6 +428,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			assetTypeID = assetType.ID;
+
+			if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset)
+			{
+				IsBusTechAssetType = true;
+			}
 
 			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
@@ -1250,7 +1255,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment || IsBusTechAssetType))
 					{
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
@@ -1265,7 +1270,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && !IsBusTechAssetType && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -1296,7 +1301,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						}
 					}
 
-					if (simpleFilterFields.Any(x => x.IsPathSegment))
+					if (simpleFilterFields.Any(x => x.IsPathSegment) && !IsBusTechAssetType)
 					{
 						List<Guid> assetTypeUids = new List<Guid>();
 						foreach (var ft in simpleFilterFields.Where(x => x.IsPathSegment))
