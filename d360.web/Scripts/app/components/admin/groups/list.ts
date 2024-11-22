@@ -183,8 +183,8 @@ export class GroupList extends GroupBasePage implements OnDestroy {
 		
 		this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroupsLazy(this.getParams()))
             .subscribe((res) => {
-				var gridDefinition = res[0];
-				var groups = res[1];
+				let gridDefinition = res[0];
+				let groups = res[1];
 
                 if (this.columns.length === 0 && this.fields.length === 0) {
                     this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
@@ -195,7 +195,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
 				this.groupItems = groups.items;
 
 				if (this.selectedRow) {
-					var sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
+					let sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
 					if (sItem.length > 0) {
 						this.selectedRow = sItem[0];
 					}
@@ -210,7 +210,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
     }
 
 	getParams() {
-		var params = new V2ApiFilters();
+		let params = new V2ApiFilters();
 
 		if (this.simpleTextFilter) {
 			params._simpleFilter = this.isContainsSearchDefault ? `*${this.simpleTextFilter}*` : this.simpleTextFilter;
