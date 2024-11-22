@@ -1,4 +1,5 @@
-﻿using d360.core.enums;
+﻿using d360.core;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.extensions;
 using d360.extensions.info;
@@ -6,11 +7,13 @@ using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace igx.jobs.scheduledworkflowprocessor
 {
@@ -29,7 +32,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 
-		public ScheduledWorkflowProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		public ScheduledWorkflowProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -37,7 +40,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 		}
 
 		[Singleton(Mode = SingletonMode.Function)]
-		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
         {
 			try
 			{
@@ -45,9 +48,10 @@ namespace igx.jobs.scheduledworkflowprocessor
 				var rand = new Random();
 				Thread.Sleep(rand.Next(30) * 1000);
 
-				var companies = GetCompaniesByCurrentSlot();
-				
-				companies.ForEach(c =>
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot)).ToList();
+
+				tenants.ForEach(c =>
 				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },
@@ -66,25 +70,21 @@ namespace igx.jobs.scheduledworkflowprocessor
 								ResourceID = 0,
 								IsAdministrator = true
 							};
-
-							using (var community = new CommunityContext(ConnString, Cache, Queue, context))
+							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
 							{
-								using (var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true))
+								// Load all workflows of type schedule.
+								var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
+
+								foreach (var registration in scheduledWorkflows)
 								{
-									// Load all workflows of type schedule.
-									var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
-
-									foreach (var registration in scheduledWorkflows)
+									// If the registration applies fire of the workflow and break if not go to the next one.
+									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
 									{
-										// If the registration applies fire of the workflow and break if not go to the next one.
-										if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
-										{
-											break;
-										}
+										break;
 									}
-
-									company.ExecuteTimerSteps();
 								}
+
+								company.ExecuteTimerSteps();
 							}
 						}
 						catch (Exception ex)

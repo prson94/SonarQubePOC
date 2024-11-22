@@ -27,7 +27,7 @@ namespace d360.web.Controllers
         public async Task<ActionResult> App()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewData.Add("ResourceID", SecurityContext.ResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
 
             await this.AppendSettingsToViewData(httpContext: System.Web.HttpContext.Current);
@@ -35,7 +35,7 @@ namespace d360.web.Controllers
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["FluidTopicBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
-            var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+            var res = Company.GlobalReportingResources.Where(x => x.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
 
             if (res != null)
             {

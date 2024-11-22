@@ -473,7 +473,7 @@ from    api.ExecutionAsset T
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
 
-            if (!CurrentResourceIsAdmin && isInsert && (p & Permission.AddAsset) != 0)
+            if (!SecurityContext.IsAdministrator && isInsert && (p & Permission.AddAsset) != 0)
             {
                 PermissionInfo permission = GetTypePermissions(at.Object, at.ObjectID).Where(x => (x.ID & Permission.AddAsset) != 0).SingleOrDefault();
 
@@ -500,7 +500,7 @@ from    api.ExecutionAsset T
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
 
-            if (!CurrentResourceIsAdmin)
+            if (!SecurityContext.IsAdministrator)
             {
                 Connection.Execute($@"
 									declare @hasAssetTypePermission bit = 0
@@ -529,7 +529,7 @@ from    api.ExecutionAsset T
 										where   T.ExecutionID = @executionID
 												and T.AssetID is not null
 												and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
-									end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = CurrentResourceID }, commandTimeout: timeout);
+									end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
             }
         }
 
@@ -890,8 +890,8 @@ from    api.ExecutionAsset T
                 row["Position"] = f.Position;
                 row["IsArray"] = f.IsArray;
                 row["Value"] = f.Value;
-                row["CreatedBy"] = CurrentResourceID;
-                row["UpdatedBy"] = CurrentResourceID;
+                row["CreatedBy"] = SecurityContext.ResourceID;
+                row["UpdatedBy"] = SecurityContext.ResourceID;
 
                 table.Rows.Add(row);
             }
@@ -2364,7 +2364,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						Set Success =1,
 						Message ='Deleted Successfully'
 						Where ExecutionID=@executionID and Success is null; ",
-                            new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+                            new { executionID = execution.ExecutionID, resourceId = SecurityContext.ResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
 
                     results = Query<RelationshipTypeResult>(
                                         $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionDeletedRelationshipType where ExecutionID = @ExecutionID",
@@ -2792,7 +2792,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				select  IntersectTypeID,
 						SubjectAssetID, SubjectAssetTypeID, 
 						ObjectAssetID, ObjectAssetTypeID, 
-						{CurrentResourceID}, {CurrentResourceID}
+						{SecurityContext.ResourceID}, {SecurityContext.ResourceID}
 					from   #RelationshipsFinal;
 
 				update	R
@@ -3779,7 +3779,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																	T.Owner = coalesce(S.Owner,T.Owner)
 														when not matched by target then
 															insert  (uid,IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, ObjectAssetID, ObjectAssetTypeID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-															values  (isnull(S.Uid,newid()),@rtID, S.SubjectAssetID, S.SubjectAssetTypeID, S.ObjectAssetID, S.ObjectAssetTypeID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
+															values  (isnull(S.Uid,newid()),@rtID, S.SubjectAssetID, S.SubjectAssetTypeID, S.ObjectAssetID, S.ObjectAssetTypeID, 1, @ResourceID, getutcdate(), @ResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
 														output inserted.ID,inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 														update	T
@@ -3793,7 +3793,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 														drop table if exists #ObjectMergeTableResult;
 														",
-														new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
+														new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 									addMeasurement(metrics, "Intersect table merge", sw.ElapsedMilliseconds, ++step);
 
 									#endregion
@@ -4113,7 +4113,7 @@ from	#tempexecurelat e
 												Message = 'Added Successfully'
 										where   ExecutionID = @ExecutionID 
 												and Success is null; ",
-									new { execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
+									new { execution.ExecutionID, resourceId = SecurityContext.ResourceID, utcNow = DateTime.UtcNow, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
 
 								trans.Commit();
 
@@ -4310,7 +4310,7 @@ from	#tempexecurelat e
 									Set		Success =1,
 											Message ='Updated Successfully'
 									Where	ExecutionID=@executionID and Success is null; ",
-											new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout, transaction: trans);
+											new { executionID = execution.ExecutionID, resourceId = SecurityContext.ResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout, transaction: trans);
 
 									trans.Commit();
 
@@ -4538,7 +4538,7 @@ from	#tempexecurelat e
 
 						drop table if exists #tempmergefield;
 								";
-                Connection.Execute(inssql, new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                Connection.Execute(inssql, new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 				if (hasLookupFieldTypes)
 				{
@@ -4551,7 +4551,7 @@ from	#tempexecurelat e
 
 						drop table if exists #tempmergefield;";
 						// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
-					Connection.Execute(inssql,new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+					Connection.Execute(inssql,new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 				}
 
 			}
@@ -4581,7 +4581,7 @@ from	#tempexecurelat e
 					 and F.FieldTypeID = EF.FieldTypeID
 					 and EF.FieldValue is null 
 					 and EF.LookupValue is null;",
-                new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 
 				// update non-lookup fields
@@ -4601,7 +4601,7 @@ from	#tempexecurelat e
 					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, S.IntersectID);
 
 					drop table if exists #tempmergefield;";
-				Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+				Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
                 if (hasLookupFieldTypes)
                 {
@@ -4623,7 +4623,7 @@ from	#tempexecurelat e
 					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);
 
 					drop table if exists #tempmergefield;";
-					Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+					Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
                 }
             }
 
@@ -5123,14 +5123,14 @@ from	#tempexecurelat e
 														CREATE NONCLUSTERED INDEX IX_TempExecRelOwnerUid ON #TempExecRelOwner (Uid);
 
 														update	T
-														set		T.UpdatedBy = @CurrentResourceID,
+														set		T.UpdatedBy = @ResourceID,
 																T.UpdatedOn = getutcdate(),
 																T.Owner = coalesce(S.Owner, T.Owner)
 														from	[Intersect] T
 																inner join #TempExecRelOwner S on S.Uid = T.Uid
 														where	T.IntersectTypeID = @rtID;
 
-													", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
+													", new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 									addMeasurement(metrics, "Intersect table Update", sw.ElapsedMilliseconds, ++step);
 
 									#endregion
@@ -5226,7 +5226,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 					sw.Restart();
 
@@ -5582,7 +5582,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								and ea.Success is null and ea.assetid is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
 								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.ApplicationID = 'Internal/BulkLoad/Promote' and ea.IsNew = 1));"
-                      , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
+                      , new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
 
             if (sendWorkflowEvents)
             {
@@ -5590,7 +5590,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						select ea.[object], ea.[objectid], ft.id from api.ExecutionAsset ea
 						inner join FieldType ft on ft.AssetTypeID = @assetTypeId and ft.Type = @dataType
 						where ea.ExecutionID = @executionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber",
-                    new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout).ToList();
+                    new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout).ToList();
             }
             else
             {
@@ -5623,7 +5623,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								and a.id is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
 								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.ApplicationID = 'Internal/BulkLoad/Promote');"
-                      , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
+                      , new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
         }
 
 		public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
@@ -5876,10 +5876,10 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 											set P.Name = S.Name,
 											P.Inverse = S.Inverse,
 											P.Type = S.Type,
-											P.UpdatedBy = {CurrentResourceID}
+											P.UpdatedBy = {SecurityContext.ResourceID}
 										when not matched then
 											insert (Uid, Name, Inverse, Type, IsSystem,CreatedBy,UpdatedBy)
-											values (S.Uid, S.Name,S.Inverse, S.Type, 0, {CurrentResourceID},{CurrentResourceID})
+											values (S.Uid, S.Name,S.Inverse, S.Type, 0, {SecurityContext.ResourceID}, {SecurityContext.ResourceID})
 										output inserted.ID, inserted.Uid, S.ExecutionItemUid, $action into #mergeResultTable;
 
 										update EP
@@ -5948,7 +5948,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						endItemNumber += loopSize;
 					}
 
-					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 					Connection.Close();
 				}

@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 
 using Dapper;
 using d360.core;
+using constants;
 
 namespace d360.model.helpers
 {
@@ -163,7 +164,7 @@ namespace d360.model.helpers
 
 		public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping, List<FieldTypeRelationShipType> fieldtypeRelationshipType)
 		{
-			Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
+			Guid resourceTypeUid = Guid.Parse(CommonIdentifiers.ResourceTypeUid);
 
 			List<string> joins = new List<string>();
 			int idx = 1;
@@ -619,7 +620,7 @@ namespace d360.model.helpers
 				}
 				else
 				{
-					Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
+					Guid resourceTypeUid = Guid.Parse(CommonIdentifiers.ResourceTypeUid);
 					bool isResource = f.AssetTypeUid == resourceTypeUid;
 					if (isResource)
 					{

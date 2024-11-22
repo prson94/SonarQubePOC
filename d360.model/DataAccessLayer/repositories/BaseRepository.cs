@@ -20,12 +20,14 @@ namespace d360.model.DataAccessLayer.repositories
 	{
 		internal IFeatureFlagService FeatureFlags;
 		internal readonly ICompanyContext CompanyContext;
+		internal ISecurityContextProvider SecurityContext;
 		private const string RELATIONSHIP_DELIMITER = "|";
 		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occurred while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-		protected BaseRepository(ICompanyContext ctx, IFeatureFlagService featureFlags)
+		protected BaseRepository(ICompanyContext ctx, ISecurityContextProvider securityContext, IFeatureFlagService featureFlags)
 		{
 			CompanyContext = ctx;
+			SecurityContext = securityContext;
 			FeatureFlags = featureFlags;
 		}
 

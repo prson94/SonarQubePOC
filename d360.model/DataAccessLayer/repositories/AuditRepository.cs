@@ -16,14 +16,16 @@ namespace d360.model.DataAccessLayer.repositories
 	internal sealed class AuditRepository : DapperRepositoryBase<ICompanyDbConnectionProvider>, IAuditRepository
     {
 		internal IQueueSource QueueSource;
+		internal ISecurityContextProvider SecurityContext;
 
 		// this property is added only to support code which should be fixed in GOV-16916
 		private ICompanyContext CompanyContext { get; }
 
-        public AuditRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer, ICompanyContext companyContext, IQueueSource queueSource) : base(queryComposer)
+        public AuditRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer, ICompanyContext companyContext, ISecurityContextProvider securityContext, IQueueSource queueSource) : base(queryComposer)
         {
             CompanyContext = companyContext;
 			QueueSource = queueSource;
+			SecurityContext = securityContext;
         }
 
         private readonly Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string>
@@ -36,12 +38,12 @@ namespace d360.model.DataAccessLayer.repositories
         };
 		public async Task CreateHistoryJob(ObjectInfo info)
 		{
-			info.ResourceId = CompanyContext.CurrentResourceID;
+			info.ResourceId =  SecurityContext.ResourceID;
 			await QueueSource.CreateMessageAsync(constants.Queue.PostExecution,
 				new PostExecutionQueueMessage
 				{
 					Action = PostExecutionQueueMessageAction.History,
-					CompanyID = CompanyContext.CurrentCompanyID,
+					CompanyID = SecurityContext.CompanyID,
 					ExecutionId = -1,
 					ObjectInfo = info
 				});

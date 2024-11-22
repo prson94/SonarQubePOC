@@ -361,9 +361,9 @@ namespace d360.web.Controllers
 							ObjectID = nr.ObjectID,
 							ResponsibilityTypeID = existing.ID,
 							PermissionsBitMask = allPermissions,
-							CreatedBy = Company.CurrentResourceID,
+							CreatedBy = SecurityContext.ResourceID,
 							CreatedOn = DateTime.UtcNow,
-							UpdatedBy = Company.CurrentResourceID,
+							UpdatedBy = SecurityContext.ResourceID,
 							UpdatedOn = DateTime.UtcNow
 						});
 					}

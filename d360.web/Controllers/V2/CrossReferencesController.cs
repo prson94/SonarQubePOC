@@ -455,10 +455,10 @@ namespace d360.web.Controllers.V2
 
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = Company.CurrentCompanyID,
-				CompanyDomainPrefix = Company.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
-				ResourceID = Company.CurrentResourceID,
+				ResourceID = SecurityContext.ResourceID,
 				SendWorkflowEvents = false
 			};
 

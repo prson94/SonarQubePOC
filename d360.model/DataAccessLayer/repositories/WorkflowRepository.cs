@@ -12,6 +12,7 @@ using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.resources;
+using d360.extensions;
 using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
@@ -25,8 +26,8 @@ namespace d360.model.DataAccessLayer
 {
 	public class WorkflowRepository : BaseRepository, IWorkflowRepository
 	{
-		public WorkflowRepository(ICompanyContext CompanyContext, IFeatureFlagService ff)
-			: base(CompanyContext, ff)
+		public WorkflowRepository(ICompanyContext CompanyContext, ISecurityContextProvider securityContext, IFeatureFlagService ff)
+			: base(CompanyContext, securityContext, ff)
 		{
 		}
 
@@ -381,7 +382,7 @@ namespace d360.model.DataAccessLayer
 		public async Task<WorkflowItemStepStateAPIModel> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
 			var dbArgs = new DynamicParameters();
-			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
+			dbArgs.Add("resourceId",  SecurityContext.ResourceID);
 			dbArgs.Add("workflowItemStepUid", workflowItemStepUid);
 
 			var sql = @"
@@ -417,7 +418,7 @@ namespace d360.model.DataAccessLayer
 
 			var result = (await CompanyContext.QueryAsync<WorkflowItemStepStateAPIModel>(sql, dbArgs, ApiTimeout)).FirstOrDefault();						
 
-			return CheckAccessAndAssigneeStatus(result, CompanyContext.CurrentResourceID);
+			return CheckAccessAndAssigneeStatus(result, SecurityContext.ResourceID);
 		}
 
 		public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
@@ -1083,7 +1084,7 @@ namespace d360.model.DataAccessLayer
 			var selectColumns = new DynamicQuerySelects();
 			var hasActionFilter = false;
 
-			var currentResourceUid = CompanyContext.GlobalReportingResources.Where(x => x.ResourceID == CompanyContext.CurrentResourceID).First().Uid;
+			var currentResourceUid = CompanyContext.GlobalReportingResources.Where(x => x.ResourceID ==  SecurityContext.ResourceID).First().Uid;
 
 			dbArgs.Add("@currentResourceUid", currentResourceUid);
 

@@ -103,14 +103,14 @@ namespace d360.web.Controllers.V2
                         descendancy = (int)model.descendancy,
                         direction = "A",
                         assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
-                        resourceId = Company.CurrentResourceID,
+                        resourceId = SecurityContext.ResourceID,
                         currentHop = 0,
-                        hopCount = model.hopCount,
+                        model.hopCount,
                         intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationBadges = true,
-                        isAdmin = Company.CurrentResourceIsAdmin
-                    },
+                        isAdmin = SecurityContext.IsAdministrator
+					},
                     timeout: 60
                 );
 
@@ -158,15 +158,15 @@ namespace d360.web.Controllers.V2
                         descendancy = (int)hopModel.descendancy,
                         direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                         assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
-                        resourceId = Company.CurrentResourceID,
-                        currentHop = hopModel.currentHop, 
+                        resourceId = SecurityContext.ResourceID,
+                        hopModel.currentHop, 
                         hopCount = 1,
                         intersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationBadges = true,
-                        hierarchyKey = hopModel.hierarchyKey,
-                        isAdmin = Company.CurrentResourceIsAdmin
-                    },
+                        hopModel.hierarchyKey,
+                        isAdmin = SecurityContext.IsAdministrator
+					},
                     timeout: 60
                 );
 
@@ -201,14 +201,14 @@ namespace d360.web.Controllers.V2
                     new
                     {
                         assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
-                        resourceId = Company.CurrentResourceID,
+                        resourceId = SecurityContext.ResourceID,
                         hopCount = request.hopCount,
                         intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
 						includeHierarchyBadges = true,
 						includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = "A",
-                        isAdmin = Company.CurrentResourceIsAdmin
+                        isAdmin = SecurityContext.IsAdministrator
                     },
                     timeout: 60
                 );
@@ -265,17 +265,17 @@ namespace d360.web.Controllers.V2
                     new
                     {
                         assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
-                        resourceId = Company.CurrentResourceID,
+                        resourceId = SecurityContext.ResourceID,
                         hopCount = 1,
                         intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
-						includeHierarchyBadges = hopModel.includeHierarchyBadges,
+						hopModel.includeHierarchyBadges,
                         includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
                         hopModel.hierarchyKey,
                         hopModel.predicateUid,
-                        isAdmin = Company.CurrentResourceIsAdmin,
-						initialSaltValue = hopModel.initialSaltValue
+                        isAdmin = SecurityContext.IsAdministrator,
+						hopModel.initialSaltValue
 					},
                     timeout: 60
                 );

@@ -35,7 +35,7 @@ namespace d360.web
 
 				if (mappings == null)
 				{
-					using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
+					using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.ReadOnlyConnection]))
 					{
 						await cnn.OpenIfClosed();
 						mappings = (await cnn.QueryAsync<ClaimMapping>(@"exec GetClaimMappings @companyId, @urlPrefix", new { companyId, urlPrefix })).ToList();

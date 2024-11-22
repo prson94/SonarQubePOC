@@ -1,0 +1,24 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.dbo.StorageAccount-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[StorageAccount]') and type in (N'U'))
+begin
+	create table dbo.StorageAccount (
+	 [Region] char(2) not null constraint CK_StorageAccount_Region CHECK (Region in ('LO', 'AU', 'EU', 'SG', 'UK', 'US')),
+	 [EnvironmentLevel] int not null  constraint CK_StorageAccount_EnvironmentLevel CHECK (EnvironmentLevel in (0,1,2,3)),
+	 [Service] int not null  constraint CK_StorageAccount_Service CHECK (Service in (1,2)), -- 1 : Queue , 2 : Storage
+	 [ConnectionString] varchar(250) not null,
+	 constraint PK_StorageAccount primary key clustered (Region, EnvironmentLevel, [Service])
+	)
+end
+]]>
+  </sql>
+ </changeSet>
+</databaseChangeLog>

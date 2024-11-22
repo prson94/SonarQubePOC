@@ -29,7 +29,7 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 
-		public TagRepository(ICompanyContext company, IFeatureFlagService ff, IQueueSource queue) : base(company, ff)
+		public TagRepository(ICompanyContext company, ISecurityContextProvider securityContext, IFeatureFlagService ff, IQueueSource queue) : base(company, securityContext, ff)
 		{
 			Queue = queue;
 		}
@@ -228,7 +228,7 @@ where t.uid in @uids
 
 		public bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId)
 		{
-			bool hasPersmission = CompanyContext.CurrentResourceIsAdmin;
+			bool hasPersmission = SecurityContext.IsAdministrator;
 			
 			if (!hasPersmission)
 			{
@@ -236,7 +236,7 @@ where t.uid in @uids
 				
 				if (tag != null)
 				{
-					hasPersmission = tag.CreatedBy == CompanyContext.CurrentResourceID;
+					hasPersmission = tag.CreatedBy ==  SecurityContext.ResourceID;
 				}
 			}
 
@@ -256,7 +256,7 @@ where t.uid in @uids
 				return false;
 			}
 			
-			if (CompanyContext.CurrentResourceIsAdmin || CompanyContext.CurrentResourceID == tag.CreatedBy)
+			if (SecurityContext.IsAdministrator ||  SecurityContext.ResourceID == tag.CreatedBy)
 			{
 				return true;
 			}

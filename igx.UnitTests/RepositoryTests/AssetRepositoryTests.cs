@@ -26,16 +26,17 @@ namespace igx.UnitTests.RepositoryTests
 		public void GetAssetType()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
-
-			List<string> mustContain = new List<string>();
-			mustContain.Add("A.UseAsTransformation=@useAsTransformation");
-			mustContain.Add("A.AutoDisplayParent=@autoDisplayParent");
-			mustContain.Add("A.Object=@obj");
-			mustContain.Add("A.ObjectID=@objId");
-			mustContain.Add("as HasDashboards");
-			mustContain.Add("select Level, Name, Description");
-			mustContain.Add("A.uid=@assetTypeUid");
+			
+			List<string> mustContain = new List<string>
+			{
+				"A.UseAsTransformation=@useAsTransformation",
+				"A.AutoDisplayParent=@autoDisplayParent",
+				"A.Object=@obj",
+				"A.ObjectID=@objId",
+				"as HasDashboards",
+				"select Level, Name, Description",
+				"A.uid=@assetTypeUid"
+			};
 
 			mockCompanyContext.Setup(x => x.QueryAsync(It.IsAny<string>(),
 				It.IsAny<Func<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>>(),
@@ -63,16 +64,18 @@ namespace igx.UnitTests.RepositoryTests
 				}
 				);
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
-			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
-			pars.Add(new KeyValuePair<string, string>("useastransformation", "true"));
-			pars.Add(new KeyValuePair<string, string>("hierarchical", "true"));
-			pars.Add(new KeyValuePair<string, string>("autodisplayparent", "true"));
-			pars.Add(new KeyValuePair<string, string>("includedashboardflag", "true"));
-			pars.Add(new KeyValuePair<string, string>("includelevels", "true"));
-			pars.Add(new KeyValuePair<string, string>("obj", "Artifact"));
-			pars.Add(new KeyValuePair<string, string>("objid", "10"));
+			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("useastransformation", "true"),
+				new KeyValuePair<string, string>("hierarchical", "true"),
+				new KeyValuePair<string, string>("autodisplayparent", "true"),
+				new KeyValuePair<string, string>("includedashboardflag", "true"),
+				new KeyValuePair<string, string>("includelevels", "true"),
+				new KeyValuePair<string, string>("obj", "Artifact"),
+				new KeyValuePair<string, string>("objid", "10")
+			};
 
 			var result = assetRepository.GetAssetType(pars, AssetTypeClass.BusinessAsset, Guid.Parse("cee303f2-9c99-46b4-9ec3-116634049d17"));
 
@@ -83,9 +86,8 @@ namespace igx.UnitTests.RepositoryTests
 		public void GetAssetTypeExceptions()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
 			pars.Add(new KeyValuePair<string, string>("useastransformation", "invalid_bool_value"));
@@ -119,7 +121,6 @@ namespace igx.UnitTests.RepositoryTests
 		public void GetAssets()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 			mockCompanyContext.Setup(x => x.GetEscapedFilterString(It.IsAny<string>(), It.IsAny<bool>())).Returns((string value, bool bit) => value);
 			mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
 				.Returns((string sql, object param, int timeout) =>
@@ -235,7 +236,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 			var assetType = new AssetType() { ID = 1, Object = SystemObjects.ArtifactType.ToString() };
 
@@ -269,7 +270,6 @@ namespace igx.UnitTests.RepositoryTests
 		public async void GetAssetsPath()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 
 			mockCompanyContext.Setup(x => x.QueryFirstOrDefaultAsync<int>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
 				.Returns((string sql, object param, int timeout) =>
@@ -296,7 +296,7 @@ namespace igx.UnitTests.RepositoryTests
 
 
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
 			pars.Add(new KeyValuePair<string, string>("_pagesize", "30"));
@@ -311,7 +311,6 @@ namespace igx.UnitTests.RepositoryTests
 		public void GetAssetsExcel()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 
 			mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
 				.Returns((string sql, object param, int timeout) =>
@@ -376,7 +375,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
@@ -390,7 +389,6 @@ namespace igx.UnitTests.RepositoryTests
 		public async void GetHierarchyExcel()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 			mockCompanyContext.Setup(x => x.GetEscapedFilterString(It.IsAny<string>(), It.IsAny<bool>())).Returns((string value, bool bit) => value);
 
 			mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
@@ -489,7 +487,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
@@ -505,7 +503,6 @@ namespace igx.UnitTests.RepositoryTests
 		public async void GetAssetsByPath()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
-			mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
 
 			mockCompanyContext.Setup(x => x.QueryAsync<int>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
 					  .Returns((string sql, object param, int timeout) =>
@@ -548,7 +545,7 @@ namespace igx.UnitTests.RepositoryTests
 						 res.Add(new AssetsByPathItemApiViewModel() { });
 						 return Task.FromResult(res as IEnumerable<AssetsByPathItemApiViewModel>);
 					 });
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();

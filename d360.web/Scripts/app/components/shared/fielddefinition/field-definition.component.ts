@@ -38,7 +38,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
 
-	@Input() typeName: string;
+	@Input() typeName: string;	// useless property.
 
 	@Input() showAddButton: boolean = true;
 	@Input() showEditButton: boolean = true;
@@ -188,7 +188,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					if (res.length > 0) {
 						var type = res[0];
 						var relationshipName = type.Subject.Name + ' [' + type.Predicate.Name + '] ' + type.Object.Name;
-						this.typeName = type.Subject.Name + ' ' + type.Predicate.Name + ' ' + type.Object.Name;
 						this.title = $localize`Field Definition for ${relationshipName}`;
 					}
 				});
@@ -422,6 +421,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
 		}
 	}
+
 	getDisplayTypeName(name: string): string {
 		switch (name) {
 			case "Boolean": return $localize`True/False`;
@@ -452,7 +452,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 
-
 	add(): void {
 		this.selectedRow = null;
 		this.isEditing = true;
@@ -475,6 +474,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.onFieldsChanged.emit();
 	}
 	deleteInProgress: boolean = false;
+
 	deleteFieldType() {
 		this.deleteInProgress = true;
 		this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
@@ -594,7 +594,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			}
 		);
 	}
-
 
 	edit(field: FieldDisplayModel): void {
 		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);
@@ -832,6 +831,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 		return true;
 	}
+
 	hasRequired(field: FieldDisplayModel) {
 		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
@@ -839,6 +839,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 		return true;
 	}
+
 	hasDisplayInColumn(field: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
@@ -849,6 +850,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 		return true;
 	}
+
 	hasShowIfEmpty(field: FieldDisplayModel) {
 		const excludeTypes: string[] = ['Path', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
@@ -856,6 +858,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 		return true;
 	}
+
 	hasIsListable(field: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;

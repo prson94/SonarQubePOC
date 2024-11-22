@@ -1,4 +1,7 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,24 +9,78 @@ namespace repositories
 {
 	public interface ICommunity
 	{
-		Task<bool> ChangePasswordAsync(int resourceId, string newPassword);
+		Task<RepositoryResponse<bool>> ChangePasswordAsync(int resourceId, string newPassword);
 
-		Task<Group> CreateGroupInTenantAsync(int companyId, Group group);
+		Task<RepositoryResponse<int>> CreateClaimAsync(ClaimMapping claim);
 
 		Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request);
+
+		Task<RepositoryResponse<int>> CreateUserAsync(Resource user);
+
+		Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users);
 
 		/// <summary>
 		/// Used to generate a state or nonce value.
 		/// </summary>
 		string GenerateOpenIdRequestValue(int length = 5);
 
-		Task<string> GetConnectionStringForTenantAsync(int companyId);
-
-		Task<IEnumerable<Group>> GetGroupsByTenantAsync(int companyId);
+		string GetConnectionStringForTenant(int companyId);
 
 		Task<OpenIdRequest> GetOpenIdRequestAsync(string state);
 
+		Task<RepositoryResponse<ClaimMapping>> ReadClaimMappingById(int id);
+
+		Task<OidcAuthenticationSettings> ReadIdpOidcSettingsByTenantPrefix(string prefix);
+
+		Task<SamlAuthenticationSettings> ReadIdpSamlSettingsByTenantPrefix(string prefix);
+
+		Task<RepositoryResponse<AuthenticationType>> ReadAuthenticationTypeByTenantUrlAsync(int companyId, string urlPrefix);
+
+		Task<RepositoryResponse<IEnumerable<ClaimMapping>>> ReadClaimsByTenantAsync(int clientId, int companyId, int domainSettingId);
+
+		Task<RepositoryResponse<IEnumerable<CompanyDomainSetting>>> ReadDomainSettingsByTenantAsync(int companyId);
+
+		Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null);
+
+		Task<bool> ReadShouldUserBeAutoAdminByGroupMembershipAsync(int companyId, int domainSettingId, List<string> groups);
+
+		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null);
+
+		Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId);
+
+		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
+
+		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email);
+
+		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId);
+
+		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId);
+
+		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username);
+
+		Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null);
+
+		Task<ClientUserModel> ReadUserFeatureFlagContext(int companyId, int userId);
+
+		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
+
 		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
+
+		Task<RepositoryResponse<int>> RemoveUsersFromTenantAsync(int companyId, List<Guid> resourceUids);
+
+		Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword);
+
+		Task<bool> UpdateClaimAsync(int claimId, ClaimAction action, string path, bool isArray);
+
+		Task<RepositoryResponse<Resource>> UpdateUserApiCredentialsAsync(int userId);
+
+		Task<RepositoryResponse<int>> UpdateUserAsync(Resource user);
+
+		Task<RepositoryResponse<bool>> UpdateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
 	}

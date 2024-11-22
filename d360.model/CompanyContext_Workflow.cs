@@ -827,7 +827,7 @@ namespace d360.model
 				throw new ArgumentException($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
 			}
 
-			string prefix = Community.GetPrimaryUrlPrefix();
+			string prefix = SecurityContext.PrimaryCompanyPrefix;
 
 			HttpRequestMessage request = new HttpRequestMessage();
 
@@ -942,7 +942,7 @@ namespace d360.model
 				throw new ArgumentException("INVALID EMAIL CONFIGURATION FOR SPECIFIED STEP.");
 			}
 
-			string prefix = Community.GetPrimaryUrlPrefix();
+			string prefix = SecurityContext.PrimaryCompanyPrefix;
 
 			string urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
 
@@ -1185,9 +1185,9 @@ namespace d360.model
 			{
 				events.Add(new EventInfo
 				{
-					CompanyID = CurrentCompanyID,
-					DomainPrefix = CurrentCompanyDomain,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					DomainPrefix = SecurityContext.CompanyPrefix,
+					ResourceID = SecurityContext.ResourceID,
 					WorkflowItemID = itemID,
 					VersionStepTransitionID = transition.ID,
 					Action = ChangeType.Add, // irrelevant
@@ -1259,7 +1259,7 @@ namespace d360.model
 					objectType = objectType.ToString(),
 					IssueID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
 					IntersectID = objectType == SystemObjects.Intersect.ToString() ? objectId : (long?)null,
-					updatedBy = CurrentResourceID
+					updatedBy = SecurityContext.ResourceID
 				};
 
 				await Database.Connection.ExecuteAsync(@"
@@ -1352,7 +1352,7 @@ namespace d360.model
 						issueId = field.IssueID,
 						intersectId = field.IntersectID,
 						assetId = field.AssetID,
-						updatedBy = CurrentResourceID
+						updatedBy = SecurityContext.ResourceID
 					});
 				}
 				else //update
@@ -1376,7 +1376,7 @@ namespace d360.model
 					, new
 					{
 						value = updateValue,
-						updatedBy = CurrentResourceID,
+						updatedBy = SecurityContext.ResourceID,
 						fieldTypeID = field.FieldTypeID,
 						issueId = field.IssueID,
 						intersectId = field.IntersectID,
@@ -1525,7 +1525,7 @@ namespace d360.model
 
 			if (asset != null)
 			{
-				await Database.Connection.ExecuteAsync("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });
+				await Database.Connection.ExecuteAsync("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = SecurityContext.ResourceID, id = asset.ID });
 			}
 
 			//update asset table to trigger audit                    
@@ -1538,7 +1538,7 @@ namespace d360.model
 						 ParentObject = objectInfo.Object.ToString(),
 						 date = DateTime.UtcNow,
 						 ParentObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
-						 ResourceID = CurrentResourceID,
+						 ResourceID = SecurityContext.ResourceID,
 						 op = "Updated"
 					 });
 
@@ -1757,9 +1757,9 @@ namespace d360.model
 			{
 				AssetID = obj.AssetID,
 				AssetTypeID = obj.AssetTypeID ?? 0,
-				CreatedBy = CurrentResourceID,
+				CreatedBy = SecurityContext.ResourceID,
 				CreatedOn = DateTime.UtcNow,
-				UpdatedBy = CurrentResourceID,
+				UpdatedBy = SecurityContext.ResourceID,
 				UpdatedOn = DateTime.UtcNow,
 				IssueTypeID = orgIssue.IssueTypeID,
 				CommentID = orgIssue.CommentID,
@@ -1775,7 +1775,7 @@ namespace d360.model
 
 			foreach (Field field in fields)
 			{
-				Fields.Add(new Field { Value = field.Value, IssueID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = CurrentResourceID });
+				Fields.Add(new Field { Value = field.Value, IssueID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = SecurityContext.ResourceID });
 			}
 
 			SaveChanges();
@@ -1853,7 +1853,7 @@ namespace d360.model
 				}
 
 				reassigned.Add(new XAttribute("reassignType", "Resource"));
-				reassigned.Add(new XAttribute("byResourceId", CurrentResourceID.ToString()));
+				reassigned.Add(new XAttribute("byResourceId", SecurityContext.ResourceID.ToString()));
 				reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
 
@@ -1938,11 +1938,11 @@ namespace d360.model
 					{
 						ItemStepID = itemStep.ID,
 						ItemID = itemStep.ItemID,
-						CreatedBy = CurrentResourceID,
+						CreatedBy = SecurityContext.ResourceID,
 						CreatedOn = DateTime.UtcNow,
 						ResourceObject = "Resource",
 						ResourceObjectID = resource.ResourceID,
-						UpdatedBy = CurrentResourceID,
+						UpdatedBy = SecurityContext.ResourceID,
 						UpdatedOn = DateTime.UtcNow
 					};
 
@@ -2030,7 +2030,7 @@ namespace d360.model
 				return true;
 			}
 
-			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
+			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = SecurityContext.ResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = SecurityContext.ResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
 
 			WorkflowItemSteps.Add(firstItemStep);
 			SaveChanges();
@@ -2311,7 +2311,7 @@ namespace d360.model
 				WorkflowItemStep toItemStep = new WorkflowItemStep
 				{
 					StartedOn = DateTime.UtcNow,
-					StartedBy = CurrentResourceID,
+					StartedBy = SecurityContext.ResourceID,
 					StepID = transition.ToVersionStepID,
 					Fields = "<fields/>",
 					Settings = "<settings/>",
@@ -2348,9 +2348,9 @@ namespace d360.model
 
 				EventInfo startEvent = new EventInfo
 				{
-					CompanyID = CurrentCompanyID,
-					DomainPrefix = CurrentCompanyDomain,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					DomainPrefix = SecurityContext.CompanyPrefix,
+					ResourceID = SecurityContext.ResourceID,
 					WorkflowItemID = itemID,
 					ItemStepID = toItemStepID,
 					Action = ChangeType.Add, // irrelevant
@@ -2498,12 +2498,12 @@ namespace d360.model
 							if (issue.CompletedOn == null && issue.CompletedBy == null)
 							{
 								issue.CompletedOn = DateTime.UtcNow;
-								issue.CompletedBy = CurrentResourceID;
+								issue.CompletedBy = SecurityContext.ResourceID;
 							}
 						}
 					}
 
-					item.CompletedBy = CurrentResourceID;
+					item.CompletedBy = SecurityContext.ResourceID;
 					item.CompletedOn = DateTime.UtcNow;
 					SaveChanges();
 
@@ -2580,9 +2580,9 @@ namespace d360.model
 
 				events.Add(new EventInfo
 				{
-					CompanyID = CurrentCompanyID,
-					DomainPrefix = CurrentCompanyDomain,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					DomainPrefix = SecurityContext.CompanyPrefix,
+					ResourceID = SecurityContext.ResourceID,
 					WorkflowItemID = transition.ItemID,
 					VersionStepTransitionID = transition.VersionStepTransitionID,
 					Action = ChangeType.Add, // irrelevant
@@ -2816,7 +2816,7 @@ namespace d360.model
 		{
 			// mark step as completed
 			itemStep.CompletedOn = DateTime.UtcNow;
-			itemStep.CompletedBy = CurrentResourceID;
+			itemStep.CompletedBy = SecurityContext.ResourceID;
 			var transitionCount = 0;
 
 			if (itemStep.Step.StepType == StepType.Finish || itemStep.Step.StepType == StepType.Terminate)
@@ -3701,9 +3701,9 @@ namespace d360.model
 			{
 				new EventInfo
 				{
-					CompanyID = CurrentCompanyID,
-					DomainPrefix = CurrentCompanyDomain,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					DomainPrefix = SecurityContext.CompanyPrefix,
+					ResourceID = SecurityContext.ResourceID,
 					Action = ChangeType.RequestCertification,
 					Object = new EventObjectInfo
 					{
@@ -3776,7 +3776,7 @@ namespace d360.model
 
 				span = @"<span style='border-collapse: collapse; box-sizing: border-box; color: #646464; display: inline; font-family: Trebuchet MS, Arial, Helvetica,sans-serif; font-size: 12px; font-weight: 400; height: auto; line-height: 18px;text-size-adjust:100%;width: auto; word-wrap: break-word;'>";
 
-				string rootUrl = $"https://{Community.GetPrimaryUrlPrefix()}.data3sixty.com";
+				string rootUrl = $"https://{SecurityContext.PrimaryCompanyPrefix}.data3sixty.com";
 
 				#endregion
 
@@ -3984,8 +3984,7 @@ namespace d360.model
 				await SaveChangesAsync();
 			}
 
-			string prefix = Community.GetPrimaryUrlPrefix();
-
+			string prefix = SecurityContext.PrimaryCompanyPrefix;
 
 			var urlPart = $"home?workflowTypeUid={itemStep.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={itemStep.UID.ToString().ToLowerInvariant()}&version={itemStep.Step.Version.Version}&workflowItemUid={itemStep.Item.UID}";
 
@@ -4097,9 +4096,9 @@ namespace d360.model
 
 					events.Add(new EventInfo
 					{
-						CompanyID = CurrentCompanyID,
-						DomainPrefix = CurrentCompanyDomain,
-						ResourceID = CurrentResourceID,
+						CompanyID = SecurityContext.CompanyID,
+						DomainPrefix = SecurityContext.CompanyPrefix,
+						ResourceID = SecurityContext.ResourceID,
 						Action = changeTypeOverride ?? result.ChangeType,
 						Object = new EventObjectInfo
 						{

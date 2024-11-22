@@ -1,20 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
-using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
 using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
-
 using Dapper;
 using repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
@@ -24,19 +22,17 @@ namespace d360.model.DataAccessLayer
 
 		internal IQueueSource Queue;
 		internal IStorageProvider Storage;
-		internal ICommunityContext Community;
 
 		public DashboardRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
-			ICommunityContext community, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Queue = queue;
 			Storage = storage;
-			Community = community;
 		}
 
 		#endregion
@@ -157,7 +153,7 @@ namespace d360.model.DataAccessLayer
 				throw new GenericException(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
 			}
 			model.AssetTypeId = assetType.ID;
-			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
+			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset };
 			if (!allowedClasses.Contains(assetType.Class))
 			{
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
@@ -311,7 +307,7 @@ namespace d360.model.DataAccessLayer
 			var dbArgs = new DynamicParameters();
 
 			dbArgs.Add("assettypeid", assetTypeId);
-			dbArgs.Add("resourceid", CompanyContext.CurrentResourceID);
+			dbArgs.Add("resourceid",  SecurityContext.ResourceID);
 			dbArgs.Add("assetid", asset?.ID);
 
 			if (!isTypePage)
@@ -392,7 +388,7 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 				Object = "Report",
 				ObjectID = current.ID,
 				ObjectName = current.Name,
-				ResourceID = (int)((int)current.UpdatedBy == 0 ? CompanyContext.CurrentResourceID : current.UpdatedBy),
+				ResourceID = (int)((int)current.UpdatedBy == 0 ?  SecurityContext.ResourceID : current.UpdatedBy),
 				Version = 0
 			};
 

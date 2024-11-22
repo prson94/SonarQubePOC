@@ -168,7 +168,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 	): Observable<SelectItem[]> {
 		return this
 			.http
-			.get<SelectItem[]>(`api/v2/fields/GetLookupDefaultValues?Uid=${Uid}`)
+			.get<SelectItem[]>(`api/v2/fields/LookupDefaultValues?Uid=${Uid}`)
 			.pipe(
 				map((r) => this.ftItemToSelectItem(<FtItem[]>r)),
 				catchError((err) => this.handleError(err))
@@ -194,7 +194,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
 		return this
 			.http
-			.get<Lookups>(`api/v2/fields/GetLookups?${url}`)
+			.get<Lookups>(`api/v2/fields/lookups?${url}`)
 			.pipe(
 				map((response) => <any>response),
 				map(

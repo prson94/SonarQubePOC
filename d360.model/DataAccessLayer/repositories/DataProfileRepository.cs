@@ -19,19 +19,17 @@ namespace d360.model.DataAccessLayer
 {
 	public class DataProfileRepository : BaseRepository, IDataProfileRepository
 	{
-		internal ICommunityContext Community;
 		internal IStorageProvider Storage;
 		internal IQueueSource Queue;
 
 		public DataProfileRepository(
-			ICompanyContext companyContext, 
-			ICommunityContext community, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IStorageProvider storage, 
 			IQueueSource queue, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
-			Community = community;
 			Queue = queue;
 			Storage = storage;
 		}
@@ -571,8 +569,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID
 			};
@@ -584,8 +582,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID
 			};
@@ -597,8 +595,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID
 			};
@@ -786,7 +784,7 @@ namespace d360.model.DataAccessLayer
 							) maxProfileDate
 							cross apply dbo.GetAssetTypeTextPathById(A.AssetTypeID, ' > ') P";
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				sqlJoins = $@"{sqlJoins}
 							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = A.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=A.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
@@ -799,7 +797,7 @@ namespace d360.model.DataAccessLayer
 									hasAccess.value != 1	
 									)";
 
-				dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
+				dbArgs.Add("@userid",  SecurityContext.ResourceID);
 			}
 
 				sqlJoins = $@"{sqlJoins}
@@ -1030,7 +1028,7 @@ namespace d360.model.DataAccessLayer
 				filterSQL = $"where {string.Join(" and ", filters)}";
 			}
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				sqlJoins = $@"{sqlJoins}
 							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = A.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=A.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
@@ -1043,7 +1041,7 @@ namespace d360.model.DataAccessLayer
 									hasAccess.value != 1	
 									)";
 
-				dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
+				dbArgs.Add("@userid",  SecurityContext.ResourceID);
 			}
 
 			dbArgs.Add("@assetId", asset.ID);

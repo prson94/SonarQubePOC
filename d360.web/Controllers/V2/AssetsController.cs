@@ -163,7 +163,7 @@ namespace d360.web.Controllers.V2
 				queryStringToHash = "-";
 			}
 			queryStringToHash = queryStringToHash.GetD3sHashString();
-			return $"{Company.CurrentCompanyID}_{assetTypeId}_{queryStringToHash}";
+			return $"{SecurityContext.CompanyID}_{assetTypeId}_{queryStringToHash}";
 		}
 
 		/// <summary>
@@ -866,7 +866,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				//if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-				if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
+				if (!SecurityContext.IsAdministrator && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
 				{
 					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_uirequest").Value;
 					bool.TryParse(value, out bool isuiRequest);
@@ -1288,7 +1288,7 @@ namespace d360.web.Controllers.V2
 
 				AssetType assetType = null;
 
-				var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, Company.CurrentResourceID, out string nameFriendlyName, out bool isNamePartOfKey);
+				var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, SecurityContext.ResourceID, out string nameFriendlyName, out bool isNamePartOfKey);
 
 				if (insertStatus.Item1 != HttpStatusCode.OK)
 				{
@@ -1314,7 +1314,7 @@ namespace d360.web.Controllers.V2
 							Type = DataType.Text.ToString(),
 							IsDisplayable = true,
 							IsPartOfKey = isNamePartOfKey,
-							UpdatedBy = Company.CurrentResourceID
+							UpdatedBy = SecurityContext.ResourceID
 						};
 
 						if (model.Class == AssetTypeClass.Diagram)
@@ -1346,7 +1346,7 @@ namespace d360.web.Controllers.V2
 							SortOrder = 1,
 							ColumnOrder = 1,
 							SortByAscending = true,
-							UpdatedBy = Company.CurrentResourceID
+							UpdatedBy = SecurityContext.ResourceID
 						};
 
 						Company.Add(codeFieldType);
@@ -1368,7 +1368,7 @@ namespace d360.web.Controllers.V2
 							IsPartOfKey = false,
 							LookupObjectID = governanceRoleRefList.ObjectID,
 							LookupObjectType = SystemObjects.ReferenceItem.ToString(),
-							UpdatedBy = Company.CurrentResourceID,
+							UpdatedBy = SecurityContext.ResourceID,
 							ShowIfEmpty = true,
 							LookupDisplayFormat = "{Code}",
 							LookupEditFormat = "{Code}",
@@ -1387,7 +1387,7 @@ namespace d360.web.Controllers.V2
 							Type = DataType.Decimal.ToString(),
 							IsDisplayable = true,
 							IsPartOfKey = false,
-							UpdatedBy = Company.CurrentResourceID,
+							UpdatedBy = SecurityContext.ResourceID,
 							ShowIfEmpty = true,
 							SortByAscending = true
 						});
@@ -2253,7 +2253,7 @@ namespace d360.web.Controllers.V2
 				}
 				var dbArgs = new Dictionary<string, object>
 				{
-					{ "resourceId", Company.CurrentResourceID },
+					{ "resourceId", SecurityContext.ResourceID },
 					{ "pageSize", pageSize },
 					{ "pageNum", pageNum },
 					{ "useUidUrls", returnuseUidUrls },

@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.resources;
+using d360.extensions;
 using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
@@ -13,7 +14,7 @@ namespace d360.model.DataAccessLayer
 {
 	public class IssueRepository : BaseRepository, IIssueRepository
 	{
-		public IssueRepository(ICompanyContext context, IFeatureFlagService ff) : base(context, ff) { }
+		public IssueRepository(ICompanyContext context, ISecurityContextProvider securityContext, IFeatureFlagService ff) : base(context, securityContext, ff) { }
 
 		public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{

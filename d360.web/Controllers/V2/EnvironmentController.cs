@@ -62,8 +62,8 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
-		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser()); } }
-		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true); } }
+		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser().Result); } }
+		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser().Result, true); } }
 
 
 		public EnvironmentController(
@@ -80,66 +80,49 @@ namespace d360.web.Controllers.V2
 		}
 
 		[HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
-		public async Task<HttpResponseMessage> GetRebuilds()
+		public async Task<IHttpActionResult> GetRebuilds()
 		{
-			try
+			var currentStatusList = (await Workspace.ReadRebuildStatusesAsync()).ToList();
+			var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
+			currentStatusList.ForEach(i =>
 			{
-				var currentStatusList = await Company.GetRebuildJobStatuses(12);
-				var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
-				currentStatusList.ForEach(i =>
-				{
-					listToReturn.Single(j => j.JobToken == i.JobToken).SetCurrentJobStatusProperties(i);
-				});
+				listToReturn.Single(j => j.JobToken == i.JobToken).SetCurrentJobStatusProperties(i);
+			});
 
-				return Request.CreateResponse(HttpStatusCode.OK, listToReturn);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
+			return Ok(listToReturn);
 		}
 
 		[HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
-		public async Task<HttpResponseMessage> Rebuild(CompanyRebuildJobRequest model)
+		public async Task<IHttpActionResult> Rebuild(CompanyRebuildJobRequest model)
 		{
-			try
+			if (model == null)
 			{
-				if (model == null)
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
-				}
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+			}
 
-				var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, 12);
-				if (readyToActivate.StatusCode == HttpStatusCode.OK)
+			var response = await Workspace.UpsertRebuildStatusAsync(model.Job, CompanyRebuildJobStatusState.Active, 12);
+			if (response.IsSuccess)
+			{
+				switch (model.Job)
 				{
-					switch (model.Job)
-					{
-						case CompanyRebuildJobToken.DisplayValues:
-							Company.RebuildDisplayValuesRequest();
-							break;
-						case CompanyRebuildJobToken.SearchIndex:
-							Company.RebuildIndexRequest();
-							break;
-					}
-
-					return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
-				}
-				else
-				{
-					return ReturnApiError(readyToActivate.StatusCode, readyToActivate.Error);
+					case CompanyRebuildJobToken.DisplayValues:
+						Company.RebuildDisplayValuesRequest();
+						break;
+					case CompanyRebuildJobToken.SearchIndex:
+						Company.RebuildIndexRequest();
+						break;
 				}
 			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
+			return (response.IsSuccess) ?
+				Ok(new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" }) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		[HttpGet, Route("uservariables"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<HttpResponseMessage> GetUserVariables()
 		{
-			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
-			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
+			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
+			var authModel = (await Community.ReadAuthenticationTypeByTenantUrlAsync(SecurityContext.CompanyID, SecurityContext.CompanyPrefix)).Data;
 			var isSSO = authModel != AuthenticationType.Forms;
 
 			var data = new
@@ -228,7 +211,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (string.IsNullOrEmpty(data))
 			{
-				var filesToDelete = _storage.ListFilenamesByPrefix(folder, $"{Company.CurrentCompanyID}.");
+				var filesToDelete = _storage.ListFilenamesByPrefix(folder, $"{SecurityContext.CompanyID}.");
 				filesToDelete.ForEach(f =>
 				{
 					_storage.DeleteFile(folder, f).Wait();
@@ -237,7 +220,7 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				var info = data.GetFileFromDataUrl();
-				var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, info.Item1);
+				var imgFileName = string.Format("{0}{1}", SecurityContext.CompanyID, info.Item1);
 				await _storage.CreateFile(folder, imgFileName, info.Item2).ConfigureAwait(false);
 				data = $"{url}{imgFileName}";
 			}
@@ -508,7 +491,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFeatureFlagInfo()
 		{
-			var userModel = Company.GetFeatureFlagUser();
+			var userModel = await GetFeatureFlagUser();
 			var user = new FeatureFlagUser
 			{
 				key = userModel.Key,
@@ -523,14 +506,7 @@ namespace d360.web.Controllers.V2
 			};
 				
 			var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
-			return await Task.FromResult(
-				ResponseMessage(
-					Request.CreateResponse(HttpStatusCode.OK, new
-					{
-						clientId = ClientId,
-						user
-					}))
-				).ConfigureAwait(false);
+			return Ok(new { clientId = ClientId, user });
 		}
 
 		/// <summary>
@@ -973,7 +949,7 @@ select	r.uid as ResourceUid,
 					"@AssetUid, @AssetTypeUid, @DashboardUid, @IssueUid, @SemanticUid, @TagUid, " +
 					"@Sidebar, @Tab", new
 					{
-						UserId = Company.CurrentResourceID,
+						UserId = SecurityContext.ResourceID,
 						Browser = (int)value.Browser,
 						Action = (int)value.Action,
 						Timestamp = DateTime.UtcNow,
@@ -1570,7 +1546,7 @@ select	r.uid as ResourceUid,
 
 				css.AppendLine("}");
 
-				if (Company.CurrentResourceID > 0)
+				if (SecurityContext.ResourceID > 0)
 				{
 					//https://jira.syncsort.com/browse/GOV-21052
 					//Limited / Low-risk information disclosure via CSS overrides
@@ -2121,7 +2097,7 @@ select	r.uid as ResourceUid,
 			{
 				using (var stream = new MemoryStream())
 				{
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
 				}
@@ -2132,7 +2108,7 @@ select	r.uid as ResourceUid,
 				using (var stream = new MemoryStream())
 				{
 
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
 				}
@@ -2142,7 +2118,7 @@ select	r.uid as ResourceUid,
 			{
 				using (var stream = new MemoryStream())
 				{
-					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
 					await _storage.GetFileStream("themes", url, stream);
 					response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
 				}
@@ -2178,64 +2154,53 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetDashboards()
 		{
-			try
+			var queryParams = Request.GetQueryNameValuePairs();
+			DashboardApiGetModelFilter getModelFilter = new DashboardApiGetModelFilter(queryParams);
+
+			if (getModelFilter.Errors.Count > 0)
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				DashboardApiGetModelFilter getModelFilter = new DashboardApiGetModelFilter(queryParams);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Join(", ", getModelFilter.Errors));
+			}
 
-				if (getModelFilter.Errors.Count > 0)
+			if (getModelFilter.AssetTypeUid.HasValue)
+			{
+				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == getModelFilter.AssetTypeUid);
+				if (assetType == null)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Join(", ", getModelFilter.Errors));
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(Messages.AssetTypeNotFound, getModelFilter.AssetTypeUid));
 				}
 
-				if (getModelFilter.AssetTypeUid.HasValue)
+				var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset };
+				if (!allowedClasses.Contains(assetType.Class))
 				{
-					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == getModelFilter.AssetTypeUid);
-					if (assetType == null)
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(Messages.AssetTypeNotFound, getModelFilter.AssetTypeUid));
-					}
-
-					var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
-					if (!allowedClasses.Contains(assetType.Class))
-					{
-						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
-					}
-				}
-
-				if (getModelFilter.AssetUid.HasValue)
-				{
-					if (!Company.Assets.Any(x => x.uid == getModelFilter.AssetUid))
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(Messages.AssetNotFound, getModelFilter.AssetUid));
-					}
-				}
-
-				if (getModelFilter.Uid.HasValue)
-				{
-					if (!Company.Reports.Any(x => x.uid == getModelFilter.Uid))
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DashboardMessages.DashboardNotFound, getModelFilter.Uid));
-					}
-				}
-
-				if (IsDashboardingEnabled)
-				{
-					var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
-				}
-				else
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<DashboardApiGetModel>()));
+					return errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
 				}
 			}
-			catch (GenericException ex)
+
+			if (getModelFilter.AssetUid.HasValue)
 			{
-				throw ex;
+				if (!Company.Assets.Any(x => x.uid == getModelFilter.AssetUid))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(Messages.AssetNotFound, getModelFilter.AssetUid));
+				}
 			}
-			catch
+
+			if (getModelFilter.Uid.HasValue)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+				if (!Company.Reports.Any(x => x.uid == getModelFilter.Uid))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DashboardMessages.DashboardNotFound, getModelFilter.Uid));
+				}
+			}
+
+			if (IsDashboardingEnabled)
+			{
+				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
+				return Ok(responseModel);
+			}
+			else
+			{
+				return Ok(new List<DashboardApiGetModel>());
 			}
 		}
 
@@ -2523,7 +2488,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2649,7 +2614,7 @@ select	r.uid as ResourceUid,
 										'{CommonNames.AssetTypeClass_Technical} {CommonNames.Instance}: ' + Name as title
 							from       AssetType where [Class] = 8  
 							union
-							select      '00000001-0000-0000-0000-A00000000011' as value,
+							select      '{constants.CommonIdentifiers.ResourceTypeUid}' as value,
 										'{CommonNames.AssetTypeClass_Resource}' as title
 							union
 							select      convert(nvarchar(36), uid) + '|instance' as value,
@@ -2696,11 +2661,11 @@ select	r.uid as ResourceUid,
 
 			if (model.LanguageCode == null)
 			{
-				await this.ResourceSettingRepository.DeleteGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage");
+				await this.ResourceSettingRepository.DeleteGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage");
 			}
 			else
 			{
-				await this.ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage", model.LanguageCode);
+				await this.ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage", model.LanguageCode);
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK);
@@ -2743,7 +2708,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
 			{
-				var groupName = Guid.NewGuid().ToString();//$"D3S{Company.CurrentCompanyID}";
+				var groupName = Guid.NewGuid().ToString();
 				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
 				await Workspace.UpsertSettingAsync(Setting.PowerBIGroupId, res.Id.ToString());
 
@@ -2865,7 +2830,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				var settings = await ResourceSettingRepository.GetSettings(Company.CurrentResourceID, AssetTypeUID);
+				var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
 			}
@@ -2908,7 +2873,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				await ResourceSettingRepository.UpsertSetting(Company.CurrentResourceID, assetTypeUid, setting, value);
+				await ResourceSettingRepository.UpsertSetting(SecurityContext.ResourceID, assetTypeUid, setting, value);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 			}
@@ -2950,7 +2915,7 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				await ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, setting, value);
+				await ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, setting, value);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 			}

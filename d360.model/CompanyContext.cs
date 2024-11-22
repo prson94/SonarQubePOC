@@ -47,7 +47,7 @@ namespace d360.model
 		internal ILogger Log;
 		internal IMailProvider Mail;
 		internal IQueueSource QueueSource;
-		private readonly CommunityContext Community;
+		internal ISecurityContextProvider SecurityContext;
 
 		private bool IsEventingEnabled;
 		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
@@ -55,34 +55,25 @@ namespace d360.model
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
-		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
+		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
 
 		#region Ctors
 
 		public CompanyContext(
-			ICommunityContext community,
 			ICachingProvider caching,
 			IQueueSource queueSource,
 			IMailProvider mail,
 			ISecurityContextProvider context,
 			ILogger log,
-			bool skipCacheCheck = false)
-			: base(community.GetCompanyConnectionString(skipCacheCheck))
+			TenantConnectionInfo connectionInfo): base(connectionInfo.ConnectionString)
 		{
 			Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
-			Community = (CommunityContext)community;
 			Caching = caching;
 			Log = log;
 			Mail = mail;
 			QueueSource = queueSource;
-
-			CurrentClientID = context.ClientID;
-			CurrentCompanyID = context.CompanyID;
-			CurrentDomainSettingID = context.DomainSettingID;
-			CurrentResourceID = context.ResourceID;
-			CurrentResourceIsAdmin = context.IsAdministrator;
-			CurrentCompanyDomain = context.CompanyPrefix;
+			SecurityContext = context;
 
 			//output queries in debug mode to console
 			if (System.Diagnostics.Debugger.IsAttached)
@@ -199,7 +190,7 @@ namespace d360.model
 
 			Dictionary<string, string> propsToSend = new Dictionary<string, string> {
 				{ "MethodName", methodName },
-				{ "CompanyID", CurrentCompanyID.ToString() },
+				{ "CompanyID", SecurityContext.CompanyID.ToString() },
 				{ "ExecutionID", execution.ExecutionID.ToString() }
 			};
 
@@ -222,9 +213,9 @@ namespace d360.model
 
 			events.Add(new EventInfo
 			{
-				CompanyID = CurrentCompanyID,
-				DomainPrefix = CurrentCompanyDomain,
-				ResourceID = CurrentResourceID,
+				CompanyID = SecurityContext.CompanyID,
+				DomainPrefix = SecurityContext.CompanyPrefix,
+				ResourceID = SecurityContext.ResourceID,
 				Action = action,
 				Object = item
 			});
@@ -300,7 +291,7 @@ namespace d360.model
 
 		private string renderTemplate(string templateType, string action, SystemObjects type, int id)
 		{
-			string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty, CurrentResourceID);
+			string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty,  SecurityContext.ResourceID);
 			RenderTemplateModel model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
 			string html = "";
 
@@ -421,7 +412,7 @@ namespace d360.model
 				List<int> existingFieldTypeIDs = existingFields.Select(i => i.FieldTypeID).ToList();
 				items.ForEach(item =>
 				{
-					item.UpdatedBy = CurrentResourceID;
+					item.UpdatedBy =  SecurityContext.ResourceID;
 					//UPDATE
 					if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
 					{
@@ -510,7 +501,7 @@ from	Field F
 				}
 			}
 
-			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = SecurityContext.CompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
 		}
 
 		/// <summary>
@@ -578,7 +569,7 @@ from	Field F
 				//needs to be before delete before we say goodbye to our little friend.
 				ObjectDetail det = GetObjectDetail(type.ToString(), id);
 
-				Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
+				Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = SecurityContext.ResourceID }, null, 120);
 
 				// add a removed message to the service bus
 				if (IsEventingEnabled)
@@ -629,7 +620,7 @@ from	Field F
 					Object = intersectDetail.Subject,
 					ObjectID = intersectDetail.SubjectID,
 					ObjectName = intersectDetail.SubjectName,
-					ResourceID = CurrentResourceID
+					ResourceID = SecurityContext.ResourceID
 				},
 				new Audit {
 					Action = "Deleted",
@@ -642,7 +633,7 @@ from	Field F
 					Object = intersectDetail.Object,
 					ObjectID = intersectDetail.ObjectID,
 					ObjectName = intersectDetail.ObjectName,
-					ResourceID = CurrentResourceID
+					ResourceID = SecurityContext.ResourceID
 				}
 			});
 			Delete<Field>(f => f.IntersectID == id);
@@ -650,9 +641,9 @@ from	Field F
 
 			QueueSource.CreateMessage(constants.Queue.Workflow, new EventInfo
 			{
-				CompanyID = CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				Action = ChangeType.Delete,
-				ResourceID = CurrentResourceID,
+				ResourceID = SecurityContext.ResourceID,
 				Object = new EventObjectInfo
 				{
 					Object = SystemObjects.Intersect,
@@ -660,7 +651,7 @@ from	Field F
 					ObjectType = SystemObjects.IntersectType,
 					ObjectTypeID = item.IntersectTypeID
 				},
-				DomainPrefix = CurrentCompanyDomain
+				DomainPrefix = SecurityContext.CompanyPrefix
 			});
 
 			return true;
@@ -1141,7 +1132,7 @@ from	Field F
 
 			if (!resourceID.HasValue)
 			{
-				resourceID = CurrentResourceID;
+				resourceID =  SecurityContext.ResourceID;
 			}
 
 			if (AssetID != 0)
@@ -1283,7 +1274,7 @@ from	Field F
 										)
 									)
 								)";
-			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(sql, new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id, rid = CurrentResourceID });
+			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(sql, new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id, rid =  SecurityContext.ResourceID });
 
 			return model;
 		}
@@ -1367,7 +1358,7 @@ from	Field F
 					objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
 					break;
 				case SystemObjects.ResourceType:
-					objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
+					objectId = GlobalReportingResources.FirstOrDefault(x => x.Uid == objectUid).ResourceID;
 					break;
 				case SystemObjects.TaskType:
 					objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
@@ -1399,7 +1390,7 @@ from	Field F
 
 		public JObject GetPageInformation(Guid assetUid)
 		{
-			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @assetUid, @rid", new { assetUid, rid = CurrentResourceID });
+			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @assetUid, @rid", new { assetUid, rid = SecurityContext.ResourceID });
 			if (jsonRows.Count() == 0)
 			{
 				return null;
@@ -1671,32 +1662,6 @@ from	IntersectType I
 					}
 
 					break;
-				case AssetTypeClass.User:
-					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.Id");
-					formattedIntersectJoin = string.Format(intersectJoin, "A.Id");
-
-					countSql = $@"
-							select	count(*) 
-							from	reporting.Global_Resource R 
-									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
-									inner join [IntersectType] IT on IT.Id = @intersectTypeID
-									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									{formattedCardinalityCheck}";
-
-					sql = $@"
-							select	R.ResourceID as Value, 
-									R.LastName + ', ' + R.FirstName as Text, 
-									case when I.ID is not null then 1 else 0 end as Selected 
-							from	reporting.[Global_Resource] R
-									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
-									inner join [IntersectType] IT on IT.Id = @intersectTypeID
-									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									{formattedCardinalityCheck} 
-							order by 3 desc, R.LastName + ', ' + R.FirstName asc 
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
-					break;
 				default:
 					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");
 					formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
@@ -1866,7 +1831,7 @@ from	IntersectType I
 
 		public string GetUserHomePage()
 		{
-			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
+			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID ==  SecurityContext.ResourceID && f.IsHomePage);
 
 			return homePage?.Route.SanitizeHtml() ?? "";
 		}
@@ -1897,7 +1862,7 @@ from	IntersectType I
 			bool follow = false;
 			if (!resourceID.HasValue)
 			{
-				resourceID = CurrentResourceID;
+				resourceID = SecurityContext.ResourceID;
 			}
 
 			if (AssetID != 0)
@@ -2209,12 +2174,12 @@ from	IntersectType I
 
 		public void RebuildDisplayValuesRequest()
 		{
-			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
+			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = SecurityContext.CompanyID, RebuildAll = true });
 		}
 
 		public void RebuildIndexRequest()
 		{
-			Enqueue(constants.Queue.Search, new ReindexModel { CompanyID = CurrentCompanyID });
+			Enqueue(constants.Queue.Search, new ReindexModel { CompanyID = SecurityContext.CompanyID });
 		}
 
 		public string RenderTooltip(string action, SystemObjects type, int id)
@@ -2235,7 +2200,7 @@ from	IntersectType I
 				if (entry.Entity is ICreatedMetadata)
 				{
 					ICreatedMetadata o = entry.Entity as ICreatedMetadata;
-					o.CreatedBy = CurrentResourceID;
+					o.CreatedBy =  SecurityContext.ResourceID;
 					o.CreatedOn = DateTime.UtcNow;
 				}
 
@@ -2260,7 +2225,7 @@ from	IntersectType I
 				if (entry.Entity is IUpdatedMetadata)
 				{
 					IUpdatedMetadata o = entry.Entity as IUpdatedMetadata;
-					o.UpdatedBy = CurrentResourceID;
+					o.UpdatedBy =  SecurityContext.ResourceID;
 					o.UpdatedOn = DateTime.UtcNow;
 				}
 
@@ -2695,7 +2660,7 @@ from	IntersectType I
 
 			if (!resourceID.HasValue)
 			{
-				resourceID = CurrentResourceID;
+				resourceID =  SecurityContext.ResourceID;
 			}
 
 			bool value = false;

@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -27,7 +28,7 @@ namespace igx.jobs.scoreprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 
-		public ScoringQueueProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		public ScoringQueueProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -48,7 +49,7 @@ namespace igx.jobs.scoreprocessor
 				try
 				{
 					string sql = "";
-					string companyConnectionString = "";
+					string companyConnectionString = Community.GetConnectionStringForTenant(info.CompanyID);
 					List<WorkflowScoredAsset> updatedAssets;
 
 					switch (info.ChangeType)
@@ -56,7 +57,6 @@ namespace igx.jobs.scoreprocessor
 						case ScoreQueueChangeType.RescoreRequest:
 							var rescorePayload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(info.Payload.ToString());
 							sql = getAssetRescoreSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -67,12 +67,11 @@ namespace igx.jobs.scoreprocessor
 								}, commandTimeout: 600);
 								updatedAssets = response.ToList();
 								
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", rescorePayload.ScoreType, updatedAssets, log);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", rescorePayload.ScoreType, updatedAssets, log, companyConnectionString);
 							}
 							break;
 						case ScoreQueueChangeType.PatchCatalogExecution:
 							sql = getPatchExecutionSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -81,7 +80,7 @@ namespace igx.jobs.scoreprocessor
 								}, commandTimeout: 18000);
 								updatedAssets = response.ToList();
 								
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.Governance, updatedAssets, log);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.Governance, updatedAssets, log, companyConnectionString);
 							}
 							break;
 						case ScoreQueueChangeType.MeasureChanged:
@@ -89,7 +88,6 @@ namespace igx.jobs.scoreprocessor
 							{ 
 								var measureChangedPayload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
 								sql = getMeasureChangedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -100,7 +98,7 @@ namespace igx.jobs.scoreprocessor
 								
 									//Get the score type for this deleted measure, which will be sent to workflow.
 									var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureChangedPayload.MetricAssetVersionUid });
-									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log, companyConnectionString);
 								}							
 							}
 							break;
@@ -109,7 +107,6 @@ namespace igx.jobs.scoreprocessor
 							{
 								var measureRemovedPayload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
 								sql = getMeasureChangedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -121,13 +118,12 @@ namespace igx.jobs.scoreprocessor
 
 									//Get the score type for this deleted measure, which will be sent to workflow.
 									var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureRemovedPayload.MetricAssetVersionUid });
-									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log, companyConnectionString);
 								}
 							}
 							break;
 						case ScoreQueueChangeType.RollupPathChanged:
 							sql = "exec metrics.CalculateRollups";
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
@@ -139,7 +135,6 @@ namespace igx.jobs.scoreprocessor
 							{
 								var ruleRemovedPayload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
 								sql = getRuleRemovedSql();
-								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
 								using (var companyConnection = new SqlConnection(companyConnectionString))
 								{
 									await companyConnection.OpenIfClosed();
@@ -148,7 +143,7 @@ namespace igx.jobs.scoreprocessor
 										assetUid = ruleRemovedPayload.AssetUid
 									}, commandTimeout: 18000);
 									updatedAssets = response.ToList();
-									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log);
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log, companyConnectionString);
 								}
 							}
 							break;
@@ -295,7 +290,7 @@ insert into #ids (AssetUid)
 {COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		void processWorkflowCalls(int companyId, int resourceId, string companyDomainPrefix, ScoreType scoreType, List<WorkflowScoredAsset> updatedAssets, ILogger log)
+		void processWorkflowCalls(int companyId, int resourceId, string companyDomainPrefix, ScoreType scoreType, List<WorkflowScoredAsset> updatedAssets, ILogger log, string connectionString)
 		{
 			var context = new UriSecurityContextProvider
 			{
@@ -304,8 +299,7 @@ insert into #ids (AssetUid)
 				CompanyPrefix = companyDomainPrefix,
 				IsAdministrator = false
 			};
-			var community = new CommunityContext(ConnString, Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+			var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = connectionString });
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
 

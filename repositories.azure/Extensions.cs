@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -157,6 +158,28 @@ namespace repositories.azure
 			}
 
 			return defaultValue;
+		}
+
+		public static SqlBulkCopy CreateBulkCopy(this SqlConnection connection, string tableName, int batchSize = 5000, int timeout = 3600, SqlTransaction trans = null)
+		{
+			if (trans == null)
+			{
+				return new SqlBulkCopy(connection)
+				{
+					BatchSize = batchSize,
+					DestinationTableName = tableName,
+					BulkCopyTimeout = timeout
+				};
+			}
+			else
+			{
+				return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, trans)
+				{
+					BatchSize = batchSize,
+					DestinationTableName = tableName,
+					BulkCopyTimeout = timeout
+				};
+			}
 		}
 
 		public static bool ValidateForQueryParameter<T>(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, ref string parameterValue)

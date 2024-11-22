@@ -1,6 +1,7 @@
 using d360.core.exceptions;
 using HtmlAgilityPack;
 using OWASP.AntiSamy.Html;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -162,6 +163,26 @@ namespace d360.core
                 builder.AppendLine($" --{name}: {value};");
             }
         }
+
+
+		/// <summary>
+		/// Used to generate a state or nonce value.
+		/// </summary>
+		/// <returns></returns>
+		public static string GenerateNonce(this string nonce, int length = 5)
+		{
+			string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+			var stringChars = new char[length];
+			var random = new Random();
+
+			for (int i = 0; i < stringChars.Length; i++)
+			{
+				stringChars[i] = chars[random.Next(chars.Length)];
+			}
+
+			return new string(stringChars);
+		}
 
 		public static string GetSafeXLSColumnValue(this string value)
 		{

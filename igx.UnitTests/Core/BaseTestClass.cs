@@ -73,17 +73,16 @@ namespace igx.UnitTests
 
 		#region Mock Interfaces
 
-        public ICommunityContext GetCommunity()
-        {
-            var mock = new Mock<ICommunityContext>();
+		public ICommunity GetCommunity()
+		{
+			var mock = new Mock<ICommunity>();
 
-            return mock.Object;
-        }
+			return mock.Object;
+		}
         
 		public static ICompanyContext GetCompany()
         {
             var mock = new Mock<ICompanyContext>();
-            mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<int>(), Permission.ReadAsset)).Returns(
                 (int id, Permission p) =>
                 {
@@ -218,6 +217,7 @@ namespace igx.UnitTests
             mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
 			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
+			mock.Setup(s => s.SecurityContext).Returns(GetSecurity());
 			return mock.Object;
         }
 
@@ -259,7 +259,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public ICachingProvider GetCache()
+		public ICachingProvider GetCache()
         {
             var mock = new Mock<ICachingProvider>();
 
@@ -269,7 +269,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
+            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(

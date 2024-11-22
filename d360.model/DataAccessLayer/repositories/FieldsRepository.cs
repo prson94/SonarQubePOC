@@ -32,11 +32,12 @@ namespace d360.model.DataAccessLayer
 		internal IStorageProvider StorageProvider;
 
 		public FieldsRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
@@ -857,7 +858,7 @@ namespace d360.model.DataAccessLayer
 					Category = f.Category,
 					Name = f.Name,
 					FriendlyName = f.FriendlyName,
-					UpdatedBy = CompanyContext.CurrentResourceID
+					UpdatedBy =  SecurityContext.ResourceID
 				};
 
 				if (!isNew)
@@ -1081,11 +1082,6 @@ namespace d360.model.DataAccessLayer
 					}
 
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
-
-					if (assetType.Class == AssetTypeClass.User)
-					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
-					}
 
 					if (f.Type.ComputedRelationshipLookup.Definition == null
 						|| !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
@@ -2246,7 +2242,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.Type = newFieldType.Type;
 					currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
 					currentFieldType.Definition = newFieldType.Definition;
-					currentFieldType.UpdatedBy = CompanyContext.CurrentResourceID;
+					currentFieldType.UpdatedBy =  SecurityContext.ResourceID;
 					currentFieldType.SearchAddToResult = newFieldType.SearchAddToResult;
 					currentFieldType.SearchPrefix = newFieldType.SearchPrefix;
 					currentFieldType.SearchSuffix = newFieldType.SearchSuffix;
@@ -2270,7 +2266,7 @@ namespace d360.model.DataAccessLayer
 			if (model.ActionTypeUid.HasValue)
 			{
 				var action = CompanyContext.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
-				action.UpdatedBy = CompanyContext.CurrentResourceID;
+				action.UpdatedBy =  SecurityContext.ResourceID;
 				action.UpdatedOn = DateTime.UtcNow;
 
 			}
@@ -2278,7 +2274,7 @@ namespace d360.model.DataAccessLayer
 			if (model.RelationshipTypeUid.HasValue)
 			{
 				var intersectType = CompanyContext.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
-				intersectType.UpdatedBy = CompanyContext.CurrentResourceID;
+				intersectType.UpdatedBy =  SecurityContext.ResourceID;
 				intersectType.UpdatedOn = DateTime.UtcNow;
 
 			}
@@ -2286,7 +2282,7 @@ namespace d360.model.DataAccessLayer
 			if (model.AssetTypeUid.HasValue)
 			{
 				var assetType = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
-				assetType.UpdatedBy = CompanyContext.CurrentResourceID;
+				assetType.UpdatedBy =  SecurityContext.ResourceID;
 				assetType.UpdatedOn = DateTime.UtcNow;
 			}
 
@@ -2449,7 +2445,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						CompanyContext.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, CompanyContext.CurrentResourceID });
+						CompanyContext.Connection.Execute("update field set updatedby = @ResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, SecurityContext.ResourceID });
 					}
 
 					CompanyContext.FieldTypes.Remove(ft);
@@ -2483,8 +2479,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID
 			};
@@ -2847,7 +2843,7 @@ namespace d360.model.DataAccessLayer
 
 			var permissionSQL = "";
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				permissionSQL = $@"	
 									declare @hasPermission bit = 1,
