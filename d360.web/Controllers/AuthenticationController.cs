@@ -620,12 +620,7 @@ namespace d360.web.Controllers
                 return RedirectToAction("unsupported", "home");
             }
 
-            //if (!SecurityContext.IsCompanyActive)
-            //{
-            //    return InactiveCompany();
-            //}
-
-            string returnUrl = Request.QueryString["ReturnUrl"];
+			string returnUrl = Request.QueryString["ReturnUrl"];
 
             if (Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out var testUri) == false || testUri.IsAbsoluteUri)
             {

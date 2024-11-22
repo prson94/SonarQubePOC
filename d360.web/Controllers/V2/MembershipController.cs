@@ -1071,7 +1071,7 @@ namespace d360.web.Controllers.V2
 
 			cleanIncomingUsers(users, false);
 
-			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
@@ -1328,14 +1328,13 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public IHttpActionResult DeleteGroup(List<DeleteGroupModel> groups)
+		public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
 		{
 			if (groups.Count() < 1)
 			{
 				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
-			var result = Workspace.RemoveGroupsAsync(groups.Select(g => g.Uid).ToList());
-
+			await Workspace.RemoveGroupsAsync(groups.Select(g => g.Uid).ToList());
 			return Ok(new ConfirmResponse { message = (groups.Count == 1 ? "Group removed." : "Groups removed."), title = "Success" });
 		}
 

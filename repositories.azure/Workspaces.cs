@@ -125,18 +125,17 @@ where	g.id = @groupId;
 				fieldTypes.ForEach(ft =>
 				{
 					var prefix = $"f_{ft.ID}";
-					switch (ft.Type)
+					if (ft.Type == "Lookup")
 					{
-						case "Lookup":
-							validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-							fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-							fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");
-							break;
-						default:
-							validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-							fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-							fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");
-							break;
+						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
+						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
+						fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");
+					}
+					else 
+					{
+						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
+						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
+						fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");					
 					}
 				});
 			}

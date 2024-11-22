@@ -55,7 +55,7 @@ namespace igx.functions.consumption
 					try
 					{
 						var connectionString = CompanyConnectionStringHelper.ConnectionString(c.CompanyID, c.Server, c.Username, c.Password);
-						var workspace = new Workspaces(new DapperConnectionProvider() { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
+						var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
 
 						var context = new UriSecurityContextProvider
 						{

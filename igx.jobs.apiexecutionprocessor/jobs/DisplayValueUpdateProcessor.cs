@@ -51,7 +51,7 @@ namespace igx.functions.consumption
 					var _c = await Community.ReadTenantConnectionSettingsByIdAsync(updateInfo.CompanyID);
 					
 					var connectionString = CompanyConnectionStringHelper.ConnectionString(_c.CompanyID, _c.Server, _c.Username, _c.Password);
-					var workspace = new Workspaces(new DapperConnectionProvider() { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
+					var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
 					using (var companyConnection = new SqlConnection(connectionString))
 					{
 						await companyConnection.OpenIfClosed();

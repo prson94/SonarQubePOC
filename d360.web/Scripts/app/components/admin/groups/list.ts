@@ -6,31 +6,23 @@
     ViewChild,
     ViewEncapsulation
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { GroupService } from '../../../services/group.service';
+import { IOutputData } from 'angular-split';
+import { isEqual } from "lodash-es";
+import { LazyLoadEvent } from 'primeng/api';
+import { Table } from 'primeng/table';
+import { Subject, Subscription, forkJoin } from 'rxjs';
+import { V2ApiFilters } from '../../../models/asset-search.model';
+import { SortOrder } from '../../../models/enums.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GroupApiModel } from '../../../models/group.model';
-import { Title } from '@angular/platform-browser';
-import { StringConstants } from '../../../static/string-constants';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { GroupService } from '../../../services/group.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { GridColumn, GridField } from '../../../models/grid-definition.model';
-import { forkJoin, Subject, Subscription } from 'rxjs';
-import { AssetTypeClass } from '../../../models/asset.model';
-import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
-import { Table } from 'primeng/table';
-import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
-import { LinkClickInterceptor } from '../../../services/href-click-service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
-import { V2ApiFilters } from '../../../models/asset-search.model';
-import { LazyLoadEvent } from 'primeng/api';
-import { isEqual } from "lodash-es";
 import { SidePanelService } from '../../../services/side-panel.service';
-import { IOutputData } from 'angular-split';
-import { SortOrder } from '../../../models/enums.model';
+import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
+import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 import { GroupBasePage } from './_base';
 
 @Component({
@@ -184,7 +176,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
 		this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroupsLazy(this.getParams()))
             .subscribe((res) => {
 				let gridDefinition = res[0];
-				let groups = res[1];
+				const groups = res[1];
 
                 if (this.columns.length === 0 && this.fields.length === 0) {
                     this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
@@ -195,7 +187,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
 				this.groupItems = groups.items;
 
 				if (this.selectedRow) {
-					let sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
+					const sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
 					if (sItem.length > 0) {
 						this.selectedRow = sItem[0];
 					}
@@ -210,7 +202,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
     }
 
 	getParams() {
-		let params = new V2ApiFilters();
+		const params = new V2ApiFilters();
 
 		if (this.simpleTextFilter) {
 			params._simpleFilter = this.isContainsSearchDefault ? `*${this.simpleTextFilter}*` : this.simpleTextFilter;

@@ -81,7 +81,6 @@ namespace igx.jobs.apiexecutionprocessor
 
 					var fieldsRepository = new FieldsRepository(company, context, Queue, Storage, FeatureFlags);
 					var assetRepository = new AssetRepository(company, context, Queue, Storage, FeatureFlags);
-					var membershipRepository = new MembershipRepository(company, context, assetRepository, Queue, Storage, FeatureFlags);
 					var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage, FeatureFlags);
 						
 					var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
