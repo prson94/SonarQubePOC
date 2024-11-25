@@ -1246,8 +1246,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
-					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
