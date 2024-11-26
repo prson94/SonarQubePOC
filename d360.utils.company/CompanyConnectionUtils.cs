@@ -19,7 +19,7 @@ namespace d360.utils.company
         {
             string connectionString = "";
 
-			using (var cnn = new SqlConnection(Config.GetValue<string>("CommunityContext")))
+			using (var cnn = new SqlConnection(Config.GetValue<string>("ReadOnlyConnectionString")))
 			{
 				if (cnn.State != System.Data.ConnectionState.Open)
 				{

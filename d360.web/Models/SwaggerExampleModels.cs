@@ -235,41 +235,21 @@ namespace d360.web.Models
 
     #region Membership Examples
 
-    public class UserPostExample : IExamplesProvider
-    {
-        public object GetExamples()
-        {
-            return new
-            {
-                Username = "user@example.com",
-                FirstName = "John",
-                LastName = "Smith",
-                Password = "xxxxxx",
-                IsAdministrator = false,
-                ExecutionItemUid = Guid.Empty,
-                Fields = new Dictionary<string, string>()
-                {
-                    { "MyApiFieldName1", "My Field value" },
-                    { "MyApiFieldName2", "My Field value" }
-                }
-            };
-        }
-    }
-
     public class UserPutExample : IExamplesProvider
     {
         public object GetExamples()
         {
-            return new
-            {
+            return new UserApiModel
+			{
                 uid = Guid.Empty,
-                Username = "user@example.com",
+				Email = "user@example.com",
+				Username = "user@example.com",
                 FirstName = "John",
                 LastName = "Smith",
                 Password = "xxxxxx",
                 IsAdministrator = false,
                 ExecutionItemUid = Guid.Empty,
-                State = "Active|Inactive|Deleted",
+                State = CompanyResourceState.Active,
                 Fields = new Dictionary<string, string>()
                 {
                     { "MyApiFieldName1", "My Field value" },

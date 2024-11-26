@@ -363,9 +363,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>El archivo se ha cargado correctamente</value>
   </data>
-  <data name="GroupUidNotExists" xml:space="preserve">
-    <value>El UID de grupo proporcionado no es un UID de grupo válido. El grupo no existe.</value>
-  </data>
   <data name="InvalidAssetTypeID" xml:space="preserve">
     <value>ID de tipo de activo no válido. Proporcione un ID de tipo de activo válido.</value>
   </data>
@@ -383,9 +380,6 @@
   </data>
   <data name="InvalidResourceuid" xml:space="preserve">
     <value>[_resourceuid] proporcionada no válida.</value>
-  </data>
-  <data name="InvalidUserUids" xml:space="preserve">
-    <value>Uno o más de los UID de usuario pasados no son un usuario.</value>
   </data>
   <data name="Invalid_Order" xml:space="preserve">
     <value>[_order] proporcionada no válida.</value>

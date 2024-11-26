@@ -94,10 +94,10 @@ namespace d360.web.Controllers.V2
 			if (!string.IsNullOrEmpty(phrase))
 			{
 				var limitation = await GetQueryLimitation();
-				var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, phrase, 200, 0, limitation);
+				var result = SearchSource.GetSearchResults(SecurityContext.CompanyID, phrase, 200, 0, limitation);
 				result.Results.ForEach(i =>
 				{
-					i.AbsoluteUrl = string.Format($"https://{Community.GetPrimaryUrlPrefix()}.data3sixty.com/{i.Url}");
+					i.AbsoluteUrl = string.Format($"https://{SecurityContext.CompanyPrefix}.data3sixty.com/{i.Url}");
 				});
 
 				return result.Results.AsQueryable();
@@ -140,7 +140,7 @@ namespace d360.web.Controllers.V2
 			{
 				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 				var resultset = new IndexResults();
-				string isValid = ValidateQueryRequest(queryRequest);
+				string isValid = await ValidateQueryRequest(queryRequest);
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
@@ -166,7 +166,7 @@ namespace d360.web.Controllers.V2
 					queryRequest.FieldFilters.RemoveAll(f => f.Field == "Tags");
 					queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
 					var limitation = await GetQueryLimitation();
-					resultset = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, queryRequest, limitation);
+					resultset = SearchSource.GetSearchResultsWithAggregation(SecurityContext.CompanyID, queryRequest, limitation);
 
 					int augmentTime = 0;
 
@@ -247,7 +247,7 @@ namespace d360.web.Controllers.V2
 				if (!string.IsNullOrWhiteSpace(categories))
 				{
 					IEnumerable<string> categoryList = categories.Split(',').Select(c => c.Trim());
-					IEnumerable<string> invalidCategories = categoryList.Except(GetVisibleCategories());
+					IEnumerable<string> invalidCategories = categoryList.Except(await GetVisibleCategories());
 
 					if (invalidCategories.Any())
 					{
@@ -263,7 +263,7 @@ namespace d360.web.Controllers.V2
 				if (!string.IsNullOrEmpty(query))
 				{
 					var limitation = await GetQueryLimitation();
-					res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, query, limitation, num.GetValueOrDefault(7), categories).ToList();
+					res = SearchSource.GetTypeaheadResults(SecurityContext.CompanyID, query, limitation, num.GetValueOrDefault(7), categories).ToList();
 					await AugmentResults(res).ConfigureAwait(false);
 				}
 
@@ -294,7 +294,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetCategories()
 		{
-			List<string> visibleCategories = GetVisibleCategories();
+			List<string> visibleCategories = await GetVisibleCategories();
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, visibleCategories))).ConfigureAwait(false);
 		}
@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetStatus()
 		{
-			var resultset = SearchSource.GetStatusSearch(Company.CurrentCompanyID, true);
+			var resultset = SearchSource.GetStatusSearch(SecurityContext.CompanyID, true);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, resultset));
 		}
@@ -341,7 +341,7 @@ namespace d360.web.Controllers.V2
 
 			List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
 
-			if (FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
+			if (FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser()))
 			{
 				classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
 			}
@@ -371,13 +371,13 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetIndexableStatus()
 		{
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
-			List<IndexableCount> dbCounts = GetDatabaseCounts();
-			List<IndexableCount> esStatus = SearchSource.GetStatusList(Company.CurrentCompanyID);
+			List<IndexableCount> dbCounts = await GetDatabaseCounts();
+			List<IndexableCount> esStatus = SearchSource.GetStatusList(SecurityContext.CompanyID);
 			List<IndexableStatus> queueStatus = Company.Query<IndexableStatus>(@"
 				SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate
 				FROM [queue].[Search]
@@ -435,17 +435,17 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DoRebuild(List<SearchPartialRebuildRequest> rebuildRequests)
 		{
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
 			var response = new ConfirmResponse();
-			SearchIndexer indexer = new SearchIndexer(Company.Connection, Company.CurrentCompanyID, SearchSource);
+			SearchIndexer indexer = new SearchIndexer(Company.Connection, SecurityContext.CompanyID, SearchSource);
 			rebuildRequests.ForEach(r => {
 				AssetTypeClass assetTypeClass = (AssetTypeClass)r.Class;
 				var origin = "QueueRebuildRequest, class: " + assetTypeClass.ToString();
-				ReindexModel model = new ReindexModel { CompanyID = Company.CurrentCompanyID, Category = assetTypeClass.ToString() };
+				ReindexModel model = new ReindexModel { CompanyID = SecurityContext.CompanyID, Category = assetTypeClass.ToString() };
 				if (r.AssetTypeUid != Guid.Empty)
 				{
 					model.AssetTypeUid = r.AssetTypeUid;
@@ -504,11 +504,11 @@ namespace d360.web.Controllers.V2
 			{ CommonNames.AssetTypeClass_DiagramAsset, "fa-share-alt" }
 		};
 
-		private List<string> GetVisibleCategories()
+		private async Task<List<string>> GetVisibleCategories()
 		{
 			List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
 
-			if (Company.Semantics.Any() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
+			if (Company.Semantics.Any() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser()))
 			{
 				visibleCategories.Add(AssetTypeClass.SemanticType.ToString());
 			}
@@ -530,9 +530,9 @@ namespace d360.web.Controllers.V2
 			return visibleCategories;
 		}
 
-		private List<IndexableCount> GetDatabaseCounts()
+		private async Task<List<IndexableCount>> GetDatabaseCounts()
 		{
-			var semanticTypesEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser());
+			var semanticTypesEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser());
 
 			var sql = $@"WITH AssetTypesCTE (Class, AssetTypeUid, CurrentCount)
 				as
@@ -593,7 +593,7 @@ namespace d360.web.Controllers.V2
 			return dbCounts;
 		}
 
-		private string ValidateQueryRequest(QueryRequest queryRequest)
+		private async Task<string> ValidateQueryRequest(QueryRequest queryRequest)
 		{
 			if (queryRequest.Size > 5000)
 			{
@@ -623,7 +623,7 @@ namespace d360.web.Controllers.V2
 				if (queryRequest.AggregationFilters.Exists(f => f.Field == "Category"))
 				{
 					IEnumerable<string> categoryList = queryRequest.AggregationFilters.Where(f => f.Field == "Category").FirstOrDefault().Values;
-					IEnumerable<string> invalidCategories = categoryList.Except(GetVisibleCategories());
+					IEnumerable<string> invalidCategories = categoryList.Except(await GetVisibleCategories());
 
 					if (invalidCategories.Any())
 					{
@@ -1055,12 +1055,12 @@ namespace d360.web.Controllers.V2
 
 			QueryLimitation limits = new QueryLimitation
 			{
-				IsAdministrator = Company.CurrentResourceIsAdmin,
-				ResourceID = Company.CurrentResourceID,
-				ResourceGroupIDs = Company.ResourceGroups.Where(i => i.ResourceID == Company.CurrentResourceID).Select(i => i.GroupID).ToList(),
+				IsAdministrator = SecurityContext.IsAdministrator,
+				ResourceID = SecurityContext.ResourceID,
+				ResourceGroupIDs = Company.ResourceGroups.Where(i => i.ResourceID == SecurityContext.ResourceID).Select(i => i.GroupID).ToList(),
 			};
 
-			if (Company.CurrentResourceIsAdmin)
+			if (SecurityContext.IsAdministrator)
 			{
 				limits.HideData3SixtyUsers = await GetHideData3SixtyUsers();
 			}
@@ -1070,7 +1070,7 @@ namespace d360.web.Controllers.V2
 				blockedCategories.Add(AssetTypeClass.Group.ToString());
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser()))
 			{
 				blockedCategories.Add(AssetTypeClass.SemanticType.ToString());
 			}

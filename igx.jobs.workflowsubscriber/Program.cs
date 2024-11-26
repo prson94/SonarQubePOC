@@ -25,6 +25,7 @@ namespace igx.jobs.workflowsubscriber
 					});
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource

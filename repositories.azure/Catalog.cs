@@ -912,24 +912,25 @@ order by    P.[Path];";
 				new SortColumnOption("tagtypeuid", "tt.[Uid]")
 			};
 
-
-			#region Validate Paramter
-				if (!queryParams.ValidateForQueryParameter<Guid>("uid",ref parameterValue))
-				{
-					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidTagUid, parameterValue));
-				}
+			#region Validate Parameter
+			
+			if (!queryParams.ValidateForQueryParameter<Guid>("uid",ref parameterValue))
+			{
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidTagUid, parameterValue));
+			}
 				
-				var validOrderFieldsList = validOrderFields.Select(x => x.QueryStringPropertyName).ToList();
+			var validOrderFieldsList = validOrderFields.Select(x => x.QueryStringPropertyName).ToList();
 
-				if (!queryParams.ValidateForQueryParameterFromList("_order", validOrderFieldsList, ref parameterValue))
-				{
-					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidOrderBy, parameterValue));
-				}
+			if (!queryParams.ValidateForQueryParameterFromList("_order", validOrderFieldsList, ref parameterValue))
+			{
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidOrderBy, parameterValue));
+			}
 
-				if (!queryParams.ValidateForQueryParameter<string>("_direction", ref parameterValue))
-				{
-					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidDirection, parameterValue));
-				}
+			if (!queryParams.ValidateForQueryParameter<string>("_direction", ref parameterValue))
+			{
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidDirection, parameterValue));
+			}
+
 			#endregion
 
 			var countSql = $@"select count(1) 

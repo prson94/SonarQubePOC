@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -22,7 +23,7 @@ namespace igx.jobs.apiexecutionprocessor
 		readonly string INSERT_SQL = "insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)";
 		readonly string INSERT_FIELD_SQL = "insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)";
 
-		public ExecutionPostProcessor(IConfiguration config) : base(config) { }
+		public ExecutionPostProcessor(ICommunity community, IConfiguration config) : base(community, config) { }
 
 		string maxVersionSql(string objectColumn, string objectIdColumn)
 		{
@@ -52,8 +53,7 @@ from	reporting.Global_FieldAudit i_p
 
 			using (log.BeginScope(logProperties))
 			{
-				string companyConnectionString = GetCompanyConnectionString(request.CompanyID);
-
+				string companyConnectionString = Community.GetConnectionStringForTenant(request.CompanyID);
 				using (var companyConnection = new SqlConnection(companyConnectionString))
 				{
 					await companyConnection.OpenIfClosed();

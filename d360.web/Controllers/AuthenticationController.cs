@@ -9,20 +9,16 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.extensions;
-using d360.model.DataAccessLayer;
 using d360.web.caching;
 using d360.web.Extensions;
 using d360.web.Models;
 using Dapper;
 using IdentityModel.Client;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Logging;
 using repositories;
 using Resources;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -60,15 +56,15 @@ namespace d360.web.Controllers
 			MembershipRepository = membershipRepository;
         }
 
-        #endregion
+		#endregion
 
-        private XmlElement createAuthnRequest()
+        private XmlElement createAuthnRequest(SamlAuthenticationSettings saml)
         {
             // Create the authentication request.
             AuthnRequest authnRequest = new AuthnRequest
             {
                 AssertionConsumerServiceURL = string.Format("{0}://{1}/sso/acs", Request.Url.Scheme, Request.Url.Authority),
-                Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,
+                Destination = saml.IdpSsoEndpoint,
                 Issuer = new Issuer(APP_ID),
                 ForceAuthn = false,
                 NameIDPolicy = new NameIDPolicy(null, null, true)
@@ -76,12 +72,12 @@ namespace d360.web.Controllers
 
 			// Serialize the authentication request to XML for transmission.
 			var authnRequestXml = authnRequest.ToXml();
-			Log.LogTrace($"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}");
+			Log.LogTrace($"createAuthnRequest => Idp Endpoint: {saml.IdpSsoEndpoint}");
 
             return authnRequestXml;
         }
 
-        private void verifySignature(XmlElement assertionXml)
+        private void verifySignature(SamlAuthenticationSettings saml, XmlElement assertionXml)
         {
             try
             {
@@ -89,9 +85,9 @@ namespace d360.web.Controllers
                 {
 					Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
 
-                    if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
+                    if (saml.IdpCertificateFile != null)
                     {
-                        var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
+                        var x509Certificate = new X509Certificate2(saml.IdpCertificateFile);
                         
                         if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
                         {
@@ -121,7 +117,7 @@ namespace d360.web.Controllers
             }
         }
 
-        private Parameters loadExtraParametersFromOpenIdSettings(CompanyOpenIdAuthenticationSettings authenticationSettings)
+        private Parameters loadExtraParametersFromOpenIdSettings(OidcAuthenticationSettings authenticationSettings)
         {
             Parameters extras = null;
 
@@ -148,17 +144,17 @@ namespace d360.web.Controllers
             System.Action customAction = null)
         {
             Resource resource = null;
+			RepositoryResponse<Resource> response = null;
 
 			if (!string.IsNullOrEmpty(eMail))
             {
 				eMail = eMail.ToLowerInvariant();
-
 				userName = string.IsNullOrEmpty(userName) ? eMail : userName.ToLowerInvariant();
 
-				resource = Community.Filter<Resource>(i => i.Email.ToLower() == eMail).SingleOrDefault();
-				if (resource == null)
+				response = await Community.ReadUserByEmailAsync(eMail);
+				if (response.IsSuccess && response.Data != null)
 				{
-					resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
+					resource = response.Data;
 				}
 
 				//If there is a domain whitelist, make sure the user has access
@@ -209,34 +205,24 @@ namespace d360.web.Controllers
 						allGroups.AddRange(groups[key]);
 					}
 
-                    isCompanyAdministrator = Community.CompanyDomainGroups.Any(g =>
-                        g.CompanyID == Community.CurrentCompanyID &&
-                        g.DomainSettingID == Community.CurrentDomainSettingID &&
-						allGroups.Contains(g.GroupName) &&
-                        g.IsAdministrator);
+                    isCompanyAdministrator = await Community.ReadShouldUserBeAutoAdminByGroupMembershipAsync(SecurityContext.CompanyID, SecurityContext.DomainSettingID, allGroups);
 					
 					Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
 				}
 
-                if (resource == null)
+				if (resource == null)
                 {
-					Log.LogInformation($"Did not find resource account for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
+					Log.LogInformation($"Did not find resource account for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
 
-                    if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(eMail) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+                    if (SecurityContext.AllowNewUserLogin && !string.IsNullOrEmpty(userName))
                     {
-						Log.LogInformation($"Now creating resource account for Username: {userName} and Email: {eMail}.");
+						Log.LogInformation($"Creating resource account for Username: {userName} and Email: {eMail}.");
 
-                        if (string.IsNullOrEmpty(firstName))
-                        {
-                            firstName = "Unknown";
-                        }
+						firstName = string.IsNullOrEmpty(firstName) ? "Unknown" : firstName;
+						lastName = string.IsNullOrEmpty(lastName) ? "Unknown" : lastName;
+						eMail = string.IsNullOrEmpty(eMail) ? userName : eMail;
 
-                        if (string.IsNullOrEmpty(lastName))
-                        {
-                            lastName = "Unknown";
-                        }
-
-                        resource = new Resource
+						resource = new Resource
                         {
                             Email = eMail,
                             FirstName = firstName,
@@ -244,82 +230,29 @@ namespace d360.web.Controllers
                             Password = PasswordHelper.CreateRandomPassword(),
                             Username = userName
                         };
-                        Community.Add(resource);
-
-						//if there is no asset record call UpsertUsers method which will update both community and company
-						if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
+                        var userCreateResponse = await Community.CreateUserAsync(resource);
+						if (userCreateResponse.IsSuccess)
 						{
-							await HandleNewSSOUser(resource);
+							resource.ID = userCreateResponse.Data;
 						}
-						else if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
-						{
-							var companyResource = new CompanyResource
-							{
-								CompanyID = Community.CurrentCompanyID,
-								IsAdministrator = isCompanyAdministrator,
-								ResourceID = resource.ID,
-								LastLoggedInOn = DateTime.UtcNow,
-								State = CompanyResourceState.Active
-							};
-							Community.Add(companyResource);
-
-							Company.Add(new GlobalReportingResource
-							{
-								LastLoggedInOn = companyResource.LastLoggedInOn,
-								Email = resource.Email,
-								FirstName = resource.FirstName,
-								LastName = resource.LastName,
-								IsAdministrator = false,
-								ResourceID = resource.ID,
-								Uid = resource.Uid,
-								State = companyResource.State,
-								CreatedOn = DateTime.UtcNow
-							});
-						}
-
-						Log.LogTrace($"Finished creating resource account for Username: {userName} and Email: {eMail}.");
                     }
                 }
-                else
+                
+				if (resource != null)
                 {
-                    var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
+                    var companyResource = await Community.ReadTenantUserAsync(SecurityContext.CompanyID, resource.ID);
                     
                     if (companyResource == null)
                     {
-						Log.LogInformation($"User not associated to tenant. Username: {userName}. Other info: (Email : {eMail}, First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
+						Log.LogInformation($"User not associated to tenant. Username: {userName}. Other info: (Email : {eMail}, First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
 
-						if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
+						if (SecurityContext.AllowNewUserLogin)
                         {
-							//if there is no asset record call UpsertUsers method which will update both community and company
-							if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
-							{
-								await HandleNewSSOUser(resource);
-							}
-							else if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
-							{
-								companyResource = new CompanyResource
-								{
-									CompanyID = Community.CurrentCompanyID,
-									IsAdministrator = isCompanyAdministrator,
-									ResourceID = resource.ID,
-									LastLoggedInOn = DateTime.UtcNow,
-									State = CompanyResourceState.Active
-								};
-								Community.Add(companyResource);
+							var loggedInOn = DateTime.UtcNow;
 
-								Company.Add(new GlobalReportingResource
-								{
-									LastLoggedInOn = companyResource.LastLoggedInOn,
-									Email = resource.Email,
-									FirstName = resource.FirstName,
-									LastName = resource.LastName,
-									IsAdministrator = false,
-									ResourceID = resource.ID,
-									Uid = resource.Uid,
-									State = companyResource.State,
-									CreatedOn = DateTime.UtcNow
-								});
-							}
+							await Community.CreateUserInTenantAsync(SecurityContext.CompanyID, resource.ID, isCompanyAdministrator, loggedInOn, AuthenticationMethod.UI);
+							saveUserAsLocalResource(resource, loggedInOn);
+							await saveUserAsAsset(resource);
 						}
                         else
                         {
@@ -332,13 +265,10 @@ namespace d360.web.Controllers
 
 						if (companyResource.State == CompanyResourceState.Active)
                         {
-                            // We will not support downgrading users from admin to non-admin, ONLY upgrading (GOV-13515).
-                            if (isCompanyAdministrator)
-                            {
-                                companyResource.IsAdministrator = isCompanyAdministrator;
-                            }
-                            companyResource.LastLoggedInOn = DateTime.UtcNow;
-                            Community.Update(companyResource);
+							// We will not support downgrading users from admin to non-admin, ONLY upgrading (GOV-13515).
+							var isAdmin = isCompanyAdministrator ? isCompanyAdministrator : companyResource.IsAdministrator; 
+							var loggedInOn = DateTime.UtcNow;
+							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, isAdmin, loggedInOn, AuthenticationMethod.UI);
                         }
                         else
                         {
@@ -373,7 +303,7 @@ namespace d360.web.Controllers
 
                         if (userCorePropertiesChanged)
                         {
-                            Community.Update(resource);
+                            await Community.UpdateUserAsync(resource);
                         }
                     }
                     else
@@ -394,7 +324,7 @@ namespace d360.web.Controllers
 
                     // Create a login context for the asserted identity.
 
-                    #region Process Group claims
+                    #region Process groups claim
 
                     if (groups?.Any() == true)
                     {
@@ -617,25 +547,28 @@ namespace d360.web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
         }
 
-		private async Task HandleNewSSOUser(Resource resource)
+		async Task saveUserAsAsset(Resource resource)
 		{
-			var execution = new ApiExecution
+			//if there is no asset record call UpsertUsers method which will update both community and company
+			if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
 			{
-				ExecutionID = Guid.NewGuid(),
-				StartedOn = DateTime.UtcNow,
-				Action = ApiExecutionAction.UpsertUsers,
-				Route = "",
-				Method = "",
-				ResourceID = resource.ID,
-				Total = 1,
-				Fields = "",
-				Error = 0,
-				Processed = 0,
-				ApplicationId = "AllowNewUserLogin"
-			};
-			var users = new List<UserApiInsertModel>
+				var execution = new ApiExecution
+				{
+					ExecutionID = Guid.NewGuid(),
+					StartedOn = DateTime.UtcNow,
+					Action = ApiExecutionAction.UpsertUsers,
+					Route = "",
+					Method = "",
+					ResourceID = resource.ID,
+					Total = 1,
+					Fields = "",
+					Error = 0,
+					Processed = 0,
+					ApplicationId = "AllowNewUserLogin"
+				};
+				var users = new List<UserApiModel>
 								{
-									new UserApiInsertModel
+									new UserApiModel
 									{
 										FirstName = resource.FirstName,
 										LastName = resource.LastName,
@@ -647,27 +580,35 @@ namespace d360.web.Controllers
 									}
 								};
 
-			await MembershipRepository.UpsertUsers(execution, users, true, true, false);
-			
-			var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
-			if (companyResource != null)
-			{
-				if (companyResource.State == CompanyResourceState.Active)
-				{
-					companyResource.LastLoggedInOn = DateTime.UtcNow;
-					Community.Update(companyResource);
-				}
+				await Workspace.UpsertUsersAsync(execution.Id, users, true);
 			}
+		}
 
+		void saveUserAsLocalResource(Resource resource, DateTime loggedInOn)
+		{
 			var globalresource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == resource.ID).FirstOrDefault();
-
 			if (globalresource != null)
 			{
 				if (globalresource.State == CompanyResourceState.Active)
 				{
-					globalresource.LastLoggedInOn = DateTime.UtcNow;
+					globalresource.LastLoggedInOn = loggedInOn;
 					Company.Update(globalresource);
 				}
+			}
+			else
+			{
+				Company.Add(new GlobalReportingResource
+				{
+					LastLoggedInOn = loggedInOn,
+					Email = resource.Email,
+					FirstName = resource.FirstName,
+					LastName = resource.LastName,
+					IsAdministrator = false,
+					ResourceID = resource.ID,
+					Uid = resource.Uid,
+					State = CompanyResourceState.Active,
+					CreatedOn = loggedInOn
+				});
 			}
 		}
 
@@ -679,28 +620,24 @@ namespace d360.web.Controllers
                 return RedirectToAction("unsupported", "home");
             }
 
-            if (!Community.CurrentCompanySsoModel.IsCompanyActive)
-            {
-                return InactiveCompany();
-            }
-
-            string returnUrl = Request.QueryString["ReturnUrl"];
+			string returnUrl = Request.QueryString["ReturnUrl"];
 
             if (Uri.TryCreate(returnUrl, UriKind.RelativeOrAbsolute, out var testUri) == false || testUri.IsAbsoluteUri)
             {
                 returnUrl = "/home";
             }
 
-            switch (Community.CurrentCompanySsoModel.AuthenticationType)
+            switch (SecurityContext.AuthenticationType)
             {
                 case AuthenticationType.Saml:
-                    #region
+					#region
 
-                    var authnRequestXml = createAuthnRequest();
+					var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
+                    var authnRequestXml = createAuthnRequest(saml);
 
                     Log.LogTrace($"Login => relayState: {returnUrl}");
 
-                    if (Community.CurrentCompanySsoModel.SignInitialSSORequest)
+                    if (saml.SignInitialSSORequest)
                     {
                         Log.LogTrace($"Login => signing initial authentication request");
 
@@ -710,7 +647,7 @@ namespace d360.web.Controllers
                             stream.Read(bytes, 0, bytes.Length);
                             X509Certificate2 x509Certificate = new X509Certificate2(bytes, "D3S");
 
-                            ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, returnUrl, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+                            ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, saml.IdpSsoEndpoint, authnRequestXml, returnUrl, x509Certificate != null ? x509Certificate.PrivateKey : null, "http://www.w3.org/2000/09/xmldsig#rsa-sha1");
                         }
                     }
                     else
@@ -718,7 +655,7 @@ namespace d360.web.Controllers
                         Log.LogTrace($"Login => not signing initial authentication request");
 
                         var hashString = "";
-                        switch (Community.CurrentCompanySsoModel.HashAlgorithmType)
+                        switch (saml.HashAlgorithmType)
                         {
                             case HashAlgorithmType.SHA1:
                                 hashString = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
@@ -737,16 +674,17 @@ namespace d360.web.Controllers
                                 break;
                         }
 
-                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, returnUrl, null, hashString);
+                        ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, saml.IdpSsoEndpoint, authnRequestXml, returnUrl, null, hashString);
                     }
 
                     return new EmptyResult();
 
                 #endregion
                 case AuthenticationType.OpenId:
-                    var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
 
-                    if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId))
+					var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
+
+                    if (string.IsNullOrEmpty(oidc.baseUri) || string.IsNullOrEmpty(oidc.clientId))
                     {
                         return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
                     }
@@ -755,20 +693,19 @@ namespace d360.web.Controllers
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-                    Community.SetOpenIdRequest(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
-
+                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
 
 					var client = new HttpClient();
-					var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? authenticationSettings.baseUri : authenticationSettings.discoveryUri;
+					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
 					var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
-					var authUri = discoDoc.authorization_endpoint ?? $"{authenticationSettings.baseUri}/authorize";
+					var authUri = discoDoc.authorization_endpoint ?? $"{oidc.baseUri}/authorize";
 					var ru = new RequestUrl(authUri);
 
 					var scopes = "openid profile email infogix";
 
-					if (authenticationSettings.scopes != null && authenticationSettings.scopes.Count > 0)
+					if (oidc.scopes != null && oidc.scopes.Count > 0)
 					{
-						scopes = string.Join(" ", authenticationSettings.scopes);
+						scopes = string.Join(" ", oidc.scopes);
 					}
 
 					string loginHint = null;
@@ -776,7 +713,7 @@ namespace d360.web.Controllers
 					{
 						loginHint = Request.Params["login_hint"];
 					}
-					var extraParameters = loadExtraParametersFromOpenIdSettings(authenticationSettings);
+					var extraParameters = loadExtraParametersFromOpenIdSettings(oidc);
 					if (Request.Params.AllKeys.Contains("domain_hint"))
 					{
 						var domainHint = Request.Params["domain_hint"];
@@ -787,7 +724,7 @@ namespace d360.web.Controllers
 						extraParameters.Add("domain_hint", domainHint);
 					}
 					var url = ru.CreateAuthorizeUrl(
-                        clientId: authenticationSettings.clientId,
+                        clientId: oidc.clientId,
                         responseType: "code",
                         scope: scopes,
                         callbackUri,
@@ -802,7 +739,6 @@ namespace d360.web.Controllers
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
                     await AppendSettingsToViewData();
-
                     return View();
             }
         }
@@ -825,26 +761,28 @@ namespace d360.web.Controllers
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
             {
-                SAMLAssertion samlAssertion = null;
+				var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
+
+				SAMLAssertion samlAssertion = null;
 
 				Log.LogInformation($"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}");
 
 				if (samlResponse.GetAssertions().Count > 0)
                 {
                     samlAssertion = samlResponse.GetAssertions()[0];
-                    verifySignature(samlAssertion.ToXml());
+                    verifySignature(saml, samlAssertion.ToXml());
                 }
                 else if (samlResponse.GetSignedAssertions().Count > 0)
                 {
                     var samlAssertionXml = samlResponse.GetSignedAssertions()[0];
-                    verifySignature(samlAssertionXml);
+                    verifySignature(saml, samlAssertionXml);
                     samlAssertion = new SAMLAssertion(samlAssertionXml);
                 }
                 else if (samlResponse.GetEncryptedAssertions().Count > 0)
                 {
                     // Decrypt the encrypted assertion.
                     var samlAssertionXml = samlResponse.GetAssertions()[0].ToXml();
-                    verifySignature(samlAssertionXml);
+                    verifySignature(saml, samlAssertionXml);
 
                     samlAssertion = new SAMLAssertion(samlAssertionXml);
                 }
@@ -952,16 +890,15 @@ namespace d360.web.Controllers
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
             }
 
-            var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
-			Log.LogTrace($"AuthenticationSettings: {Community.CurrentCompanySsoModel.AuthenticationSettings}");
+			var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
-			if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
+			if (string.IsNullOrEmpty(oidc.baseUri) || string.IsNullOrEmpty(oidc.clientId) || string.IsNullOrEmpty(oidc.clientSecret) || string.IsNullOrEmpty(oidc.audience))
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
             }
 
-            var baseUri = authenticationSettings.baseUri;
-            var openIdRequest = Community.GetOpenIdRequest(state);
+            var baseUri = oidc.baseUri;
+            var openIdRequest = await Community.GetOpenIdRequestAsync(state);
 
             if (openIdRequest == null)
             {
@@ -972,15 +909,15 @@ namespace d360.web.Controllers
             var client = new HttpClient();
             string redirectUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-			var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
+			var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? baseUri : oidc.discoveryUri;
 			var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
 			var tokenUri = discoDoc.token_endpoint;
 			
 			var response = await client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
             {
                 Address = tokenUri,//$"{baseUri}/token",
-				ClientId = authenticationSettings.clientId,
-                ClientSecret = authenticationSettings.clientSecret,
+				ClientId = oidc.clientId,
+                ClientSecret = oidc.clientSecret,
                 ClientCredentialStyle = ClientCredentialStyle.PostBody,
                 Code = code,
                 Method = HttpMethod.Post,
@@ -1024,7 +961,7 @@ namespace d360.web.Controllers
 
             try
             {
-                Community.RemoveOpenIdRequest(openIdRequest);
+                await Community.RemoveOpenIdRequestAsync(openIdRequest);
             }
             catch (Exception ex)
             {
@@ -1036,8 +973,8 @@ namespace d360.web.Controllers
                 var keySet = await client.GetJsonWebKeySetAsync(discoDoc.jwks_uri);
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(
-					authenticationSettings.nameClaimType,
-                    authenticationSettings.audience, false,
+					oidc.nameClaimType,
+					oidc.audience, false,
                     discoDoc.issuer, (discoDoc.issuer != null),
                     keySet.KeySet.Keys, true, true, true, false);
 
@@ -1072,7 +1009,7 @@ namespace d360.web.Controllers
         }
 
 		[AllowAnonymous, Route("sso/openid"), HttpGet]
-		public async Task<ActionResult> HandleOpenIdGetResponse()
+		public ActionResult HandleOpenIdGetResponse()
 		{
 			return new ContentResult { Content = "Govern does not respond to IdP-initiated JWT requests.", ContentType = "text/html" };
 		}
@@ -1090,7 +1027,7 @@ namespace d360.web.Controllers
 
             if (ModelState.IsValid)
             {
-                var resource = Community.ValidateResource(model.UserName, model.Password);
+                var resource = await Community.ValidateResourceAsync(model.UserName, model.Password, SecurityContext.CompanyID);
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
@@ -1136,10 +1073,10 @@ namespace d360.web.Controllers
         {
             FormsAuthentication.SignOut();  // Logout locally.
 
-            switch (Community.CurrentCompanySsoModel.AuthenticationType)
+            switch (SecurityContext.AuthenticationType)
             {
                 case AuthenticationType.OpenId:
-                    var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
+					var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
                     var idToken = Request.Cookies["IdToken"].Value;
 
@@ -1150,30 +1087,31 @@ namespace d360.web.Controllers
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
 
 						var client = new HttpClient();
-						var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? authenticationSettings.baseUri : authenticationSettings.discoveryUri;
+						var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
 						var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
 
-						var endSessionUri = discoDoc.end_session_endpoint ?? $"{authenticationSettings.baseUri}/logout";
+						var endSessionUri = discoDoc.end_session_endpoint ?? $"{oidc.baseUri}/logout";
 
 						var ru = new RequestUrl(endSessionUri);
                         var url = ru.CreateEndSessionUrl(idToken,
                             callbackUri,
-                            extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
+                            extra: loadExtraParametersFromOpenIdSettings(oidc)
                         );
 
                         return Redirect(url);
                     }
                     break;
                 case AuthenticationType.Saml:
-                    var sloEndpoint = Community.CurrentCompanySsoModel.IdpSloEndpoint + "";
+					var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
+					var sloEndpoint = saml.IdpSloEndpoint + "";
                     sloEndpoint = sloEndpoint.Trim();
                     if (!string.IsNullOrEmpty(sloEndpoint))
                     {
-                        var resource = Community.GetById<Resource>(Community.CurrentResourceID);
+                        var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
 
-                        var lr = new ComponentSpace.SAML2.Protocols.LogoutRequest
+                        var lr = new LogoutRequest
                         {
-                            NameID = new NameID(resource.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
+                            NameID = new NameID(resource.Data.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
                             Issuer = new Issuer(APP_ID)
                         };
 
@@ -1298,7 +1236,7 @@ namespace d360.web.Controllers
                             // check that the request is less then 24 hours old
                             if ((resetRequest.CreateDate - DateTime.UtcNow).TotalDays < 1)
                             {
-                                ResetResourcePassword(resource.ResourceID, resource.FirstName, resource.Email, resource.FullName);
+                                await ResetResourcePassword(resource.ResourceID, resource.FirstName, resource.Email, resource.FullName);
                                 success = true;
                             }
 
@@ -1349,7 +1287,7 @@ namespace d360.web.Controllers
 		private List<ClaimMapping> getClaimMappings()
 		{
 			ICachingProvider cache = new MemoryCachingProvider();
-			return cache.GetItem<List<ClaimMapping>>($"{Company.CurrentCompanyID}_{Company.CurrentCompanyDomain}_ClaimMappings") ?? new List<ClaimMapping>();
+			return cache.GetItem<List<ClaimMapping>>($"{SecurityContext.CompanyID}_{SecurityContext.CompanyPrefix}_ClaimMappings") ?? new List<ClaimMapping>();
 		}
     }
 }

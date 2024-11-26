@@ -12,6 +12,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
+using repositories.azure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -29,7 +31,7 @@ namespace igx.jobs.indexer
 		readonly IQueueSource Queue;
 		readonly ElasticSearchSource Search;
 
-		public Indexer(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(config)
+		public Indexer(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(community, config)
 		{
 			Cache = cache;
 			Mail = mail;
@@ -51,9 +53,11 @@ namespace igx.jobs.indexer
 			{
 				try
 				{
-					using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID, ConnString))
+					var connectionString = Community.GetConnectionStringForTenant(reindex.CompanyID);
+					var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
+					using (var company = new SqlConnection(connectionString))
 					{
-						await ProcessRebuildRequest(Search, company, reindex, log);
+						await ProcessRebuildRequest(Search, company, workspace, reindex, log);
 					}
 				}
 				catch (Exception ex)
@@ -63,7 +67,7 @@ namespace igx.jobs.indexer
 			}
 		}
 
-        public async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
+        public async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, Workspaces workspace, ReindexModel reindex, ILogger log)
         {
             SearchIndexer indexer = new SearchIndexer(company, reindex.CompanyID, source);
 			if (reindex.AssetUid.HasValue)
@@ -129,18 +133,16 @@ namespace igx.jobs.indexer
 			}
 			else
 			{
+				int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);
+				await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Active, timeoutHours);
 				await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
+				await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Inactive, timeoutHours);
 			}
         }
 
         public async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
         {
-            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active, log);
-
-            if (companyConn.State != System.Data.ConnectionState.Open)
-            {
-                companyConn.Open();
-            }
+			await companyConn.OpenIfClosed();
 
 			var sql = "select case " +
 					  "	WHEN a.dist > 30000 THEN 30000 " +
@@ -197,41 +199,7 @@ namespace igx.jobs.indexer
 
             });
 
-            await LogCompanyReindexComplete(CompanyID, log);
-            if (companyConn.State != System.Data.ConnectionState.Closed)
-            {
-                companyConn.Close();
-            }
-        }
-
-        #region Supporting Functions
-
-        private async Task LogCompanyReindexComplete(int companyID, ILogger log)
-        {
-            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive, log);
-        }
-
-        private async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status, ILogger log)
-        {
-            var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == companyID);
-
-			var context = new UriSecurityContextProvider
-			{
-				CompanyID = companyID,
-				CompanyPrefix = _c.UrlPrefix,
-				ResourceID = 0,
-				IsAdministrator = true
-			};
-			var community = new CommunityContext(ConnString, Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-
-			int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);
-			
-            CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, timeoutHours);
-			if (currentStatue != status) 
-			{
-				await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, timeoutHours);
-			}
+			companyConn.CloseIfOpened();
         }
 
         private Tuple<byte, byte> GetNGramLimits(SqlConnection context)
@@ -241,7 +209,5 @@ namespace igx.jobs.indexer
             byte nGramMax = (byte)(((decimal)_ngram % 1) * 100);
             return new Tuple<byte, byte>(nGramMin, nGramMax);
         }
-
-        #endregion
     }
 }

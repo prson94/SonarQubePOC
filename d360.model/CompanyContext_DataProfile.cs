@@ -627,7 +627,7 @@ namespace d360.model
 
 								try
 								{
-									Connection.Query<KeyValuePair<long, long>>(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+									Connection.Query<KeyValuePair<long, long>>(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 									#endregion
 
@@ -1635,7 +1635,7 @@ namespace d360.model
 								#region Load valid items into table
 								try
 								{
-									Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+									Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 									#endregion
 
@@ -1695,7 +1695,7 @@ namespace d360.model
 				{
 					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
-						CompanyID = CurrentCompanyID,
+						CompanyID = SecurityContext.CompanyID,
 						BatchUids = profileUids,
 						BatchOperation = ReindexBatchOperation.Update
 					});
@@ -1708,7 +1708,7 @@ namespace d360.model
 						var profileUidsTaken = profileUids.Skip(indexOfLastItemTaken).Take(batchSize).ToList();
 						QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 						{
-							CompanyID = CurrentCompanyID,
+							CompanyID = SecurityContext.CompanyID,
 							BatchUids = profileUidsTaken,
 							BatchOperation = ReindexBatchOperation.Update
 						});

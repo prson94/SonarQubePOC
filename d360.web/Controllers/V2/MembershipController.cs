@@ -1,9 +1,11 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
+using d360.core.resources;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using d360.web.Filters;
@@ -33,6 +35,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
+using System.Text.RegularExpressions;
 
 namespace d360.web.Controllers.V2
 {
@@ -44,19 +47,92 @@ namespace d360.web.Controllers.V2
 	]
 	public class MembershipController : BaseV2ApiController
 	{
-		private readonly IMediator mediator;
-		private readonly IMembershipRepository membershipRepository;
-		private readonly IAssetRepository assetRepository;
+		private readonly IMediator Mediator;
+		private readonly IMembershipRepository Membership;
+		private readonly IAssetRepository Assets;
+		//private readonly ISecurity Security;
+		private IQueueSource Queue;
+		private IStorageProvider Storage;
 
 		public MembershipController(
 			ICoreComponentSet set,
-			IMembershipRepository membershipRepository,
-			IAssetRepository assetRepository,
+			IMembershipRepository membership,
+			IAssetRepository assets,
+			IQueueSource queue,
+			IStorageProvider storage,
+			//ISecurity security,
 			IMediator mediator) : base(set)
 		{
-			this.mediator = mediator;
-			this.membershipRepository = membershipRepository;
-			this.assetRepository = assetRepository;
+			Mediator = mediator;
+			Membership = membership;
+			Assets = assets;
+
+			Queue = queue;
+			//Security = security;
+			Storage = storage;
+		}
+
+		void cleanIncomingUsers(List<UserApiModel> users, bool isNew)
+		{
+			users.ForEach(u => {
+				u.IsNew = isNew;
+				u.FirstName = u.FirstName.SanitizeHtml();
+				u.LastName = u.LastName.SanitizeHtml();
+				u.State = CompanyResourceState.Active;
+				if (string.IsNullOrWhiteSpace(u.Username))
+				{
+					u.Username = u.Email;
+				}
+				if (string.IsNullOrWhiteSpace(u.Email))
+				{
+					u.Email = u.Username;
+				}
+			});
+		}
+
+		List<string> validateIncomingUsers(List<UserApiModel> users)
+		{
+			List<string> errors = new List<string>();
+
+			foreach(var u in users)
+			{
+				if (!string.IsNullOrEmpty(u.Password))
+				{
+					if (u.Password.Length < 7 || u.Password.Length > 25
+					|| !u.Password.Any(char.IsUpper) || !u.Password.Any(char.IsLower)
+					|| !u.Password.Any(char.IsDigit))
+					{
+						errors.Add(MemberShipErrors.PasswordRule);
+					}
+
+					if (string.IsNullOrEmpty(u.FirstName))
+					{
+						errors.Add(MemberShipErrors.FirstNameMissing);
+					}
+
+					if (string.IsNullOrEmpty(u.LastName))
+					{
+						errors.Add(MemberShipErrors.LastNameMissing);
+					}
+
+					if (u.FirstName != null && u.FirstName.Length > 250)
+					{
+						errors.Add(MemberShipErrors.FirstNameTooLong);
+					}
+
+					if (u.LastName != null && u.LastName.Length > 250)
+					{
+						errors.Add(MemberShipErrors.LastNameTooLong);
+					}
+
+					if (string.IsNullOrEmpty(u.Username) || !Regex.IsMatch(u.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
+					{
+						errors.Add(MemberShipErrors.InvalidEmail);
+					}
+				}
+			}
+			
+			return errors;
 		}
 
 		/// <summary>
@@ -121,20 +197,20 @@ namespace d360.web.Controllers.V2
 
 				if (ResourceID != null)
 				{
-					if (ResourceID == Company.CurrentResourceID)
+					if (ResourceID == SecurityContext.ResourceID)
 					{
 						IsCurrentUser = true;
 					}
 				}
 				else if (Uid != null)
 				{
-					if (Company.GlobalReportingResources.Any(r => r.Uid == Uid && r.ResourceID == Company.CurrentResourceID))
+					if (Company.GlobalReportingResources.Any(r => r.Uid == Uid && r.ResourceID == SecurityContext.ResourceID))
 					{
 						IsCurrentUser = true;
 					}
 				}
 
-				if (!Company.CurrentResourceIsAdmin && !showResources && IsCurrentUser == false)
+				if (!SecurityContext.IsAdministrator && !showResources && IsCurrentUser == false)
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
 				}
@@ -541,26 +617,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
 		{
-			var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
-
 			if (groupUid == Guid.Empty)
 			{
 				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
-			}
-
-			var validGroups = await membershipRepository.GetGroups(kvpGroupUid);
-			List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
-
-			if (validGroups.Total != 1)
-			{
-				return errorMessageNotFoundResponse(ApiMessages.GroupUidNotExists);
-			}
-
-			var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
-
-			if (duplicatedUsers.Count() != 0)
-			{
-				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
 			}
 
 			if (users.Count == 0)
@@ -568,49 +627,17 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(ApiMessages.NoUserUIDProvided);
 			}
 
-			var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
-
-			foreach (var user in users)
+			bool duplicates = users.GroupBy(u => u.Uid).Any(g => g.Count() > 1);
+			if (duplicates)
 			{
-				var userUid = new Dictionary<string, string> { { "Uid", user.Uid.ToString() } };
-				bool isValid = IsValidGuid(userUid, "uid");
-
-				if (!isValid)
-				{
-					return errorMessageNotFoundResponse(ActionApiMessages.UidNotValid);
-				}
-
-				var isUser = assetRepository.GetAssetByUID(user.Uid);
-
-				if (isUser == null || isUser.Object != "Resource")
-				{
-					return errorMessageNotFoundResponse(ApiMessages.InvalidUserUids);
-				}
-
-				var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
-
-				if (isMember != null)
-				{
-					return errorMessageArgumentResponse(string.Format(ApiMessages.UserAlreadyMemberOfGroup, user.Uid.ToString()));
-				}
-
-				resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
+				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
 			}
 
-			foreach (var m in resourceGroups)
-			{
-				Company.Add(m);
-				Company.Connection.Execute(@"insert into reporting.Global_Audit
-					select	distinct 
-							'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
-					from	[group] g 
-							inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
-							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-					where	g.id = @groupid", 
-					new { m.GroupID, m.ResourceID, Company.CurrentResourceID });
-			}
+			var response = await Workspace.AddMembersToGroupAsync(groupUid, users.Select(u => u.Uid).ToList());
 
-			return Ok(users);
+			return response.IsSuccess ? 
+				Ok(users) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -778,12 +805,11 @@ namespace d360.web.Controllers.V2
 		   Route("groups/{groupId:int}"),
 		   ApiExplorerSettings(IgnoreApi = true)
 	   ]
-		public async Task<HttpResponseMessage> GetGroupUid(int groupId)
+		public async Task<IHttpActionResult> GetGroupUid(int groupId)
 		{
-			string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
+			string sql = $"SELECT uid FROM [dbo].[Group] where ID =" + groupId;
 			var results = await Company.QueryAsync<dynamic>(sql, ApiTimeout);
-
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -809,38 +835,10 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetGroups()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
-
-			if (!IsValidGuid(queryParams, "uid"))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
-			}
-
-			if (!IsValidGuid(queryParams, "resourceuid"))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
-			}
-
-			var pageSize = "10";
-			var pageNum = "1";
-			var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
-			var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
-			pageSize = pageSizeParam.Value ?? pageSize;
-			pageNum = pageNumParam.Value ?? pageNum;
-
-			Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-			var isValid = isPageSizeAndNumValid(queryParams);
-
-			if (!string.IsNullOrEmpty(isValid))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
-			}
-
-			var results = await membershipRepository.GetGroups(queryParams);
-
-			results.PageNum = int.Parse(pageNum);
-			results.PageSize = int.Parse(pageSize);
-
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+			var results = await Workspace.ReadGroupsAsync(queryParams);
+			return results.IsSuccess ? 
+				Ok(results.Data) : 
+				errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
 		}
 
 		/// <summary>
@@ -855,72 +853,15 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
 			RequireAdminPermissions
-
 		]
 		public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
 		{
-			try
-			{
-				var group = (await Company.QueryAsync<Group>(@"
-					select G.* from [Group] G 
-					inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
-					where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
-
-				var userId = Company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
-
-				if (group?.PrimaryOwnerResourceID == userId)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.PrimayOwnerOfGroupNotDelete)).ConfigureAwait(false);
-				}
-
-				var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
-						Update G set  G.SecondaryOwnerResourceID = null
-						from[Group] AS G
-						inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
-						where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
-
-				Company.Query<int>(@"
-					insert into reporting.Global_Audit
-					select	distinct 
-							'Group', 
-							g.id, 
-							G.Name, 
-							@currentresourceid, 
-							GETUTCDATE(), 
-							'Member removed', 
-							'Group', 
-							g.ID, 
-							'Group', 
-							G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
-							mv.[Version]
-					from	[group] g 
-							inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
-							inner join reporting.Global_Resource gr on gr.uid = @resourceUid
-							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-					where	a.uid = @groupUid", 
-					new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
-
-				if (res > 0)
-				{
-					return successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage); // deleted
-				}
-				else
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists)).ConfigureAwait(false);
-				}
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", "Membership.DeleteGroupMember => " }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var response = await Workspace.RemoveMemberFromGroupAsync(groupUid, resourceUid);
+			return response ?
+				successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage) :
+				errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists);
 		}
 
 		/// <summary>
@@ -941,46 +882,36 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteUsers(List<DeleteUserModel> users)
 		{
-			var prefix = "Membership.DeleteUsers => ";
-
-			try
+			if (users == null || users.Count() == 0)
 			{
-				if (users == null || users.Count() == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
-				}
-
-				List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
-
-				foreach (var u in users)
-				{
-					resources.Add(new UserApiDeleteModel
-					{
-						Uid = u.Uid
-					});
-				}
-
-				var execution = getApiExecution(users.Count, action: ApiExecutionAction.DeleteUsers);
-				var result = membershipRepository.DeleteResources(execution, resources);
-
-				if (result.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message)).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
-			catch (Exception ex)
+
+			var uids = users.Select(u => u.Uid).ToList();
+			var tenantResponse = await Workspace.RemoveUsersAsync(uids);
+			var communityResponse = new RepositoryResponse<int>(400, "");
+			if (tenantResponse.IsSuccess)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
+				communityResponse = await Community.RemoveUsersFromTenantAsync(SecurityContext.CompanyID, uids);
+			}
+
+			bool isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
+			if (isSuccess)
+			{
+				Queue.CreateMessage(constants.Queue.Search, new ReindexModel
+				{
+					CompanyID = SecurityContext.CompanyID,
+					Category = "Resource",
+					To = QueueAction.RemoveFromIndex,
+					BatchOperation = ReindexBatchOperation.Delete,
+					BatchUids = uids
 				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
-		}
 
+			return isSuccess ?
+				successMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Success", "Users removed from environment.") :
+				errorMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Error", communityResponse.Message + "; " + tenantResponse.Message);
+		}
 
 		/// <summary>
 		/// Adds the specified users.
@@ -1005,7 +936,7 @@ namespace d360.web.Controllers.V2
 			HttpPost,
 			Route("users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1013,19 +944,19 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<IHttpActionResult> PostUsers(List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
 			if (users == null || users.Count == 0)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
-			users.ForEach(u => u.IsNew = true);
-
+			cleanIncomingUsers(users, true);
+			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
+			
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
-			var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
-				
-			return Ok(results);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+			return sendRepositoryOkResponse(tenantResponse);
 		}
 
 		/// <summary>
@@ -1051,7 +982,7 @@ namespace d360.web.Controllers.V2
 			HttpPost,
 			Route("batch/users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPostExample)),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1059,18 +990,18 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> PostBulkUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<IHttpActionResult> PostBulkUsers(List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
 			if (users == null || users.Count == 0)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
-			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			cleanIncomingUsers(users, true);
 
 			UserUpsertModel model = new UserUpsertModel
 			{
-				Users = users.Select(u => new UserApiUpdateModel
+				Users = users.Select(u => new UserApiModel
 				{
 					Username = u.Username,
 					FirstName = u.FirstName,
@@ -1086,7 +1017,13 @@ namespace d360.web.Controllers.V2
 				IsInsert = true
 			};
 
-			var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			var executionInfo = saveExecution(execution);
+
+			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, model.AsJson());
+
+			await Queue.CreateMessageAsync(constants.Queue.Execution, executionInfo);
+
 			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
@@ -1115,87 +1052,62 @@ namespace d360.web.Controllers.V2
 
 		[
 			HttpPut,
+			RequireAdminPermissions,
 			Route("users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
+		public async Task<IHttpActionResult> PutUsers(List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
-			var prefix = "Membership.PutUsers => ";
-			bool IsCurrentUser = false;
-
-			if (!Company.CurrentResourceIsAdmin || IsChangePasswordReqeust)
-			{
-				if (users != null && users.Count == 1)
-				{
-					foreach (var user in users)
-					{
-						var resource = Community.Filter<Resource>(i => i.Uid == user.uid, i => i.CompanyResources).SingleOrDefault();
-						
-						if (resource != null)
-						{
-							if (resource.ID == Company.CurrentResourceID)
-							{
-								IsCurrentUser = true;
-							}
-						}
-					}
-				}
-			}
-
-			//change password request Checks
-			if (IsChangePasswordReqeust)
-			{
-				if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.IsChangePwdReqAuthOtherThanForm)).ConfigureAwait(false);
-				}
-
-				if (!IsCurrentUser)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.IsChangePwdReqCurrentUser)).ConfigureAwait(false);
-				}
-
-				if (users != null && users.Count > 1)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.IsChangePwdReqOneReq)).ConfigureAwait(false);
-				}
-			}
-
-			if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-			}
-
 			if (users == null || users.Count == 0)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
-			users.ForEach(u => u.IsNew = false);
+			cleanIncomingUsers(users, false);
 
-			try
-			{
-				var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
-				var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust).ConfigureAwait(false);
-				
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+			return sendRepositoryOkResponse(tenantResponse);
 		}
+
+		[
+			HttpPut,
+			Route("users/me/password-reset"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserApiModel)),
+			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse))
+		]
+		public async Task<IHttpActionResult> ResetUserPassword(UserApiModel user, bool lookupFieldsPassedByValue = false)
+		{
+			if (user == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+			}
+
+			cleanIncomingUsers(new List<UserApiModel> { user }, false);
+
+			if (SecurityContext.AuthenticationType != AuthenticationType.Forms)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.IsChangePwdReqAuthOtherThanForm);
+			}
+
+			var newPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
+			var currentPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
+			var response = await Community.ResetUserPassword(SecurityContext.ResourceID, currentPassword, newPassword);
+
+			return response.IsSuccess ? 
+				Ok(new ConfirmResponse { message = "Password successfully reset.", title = "Reset Success" }) : 
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+		}
+
 
 		/// <summary>
 		/// Updates the specified users. This endpoint is meant for a greater number of users as it stores the user list for asynchronous or batch processing.
@@ -1223,7 +1135,7 @@ namespace d360.web.Controllers.V2
 			HttpPut,
 			Route("batch/users"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
+			//SwaggerRequestExample(typeof(UserApiModel), typeof(UserPutExample)),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
@@ -1231,16 +1143,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> PutBulkUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<IHttpActionResult> PutBulkUsers(List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
 			if (users == null || users.Count == 0)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
-			users.ForEach(u => u.IsNew = false);
-
-			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			cleanIncomingUsers(users, false);
 
 			UserUpsertModel model = new UserUpsertModel
 			{
@@ -1249,7 +1159,12 @@ namespace d360.web.Controllers.V2
 				IsInsert = false
 			};
 
-			var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			var executionInfo = saveExecution(execution);
+
+			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, model.AsJson());
+
+			await Queue.CreateMessageAsync(constants.Queue.Execution, executionInfo);
 			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
@@ -1266,8 +1181,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFavorites()
 		{
-			var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID });
-			
+			var favorites = await Mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID });
 			return Ok(favorites);
 		}
 
@@ -1285,24 +1199,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetHomePage()
 		{
-			var prefix = "Membership.GetHomePage => ";
-
-			try
-			{
-				var favorites = await mediator.Send(new GetFavoritesQuery.Request { ResourceId = Company.CurrentResourceID, HomePageOnly = true });
-				var homePage = favorites.SingleOrDefault();
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, homePage));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-			}
+			var favorites = await Mediator.Send(new GetFavoritesQuery.Request { ResourceId = SecurityContext.ResourceID, HomePageOnly = true });
+			var homePage = favorites.SingleOrDefault();
+			return Ok(homePage);
 		}
 
 		/// <summary>
@@ -1320,23 +1219,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> ClearFavorites()
 		{
-			var prefix = $"Membership.ClearFavorites => ";
-
-			try
-			{
-				await membershipRepository.ClearFavorites(Company.CurrentResourceID);
-				
-				return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-			}
+			await Membership.ClearFavorites(SecurityContext.ResourceID);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
 		}
 
 		/// <summary>
@@ -1354,23 +1238,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
 		{
-			var prefix = $"Membership.DeleteFavorites => ";
-
-			try
-			{
-				await membershipRepository.DeleteFavorites(Company.CurrentResourceID, favoriteIds);
-				
-				return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-			}
+			await Membership.DeleteFavorites(SecurityContext.ResourceID, favoriteIds);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
 		}
 
 		/// <summary>
@@ -1393,16 +1262,16 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
 			}
 
-			await mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
 			{
-				ResourceId = Company.CurrentResourceID,
+				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 				IsHomePage = false
 			});
 
-			var favoriteId = await mediator.Send(new GetFavoriteId.Argument
+			var favoriteId = await Mediator.Send(new GetFavoriteId.Argument
 			{
-				ResourceId = Company.CurrentResourceID,
+				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 			});
 
@@ -1429,16 +1298,16 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
 			}
 
-			await mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
+			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
 			{
-				ResourceId = Company.CurrentResourceID,
+				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 				IsHomePage = true
 			});
 
-			var favoriteId = await mediator.Send(new GetFavoriteId.Argument
+			var favoriteId = await Mediator.Send(new GetFavoriteId.Argument
 			{
-				ResourceId = Company.CurrentResourceID,
+				ResourceId = SecurityContext.ResourceID,
 				Route = favorite.Route,
 			});
 
@@ -1459,17 +1328,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public IHttpActionResult DeleteGroup(List<DeleteGroupModel> groups)
+		public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
 		{
 			if (groups.Count() < 1)
 			{
 				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
-
-			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
-			var result = membershipRepository.DeleteGroups(execution, groups);
-
-			return Ok(result);
+			await Workspace.RemoveGroupsAsync(groups.Select(g => g.Uid).ToList());
+			return Ok(new ConfirmResponse { message = (groups.Count == 1 ? "Group removed." : "Groups removed."), title = "Success" });
 		}
 
 		private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
@@ -1508,7 +1374,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
+		public IHttpActionResult UpdateGroup(List<UpdateGroupModel> groups)
 		{
 			if (groups.Count < 1)
 			{
@@ -1523,9 +1389,9 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
-			var result = membershipRepository.UpdateGroups(execution, groups);
+			var result = Membership.UpdateGroups(execution, groups);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -1564,7 +1430,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PostGroups);
-			var result = membershipRepository.AddGroups(execution, groups);
+			var result = Membership.AddGroups(execution, groups);
 			Company.CreateOrUpdateTypeDisplayValuesAsync(1, SystemObjects.GroupType.ToString());
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -1647,45 +1513,31 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetApikey()
 		{
-			var prefix = "Membership.GetApikey => ";
 			var showAllUsersAPIKey = await GetCachedSettingValueById<bool>(Setting.ShowAllUsersAPIKey);
 
-			if (!Company.CurrentResourceIsAdmin && !showAllUsersAPIKey)
+			if (!SecurityContext.IsAdministrator && !showAllUsersAPIKey)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied);
 			}
 
-			try
+			var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
+			if (!resource.IsSuccess)
 			{
-				var resource = Community.GetById<Resource>(Company.CurrentResourceID);
-
-				if (resource is null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
-				}
-
-				var apikeydetail = new ApiKeyDetailModel
-				{
-					apiKey = resource.APIPublicKey, //publickey
-					apiSecret = resource.APIPrivateKey //privatekey
-				};
-
-				if (apikeydetail.apiKey == null || apikeydetail.apiSecret == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apikeydetail))).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser);
 			}
-			catch (Exception ex)
+
+			var apikeydetail = new ApiKeyDetailModel
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
+				apiKey = resource.Data.APIPublicKey,
+				apiSecret = resource.Data.APIPrivateKey
+			};
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+			if (apikeydetail.apiKey == null || apikeydetail.apiSecret == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser);
 			}
+
+			return Ok(apikeydetail);
 		}
 
 		/// <summary>
@@ -1700,34 +1552,20 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetUserRoles()
+		public IHttpActionResult GetUserRoles()
 		{
-			var prefix = "Membership.GetUserRoles => ";
+			List<string> roles = new List<string>();
 
-			try
+			if (SecurityContext.IsAdministrator)
 			{
-				List<string> roles = new List<string>();
-
-				if (Company.CurrentResourceIsAdmin)
-				{
-					roles.Add("Administrator");
-				}
-				else
-				{
-					roles.Add("User");
-				}
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, roles))).ConfigureAwait(false);
+				roles.Add("Administrator");
 			}
-			catch (Exception ex)
+			else
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				roles.Add("User");
 			}
+
+			return Ok(roles);
 		}
 
 		/// <summary>
@@ -1765,11 +1603,11 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+					var assetType = Assets.GetAssetTypeByUID(model.assetTypeUid.Value);
 					AssetTypeID = assetType.ID; 
 					name = assetType.Name;
 					includeChildren = true;
-					followDetail = Company.Filter<FollowDetail>(i => i.AssetTypeID == AssetTypeID && i.AssetID == null && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetTypeID == AssetTypeID && i.AssetID == null && i.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
 				}
 			}
 
@@ -1786,7 +1624,7 @@ namespace d360.web.Controllers.V2
 					AssetID = asset.id; 
 					name = asset.DisplayValue;
 					parentName = asset.TypeName;
-					followDetail = Company.Filter<FollowDetail>(i => i.AssetID == AssetID && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetID == AssetID && i.ResourceID == SecurityContext.ResourceID).FirstOrDefault();
 				}
 			}
 
@@ -1842,9 +1680,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> MyImage(Guid uid, int size = 150)
 		{
-			var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where uid = @uid", new { uid });
+			var user = await Community.ReadUserByUidAsync(uid);
 
-			if (email == null)
+			if (!user.IsSuccess || user.Data != null)
 			{
 				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.ResourceUidNotValid);
 			}
@@ -1860,7 +1698,7 @@ namespace d360.web.Controllers.V2
 			// 1.  Trim leading and trailing whitespace from an email address
 			// 2.  Force all characters to lower-case
 			// 3.  md5 hash the final string
-			byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+			byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((user.Data.Email ?? "").Trim().ToLower()));
 
 			// Create a new Stringbuilder to collect the bytes  
 			// and create a string.  
@@ -1930,7 +1768,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
 			}
 
-			var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+			var assetType = Assets.GetAssetTypeByUID(assetTypeUid);
 
 			if (assetUid != null)
 			{
@@ -1948,13 +1786,13 @@ namespace d360.web.Controllers.V2
 						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.AssetValidateWithAssetType);
 					}
 
-					response = Company.Any<Follow>(F => F.AssetID  == asset.ID && F.ResourceID == Company.CurrentResourceID);
+					response = Company.Any<Follow>(F => F.AssetID  == asset.ID && F.ResourceID == SecurityContext.ResourceID);
 				}
 			}
 
 			if (!response)
 			{
-				response = Company.Any<Follow>(F => F.AssetTypeID == assetType.ID && F.ResourceID == Company.CurrentResourceID);
+				response = Company.Any<Follow>(F => F.AssetTypeID == assetType.ID && F.ResourceID == SecurityContext.ResourceID);
 			}
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
@@ -1974,69 +1812,54 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> UpdateApiKey(ApiKeyDetailModel model)
 		{
-			try
+			var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
+
+			if (model is null)
 			{
-				var resource = Community.GetById<Resource>(Company.CurrentResourceID);
-
-				if (model is null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
-				}
-
-				if (string.IsNullOrEmpty(model?.apiKey))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apikey"))).ConfigureAwait(false);
-				}
-
-				if (string.IsNullOrEmpty(model?.apiSecret))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apiSecret"))).ConfigureAwait(false);
-				}
-
-				if (resource.APIPublicKey != model.apiKey || resource.APIPrivateKey != model.apiSecret)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidApiKeyOrApiSecret)).ConfigureAwait(false);
-				}
-
-				if (resource is null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidUser)).ConfigureAwait(false);
-				}
-
-				var newKeys = Community.Query<ApiKeyDetailModel>(@"
-					declare @apikey nvarchar(25) = ''
-					declare @apisecret nvarchar(50) = ''
-
-					select @apiKey =  [dbo].[GenerateAPIKeyWrapper](25),
-					@apisecret = [dbo].[GenerateAPIKeyWrapper](50)
-
-					update dbo.[Resource]
-					set APIPublicKey = @apikey,
-					APIPrivateKey = @apisecret
-					where ID = @CurrentResourceID
-
-					select @apiKey as apiKey, @apisecret as apiSecret", new { Company.CurrentResourceID }).FirstOrDefault();
-
-				var users = Cache.GetItem<ConcurrentBag<usercompany>>("Users");
-
-				if (users != null)
-				{
-					var cachedUser = users.FirstOrDefault(uc => uc.ResourceID == Company.CurrentResourceID);
-					cachedUser.APIPublicKey = newKeys.apiKey;
-					cachedUser.APIPrivateKey = newKeys.apiSecret;
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, newKeys));
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage);
 			}
-			catch (Exception ex)
+
+			if (string.IsNullOrEmpty(model?.apiKey))
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", "UpdateApiKey" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apikey"));
 			}
+
+			if (string.IsNullOrEmpty(model?.apiSecret))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apiSecret"));
+			}
+
+			if (resource.IsSuccess)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidUser);
+			}
+
+			if (resource.Data.APIPublicKey != model.apiKey || resource.Data.APIPrivateKey != model.apiSecret)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidApiKeyOrApiSecret);
+			}
+
+			var updatedResource = await Community.UpdateUserApiCredentialsAsync(SecurityContext.ResourceID);
+				
+			ApiKeyDetailModel newKeys = null;
+
+			if (updatedResource.IsSuccess)
+			{
+				newKeys = new ApiKeyDetailModel { apiKey = updatedResource.Data.APIPublicKey, apiSecret = updatedResource.Data.APIPrivateKey };
+			}
+
+			var users = Cache.GetItem<ConcurrentBag<usercompany>>("Users");
+
+			if (users != null)
+			{
+				var cachedUser = users.FirstOrDefault(uc => uc.ResourceID == SecurityContext.ResourceID);
+				cachedUser.APIPublicKey = newKeys.apiKey;
+				cachedUser.APIPrivateKey = newKeys.apiSecret;
+			}
+
+			return updatedResource.IsSuccess ? 
+				Ok(newKeys) : 
+				errorMessageResponse((HttpStatusCode)updatedResource.StatusCode, "Error updated API credentials.");
 		}
 
 		/// <summary>
@@ -2082,7 +1905,40 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(ApiMessages.ValueNotExpectedRange);
 			}
 
-			await membershipRepository.AddClaim(claim);
+			var newClaim = new ClaimMapping();
+
+			if (claim.Location == ClaimLocation.Environment)
+			{
+				newClaim.ClientId = SecurityContext.ClientID;
+				newClaim.CompanyId = SecurityContext.CompanyID;
+				newClaim.DomainSettingId = 0;
+			}
+			else if (claim.Location == ClaimLocation.Idp)
+			{
+				newClaim.ClientId = SecurityContext.ClientID;
+				newClaim.CompanyId = SecurityContext.CompanyID;
+				newClaim.DomainSettingId = SecurityContext.DomainSettingID;
+			}
+			else if (claim.Location == ClaimLocation.Client)
+			{
+				newClaim.ClientId = SecurityContext.ClientID;
+				newClaim.CompanyId = 0;
+				newClaim.DomainSettingId = 0;
+			}
+			else
+			{
+				newClaim.ClientId = 0;
+				newClaim.CompanyId = 0;
+				newClaim.DomainSettingId = 0;
+			}
+
+			newClaim.ClaimType = claim.ClaimType;
+			newClaim.AuthenticationType = SecurityContext.AuthenticationType;
+			newClaim.Action = claim.Action;
+			newClaim.Path = claim.Path;
+			newClaim.IsArray = claim.IsArray;
+
+			await Community.CreateClaimAsync(newClaim);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
 		}
@@ -2114,7 +1970,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutClaimAsync(int id, ClaimPutApiModel claim)
 		{
-			var existingClaim = Community.ClaimMappings.FirstOrDefault(c => c.Id == id);
+			var existingClaim = (await Community.ReadClaimMappingById(id)).Data;
 
 			if (existingClaim == null)
 			{
@@ -2139,7 +1995,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse("");
 			}
 
-			await membershipRepository.UpdateClaim(id, claim);
+			await Community.UpdateClaimAsync(id, claim.Action, claim.Path, claim.IsArray);
 
 			return Ok();
 		}
@@ -2163,42 +2019,28 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteClaimAsync(int id)
 		{
-			var prefix = $"Membership.DeleteClaimAsync => ";
-
-			try
+			if (!SecurityContext.IsAdministrator)
 			{
-				if (Company.CurrentResourceIsAdmin == false)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
-				}
-
-				var existingClaim = Community.ClaimMappings.FirstOrDefault(c => c.Id == id);
-
-				if (existingClaim == null)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound));
-				}
-
-
-				if (existingClaim.Location == ClaimLocation.Default || existingClaim.Location == ClaimLocation.Client)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
-				}
-
-
-				await membershipRepository.DeleteClaim(id);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+				return errorMessageForbiddenResponse("Not allowed to remove claim.");
 			}
-			catch (Exception ex)
+
+			var existingClaim = await Community.ReadClaimMappingById(id);
+
+			if (!existingClaim.IsSuccess)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+				return errorMessageNotFoundResponse("Claim not found.");
 			}
+
+			if (existingClaim.Data.Location == ClaimLocation.Default || existingClaim.Data.Location == ClaimLocation.Client)
+			{
+				return errorMessageForbiddenResponse("Not allowed to remove default or client claim.");
+			}
+
+			var response = await Community.RemoveClaimAsync(id, SecurityContext.ClientID, SecurityContext.CompanyID, SecurityContext.DomainSettingID);
+
+			return response.IsSuccess ? 
+				Ok() : 
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -2216,7 +2058,13 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetClaimsAsync()
 		{
-			return Ok(await membershipRepository.GetClaims());
+			var response = await Community.ReadClaimsByTenantAsync(SecurityContext.ClientID, SecurityContext.CompanyID, SecurityContext.DomainSettingID);
+			List<ClaimApiViewModel> models = null;
+			if (response.IsSuccess)
+			{
+				models = response.Data.Select(c => new ClaimApiViewModel { Action = c.Action, ClaimType = c.ClaimType, Id = c.Id, IsArray = c.IsArray, Location = c.Location, Path = c.Path }).ToList();
+			}
+			return Ok(models);
 		}
 	}
 }

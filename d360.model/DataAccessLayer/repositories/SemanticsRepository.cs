@@ -26,19 +26,17 @@ namespace d360.model.DataAccessLayer
 
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-		internal ICommunityContext Community;
 
 		public SemanticsRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
-			ICommunityContext community, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
-			Community = community;
 		}
 
 		#endregion
@@ -279,7 +277,7 @@ namespace d360.model.DataAccessLayer
 
 		private string generateTransactionId()
 		{
-			return Community.GenerateOpenIdRequestValue(10);
+			return  "".GenerateNonce(10);
 		}
 
 		#endregion
@@ -322,7 +320,7 @@ namespace d360.model.DataAccessLayer
 			//Queue semantic for deletion in search index
 			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				BatchUids = new List<Guid> { deletes.FirstOrDefault().Uid },
 				BatchOperation = ReindexBatchOperation.Delete
 			});
@@ -684,7 +682,7 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			var repoModels = (
 				from u in semantics
 				join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
-				select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
+				select u.ToRepositoryModel(e,  SecurityContext.ResourceID)
 				).ToList();
 
 			var transactionId = generateTransactionId();
@@ -717,7 +715,7 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
 		public async Task<List<GetSemantic>> PostSemanticsAsync(List<PostSemantic> semantics)
 		{
-			var repoModels = semantics.Select(s => s.ToRepositoryModel(CompanyContext.CurrentResourceID)).ToList();
+			var repoModels = semantics.Select(s => s.ToRepositoryModel( SecurityContext.ResourceID)).ToList();
 			var transactionId = generateTransactionId();
 			repoModels.ForEach(s =>
 			{
@@ -785,7 +783,7 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			var repoModels = (
 				from u in semantics
 				join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
-				select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
+				select u.ToRepositoryModel(e,  SecurityContext.ResourceID)
 				).ToList();
 
 			var transactionId = generateTransactionId();
@@ -852,7 +850,7 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
 			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				BatchUids = uids.ToList(),
 				BatchOperation = ReindexBatchOperation.Update
 			});

@@ -547,6 +547,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You may only provide a maximum of {0} asset types in this request..
+        /// </summary>
+        public static string RequestMaxAssetType {
+            get {
+                return ResourceManager.GetString("RequestMaxAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You do not have permissions to read the specified asset type..
         /// </summary>
         public static string RestrictReadAssettype {

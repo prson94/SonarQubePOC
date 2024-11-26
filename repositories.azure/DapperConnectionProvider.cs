@@ -5,9 +5,10 @@ namespace repositories.azure
 {
 	public class DapperConnectionProvider
 	{
-		public string ConnectionString { get; set; }
+		public string ReadWriteConnectionString { get; set; }
+		public string ReadOnlyConnectionString { get; set; }
 
-		public IDbConnection Connect()
-			=> new SqlConnection(ConnectionString);
+		public IDbConnection Connect(bool isReadOnly = false)
+			=> new SqlConnection(isReadOnly ? ReadOnlyConnectionString : ReadWriteConnectionString);
 	}
 }

@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using constants;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -23,8 +24,8 @@ namespace d360.model.DataAccessLayer
 		internal IQueueSource Queue;
 		internal IStorageProvider Storage;
 
-		public ResponsibilityRepository(ICompanyContext companyContext, IStorageProvider storage, IQueueSource queue, IFeatureFlagService ff)
-			: base(companyContext, ff)
+		public ResponsibilityRepository(ICompanyContext companyContext, ISecurityContextProvider securityContext, IStorageProvider storage, IQueueSource queue, IFeatureFlagService ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -302,10 +303,10 @@ namespace d360.model.DataAccessLayer
 				dbArgs.Add("responsibilityTypeUid", responsibilityUidFilter);
 			}
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & @p = @p and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
-				dbArgs.Add("r", CompanyContext.CurrentResourceID);
+				dbArgs.Add("r",  SecurityContext.ResourceID);
 				dbArgs.Add("p", (int)Permission.ReadResponsibilities);
 			}
 
@@ -480,7 +481,7 @@ namespace d360.model.DataAccessLayer
 				responsibilityQueryFilterSql = " and " + String.Join(" and ", responsibilityQueryFilters);
 			}
 
-			permissionsFilter = $" and not exists(select 1 from AssetTypesUserCantRead({CompanyContext.CurrentResourceID}) u where u.AssetTypeID = a.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({CompanyContext.CurrentResourceID}, a.AssetTypeID) u where u.AssetID = a.ID)";
+			permissionsFilter = $" and not exists(select 1 from AssetTypesUserCantRead({SecurityContext.ResourceID}) u where u.AssetTypeID = a.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ SecurityContext.ResourceID}, a.AssetTypeID) u where u.AssetID = a.ID)";
 
 			var countSql = $@"        select
 											count(1)
@@ -659,9 +660,9 @@ namespace d360.model.DataAccessLayer
 					ObjectType = assetType.Object,
 					ResponsibilityType = responsibiltyType,
 					ResponsibilityTypeID = responsibiltyType.ID,
-					CreatedBy = CompanyContext.CurrentResourceID,
+					CreatedBy =  SecurityContext.ResourceID,
 					CreatedOn = DateTime.UtcNow,
-					UpdatedBy = CompanyContext.CurrentResourceID,
+					UpdatedBy =  SecurityContext.ResourceID,
 					UpdatedOn = DateTime.UtcNow,
 				};
 				CompanyContext.ResponsibilityTypeRelations.Add(rtr);
@@ -691,7 +692,7 @@ namespace d360.model.DataAccessLayer
 			{
 				var rtr = CompanyContext.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
 				rtr.PermissionsBitMask = permissions.Sum(i => i);
-				rtr.UpdatedBy = CompanyContext.CurrentResourceID;
+				rtr.UpdatedBy =  SecurityContext.ResourceID;
 				rtr.UpdatedOn = DateTime.UtcNow;
 				CompanyContext.SaveChanges();
 				return new ResponsibilityTypeAllocationResponseModel()
@@ -971,7 +972,7 @@ from    Asset A
 					ResponsibilityTypeID = responsibilityType.ID,
 					SecurityAsset = x.SecurityAsset,
 					SecurityAssetID = x.SecurityAssetId,
-					UpdatedBy = CompanyContext.CurrentResourceID,
+					UpdatedBy =  SecurityContext.ResourceID,
 					UpdatedOn = DateTime.UtcNow
 				});
 			});
@@ -1201,8 +1202,8 @@ from    Asset A
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID
 			};
@@ -1240,7 +1241,7 @@ from    Asset A
 			//need to add a default Then if it was omitted even if the test is for When, since the parser expects the full rule model
 			if (testType == "when" && (test.Definition.Then == null || !test.Definition.Then.Any()))
 			{
-				test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid("00000001-0000-0000-0000-A00000000011") } };
+				test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid(CommonIdentifiers.ResourceTypeUid) } };
 			}
 
 			if (CompanyContext.Connection.State != ConnectionState.Open)
@@ -1845,7 +1846,7 @@ begin
 	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
 end";
 
-			CompanyContext.Execute(logSqlR, new {TableData = getaddChangeLogOverrideTable(current).AsTableValuedParameter("dbo.typeResponsibilityTypeRelationOverrideItem"), action, r = CompanyContext.CurrentResourceID, utcdate = DateTime.UtcNow },commandTimeout: ApiTimeout);
+			CompanyContext.Execute(logSqlR, new {TableData = getaddChangeLogOverrideTable(current).AsTableValuedParameter("dbo.typeResponsibilityTypeRelationOverrideItem"), action, r =  SecurityContext.ResourceID, utcdate = DateTime.UtcNow },commandTimeout: ApiTimeout);
 
 		}
 	}

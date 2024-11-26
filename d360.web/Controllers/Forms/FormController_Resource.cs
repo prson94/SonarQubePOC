@@ -108,15 +108,27 @@ namespace d360.web.Controllers
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
-		
-		[RequireAdminPermissions]
+
 		/// <param name="id">ResourceID</param>
+		[RequireAdminPermissions]
 		public async Task<JsonResult> Resource_EditFields(int id)
 		{
 			var list = new List<EditableField>();
-			var a = Community.GetById<Resource>(id, i => i.CompanyResources);
+			var resourceResponse = await Community.ReadUserByIdAsync(id);
+			Resource user = null;
+			if (!resourceResponse.IsSuccess)
+			{
+				return null;
+			}
+			user = resourceResponse.Data;
+
+			var tenantUser = await Community.ReadTenantUserAsync(SecurityContext.CompanyID, id);
+			if (tenantUser == null)
+			{
+				return null;
+			}
+
 			var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = (i.Name).ToString() }).ToList();
-			var cr = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID);
 			var asset = Company.Filter<Asset>(i => i.Object == "Resource" && i.ObjectID == id).SingleOrDefault();
 			var assettype = Company.AssetTypes.Where(i => i.Class == AssetTypeClass.User).Select(i => new { i.ID }).FirstOrDefault();
 
@@ -124,7 +136,7 @@ namespace d360.web.Controllers
 			{
 				FieldName = "ID",
 				FieldType = DataType.Hidden.ToString(), 
-				Value = a.ID.ToString() 
+				Value = id.ToString() 
 			});
 			
 			list.Add(new EditableField 
@@ -135,7 +147,7 @@ namespace d360.web.Controllers
 				FieldName = "FirstName", 
 				Name = "First Name", 
 				FieldType = DataType.Text.ToString(),
-				Value = a.FirstName, 
+				Value = user.FirstName, 
 				Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "First Name",
 										required: true,
@@ -152,7 +164,7 @@ namespace d360.web.Controllers
 				FieldName = "LastName",
 				Name = "Last Name", 
 				FieldType = DataType.Text.ToString(),
-				Value = a.LastName, 
+				Value = user.LastName, 
 				Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Last Name",
 										required: true,
@@ -169,7 +181,7 @@ namespace d360.web.Controllers
 				FieldName = "Email",
 				Name = "Email/Username",
 				FieldType = DataType.Text.ToString(), 
-				Value = a.Email,
+				Value = user.Email,
 				Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Email",
 										required: true,
@@ -186,7 +198,7 @@ namespace d360.web.Controllers
 				FieldName = "IsAdministrator",
 				Name = "Administrator?", 
 				FieldType = DataType.Boolean.ToString(), 
-				Value = cr.IsAdministrator.ToString() 
+				Value = tenantUser.IsAdministrator.ToString() 
 			});
 			
 			list.Add(new EditableField 
@@ -197,7 +209,7 @@ namespace d360.web.Controllers
 				FieldName = "State", 
 				Name = "Status", 
 				FieldType = DataType.Lookup.ToString(),
-				Items = stateList, Value = cr.State.ToString() 
+				Items = stateList, Value = tenantUser.State.ToString() 
 			});
 
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assettype.ID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
@@ -227,8 +239,8 @@ namespace d360.web.Controllers
 		public async Task<JsonResult> Resource_EditMyInfoFields()
 		{
 			var list = new List<EditableField>();
-			var id = Company.CurrentResourceID;
-			var a = Community.GetById<Resource>(id);
+			var id = SecurityContext.ResourceID;
+			var a = await Community.ReadUserByIdAsync(id);
 			var asset = Company.Filter<Asset>(i => i.Object == "Resource" && i.ObjectID == id).SingleOrDefault();
 
 			list.Add(new EditableField
@@ -239,7 +251,7 @@ namespace d360.web.Controllers
 				FieldName = "FirstName",
 				Name = "First Name",
 				FieldType = DataType.Text.ToString(), 
-				Value = a.FirstName,
+				Value = a.Data.FirstName,
 				Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "First Name",
 										required: true,
@@ -256,7 +268,7 @@ namespace d360.web.Controllers
 				FieldName = "LastName",
 				Name = "Last Name", 
 				FieldType = DataType.Text.ToString(),
-				Value = a.LastName,
+				Value = a.Data.LastName,
 				Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Last Name",
 										required: true,
@@ -288,38 +300,25 @@ namespace d360.web.Controllers
 
 
 		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("ResetResourcePassword"), RequireAdminPermissions]
-		public JsonResult ResetResourcePassword(FormCollection form)
+		public async Task<JsonResult> ResetResourcePassword(FormCollection form)
 		{
-			try
+			if (!form.HasKeys())
 			{
-				if (!form.HasKeys())
-				{
-					throw new NoFormDataException(FormControllerApiMessage.Resource);
-				}
-
-				var id = parseIntField(form, "ID");
-				var model = Community.GetById<Resource>(id);
-
-				if (model == null)
-				{
-					throw new NotFoundException(FormControllerApiMessage.Resource);
-				}
-
-				//valid user at this point generate a password
-				ResetResourcePassword(model.ID, model.FirstName, model.Email, model.FormatDisplayName());
-
-				return jsonSuccess(FormControllerApiMessage.ResetPassword, id.ToString(), "reset", HttpStatusCode.OK);
+				return jsonException(FormControllerApiMessage.Resource, HttpStatusCode.BadRequest);
 			}
-			catch (BaseException ex)
+
+			var id = parseIntField(form, "ID");
+			var model = await Community.ReadUserByIdAsync(id);
+
+			if (!model.IsSuccess)
 			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+				return jsonException(FormControllerApiMessage.Resource, HttpStatusCode.NotFound);
 			}
-			catch (Exception ex)
-			{
-				SendException(ex);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			//valid user at this point generate a password
+			await ResetResourcePassword(model.Data.ID, model.Data.FirstName, model.Data.Email, model.Data.FormatDisplayName());
+
+			return jsonSuccess(FormControllerApiMessage.ResetPassword, id.ToString(), "reset", HttpStatusCode.OK);
 		}
 
 		#endregion
@@ -446,7 +445,7 @@ namespace d360.web.Controllers
 				{
 					group,
 					resourceList,
-					Company.CurrentResourceIsAdmin
+					CurrentResourceIsAdmin = SecurityContext.IsAdministrator
 				},
 				Formatting = Newtonsoft.Json.Formatting.None
 			};

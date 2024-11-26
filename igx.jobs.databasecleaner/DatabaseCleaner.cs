@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using repositories;
 
 namespace igx.jobs.databasecleaner
 {
@@ -17,16 +18,17 @@ namespace igx.jobs.databasecleaner
 		const string FUNCTION_NAME = "DatabaseCleaner";
         const string TIMER_SETTINGS = "0 0 4 * * *";
 
-		public DatabaseCleaner(IConfiguration config) : base(config) { }
+		public DatabaseCleaner(IConfiguration config, ICommunity community) : base(community, config) { }
 
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)] TimerInfo myTimer, ILogger log)
 		{
 			try
 			{
-				var companies = GetCompaniesByCurrentSlot();
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
 
-				foreach (var c in companies)
+				foreach (var c in tenants)
 				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },

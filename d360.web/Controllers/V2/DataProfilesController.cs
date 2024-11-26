@@ -460,7 +460,7 @@ namespace d360.web.Controllers.V2
         {
             var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
 
@@ -528,7 +528,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				if (!SecurityContext.IsAdministrator)
 				{
 					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
 
@@ -1006,7 +1006,7 @@ namespace d360.web.Controllers.V2
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				var noPermissions = models.Select(s => s.assetUid).Distinct().ToList().Any(x =>
 					!Company.HasAssetPermissionByUid(x, Permission.EditAsset)

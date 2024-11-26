@@ -804,7 +804,7 @@ namespace d360.web.Controllers.V2
 
 			string permissionTempTableSql = "";
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				permissionTempTableSql = $@"
 					drop table if exists #NoReadAssets;
@@ -847,7 +847,7 @@ namespace d360.web.Controllers.V2
 
 					create index ix_noreadassets_assetid on #NoReadAssets(AssetId)";
 
-				dbArgs.Add("userId", Company.CurrentResourceID);
+				dbArgs.Add("userId", SecurityContext.ResourceID);
 				if (!hasFilters && string.IsNullOrEmpty(simpleFilterTempTable))
 				{
 					whereStatements.Add("nra.AssetId is null");
@@ -855,7 +855,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			string FilterSimplerRemoveNoRead = "";
-			if (hasFilters && !Company.CurrentResourceIsAdmin)
+			if (hasFilters && !SecurityContext.IsAdministrator)
 			{
 				FilterSimplerRemoveNoRead = $@"
 					if exists(select 1 from #NoReadAssets)
@@ -865,7 +865,7 @@ namespace d360.web.Controllers.V2
 							inner join #NoReadAssets nra on nra.AssetId = fr.AssetId;
 						end";
 			}
-			else if (!string.IsNullOrEmpty(simpleFilterTempTable) && !Company.CurrentResourceIsAdmin)
+			else if (!string.IsNullOrEmpty(simpleFilterTempTable) && !SecurityContext.IsAdministrator)
 			{
 				FilterSimplerRemoveNoRead = $@"
 					if exists(select 1 from #NoReadAssets)
@@ -898,7 +898,7 @@ namespace d360.web.Controllers.V2
 				select {{0}}
 				from
 				dbo.CatalogBrowseObject S {{1}}
-				{(!Company.CurrentResourceIsAdmin && string.IsNullOrEmpty(FilterSimplerRemoveNoRead) ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
+				{(!SecurityContext.IsAdministrator && string.IsNullOrEmpty(FilterSimplerRemoveNoRead) ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
 				{(!string.IsNullOrEmpty(simpleFilterTempTable) ? "inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = s.ObjectAssetID" : "")}
 				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement).Distinct())}
@@ -917,7 +917,7 @@ namespace d360.web.Controllers.V2
 			if (!hasFilters)
 			{
 				string where = "";
-				if (!Company.CurrentResourceIsAdmin)
+				if (!SecurityContext.IsAdministrator)
 				{
 					where = " where nra.AssetId is null";
 				}
@@ -925,7 +925,7 @@ namespace d360.web.Controllers.V2
 				countSql = $@"
 					select COUNT(distinct S.ObjectAssetID) 
 					from dbo.CatalogBrowseSubject S 
-					{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
+					{(!SecurityContext.IsAdministrator ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 					{where} 
 					option(recompile)";
 
@@ -935,7 +935,7 @@ namespace d360.web.Controllers.V2
 						select COUNT(distinct S.ObjectAssetID) 
 						from dbo.CatalogBrowseSubject S
 						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = S.ObjectAssetID
-						{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
+						{(!SecurityContext.IsAdministrator ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 						{where}
 						option(recompile)";
 				}

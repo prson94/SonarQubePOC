@@ -2,7 +2,8 @@
 {
     public static class Setting
     {
-		public const string Community = "CommunityContext";
+		public const string ReadWriteConnection = "ReadWriteConnectionString";
+		public const string ReadOnlyConnection = "ReadOnlyConnectionString";
 		public const string FeatureFlagKey = "LaunchDarklySdkKey";
 		public const string MailKey = "MandrillApiKey";
 		public const string MailAccount = "MandrillSubAccount";

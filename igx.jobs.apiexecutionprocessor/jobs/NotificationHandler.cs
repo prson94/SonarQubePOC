@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using repositories.azure;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace igx.jobs.apiexecutionprocessor
 		const string FUNCTION_NAME = "NotificationHandler";
 		readonly IMailProvider Mail;
 
-		public NotificationHandler(IConfiguration config, IMailProvider mail) : base(config)
+		public NotificationHandler(IConfiguration config, ICommunity community, IMailProvider mail) : base(community, config)
 		{
 			Mail = mail;
 		}
@@ -37,8 +38,7 @@ namespace igx.jobs.apiexecutionprocessor
 
 			using (log.BeginScope(logProperties))
 			{
-				var community = new Community(ConnString);
-				var tenantConnectionString = await community.GetConnectionStringForTenantAsync(info.CompanyId);
+				var tenantConnectionString = Community.GetConnectionStringForTenant(info.CompanyId);
 				using (var conn = new SqlConnection(tenantConnectionString))
 				{
 
