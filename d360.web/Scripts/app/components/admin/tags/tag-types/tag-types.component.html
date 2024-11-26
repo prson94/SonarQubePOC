@@ -14,8 +14,8 @@
         <ul class="list">
             @for (tagType of tagTypes; track tagType.uid) {
                 <li>
-                    <div>
-                        <p class="text float-left ml-1 ">   
+                    <div (click)="loadTags(tagType)">
+                        <p class="text float-left ml-1 ">
                             {{ tagType.Value}}
                         </p>
                     </div>
@@ -24,7 +24,6 @@
                     </div>
                 </li>
               }
-            
         </ul>
     </div>
 

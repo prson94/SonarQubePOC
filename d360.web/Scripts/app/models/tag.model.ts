@@ -22,6 +22,7 @@ export class TagType {
     TooltipID: number;
     CreatedByFirstName?: string;
     CreatedByLastName?: string;
+    TagTypeUID?: string;
 }
 
 export class TagApiModel {

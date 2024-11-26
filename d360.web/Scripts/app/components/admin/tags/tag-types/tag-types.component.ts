@@ -10,6 +10,8 @@ import { TagTypesService } from './tag-types.service';
 })
 export class TagTypesPanelComponent {
 
+    @Output('onTagTypeSelected') onTagTypeSelected = new EventEmitter<TagTypesViewModel>();
+
     @ViewChild('searchinput', { static: true }) searchInput: SearchFieldComponent;
 
     tagTypes: TagTypesViewModel[] = [];
@@ -21,12 +23,13 @@ export class TagTypesPanelComponent {
     constructor(private ts: TagTypesService) { }
 
     ngOnInit() {
-        this.ts.getAllTagTypes().subscribe((data) => {
-            this.tagTypes = data
-            this.tagTypesCopy = data;
-        });
-
-
+        this.isLoading = true;
+        if(this.tagTypesCopy.length === 0){
+            this.ts.getAllTagTypes().subscribe((data) => {
+                this.tagTypes = data
+                this.tagTypesCopy = data;
+            });
+        }
         this.isLoading = false;
     }
 
@@ -56,5 +59,9 @@ export class TagTypesPanelComponent {
 
     openEditor() {
         this.showEditor = true;
+    }
+
+    loadTags(tagType: TagTypesViewModel){
+        this.onTagTypeSelected.emit(tagType);
     }
 }
