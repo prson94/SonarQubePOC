@@ -2055,9 +2055,7 @@ namespace d360.model.DataAccessLayer
 
 					var tagTypeUid = f.Type.Tag.TagTypeUID ?? new Guid("00000001-0000-0000-0000-b00000000011");
 					var tagType = CompanyContext.TagTypes.FirstOrDefault(x => x.uid == tagTypeUid);
-
 					newFieldType.IsDisplayable = true;
-					newFieldType.IsEditable = false;
 					newFieldType.IsListable = f.Type.Tag.IsListable;
 					newFieldType.IsPartOfKey = false;
 					newFieldType.ShowIfEmpty = true;
@@ -2065,6 +2063,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortByAscending = f.Type.Tag.SortByAscending;
 					newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
 					newFieldType.TagTypeID = tagType.ID;
+					newFieldType.IsEditable = true;
 				}
 				else if (f.Type.Counter != null)
 				{
@@ -2254,6 +2253,10 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.UseDisplayFormat = newFieldType.UseDisplayFormat;
 					currentFieldType.IsSubject = newFieldType.IsSubject;
 					currentFieldType.ScoreType = newFieldType.ScoreType;
+					if(currentFieldType.Type == "Tag")
+					{
+						currentFieldType.TagTypeID = newFieldType.TagTypeID;
+					}
 
 					fieldTypeNamesToDelete.Add(f.Name);
 				}

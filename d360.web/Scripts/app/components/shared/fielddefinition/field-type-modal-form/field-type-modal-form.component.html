@@ -1075,7 +1075,37 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'Tag'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Tag Type" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="TagType" class="ig-label" i18n>
+												Tag Type
+											</label>
 
+											<p-dropdown formControlName="TagTypeUid"
+														[autoDisplayFirst]="false"
+														name="TagTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_TagTypeUid'"
+														igDropdown
+														[options]="tagsData"
+														appendTo="body"
+														tabindex="410"
+														required
+														optionLabel="Value"
+														optionValue="uid"></p-dropdown>
+										</div>
+									</div>
+								</div>
+								<div class="form-group" *ngIf="hasFormDescription">
+									<div class="row">
+										<div class="field-col">
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
 
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
 							<div inputs>

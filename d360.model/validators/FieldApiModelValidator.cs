@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -9,6 +10,8 @@ using d360.core;
 using d360.core.entities;
 using d360.core.resources;
 using d360.core.validators;
+using DocumentFormat.OpenXml.Office.CustomUI;
+using DocumentFormat.OpenXml.Office2013.Word;
 
 namespace d360.model.validators
 {
@@ -262,14 +265,6 @@ namespace d360.model.validators
 						if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.SpecificHaveTagFieldType);
-						}
-					}
-
-					if (existingFieldTypes != null)
-					{
-						if (existingFieldTypes.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
-						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
 						}
 					}
 				}
