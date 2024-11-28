@@ -415,7 +415,7 @@ where	Object = 'Resource'
 
 update	reporting.Global_Resource
 set		State = @state
-where	ResourceID in (select ID from @ids);", new { uids, state = (int)CompanyResourceState.Deleted, assetState = (int)State.Deleted }
+where	ResourceID in (select ID from @ids);", new { uids, state = (int)CompanyResourceState.Deleted, assetState = (int)State.Deleted , r = CurrentUserId}
 				);
 
 				response = new(recordsImpacted, 200, true);
