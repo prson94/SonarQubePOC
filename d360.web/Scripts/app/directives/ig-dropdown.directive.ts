@@ -1,13 +1,16 @@
-﻿import { AfterContentInit, Directive, ElementRef, Input, NgModule } from "@angular/core";
+﻿import { AfterContentInit, OnInit, OnDestroy, Directive, ElementRef, Input, NgModule } from "@angular/core";
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
-import { isNil } from "lodash-es";
+import { isNil, isUndefined } from "lodash-es";
+import { Subscription } from 'rxjs';
+
+
 
 @Directive({
     selector: "[igDropdown]"
 })
-export class DropdownDirective implements AfterContentInit {
+export class DropdownDirective implements AfterContentInit, OnInit, OnDestroy {
 
 
     public _size: string;
@@ -16,7 +19,22 @@ export class DropdownDirective implements AfterContentInit {
     @Input() overlayLowerZIndex: boolean = false;
 	@Input() ellipsisDirection: string = "ltr";
 	@Input() alwaysShowFilter: boolean = false;
-    constructor(public el: ElementRef, public dropdownRef: Dropdown) { }
+
+	onShowSubscription: Subscription;
+
+	constructor(public el: ElementRef, public dropdownRef: Dropdown) { }
+
+	ngOnInit() {
+		this.onShowSubscription = this.dropdownRef.onShow.subscribe(() => {
+			this.initOverlay();
+		});
+	}
+
+	ngOnDestroy() {
+		if (this.onShowSubscription) {
+			this.onShowSubscription.unsubscribe();
+		}
+	}
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
@@ -65,53 +83,58 @@ export class DropdownDirective implements AfterContentInit {
         this.dropdownRef.scrollHeight = "340px";
 
 		if (this.alwaysShowFilter) {
-			this.dropdownRef.filter = true;
-			this.dropdownRef.filterPlaceholder = $localize`Search fields`;
+			this.enableFilter();
+		}
+	}
+
+	enableFilter() {
+		this.dropdownRef.filter = true;
+		this.dropdownRef.filterPlaceholder = $localize`Search fields`;
+		//PrimeNG bug, if dropdown has group and filter, filterby must be set.
+		if (this.dropdownRef.group && isUndefined(this.dropdownRef.filterBy)) {
+			this.dropdownRef.filterBy = 'label';
+		}
+	}
+
+	initOverlay() {
+		if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlayViewChild) {
+
+			var panelEl = DomHandler.findSingle(this.dropdownRef.overlayViewChild.contentEl, '.p-dropdown-panel');
+
+			if (panelEl.className.indexOf("ig-dropdown-overlay") === -1) {
+				panelEl.classList.add("ig-dropdown-overlay");
+
+				if (this.ellipsisDirection === "ltr") {
+					panelEl.classList.add("ig-dropdown-ellipsis-ltr");
+				}
+				else {
+					panelEl.classList.add("ig-dropdown-ellipsis-rtl");
+				}
+
+				if (isNil(this.dropdownRef.appendTo)) {
+					const panelWidth = this.el.nativeElement.offsetWidth;
+					panelEl.style.maxWidth = `${panelWidth}px`;
+				}
+
+				if (this.overlayLowerZIndex) {
+					panelEl.classList.add("ig-dropdown-overlay-lower-index");
+				}
+				var input = panelEl.getElementsByTagName("input")[0];
+
+				if (input) { input.className = "ig-input"; }
+			}
+
 		}
 
-		setInterval(() => {
-			if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlayViewChild) {
-
-				var panelEl = DomHandler.findSingle(this.dropdownRef.overlayViewChild.contentEl, '.p-dropdown-panel');
-
-				if (panelEl.className.indexOf("ig-dropdown-overlay") === -1) {
-					panelEl.classList.add("ig-dropdown-overlay");
-
-                    if (this.ellipsisDirection === "ltr") {
-						panelEl.classList.add("ig-dropdown-ellipsis-ltr");
-                    }
-                    else {
-						panelEl.classList.add("ig-dropdown-ellipsis-rtl");
-					}
-
-					if (isNil(this.dropdownRef.appendTo)) {
-						const panelWidth = this.el.nativeElement.offsetWidth;
-						panelEl.style.maxWidth = `${panelWidth}px`;
-					}
-
-                    if (this.overlayLowerZIndex) {
-						panelEl.classList.add("ig-dropdown-overlay-lower-index");
-                    }
-					var input = panelEl.getElementsByTagName("input")[0];
-
-                    if (input)
-                        {input.className = "ig-input";}
-                }
-
-            }
-
-            const count: number = this.getItemsCount();
-			if (count > 10 || this.alwaysShowFilter) {
-                this.dropdownRef.filter = true;
-                this.dropdownRef.filterPlaceholder = $localize`Search fields`;
-            }
-            else {
-                this.dropdownRef.filter = false;
-            }
-        }, 10);
-
-    }
-
+		const count: number = this.getItemsCount();
+		if (count > 10 || this.alwaysShowFilter) {
+			this.enableFilter();
+		}
+		else {
+			this.dropdownRef.filter = false;
+		}
+	}
+	
     getItemsCount() {
         if (!this.dropdownRef?.options?.length) {
             return 0;

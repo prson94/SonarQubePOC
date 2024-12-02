@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,Puneet" id="Procedure.api.ParseAssetPaths-v7">
+  <changeSet author="TDuric,Puneet" id="Procedure.api.ParseAssetPaths-v7.1">
     <comment>GOV-28603,GOV-33181</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -182,13 +182,13 @@ begin
 				max(t.[Level]),
 				substring(string_agg(t.FormattedValue, ' / ') within group(order by t.ColumnOrder),1,4000) FormattedValue
 				from #tbl t
-				left join [dbo].[AssetPathSegmentDtl] s on (t.AssetId = s.AssetId and t.AssetTypeID = s.AssetTypeID )
-				where [dbo].[AssetPathSegmentDtl] is null
+				left join [dbo].[AssetPathSegmentDtl] s on (t.GroupID = s.AssetId and t.AssetTypeID = s.AssetTypeID )
+				where s.AssetId is null
 				group by t.GroupID,t.AssetTypeID 
 			end
 	end
 				
-		drop table if exists #tbldtl;
+	drop table if exists #tbldtl;
 	drop table if exists #tblgrp
 	drop table if exists #illegalxml
 end
