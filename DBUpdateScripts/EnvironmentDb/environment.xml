@@ -113,6 +113,7 @@
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
 	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
+	<include file="scripts/Table.dbo.InProcessRelationAuditLog.xml"/>
 	<include file="scripts/Table.metrics.Allocation.xml"/>
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
@@ -329,6 +330,7 @@
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
     <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
     <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>

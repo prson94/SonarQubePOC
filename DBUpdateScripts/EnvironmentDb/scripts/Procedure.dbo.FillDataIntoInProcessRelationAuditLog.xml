@@ -1,0 +1,129 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.dbo.FillDataIntoInProcessRelationAuditLog-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure dbo.FillDataIntoInProcessRelationAuditLog
+	@ProcessUid Uniqueidentifier
+as
+begin
+	set nocount on;
+
+		declare @SubjectAssetTypeIDCount int,
+		@ObjectAssetTypeIDCount int,
+		@IntersectTypeIDCount int,
+		@SubjectTypeName varchar(500),
+		@ObjectTypeName varchar(500),
+		@PredicateName varchar(500),
+		@PredicateInverse varchar(500);
+		
+
+		update t
+		set t.Subject = a.Object,
+		t.SubjectID = a.ObjectID,
+		t.SubjectName = cast(adv.DisplayValue as nvarchar(4000))
+		from InProcessRelationAuditLog t
+		inner join Asset A on t.SubjectAssetID = a.ID
+		left join AssetDisplayValue ADV on adv.AssetID = a.ID
+		where t.ProcessUid = @ProcessUid;
+
+		update t
+		set t.Object = a.Object,
+		t.ObjectID = a.ObjectID,
+		t.ObjectName = cast(adv.DisplayValue as nvarchar(4000))
+		from InProcessRelationAuditLog t
+		inner join Asset A on t.ObjectAssetID = a.ID
+		left join AssetDisplayValue ADV on adv.AssetID = a.ID
+		where t.ProcessUid = @ProcessUid
+		
+		
+		if exists (select 1 from InProcessRelationAuditLog t
+				   where t.ProcessUid = @ProcessUid and t.Object is null and t.ObjectAssetID = 0)
+		begin
+			update t
+			set t.Object = a.Object,
+			t.ObjectID = a.ObjectID,
+			t.ObjectName = cast(a.Name as nvarchar(4000)),
+			t.ObjectTypeName = cast(a.Name as nvarchar(4000))
+			from InProcessRelationAuditLog t
+			inner join AssetType A on t.ObjectAssetTypeID = a.ID
+			where t.ProcessUid = @ProcessUid and t.Object is null and t.ObjectAssetID = 0;
+		end
+		
+
+		select @SubjectAssetTypeIDCount = count(distinct SubjectAssetTypeID),
+		@ObjectAssetTypeIDCount = count(distinct ObjectAssetTypeID),
+		@IntersectTypeIDCount = count(distinct IntersectTypeID)
+		from InProcessRelationAuditLog t
+		where t.ProcessUid = @ProcessUid;
+		
+		if (@SubjectAssetTypeIDCount = 1)
+			begin
+				select top 1 @SubjectTypeName = att.Name
+				from InProcessRelationAuditLog t
+				inner join AssetType Att on t.SubjectAssetTypeID = att.ID
+				where t.ProcessUid = @ProcessUid;
+			end
+		else
+			begin
+				update t
+				set t.SubjectTypeName = att.Name
+				from InProcessRelationAuditLog t
+				inner join AssetType Att on t.SubjectAssetTypeID = att.ID
+				where t.ProcessUid = @ProcessUid;
+			end
+			
+		if (@ObjectAssetTypeIDCount = 1)
+			begin
+				select top 1 @ObjectTypeName = att.Name
+				from InProcessRelationAuditLog t
+				inner join AssetType Att on t.ObjectAssetTypeID = att.ID
+				where t.ProcessUid = @ProcessUid;
+			
+			end
+		else
+			begin
+				update t
+				set t.ObjectTypeName = att.Name
+				from InProcessRelationAuditLog t
+				inner join AssetType Att on t.ObjectAssetTypeID = att.ID
+				where t.ProcessUid = @ProcessUid and t.ObjectTypeName is null;
+			end
+			
+		if (@IntersectTypeIDCount = 1)
+			begin
+				select top 1 @PredicateName = p.Name,
+				@PredicateInverse = p.Inverse
+				from InProcessRelationAuditLog t
+				inner join IntersectType it on it.ID = t.IntersectTypeID
+				inner join [Predicate] p on p.id = it.PredicateID
+				where t.ProcessUid = @ProcessUid;
+			end
+		else
+			begin
+				update t
+				set t.PredicateName = p.Name,
+				t.PredicateInverse =p.Inverse
+				from InProcessRelationAuditLog t
+				inner join IntersectType it on it.ID = t.IntersectTypeID
+				inner join [Predicate] p on p.id = it.PredicateID
+				where t.ProcessUid = @ProcessUid;
+			end
+			
+		update t
+		set SubActionObjectName = substring(coalesce(t.SubjectName,'---') + ' [' + coalesce(@PredicateName,t.PredicateName,'---') + '] ' + coalesce(t.ObjectName,'---'),1,4000),
+		ObjActionObjectName = substring(coalesce(t.ObjectName,'---') + ' [' + coalesce(@PredicateInverse,t.PredicateInverse,'---') + '] ' + coalesce(t.SubjectName,'---'),1,4000),
+		SubActionObjectTypeName = substring(coalesce(@SubjectTypeName,t.SubjectTypeName,'---') + ' [' + coalesce(@PredicateName,t.PredicateName,'---') + '] ' + coalesce(@ObjectTypeName,t.ObjectTypeName,'---'),1,4000),
+		ObjActionObjectTypeName = substring(coalesce(@ObjectTypeName,t.ObjectTypeName,'---') + ' [' + coalesce(@PredicateInverse,t.PredicateInverse,'---') + '] ' + coalesce(@SubjectTypeName,t.SubjectTypeName,'---'),1,4000)
+		from InProcessRelationAuditLog t
+		where t.ProcessUid = @ProcessUid;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>
