@@ -218,7 +218,7 @@ from	reporting.Global_FieldAudit i_p
 			p.IntersectId,
 			p.TypeName, 
 			coalesce(p.ActionObjectName, 'Relationship'), 
-			'This relationship has been removed.' 
+			'The relationship was removed because one of the associated assets was deleted.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId 
 			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250),ActionObjectName nvarchar(250)) p 
@@ -287,7 +287,7 @@ from	reporting.Global_FieldAudit i_p
 			p.IntersectId,
 			p.TypeName, 
 			coalesce(p.ActionObjectName, 'Relationship'), 
-			'This relationship has been removed.' 
+			'The relationship was removed.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId 
 			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250) ,ActionObjectName nvarchar(250)) p 
@@ -449,17 +449,17 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			end, 
 			'Intersect',
 			p.ActionObjectId,
-			p.ActionObjectTypeName, 
+			p.TypeName, 
 			coalesce(p.ActionObjectName, 'Relationship'), 
-			'This relationship has been ' + 
+			'' + 
 			case p.[Action]
-				when 'D' then 'deleted'
-				when 'U' then 'updated'
-				else 'created'
+				when 'D' then 'The relationship was removed because one of the associated assets was updated.'
+				when 'U' then 'This relationship has been updated.'
+				else 'This relationship has been created.'
 			end	 + '.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id
-			cross apply openjson(l.Payload) with (ActionObjectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectName nvarchar(max), ActionObjectTypeName nvarchar(250), [Action] char(1)) p 
+			cross apply openjson(l.Payload) with (ActionObjectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectName nvarchar(max), TypeName nvarchar(250), [Action] char(1)) p 
 			{maxVersionSql("p.Object", "p.ObjectId")}
 	where	l.SubTask = 'R';";
 
@@ -819,12 +819,12 @@ select	cast(l.id as bigint) id,
 		p.ObjectName, 
 		iif(p.IsNew = 1, 'Created', 'Updated') Action, 
 		p.ActionObjectId,
-		p.ActionObjectTypeName, 
+		p.TypeName, 
 		p.ActionObjectName
 into #tempdata
 from	api.ExecutionLog l
 		inner join api.Execution e on e.Id = l.ExecutionId 
-		cross apply openjson(l.Payload) with (Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectId int, ActionObjectName nvarchar(250), ActionObjectTypeName nvarchar(250), IsNew bit) p 
+		cross apply openjson(l.Payload) with (Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectId int, ActionObjectName nvarchar(250), TypeName nvarchar(250), IsNew bit) p 
 where	l.ExecutionId = @Id;
 
 create clustered index idx_tempdata on #tempdata (id);
@@ -839,7 +839,7 @@ create clustered index idx_tempdata on #tempdata (id);
 			p.Action, 
 			'Intersect',
 			p.ActionObjectId,
-			p.ActionObjectTypeName, 
+			p.TypeName, 
 			p.ActionObjectName, 
 			'Relationship created.' 
 	from	#tempdata p
