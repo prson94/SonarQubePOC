@@ -1389,7 +1389,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
-			var result = Membership.UpdateGroups(execution, groups);
+			var result = Workspace.UpsertGroupsAsync(execution.Id, groups);
 
 			return Ok(result);
 		}

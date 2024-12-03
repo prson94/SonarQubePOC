@@ -5,6 +5,7 @@ using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -286,27 +287,33 @@ declare @ids table(ID int, Uid uniqueidentifier);
 insert into @ids 
 	select ID, Uid from [Group] where Uid in @uids;
 
-select	distinct 
-		'Group', 
-		g.ID, 
-		G.Name, 
-		@CurrentUserId, 
-		GETUTCDATE(), 
-		'Group removed', 
-		'Group', 
-		g.ID, 
-		'Group', 
-		G.Name, 
-		'',
-		mv.[Version]
-from	[Group] g 
-		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-where	g.ID in @ids;
+insert into reporting.Global_Audit 
+	(
+	Object, ObjectID, ObjectName, 
+	ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, 
+	[Version]
+	)
+	select	distinct 
+			'Group', 
+			g.ID, 
+			G.Name, 
+			@CurrentUserId, 
+			GETUTCDATE(), 
+			'Removed', 
+			'Group', 
+			g.ID, 
+			'Group', 
+			G.Name, 
+			'',
+			mv.[Version]
+	from	[Group] g 
+			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
+	where	g.ID in (select ID from @ids);
 
 delete ResourceGroup where GroupID in (select ID from @ids);
 delete Field where ObjectType = 'Group' and ObjectID in (select ID from @ids);
 delete Asset where Object = 'Group' and ObjectID in in (select ID from @ids);
-delete [Group] where ID in @ids;";
+delete [Group] where ID in (select ID from @ids);";
 
 			bool response;
 			using (var connection = ConnectionProvider.Connect())
@@ -423,6 +430,186 @@ where	ResourceID in (select ID from @ids);", new { uids, state = (int)CompanyRes
 
 			return response;
 		}
+
+		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool lookupFieldsPassedByValue = false)
+		{
+			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
+
+			List<dynamic> fieldTypes = new();
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				fieldTypes = (await connection.QueryAsync<dynamic>(
+					"select f.ID, f.Name from FieldType f inner join AssetType a on a.Object = 'GroupType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
+					)).ToList();
+			}
+
+			#region Data Tables
+
+			var table = new DataTable();
+			var fieldTable = new DataTable();
+
+			table.Columns.Add("ItemNumber", typeof(int));
+			table.Columns.Add("Uid", typeof(Guid));
+			table.Columns.Add("Name", typeof(string));
+			table.Columns.Add("Description", typeof(string));
+			table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
+			table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
+			table.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
+
+			fieldTable.Columns.Add("ItemNumber", typeof(int));
+			fieldTable.Columns.Add("FieldName", typeof(string));
+			fieldTable.Columns.Add("FieldValue", typeof(string));
+			fieldTable.Columns.Add("FieldTypeID", typeof(int));
+
+			#endregion
+
+			// Load user and field data into data tables.
+			int itemNumber = 0;
+			items.ForEach(u => {
+				var row = table.NewRow();
+				itemNumber++;
+				row["ItemNumber"] = itemNumber;
+				row["Name"] = u.Name;
+				row["Description"] = u.Description;
+				row["PrimaryOwnerUid"] = u.PrimaryOwnerUid;
+				row["SecondaryOwnerUid"] = u.SecondaryOwnerUid;
+				row["IsActiveDirectoryGroup"] = u.IsActiveDirectoryGroup;
+
+				if (u.Uid.HasValue && u.Uid != Guid.Empty)
+				{
+					row["Uid"] = u.Uid.Value;
+				}
+
+				table.Rows.Add(row);
+
+				foreach (var key in u.Fields.Keys)
+				{
+					var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
+					if (ft != null)
+					{
+						var fieldRow = fieldTable.NewRow();
+
+						fieldRow["ItemNumber"] = itemNumber;
+						fieldRow["FieldName"] = key.Trim();
+						fieldRow["FieldValue"] = (u.Fields[key] ?? "").Trim();
+						fieldRow["FieldTypeID"] = ft.ID;
+
+						fieldTable.Rows.Add(fieldRow);
+					}
+				}
+			});
+
+			SqlBulkCopy bulkCopy = null;
+			var UpdatedOn = DateTime.UtcNow;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				using (SqlTransaction trans = connection.BeginTransaction())
+				{
+					// Create temp tables.
+					await connection.ExecuteAsync(CreateImportTemporaryTableSql("Group"), transaction: trans);
+
+					bulkCopy = connection.CreateBulkCopy("#Items", 1000, 1200, trans);
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("Uid", "Uid");
+					bulkCopy.ColumnMappings.Add("Name", "Name");
+					bulkCopy.ColumnMappings.Add("Description", "Description");
+					bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
+					bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
+					bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
+					await bulkCopy.WriteToServerAsync(table);
+
+					bulkCopy = connection.CreateBulkCopy("#Fields", 1000, 1200, trans);
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+					await bulkCopy.WriteToServerAsync(fieldTable);
+
+					// Validate incoming data.
+					await connection.ExecuteAsync(@"
+update	T
+set		T.PrimaryOwnerResourceID = S.ResourceID,
+		T.IsValid = iif(S.ResourceID is null, 0, T.Valid)
+from	#Items T
+		left join reporting.Global_Resource S on S.Uid = T.PrimaryOwnerUid 
+where	T.PrimaryOwnerUid is not null;
+
+update	T
+set		T.SecondaryOwnerResourceID = S.ResourceID,
+		T.IsValid = iif(S.ResourceID is null, 0, T.Valid)
+from	#Items T
+		left join reporting.Global_Resource S on S.Uid = T.SecondaryOwnerUid 
+where	T.SecondaryOwnerUid is not null;
+", transaction: trans);
+
+					// Merge into Group table.
+					await connection.ExecuteAsync(@"
+declare @assetTypeId int;
+select @assetTypeId = ID from AssetType where Object = 'GroupType';
+
+-- Determine the internal IDs of groups based on their incoming Uid.
+update	t
+set		t.GroupID = s.ID
+from	#Items  t
+		inner join [Group] s on s.Uid = t.Uid and t.Uid is not null and IsValid <> 0;
+
+-- Update groups that already exists in environment, and were successfully validated.
+update	t
+set		T.Name = S.Name,
+		T.Description = S.Description,
+		T.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup,
+		T.PrimaryOwnerResourceID = S.PrimaryOwnerResourceID,
+		T.SecondaryOwnerResourceID = S.SecondaryOwnerResourceID,
+		T.UpdatedBy = @userId,
+		T.UpdatedOn = @date
+from	[Group] t
+		inner join #Items s on s.GroupID = t.ID and IsValid <> 0;
+
+-- Create groups that do not yet exist in environment, and were successfully validated.
+insert into [Group] (Uid, Name, Description, IsActiveDirectoryGroup, PrimaryOwnerResourceID, SecondaryOwnerResourceID, UpdatedBy, UpdatedOn)
+	select	coalesce(S.uid, newid()), S.Name, S.Description, S.IsActiveDirectoryGroup, S.PrimaryOwnerResourceID, S.SecondaryOwnerResourceID, @userId, @date
+	from	#Items 
+	where	GroupID is null
+			and IsValid <> 0;
+
+-- Get the new internal IDs for newly created groups.
+update	t
+set		t.GroupID = s.ID
+from	#Items  t
+		inner join [Group] s on s.Uid = t.Uid and t.Uid is not null and GroupID is null and IsValid <> 0;
+", new { date = UpdatedOn, userId = CurrentUserId }, transaction: trans);
+
+					// Merge into Asset table
+					await connection.ExecuteAsync(
+						CreateImportAssetTableMergeSql("Group"),
+						new { date = UpdatedOn, userId = CurrentUserId },
+						transaction: trans);
+
+					connection.Execute(
+						CreateImportFieldValidationSql("Group", lookupFieldsPassedByValue),
+						new { userId = CurrentUserId, date = UpdatedOn },
+						transaction: trans);
+
+					response.Data = (await connection.QueryAsync<GroupResponseResult>(
+						@"select ItemNumber, uid, Message, coalesce(IsSuccess, cast(1 as bit)) as Success from #Items;",
+						transaction: trans)
+					).ToList();
+
+					trans.Commit();
+				}
+
+				// Update Execution record.
+				await connection.ExecuteAsync(
+					CreateImportCompleteExecutionSql(),
+					new { date = UpdatedOn, executionId }
+				);
+			}
+
+			return response;
+		}
+
 
 		public async Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours)
 		{
@@ -588,19 +775,9 @@ end";
 				using (SqlTransaction trans = connection.BeginTransaction())
 				{
 					// Create temp tables.
-					await connection.ExecuteAsync(@"
-create table #Users (
-	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
-	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit,
-	AssetID bigint,
-	IsValid bit, IsSuccess bit);
+					await connection.ExecuteAsync(CreateImportTemporaryTableSql("Resource"), transaction: trans);
 
-create table #Fields (
-	ItemNumber int, ResourceID int, AssetID bigint,
-	FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)
-);", transaction: trans);
-
-					bulkCopy = connection.CreateBulkCopy("#Users", 1000, 1200, trans);
+					bulkCopy = connection.CreateBulkCopy("#Items", 1000, 1200, trans);
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
 					bulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -614,7 +791,7 @@ create table #Fields (
 
 					bulkCopy = connection.CreateBulkCopy("#Fields", 1000, 1200, trans);
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+					//bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
 					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
 					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
 					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
@@ -623,7 +800,7 @@ create table #Fields (
 					// Merge into Global_Resource table.
 					await connection.ExecuteAsync(@"
 merge	reporting.Global_Resource as T
-using	(select * from #Users) as S
+using	(select * from #Items) as S
 on		(T.ResourceID = S.ResourceID)
 when	matched then
 update  set
@@ -640,133 +817,29 @@ values	(S.ResourceID, S.FirstName, S.LastName, S.Email, S.IsAdministrator, @Upda
 ", new { UpdatedOn, executionId }, transaction: trans);
 
 					// Merge into Asset table
-					await connection.ExecuteAsync(@"
-declare @assetTypeId int;
-select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+					await connection.ExecuteAsync(
+						CreateImportAssetTableMergeSql("Resource"), 
+						new { date = UpdatedOn, userId = CurrentUserId }, 
+						transaction: trans);
 
-merge	dbo.Asset as T
-using	(select * from #Users) as S
-on		(T.Object = 'Resource' and T.ObjectID = S.ResourceID)
-when	matched then
-update  set
-		T.UpdatedOn = @UpdatedOn,
-		T.UpdatedBy = @CurrentUserId
-when	not matched by target then
-insert	([uid], [AssetTypeID], [State], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-values	(S.Uid, @assetTypeId, 1, 'Resource', S.ResourceID, @UpdatedOn, @CurrentUserId, @UpdatedOn, @CurrentUserId);
+					connection.Execute(
+						CreateImportFieldValidationSql("Resource", lookupFieldsPassedByValue), 
+						new { userId = CurrentUserId, date = UpdatedOn },
+						transaction: trans);
 
-update	T
-set		T.AssetID = A.ID
-from	#Users T
-		inner join dbo.Asset A on A.Object = 'Resource' and A.ObjectID = T.ResourceID;
-
-update	T
-set		T.AssetID = A.AssetID
-from	#Fields T
-		inner join #Users A on A.ResourceID = T.ResourceID;
-", new { UpdatedOn, executionId, CurrentUserId }, transaction: trans);
-
-					// Validate lookup fields.
-					if (lookupFieldsPassedByValue)
-					{
-						connection.Execute(@"
-update	T
-set		T.LookupValue = T.[FieldValue]
-from	#Fields T
-		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup'",
-							transaction: trans);
-					}
-					else
-					{
-						connection.Execute(@"
-declare @listFieldTypes table (FieldTypeID int, AllowMultipleValues bit);
-declare @uniqueListValues table (FieldTypeID int, AllowMultipleValues bit, FieldValue nvarchar(max), LookupValue nvarchar(max))
-
-insert into @listFieldTypes
-select	t.FieldTypeID, s.AllowMultipleValues
-from	#Fields t
-		inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
-group by t.FieldTypeID, s.AllowMultipleValues;
-
-insert into @uniqueListValues
-select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue
-from	#Fields t
-		inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
-		cross apply string_split(t.FieldValue, ',') tmv
-group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
-
-update	t
-set		t.LookupValue = t.[Value]
-from	@uniqueListValues t
-	inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
-
-update	t
-set		t.LookupValue = s.LookupValue
-from	#Fields t
-		inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
-
-update	t
-set		t.LookupValue = ms.LookupValue
-from	#Fields t
-		inner join FieldType ft on ft.ID = t.FieldTypeID and ft.[Type] = 'Lookup' and ft.AllowMultipleValues = 1
-		cross apply (
-			select	string_agg(s.LookupValue, ',') as LookupValue
-			from	@listFieldTypes s
-			where	s.FieldTypeID = t.FieldTypeID
-					and LookupValue in (select [value] from string_split(t.FieldValue, ','))
-		) ms;",
-							transaction: trans);
-					}
-
-					// Save fields for users.	
-					await connection.ExecuteAsync(@"
-merge	Field as t
-using	(
-		select * from #Fields
-		) as s
-on		(t.ObjectType = 'Resource' and t.ObjectID = s.ResourceID and t.FieldTypeID = s.FieldTypeID)
-when	matched then
-update	set
-		t.Value = iif(s.LookupValue is null, null, s.LookupValue),
-		t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
-		t.UpdatedBy = @CurrentUserId,
-		t.UpdatedOn = @UpdatedOn
-when	not matched by target then
-insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-values	(s.AssetID, 'Resource', s.ResourceID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @CurrentUserId, @UpdatedOn);
-
-update	F
-set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-from	Field F
-		inner join #Fields t on t.AssetID = F.AssetId and t.FieldTypeID = F.FieldTypeID and F.[Value] is not null
-		inner join FieldType FT on FT.ID = f.FieldTypeID and FT.Type = 'Lookup'",
-						new { CurrentUserId, UpdatedOn }, transaction: trans
-					);
-
-					response.Data = (await connection.QueryAsync<UserApiUpsertResult>(@"
-select	ItemNumber, 
-		uid, 
-		'' as Message, 
-		coalesce(IsSuccess, cast(1 as bit)) as Success 
-from	#Users;", transaction: trans)
+					response.Data = (await connection.QueryAsync<UserApiUpsertResult>(
+						@"select ItemNumber, uid, Message, coalesce(IsSuccess, cast(1 as bit)) as Success from #Items;", 
+						transaction: trans)
 					).ToList();
 
 					trans.Commit();
 				}
 
 				// Update Execution record.
-				await connection.ExecuteAsync(@"
-update	E 
-set		E.[State] = 4,
-		E.CompletedOn = @UpdatedOn,
-		E.[Total] = iif(Tc.Cnt = 0, E.[Total], Tc.Cnt),
-		E.Processed = iif(Pc.Cnt = 0, E.Processed, Pc.Cnt),
-		E.[Error] = iif(Ec.Cnt = 0, E.[Error], Ec.Cnt)
-from	api.Execution E
-		cross apply ( select count(1) as Cnt from #Users where IsSuccess = 0  ) Ec
-		cross apply ( select count(1) as Cnt from #Users where IsSuccess = 1 ) Pc
-		cross apply ( select count(1) as Cnt from #Users ) Tc
-where	E.Id = @executionId", new { UpdatedOn, executionId });
+				await connection.ExecuteAsync(
+					CreateImportCompleteExecutionSql(), 
+					new { date = UpdatedOn, executionId }
+				);
 			}
 
 			return response;

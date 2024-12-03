@@ -35,6 +35,8 @@ namespace repositories
 
 		Task<RepositoryResponse<int>> RemoveUsersAsync(List<Guid> uids);
 
+		Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool lookupFieldsPassedByValue = false);
+
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
 		Task<RepositoryResponse<bool>> UpsertSettingAsync(Setting setting, string value);
