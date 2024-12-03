@@ -39,7 +39,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					userIds = (await connection.QueryAsync<int>(
-						"select ResourceID from reporting.GlobalResource where Uid in @userUids", 
+						"select ResourceID from reporting.Global_Resource where Uid in @userUids", 
 						new { userUids })).ToList();
 					if (userIds.Count != userUids.Count)
 					{
@@ -52,15 +52,16 @@ namespace repositories.azure
 					var rowsUpdated = await connection.ExecuteAsync(@"
 declare @date datetime = getutcdate();
 declare @notPresentUserIds table(ID int);
+
 insert into @notPresentUserIds
-	select	t.[value] as ResourceID 
-	from	@userIds t
+	select	t.[value] as ID 
+	from	(select  ResourceID as [value] from reporting.Global_Resource where ResourceID in @userIds) t
 			left join ResourceGroup s on s.GroupID = @groupId and s.ResourceID = t.[value]
 	where	s.GroupID is null;
 
-insert into ResourceGroup
+insert into ResourceGroup (GroupID, ResourceID)
 	select	@groupId as GroupID,
-			t.ID
+			t.ID as ResourceID
 	from	@notPresentUserIds t;
 
 insert into reporting.Global_Audit
@@ -68,11 +69,13 @@ insert into reporting.Global_Audit
 select	distinct 
 		'Group', g.ID, G.Name, @CurrentUserId, @date, 'Added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
 from	[Group] g 
-		inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
+		inner join @notPresentUserIds npu on g.id = npu.id
+		inner join ResourceGroup rg on rg.groupid = g.id
+		inner join reporting.Global_Resource gr on gr.ResourceID = rg.ResourceID
 		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
 where	g.id = @groupId;
 ", new { groupId, userIds, CurrentUserId });
-					response = new(200);
+					response = new RepositoryResponse<bool>(true, 200, true);
 				}
 			}
 
@@ -115,7 +118,7 @@ where	g.id = @groupId;
 			List<FieldType> fieldTypes = null;
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				fieldTypes = (await connection.QueryAsync<FieldType>("select * from FieldType where GroupTypeID = 1")).ToList();
+				fieldTypes = (await connection.QueryAsync<FieldType>("select ft.* from fieldtype ft inner join assettype at on ft.assettypeid = at.id where at.Object = 'GroupType' and at.ObjectID = 1")).ToList();
 			}
 
 			List<string> fieldColumns = ["G.Uid", "G.Name", "G.Description", "gr1.uid as PrimaryOwnerUid", "gr2.uid as SecondaryOwnerUid", "G.IsActiveDirectoryGroup"];
@@ -129,13 +132,13 @@ where	g.id = @groupId;
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-						fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");
+						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
 					}
 					else 
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-						fieldJoins.Add($"inner join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.GroupID = G.ID) or {prefix}.GroupID = 0");					
+						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");					
 					}
 				});
 			}
@@ -286,6 +289,7 @@ declare @ids table(ID int, Uid uniqueidentifier);
 insert into @ids 
 	select ID, Uid from [Group] where Uid in @uids;
 
+insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, [date], [Action], ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 select	distinct 
 		'Group', 
 		g.ID, 
@@ -300,18 +304,18 @@ select	distinct
 		'',
 		mv.[Version]
 from	[Group] g 
-		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
-where	g.ID in @ids;
+		inner join @ids i on i.ID = g.ID
+		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv;
 
 delete ResourceGroup where GroupID in (select ID from @ids);
 delete Field where ObjectType = 'Group' and ObjectID in (select ID from @ids);
-delete Asset where Object = 'Group' and ObjectID in in (select ID from @ids);
-delete [Group] where ID in @ids;";
+delete Asset where Object = 'Group' and ObjectID in (select ID from @ids);
+delete [Group] where ID in (select ID from @ids);";
 
 			bool response;
 			using (var connection = ConnectionProvider.Connect())
 			{
-				int rowsUpdated = await connection.ExecuteAsync(sql, new { uids });
+				int rowsUpdated = await connection.ExecuteAsync(sql, new { uids, CurrentUserId });
 				response = (rowsUpdated > 0);
 			}
 			return response;

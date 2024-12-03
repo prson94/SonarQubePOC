@@ -1635,7 +1635,7 @@ namespace d360.model
 								#region Load valid items into table
 								try
 								{
-									Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
+									Connection.Execute(sql, new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 									#endregion
 
