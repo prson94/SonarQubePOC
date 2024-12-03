@@ -5,6 +5,7 @@ export enum FeatureFlags {
     SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
 	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
 	DashboardingEnabled = "govern-dashboarding-functionality-permanent",
+	TagTypesEnabled="govern-tag-types",
 
 	//temp flags
 	RelationshipCardinalityTempFlag = "GovernRelationshipCardinalityTemp20230901",

@@ -3,7 +3,7 @@
 
 <div class="tabs-container">
    <d3s-tabs [items]="tabs"></d3s-tabs>
-   <button class="p-element tab btn-tags-types-toggler">
+   <button class="p-element tab btn-tags-types-toggler" *ngIf="isTagTypesFeatureEnabled">
       {{ btnTagsText }}
       <span 
       [class]="isTagTypesOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'" 

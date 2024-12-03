@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Tab } from '../../../shared/tabs/tabs.models';
 import { TagTypesViewModel } from '../tag-types/tag-types.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../../../services/feature-flags.enum';
 
 /*global $localize*/
 
@@ -20,8 +22,11 @@ export class TagsHeaderComponent implements OnInit {
 	isTagTypesOpen = false;
 	tabs: Tab[] = [];
 	btnTagsText = 'Tag Types';
+	get isTagTypesFeatureEnabled(): boolean {
+        return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
+    }
 
-	constructor() {}
+	constructor(private featureFlagService: LaunchDarklyService) {}
 
 	ngOnInit(): void {
 		this.header = $localize`Tags`;
