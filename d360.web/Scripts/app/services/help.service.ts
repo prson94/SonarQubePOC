@@ -50,9 +50,10 @@ export class HelpService {
 
 	private getFluidVersion(lang: string, version: string) {
 		let vers = this._fluidVersionLanguage[version]["en-US"];
+		/* GOV-35677 Preview/latest is no longer translated
 		if (this._fluidVersionLanguage[version][lang]) {
 			vers = this._fluidVersionLanguage[version][lang];
-		}
+		} */
 		return encodeURI(vers);
 	}
 
