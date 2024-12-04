@@ -692,7 +692,7 @@ from	#Fields t
 		inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
 group by t.FieldTypeID, s.AllowMultipleValues;
 
-insert into @uniqueListValues
+insert into @uniqueListValues (FieldTypeID, AllowMultipleValues, FieldValue)
 select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue
 from	#Fields t
 		inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
@@ -700,14 +700,14 @@ from	#Fields t
 group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
 
 update	t
-set		t.LookupValue = t.[Value]
+set		t.LookupValue = s.[Value]
 from	@uniqueListValues t
 	inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
 
 update	t
 set		t.LookupValue = s.LookupValue
 from	#Fields t
-		inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
+		inner join @uniqueListValues s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
 
 update	t
 set		t.LookupValue = ms.LookupValue
@@ -715,7 +715,7 @@ from	#Fields t
 		inner join FieldType ft on ft.ID = t.FieldTypeID and ft.[Type] = 'Lookup' and ft.AllowMultipleValues = 1
 		cross apply (
 			select	string_agg(s.LookupValue, ',') as LookupValue
-			from	@listFieldTypes s
+			from	@uniqueListValues s
 			where	s.FieldTypeID = t.FieldTypeID
 					and LookupValue in (select [value] from string_split(t.FieldValue, ','))
 		) ms;",
