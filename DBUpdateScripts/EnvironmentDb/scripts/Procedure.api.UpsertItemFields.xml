@@ -1,0 +1,99 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.UpsertItemFields-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.UpsertItemFields
+	@userId int,
+	@date datetime,
+	@object varchar(25),
+	@lookupPassedByValue bit
+as
+begin
+	--create table #Items (ItemNumber int, IsValid bit, ObjectID int, AssetID bigint);
+	--create table #Fields (ItemNumber int, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max));
+
+	-- Resolve lookup field values.
+	if @lookupPassedByValue = 1
+	begin
+		update	T 
+		set		T.LookupValue = T.[FieldValue] 
+		from	#Fields T 
+				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup';
+	end
+	else
+	begin
+		declare @listFieldTypes table (FieldTypeID int, AllowMultipleValues bit);
+		declare @uniqueListValues table (FieldTypeID int, AllowMultipleValues bit, FieldValue nvarchar(max), LookupValue nvarchar(max))
+
+		insert into @listFieldTypes
+			select	t.FieldTypeID, s.AllowMultipleValues
+			from	#Fields t
+					inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
+			group by t.FieldTypeID, s.AllowMultipleValues;
+
+		insert into @uniqueListValues
+			select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue, null
+			from	#Fields t
+					inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
+					cross apply string_split(t.FieldValue, ',') tmv
+			group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
+
+		update	t
+		set		t.LookupValue = s.[Value]
+		from	@uniqueListValues t
+				inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
+
+		update	t
+		set		t.LookupValue = s.LookupValue
+		from	#Fields t
+				inner join @uniqueListValues s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
+
+		update	t
+		set		t.LookupValue = ms.LookupValue
+		from	#Fields t
+				inner join FieldType ft on ft.ID = t.FieldTypeID and ft.[Type] = 'Lookup' and ft.AllowMultipleValues = 1
+				cross apply (
+					select	string_agg(s.LookupValue, ',') as LookupValue
+					from	@uniqueListValues s
+					where	s.FieldTypeID = t.FieldTypeID
+							and LookupValue in (select [value] from string_split(t.FieldValue, ','))
+				) ms;
+	end
+
+	-- Merge the field data.	
+	merge	Field as t
+	using	(
+			select	i.ObjectID,
+					i.AssetID,
+					f.*
+			from	#Fields f
+					inner join #Items i on i.ItemNumber = f.ItemNumber
+			) as s
+	on		(t.ObjectType = @object and t.ObjectID = s.ObjectID and t.FieldTypeID = s.FieldTypeID)
+	when	matched then
+	update	set
+			t.Value = iif(s.LookupValue is null, null, s.LookupValue),
+			t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
+			t.UpdatedBy = @userId,
+			t.UpdatedOn = @date
+	when	not matched by target then
+	insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
+	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);
+
+	update	F
+	set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+	from	Field F
+			inner join #Items i on i.AssetID = f.AssetId 
+			inner join #Fields t on t.ItemNumber = i.ItemNumber and t.FieldTypeID = F.FieldTypeID and F.[Value] is not null
+			inner join FieldType FT on FT.ID = f.FieldTypeID and FT.Type = 'Lookup';
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

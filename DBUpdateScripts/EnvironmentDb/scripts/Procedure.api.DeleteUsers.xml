@@ -1,0 +1,144 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.DeleteUsers-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.DeleteUsers
+	@executionId int
+as
+begin
+	set nocount on;
+	declare @userId int,
+			@date datetime,
+			@object varchar(50) = 'Resource',
+			@assetTypeId int,
+			@transactionCompleted bit = 0;
+	
+	select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+	
+	select	@userId = ResourceID,
+			@date = StartedOn
+	from	api.Execution 
+	where	ID = @executionId;
+
+	drop table if exists #Items;
+	create table #Items (
+		ItemNumber int, 
+		[Uid] uniqueidentifier, 
+		IsSuccess bit, 
+		ObjectID int, AssetID bigint, 
+		[Message] nvarchar(max)
+	);
+	
+	-- Get data from JSON columns in api.ExecutionItem
+	insert into #Items (ItemNumber, Uid)
+		select	ItemNumber,
+				JSON_VALUE(Properties, '$.Uid')
+		from	api.ExecutionItem
+		where	ExecutionId = @executionId;
+
+	-- Validate incoming data.
+	update	t
+	set		t.IsSuccess = 0,
+			t.Message = 'User does not exist.'
+	from	#Items  t
+			left join reporting.Global_Resource s on s.Uid = t.Uid and t.Uid is not null
+	where	s.ResourceID is null;
+
+	-- Populate internal IDs for group based on the incoming Uid.
+	update	t
+	set		t.ObjectID = s.ResourceID
+	from	#Items  t
+			inner join reporting.Global_Resource s on s.Uid = t.Uid and t.Uid is not null and IsSuccess is null;
+
+	update	t
+	set		t.AssetID = s.ID
+	from	#Items  t
+			inner join [Asset] s on s.Object = @object and s.ObjectID = t.ObjectID and IsSuccess is null;
+
+	begin try
+		begin transaction;
+
+
+		insert into reporting.Global_Audit 
+			(
+			Object, ObjectID, ObjectName, 
+			ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, 
+			[Version]
+			)
+			select	distinct 
+					@object, 
+					r.ResourceID, 
+					SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
+					@userId, 
+					@date, 
+					'Removed', 
+					@object, 
+					r.ResourceID, 
+					@object, 
+					SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
+					'',
+					mv.[Version]
+			from	reporting.Global_Resource r 
+					cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = @object and ObjectID = r.ResourceID) mv
+			where	r.ResourceID in (select ObjectID from #Items where IsSuccess is null);
+
+		update	t
+		set		t.State = 3
+		from	Asset t 
+				inner join #Items s on s.AssetID = t.ID and s.IsSuccess is null;
+
+		update	t
+		set		t.State = 3
+		from	reporting.Global_Resource t 
+				inner join #Items s on s.ObjectID = t.ResourceID and s.IsSuccess is null;
+	
+		commit transaction;
+		set @transactionCompleted = 1;
+	end try
+	begin catch
+		rollback transaction;
+	end catch
+
+	if @transactionCompleted = 1
+	begin
+		-- Updated the messaging.
+		update	#Items
+		set		Message = 'Deleted successfully',
+				IsSuccess = 1
+		where	IsSuccess is null
+
+		-- Update api.ExecutionItem
+		update	t
+		set		t.Success = s.IsSuccess,
+				t.Message = s.Message
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId;
+
+		update	t
+		set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+
+		update	t
+		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+
+		exec api.CompleteExecution @executionId, @date, '';
+	end
+	else
+	begin 
+		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+	end
+	
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>
