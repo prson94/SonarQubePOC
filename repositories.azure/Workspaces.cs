@@ -426,7 +426,6 @@ end";
 			});
 
 			SqlBulkCopy bulkCopy = null;
-			var UpdatedOn = DateTime.UtcNow;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
