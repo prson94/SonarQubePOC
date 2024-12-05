@@ -349,8 +349,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
 			const isReferenceListTypePage = this.assetTypeClass === AssetTypeClass.Reference;
+			const isResourceTypePage = this.assetTypeClass === AssetTypeClass.User;
 
-			if (this.fieldDisplayModel.length > 1) {
+			if (isResourceTypePage && this.fieldDisplayModel.length === 1)
+			{
+				menuItems.push({ title: $localize`Delete`, action: 'delete' });
+			}
+			else if (this.fieldDisplayModel.length > 1) {
 				if (this.showDeleteButton) {
 					if (keyFieldsCount === 1 && item.IsPartOfKey) {
 						const tooltip = isReferenceListTypePage ? $localize`The default "Code" field cannot be deleted.` : $localize`You cannot delete this field. There must be at least one key field defined.`
