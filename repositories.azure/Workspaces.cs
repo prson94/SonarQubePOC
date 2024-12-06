@@ -442,7 +442,7 @@ from	[Group] G
 declare @userId int,
 		@groupId int;
 select @groupId = ID from [Group] where Uid = @groupUid;
-select @userId = ID from reporting.Global_Resource where Uid = @userUid;
+select @userId = ResourceID from reporting.Global_Resource where Uid = @userUid;
 
 if exists(select 1 from ResourceGroup where GroupID = @groupId and ResourceID = @userId)
 begin
@@ -465,7 +465,7 @@ begin
 				'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
 				mv.[Version]
 		from	[Group] g 
-				inner join reporting.Global_Resource gr on gr.ResourceUD = @userId
+				inner join reporting.Global_Resource gr on gr.ResourceID = @userId
 				cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
 		where	g.ID = @groupId
 end";
