@@ -186,5 +186,18 @@ GO
 ]]>
   </sql>
  </changeSet>
+
+ <changeSet author="Pappas" id="Table.Deletions.APIExecutionTables-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop table if exists [api].ExecutionGroup
+GO
+drop table if exists [api].ExecutionUser
+GO
+drop table if exists [api].ExecutionDeletedGroup
+GO
+]]>
+  </sql>
+ </changeSet>
 	
 </databaseChangeLog>

@@ -1,0 +1,29 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.api.ExecutionItem-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionItem')
+BEGIN
+	CREATE TABLE [api].[ExecutionItem](
+		[ExecutionId] [int] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[ExecutionItemUid] [uniqueidentifier] sparse,
+		[Properties] [nvarchar](max) constraint DF_ApiExecutionItem_Properties default('{}') NOT NULL,
+		[CustomProperties] [nvarchar](max) constraint DF_ApiExecutionItem_CustomProperties default('[]') NOT NULL,
+		[AdditionalImpactedItems] [nvarchar](max) sparse,
+		[Message] [nvarchar](max) NULL,
+		[Success] [bit] NULL,
+		constraint [PK_ApiExecutionItem] PRIMARY KEY CLUSTERED ( [ExecutionId] ASC, [ItemNumber] ASC )
+	)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

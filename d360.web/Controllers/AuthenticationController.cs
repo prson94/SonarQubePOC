@@ -46,14 +46,12 @@ namespace d360.web.Controllers
 		#region DI
 
 		private readonly OidcDiscoveryCache Discovery;
-		private readonly IMembershipRepository MembershipRepository;
 
-        public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery, IMembershipRepository membershipRepository)
+        public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery)
             : base(set)
         {
 			Discovery = discovery;
             Mail = mail;
-			MembershipRepository = membershipRepository;
         }
 
 		#endregion

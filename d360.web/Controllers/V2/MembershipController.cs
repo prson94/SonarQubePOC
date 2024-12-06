@@ -48,7 +48,6 @@ namespace d360.web.Controllers.V2
 	public class MembershipController : BaseV2ApiController
 	{
 		private readonly IMediator Mediator;
-		private readonly IMembershipRepository Membership;
 		private readonly IAssetRepository Assets;
 		//private readonly ISecurity Security;
 		private IQueueSource Queue;
@@ -56,7 +55,6 @@ namespace d360.web.Controllers.V2
 
 		public MembershipController(
 			ICoreComponentSet set,
-			IMembershipRepository membership,
 			IAssetRepository assets,
 			IQueueSource queue,
 			IStorageProvider storage,
@@ -64,7 +62,6 @@ namespace d360.web.Controllers.V2
 			IMediator mediator) : base(set)
 		{
 			Mediator = mediator;
-			Membership = membership;
 			Assets = assets;
 
 			Queue = queue;
@@ -1209,25 +1206,6 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// Clears the list of favorite items for the current user.
-		/// This endpoint is obsolete, please prefer to use DELETE /api/v2/users/me/favorites/bulk
-		/// </summary>
-		/// <returns></returns>
-		[
-			HttpDelete,
-			Route("users/me/favorites"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, ""),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			Obsolete
-		]
-		public async Task<IHttpActionResult> ClearFavorites()
-		{
-			await Membership.ClearFavorites(SecurityContext.ResourceID);
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesListCleared);
-		}
-
-		/// <summary>
 		/// Removes a given set of favorites for the current user based on their Id. 
 		/// </summary>
 		/// <param name="favoriteIds">List of Ids corresponding to favorites</param>
@@ -1242,7 +1220,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
 		{
-			await Membership.DeleteFavorites(SecurityContext.ResourceID, favoriteIds);
+			await Workspace.RemoveFavoritesAsync(SecurityContext.ResourceID, favoriteIds);
 			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
 		}
 

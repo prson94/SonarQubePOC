@@ -1,8 +1,14 @@
-﻿using d360.core.resources;
+﻿using d360.core.entities;
+using d360.core.helpers;
+using d360.core.resources;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace d360.core
 {
@@ -201,5 +207,272 @@ namespace d360.core
 				default: throw new ArgumentOutOfRangeException("DataType");
             }
         }
-    }
+
+		public static FieldValidationResult ValidateBoolean(this DataType type, string name, string value)
+		{
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				bool bValue;
+				if (bool.TryParse(value, out bValue))
+				{
+					result.CorrectedValue = bValue.ToString().ToLower();
+				}
+				else
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.ValidateBoolValue, name);
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateDate(this DataType type, string name, string value)
+		{
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				DateTime dValue;
+				if (DateTime.TryParse(value, out dValue))
+				{
+					result.CorrectedValue = dValue.Date.ToString();
+				}
+				else
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "date");
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateDateTime(this DataType type, string name, string value)
+		{
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				DateTime dValue;
+				if (DateTime.TryParse(value, out dValue))
+				{
+					result.CorrectedValue = dValue.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'");
+				}
+				else
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "datetime");
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateDecimal(this DataType type, string name, int? length, decimal? minLength, decimal? maxLength, string value)
+		{
+			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				decimal dValue;
+				if (decimal.TryParse(value, out dValue))
+				{
+					if (minLength.HasValue)
+					{
+						if (dValue < minLength.Value)
+						{
+							result.IsValid = false;
+							result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+						}
+					}
+					if (maxLength.HasValue)
+					{
+						if (dValue > maxLength.Value)
+						{
+							result.IsValid = false;
+							result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+						}
+					}
+				}
+				else 
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "decimal");
+				}
+				if (length.HasValue)
+				{
+					if (value.Length != length.Value)
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+					}
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateLink(this DataType type, string name, string value)
+		{
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				if (value.Count(c => c == '|') != 1 && !value.Equals('|'))
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.ValidateLinkValue, name);
+				}
+				else 
+				{
+					// Remove 'inner' trailing/leading spaces in link value.
+					result.CorrectedValue = Regex.Replace(value, "(\\s*\\|\\s*)", "|");
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateList(this DataType type, string name, bool allowMultiple, string value)
+		{
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				if (!allowMultiple && value.Split(',').Length > 1)
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies, name);
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateNumber(this DataType type, string name, int? length, decimal? minLength, decimal? maxLength, string value)
+		{
+			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				long dValue;
+				if (long.TryParse(value, out dValue))
+				{
+					if (minLength.HasValue)
+					{
+						if (dValue < minLength.Value)
+						{
+							result.IsValid = false;
+							result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+						}
+					}
+					if (maxLength.HasValue)
+					{
+						if (dValue > maxLength.Value)
+						{
+							result.IsValid = false;
+							result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+						}
+					}
+				}
+				else
+				{
+					result.IsValid = false;
+					result.Message += string.Format(CompanyContextApiError.ValidateNumberFieldRange, name, -9223372036854775808, 9223372036854775807);
+				}
+				if (length.HasValue)
+				{
+					if (value.Length != length.Value)
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+					}
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateText(this DataType type, string name, int? length, decimal? minLength, decimal? maxLength, string pattern, string value)
+		{
+			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
+			FieldValidationResult result = new();
+
+			if (value != "")
+			{
+				if (length.HasValue)
+				{
+					if (value.Length != length.Value)
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+					}
+				}
+
+				if (minLength.HasValue)
+				{
+					if (value.Length < minLength.Value)
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+					}
+				}
+
+				if (maxLength.HasValue)
+				{
+					if (value.Length > maxLength.Value)
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+					}
+				}
+
+				if (!string.IsNullOrEmpty(pattern))
+				{
+					if (!Regex.IsMatch(value, pattern))
+					{
+						result.IsValid = false;
+						result.Message += string.Format(CompanyContextApiError.RegularExpressionPatternMatch, name);
+					}
+				}
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateRequirement(this DataType type, string name, bool required, string value)
+		{
+			FieldValidationResult result = new();
+
+			value = (value ?? "").Trim();
+
+			if (string.IsNullOrEmpty(value) && required)
+			{
+				result.IsValid = false;
+				result.Message += string.Format(CompanyContextApiError.FieldValueIsRequired, name);
+			}
+
+			return result;
+		}
+
+		public static FieldValidationResult ValidateRestricted(this DataType type, string name, string typeName)
+		{
+			FieldValidationResult result = new();
+
+			List<string> restrictedFieldTypes = DataType.Text.GetNotAllowedToUpdateViaAssetApi();
+			if (restrictedFieldTypes.Contains(typeName))
+			{
+				result.IsValid = false;
+				result.Message += string.Format(CompanyContextApiError.RestrictFieldTypeUpdate, name, typeName);
+			}
+
+			return result;
+		}
+
+	}
 }

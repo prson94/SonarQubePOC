@@ -6039,148 +6039,103 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                     }
                     else
                     {
+						FieldValidationResult validationResult;
+
                         if (string.IsNullOrEmpty(fieldValue))
                         {
-                            if (fieldType.IsRequired)
-                            {
-                                success = false;
-                                errorMessages.Add(string.Format(CompanyContextApiError.FieldValueIsRequired, fieldName));
-                            }
-
-                            if (isValueEmptyString)
-                            {
-                                switch (fieldType.Type)
-                                {
-                                    case "Boolean":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
-                                        success = false;
-                                        break;
-                                    case "Date":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
-                                        success = false;
-                                        break;
-                                    case "DateTime":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
-                                        success = false;
-                                        break;
-                                    case "Decimal":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
-                                        success = false;
-                                        break;
-                                    case "Number":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "number"));
-                                        success = false;
-                                        break;
-                                }
-                            }
+							validationResult = DataType.Text.ValidateRequirement(fieldName, fieldType.IsRequired, fieldValue);
+							if (!validationResult.IsValid)
+							{
+								errorMessages.Add(validationResult.Message);
+								success = false;
+							}
                         }
                         else
                         {
                             switch (fieldType.Type)
                             {
                                 case "Boolean":
-									if (!string.IsNullOrEmpty(fieldValue))
+									validationResult = DataType.Boolean.ValidateBoolean(fieldName, fieldValue);
+									if (!validationResult.IsValid)
 									{
-										fieldValue = fieldValue.ToLowerInvariant();
+										errorMessages.Add(validationResult.Message);
+										success = false;
 									}
-
-									if ((fieldValue != "true" && fieldValue != "false") && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
-                                    }
                                     break;
                                 case "Date":
-                                    DateTime dTest;
-
-                                    if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
-                                    }
-
-                                    if (success)
-                                    {
-                                        fieldValue = dTest.Date.ToString();
-                                    }
-
+									validationResult = DataType.Date.ValidateDate(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "DateTime":
-                                    DateTime dtTest;
-
-                                    if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
-                                    }
-
-                                    if (success)
-                                    {
-                                        fieldValue = dtTest.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); ;
-                                    }
-
+									validationResult = DataType.DateTime.ValidateDateTime(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Decimal":
-                                    decimal decTest;
-
-                                    if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
-                                    }
-
+									validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Link":
-
-                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateLinkValue, fieldName));
-                                    }
-
-                                    if (success)
-                                    {
-                                        //Remove 'inner' trailing/leading spaces in link value
-                                        fieldValue = Regex.Replace(fieldValue, "(\\s*\\|\\s*)", "|");
-                                    }
-
+									validationResult = DataType.Link.ValidateLink(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Lookup":
-
-                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1 && IslookupFieldsPassedByValue)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies, fieldName));
-                                    }
-
+									validationResult = DataType.Lookup.ValidateList(fieldName, fieldType.AllowMultipleValues, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Number":
-
-                                    if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, -9223372036854775808, 9223372036854775807));
-                                    }
-
+									validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Percentage":
                                     decimal pctTest;
-
                                     if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
                                     }
-
                                     break;
                                 case "JSON":
-
                                     if (jsonElementsEnabled && (fieldValue.Length > 2500))
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
                                     }
-
                                     validationFieldProperties.JsonFieldCount++;
                                     break;
                                 case "Counter":
@@ -6191,7 +6146,6 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
                                     }
-
                                     break;
                                 case "System":
                                     if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
@@ -6199,70 +6153,15 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                         success = false;
                                         errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
                                     }
-
                                     break;
                                 default: // Html, Text
-
-                                    if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        if (!Regex.IsMatch(fieldValue, fieldType.Pattern))
-                                        {
-                                            success = false;
-                                            errorMessages.Add(string.Format(CompanyContextApiError.RegularExpressionPatternMatch, fieldName));
-                                        }
-                                    }
-
-                                    break;
-                            }
-
-                            if (fieldType.Length.HasValue)
-                            {
-                                if (fieldValue.Length < fieldType.Length.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add(string.Format(CompanyContextApiError.CheckExactLength, fieldName, fieldType.Length.Value));
-                                }
-                            }
-
-                            if (fieldType.MinimumLength.HasValue)
-                            {
-                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                                {
-                                    if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumValueCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-                                else
-                                {
-                                    if (fieldValue.Length < fieldType.MinimumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumLengthCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-
-                            }
-
-                            if (fieldType.MaximumLength.HasValue)
-                            {
-                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                                {
-                                    if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaximumValueCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-                                else
-                                {
-                                    if (fieldValue.Length > fieldType.MaximumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaxmiumLengthCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
+									validationResult = DataType.Text.ValidateText(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldType.Pattern, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
+									break;
                             }
                         }
                     }

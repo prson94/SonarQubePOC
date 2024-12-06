@@ -29,7 +29,6 @@ namespace d360.model
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
-            builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
