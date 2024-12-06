@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
@@ -24,8 +25,96 @@ namespace repositories.azure
 		public string WorkspaceId { get; set; }
 
 		private readonly string GROUP_RESULTS_SQL = @"select ItemNumber, cast(JSON_VALUE(Properties, '$.Uid') as uniqueidentifier) as uid, Message, Success from api.ExecutionItem where ExecutionID = @executionId;";
+		private readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 
 		public Workspaces(DapperConnectionProvider provider): base(provider) { }
+
+
+		FieldValidationResult isFieldValid(FieldTypeValidation ft, string value)
+		{
+			FieldValidationResult result;
+			DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+			result = type.ValidateRestricted(ft.Name, ft.Type);
+			if (!result.IsValid)
+			{
+				return result;
+			}
+			result = type.ValidateRequirement(ft.Name, ft.IsRequired, value);
+			if (!result.IsValid)
+			{
+				return result;
+			}
+
+			switch (type)
+			{
+				case DataType.Boolean:
+					result = type.ValidateBoolean(ft.Name, value);
+					break;
+				case DataType.Date:
+					result = type.ValidateDate(ft.Name, value);
+					break;
+				case DataType.DateTime:
+					result = type.ValidateDateTime(ft.Name, value);
+					break;
+				case DataType.Decimal:
+					result = type.ValidateDecimal(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
+					break;
+				case DataType.Html:
+					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
+					break;
+				case DataType.Lookup:
+					result = type.ValidateList(ft.Name, ft.AllowMultipleValues, value);
+					break;
+				case DataType.Number:
+					result = type.ValidateNumber(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
+					break;
+				default:
+					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
+					break;
+			}
+
+			if (result.IsValid && string.IsNullOrEmpty(result.CorrectedValue))
+			{
+				result.CorrectedValue = value;
+			}
+
+			return result;
+		}
+
+		(bool, List<string>) parseFieldAndAddToRow(DataRow row, List<FieldTypeValidation> fieldTypes, Dictionary<string, string> fields)
+		{
+			var jsonArray = JArray.Parse("[]");
+			bool fieldsAreValid = true;
+			List<string> validationMessages = [];
+			foreach (var key in fields.Keys)
+			{
+				var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
+				if (ft != null)
+				{
+					var validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					if (validationResult.IsValid)
+					{
+						var jsonObject = JObject.Parse("{}");
+
+						jsonObject.Add("FieldName", key.Trim());
+						jsonObject.Add("FieldValue", validationResult.CorrectedValue);
+						jsonObject.Add("FieldTypeID", ft.ID);
+
+						jsonArray.Add(jsonObject);
+					}
+					else
+					{
+						fieldsAreValid = false;
+						validationMessages.Add(validationResult.Message);
+					}
+				}
+			}
+			row["CustomProperties"] = jsonArray.ToString();
+
+			return (fieldsAreValid, validationMessages);
+		}
+
 
 		public async Task<RepositoryResponse<bool>> AddMembersToGroupAsync(Guid groupUid, List<Guid> userUids)
 		{
@@ -286,6 +375,18 @@ from	[Group] G
 			return (T)Convert.ChangeType(info.Value, typeof(T));
 		}
 
+		public async Task<bool> RemoveFavoritesAsync(int resourceId, List<int> favoriteIds)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				await connection.ExecuteAsync(@"delete Favorite where ResourceID = @resourceId and ID in @favoriteIds", new { resourceId, favoriteIds });
+			}
+
+			return true;
+		}
+
+
 		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids)
 		{
 			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
@@ -442,15 +543,15 @@ end";
 			return response;
 		}
 
-		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false)
+		public async Task<RepositoryResponse<List<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false)
 		{
-			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
+			RepositoryResponse<List<GroupResponseResult>> response = new([], 200, true);
 
-			List<dynamic> fieldTypes = new();
+			List<FieldTypeValidation> fieldTypes = new();
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				fieldTypes = (await connection.QueryAsync<dynamic>(
-					"select f.ID, f.Name from FieldType f inner join AssetType a on a.Object = 'GroupType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
+				fieldTypes = (await connection.QueryAsync<FieldTypeValidation>(
+					$"select {FIELD_VALIDATION_COLUMNS} from FieldType f inner join AssetType a on a.Object = 'GroupType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
 					)).ToList();
 			}
 
@@ -492,44 +593,35 @@ end";
 					jsonObject.Add("SecondaryOwnerUid", u.SecondaryOwnerUid);
 				}
 				row["Properties"] = jsonObject.ToString();
-
-				var jsonArray = JArray.Parse("[]");
-				foreach (var key in u.Fields.Keys)
+				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.Fields);
+				
+				if (fieldProcessingResult.Item1)
 				{
-					var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
-					if (ft != null)
-					{
-						jsonObject = JObject.Parse("{}");
-
-						jsonObject.Add("FieldName", key.Trim());
-						jsonObject.Add("FieldValue", (u.Fields[key] ?? "").Trim());
-						jsonObject.Add("FieldTypeID", ft.ID);
-
-						jsonArray.Add(jsonObject);
-					}
+					table.Rows.Add(row);
 				}
-				row["CustomProperties"] = jsonArray.ToString();
-
-				table.Rows.Add(row);
-
+				else
+				{	// Add error to outgoing.
+					response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+				}
 			});
 
-			SqlBulkCopy bulkCopy = null;
-			var UpdatedOn = DateTime.UtcNow;
+			if (table.Rows.Count > 0)
+			{ 
+				SqlBulkCopy bulkCopy = null;
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					connection.Open();
+					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("Properties", "Properties");
+					bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
+					await bulkCopy.WriteToServerAsync(table);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				connection.Open();
-				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
-				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-				bulkCopy.ColumnMappings.Add("Properties", "Properties");
-				bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
-				await bulkCopy.WriteToServerAsync(table);
+					await connection.ExecuteAsync(@"exec api.UpsertGroups @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
-				await connection.ExecuteAsync(@"exec api.UpsertGroups @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
-
-				response.Data = (await connection.QueryAsync<GroupResponseResult>(GROUP_RESULTS_SQL, new { executionId })).ToList();
+					response.Data.AddRange(await connection.QueryAsync<GroupResponseResult>(GROUP_RESULTS_SQL, new { executionId }));
+				}
 			}
 
 			return response;
@@ -623,15 +715,15 @@ end";
 			return response;
 		}
 
-		public async Task<RepositoryResponse<IEnumerable<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
 		{
-			RepositoryResponse<IEnumerable<UserApiUpsertResult>> response = new(null, 200, true);
+			RepositoryResponse<List<UserApiUpsertResult>> response = new([], 200, true);
 
-			List<dynamic> fieldTypes = new();
+			List<FieldTypeValidation> fieldTypes = new();
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				fieldTypes = (await connection.QueryAsync<dynamic>(
-					"select f.ID, f.Name from FieldType f inner join AssetType a on a.Object = 'ResourceType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
+				fieldTypes = (await connection.QueryAsync<FieldTypeValidation>(
+					$"select {FIELD_VALIDATION_COLUMNS} from FieldType f inner join AssetType a on a.Object = 'ResourceType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
 					)).ToList();
 			}
 
@@ -666,44 +758,36 @@ end";
 				jsonObject.Add("IsAdministrator", u.IsAdministrator);
 
 				row["Properties"] = jsonObject.ToString();
-
-				var jsonArray = JArray.Parse("[]");
-				foreach (var key in u.Fields.Keys)
+				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.Fields);
+				
+				if (fieldProcessingResult.Item1)
 				{
-					var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
-					if (ft != null)
-					{
-						jsonObject = JObject.Parse("{}");
-
-						jsonObject.Add("FieldName", key.Trim());
-						jsonObject.Add("FieldValue", (u.Fields[key] ?? "").Trim());
-						jsonObject.Add("FieldTypeID", ft.ID);
-
-						jsonArray.Add(jsonObject);
-					}
+					table.Rows.Add(row);
 				}
-				row["CustomProperties"] = jsonArray.ToString();
-
-				table.Rows.Add(row);
-
+				else 
+				{	// Add error to outgoing.
+					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+				}
 			});
 
-			SqlBulkCopy bulkCopy = null;
-			var UpdatedOn = DateTime.UtcNow;
+			if (table.Rows.Count > 0)
+			{ 
+				SqlBulkCopy bulkCopy = null;
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				connection.Open();
-				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
-				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-				bulkCopy.ColumnMappings.Add("Properties", "Properties");
-				bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
-				await bulkCopy.WriteToServerAsync(table);
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					connection.Open();
+					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("Properties", "Properties");
+					bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
+					await bulkCopy.WriteToServerAsync(table);
 
-				await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
+					await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
-				response.Data = (await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId })).ToList();
+					response.Data.AddRange(await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId }));
+				}			
 			}
 
 			return response;

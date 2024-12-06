@@ -165,6 +165,7 @@
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
 
 	<include file="scripts/Table.api.Execution.xml"/>
+	<include file="scripts/Table.api.ExecutionItem.xml"/>
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionCatalogItem.xml"/>
 	<include file="scripts/Table.api.ExecutionCatalogItemProperty.xml"/>
@@ -177,12 +178,10 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
-	<include file="scripts/Table.api.ExecutionGroup.xml"/>
 	<include file="scripts/Table.api.ExecutionItemDependentChange.xml"/>
 	<include file="scripts/Table.api.ExecutionLog.xml"/>
 	<include file="scripts/Table.api.ExecutionScore.xml"/>
@@ -193,7 +192,6 @@
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
-	<include file="scripts/Table.api.ExecutionUser.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityTypeRelationOverrideItem.xml"/>
