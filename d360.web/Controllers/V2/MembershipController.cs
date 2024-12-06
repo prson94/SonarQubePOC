@@ -888,7 +888,9 @@ namespace d360.web.Controllers.V2
 			}
 
 			var uids = users.Select(u => u.Uid).ToList();
-			var tenantResponse = await Workspace.RemoveUsersAsync(uids);
+			var execution = getApiExecution(uids.Count, action: ApiExecutionAction.DeleteUsers);
+			Company.Add(execution);
+			var tenantResponse = await Workspace.RemoveUsersAsync(execution.Id, uids);
 			var communityResponse = new RepositoryResponse<int>(400, "");
 			if (tenantResponse.IsSuccess)
 			{
@@ -955,6 +957,7 @@ namespace d360.web.Controllers.V2
 			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 			
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			Company.Add(execution);
 			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
@@ -1074,6 +1077,7 @@ namespace d360.web.Controllers.V2
 			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			Company.Add(execution);
 			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
@@ -1328,14 +1332,20 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
+		public async Task<IHttpActionResult> DeleteGroupAsync(List<DeleteGroupModel> groups)
 		{
 			if (groups.Count() < 1)
 			{
 				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
-			await Workspace.RemoveGroupsAsync(groups.Select(g => g.Uid).ToList());
-			return Ok(new ConfirmResponse { message = (groups.Count == 1 ? "Group removed." : "Groups removed."), title = "Success" });
+			
+			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
+			Company.Add(execution);
+			var result = await Workspace.RemoveGroupsAsync(execution.Id, groups.Select(g => g.Uid).ToList());
+			
+			return result.IsSuccess ?
+				Ok(result.Data) :
+				errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
 		}
 
 		private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
@@ -1368,13 +1378,13 @@ namespace d360.web.Controllers.V2
 			Route("groups"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerRequestExample(typeof(UpdateGroupModel), typeof(UpdateGroupModelExample)),
-			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(List<GroupResponseResult>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public IHttpActionResult UpdateGroup(List<UpdateGroupModel> groups)
+		public async Task<IHttpActionResult> UpdateGroupAsync(List<UpdateGroupModel> groups, bool lookupFieldsPassedByValue = false)
 		{
 			if (groups.Count < 1)
 			{
@@ -1389,9 +1399,12 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
-			var result = Membership.UpdateGroups(execution, groups);
+			Company.Add(execution);
+			var result = await Workspace.UpsertGroupsAsync(execution.Id, groups, false, lookupFieldsPassedByValue);
 
-			return Ok(result);
+			return result.IsSuccess ? 
+				Ok(result.Data) : 
+				errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
 		}
 
 		/// <summary>
@@ -1403,13 +1416,13 @@ namespace d360.web.Controllers.V2
 			Route("groups"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerRequestExample(typeof(UpdateGroupModel), typeof(UpdateGroupModelExample)),
-			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(List<GroupResponseResult>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> AddGroup(List<UpdateGroupModel> groups)
+		public async Task<IHttpActionResult> AddGroupAsync(List<UpdateGroupModel> groups, bool lookupFieldsPassedByValue = false)
 		{
 			if (groups.Count < 1)
 			{
@@ -1421,19 +1434,13 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(ApiMessages.NameMissingInGroupPayload);
 			}
 
-			foreach (var g in groups.FindAll(x => x.Uid.HasValue && x.Uid != Guid.Empty))
-			{
-				if (Company.Assets.Any(a => a.uid == g.Uid))
-				{
-					return errorMessageArgumentResponse(ApiMessages.OneMoreUidExists);
-				}
-			}
-
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PostGroups);
-			var result = Membership.AddGroups(execution, groups);
-			Company.CreateOrUpdateTypeDisplayValuesAsync(1, SystemObjects.GroupType.ToString());
+			Company.Add(execution);
+			var result = await Workspace.UpsertGroupsAsync(execution.Id, groups, true, lookupFieldsPassedByValue);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+			return result.IsSuccess ?
+				Ok(result.Data) :
+				errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
 		}
 
 		private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes, bool iscommunityuserresposibility)

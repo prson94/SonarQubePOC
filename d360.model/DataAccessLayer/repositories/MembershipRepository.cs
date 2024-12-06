@@ -229,25 +229,6 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
-		public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
-		{
-			CompanyContext.Add(execution);
-
-			List<GroupResponseResult> results = null;
-
-			try
-			{
-				results = CompanyContext.DeleteGroups(execution, groups);
-				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteGroups);
-			}
-			catch (Exception ex)
-			{
-				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
-			}
-
-			return results;
-		}
-
 		[Obsolete]
 		public async Task ClearFavorites(int resourceID)
 		{

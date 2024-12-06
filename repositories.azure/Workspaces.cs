@@ -5,6 +5,8 @@ using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,6 +22,8 @@ namespace repositories.azure
 		public int CompanyId { get; set; }
 		
 		public string WorkspaceId { get; set; }
+
+		private readonly string GROUP_RESULTS_SQL = @"select ItemNumber, cast(JSON_VALUE(Properties, '$.Uid') as uniqueidentifier) as uid, Message, Success from api.ExecutionItem where ExecutionID = @executionId;";
 
 		public Workspaces(DapperConnectionProvider provider): base(provider) { }
 
@@ -282,42 +286,52 @@ from	[Group] G
 			return (T)Convert.ChangeType(info.Value, typeof(T));
 		}
 
-		public async Task<bool> RemoveGroupsAsync(List<Guid> uids)
+		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids)
 		{
-			string sql = @"
-declare @ids table(ID int, Uid uniqueidentifier);
-insert into @ids 
-	select ID, Uid from [Group] where Uid in @uids;
+			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
 
-insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, [date], [Action], ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
-select	distinct 
-		'Group', 
-		g.ID, 
-		G.Name, 
-		@CurrentUserId, 
-		GETUTCDATE(), 
-		'Group removed', 
-		'Group', 
-		g.ID, 
-		'Group', 
-		G.Name, 
-		'',
-		mv.[Version]
-from	[Group] g 
-		inner join @ids i on i.ID = g.ID
-		cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv;
+			#region Data Tables
 
-delete ResourceGroup where GroupID in (select ID from @ids);
-delete Field where ObjectType = 'Group' and ObjectID in (select ID from @ids);
-delete Asset where Object = 'Group' and ObjectID in (select ID from @ids);
-delete [Group] where ID in (select ID from @ids);";
+			var table = new DataTable();
 
-			bool response;
-			using (var connection = ConnectionProvider.Connect())
+			table.Columns.Add("ExecutionId", typeof(int));
+			table.Columns.Add("ItemNumber", typeof(int));
+			table.Columns.Add("Properties", typeof(string));
+
+			#endregion
+
+			// Load user and field data into data tables.
+			int itemNumber = 0;
+			uids.ForEach(u => {
+				var row = table.NewRow();
+				var jsonObject = JObject.Parse("{}");
+
+				itemNumber++;
+				row["ExecutionId"] = executionId;
+				row["ItemNumber"] = itemNumber;
+				jsonObject.Add("Uid", u);
+				row["Properties"] = jsonObject.ToString();
+
+				table.Rows.Add(row);
+			});
+
+			SqlBulkCopy bulkCopy = null;
+			var UpdatedOn = DateTime.UtcNow;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				int rowsUpdated = await connection.ExecuteAsync(sql, new { uids, CurrentUserId });
-				response = (rowsUpdated > 0);
+				connection.Open();
+				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("Properties", "Properties");
+				await bulkCopy.WriteToServerAsync(table);
+
+				await connection.ExecuteAsync(@"exec api.DeleteGroups @executionId", new { executionId });
+
+				response.Data = (await connection.QueryAsync<GroupResponseResult>(GROUP_RESULTS_SQL, new { executionId })).ToList();
 			}
+
 			return response;
 		}
 
@@ -382,47 +396,140 @@ end";
 			return response;
 		}
 
-		public async Task<RepositoryResponse<int>> RemoveUsersAsync(List<Guid> uids)
+		public async Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids)
 		{
-			RepositoryResponse<int> response;
+			RepositoryResponse<int> response = new(0, 200, true);
+
+			#region Data Tables
+
+			var table = new DataTable();
+
+			table.Columns.Add("ExecutionId", typeof(int));
+			table.Columns.Add("ItemNumber", typeof(int));
+			table.Columns.Add("Properties", typeof(string));
+
+			#endregion
+
+			// Load user and field data into data tables.
+			int itemNumber = 0;
+			uids.ForEach(u => {
+				var row = table.NewRow();
+				var jsonObject = JObject.Parse("{}");
+
+				itemNumber++;
+				row["ExecutionId"] = executionId;
+				row["ItemNumber"] = itemNumber;
+				jsonObject.Add("Uid", u);
+				row["Properties"] = jsonObject.ToString();
+
+				table.Rows.Add(row);
+			});
+
+			SqlBulkCopy bulkCopy = null;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				var recordsImpacted = await connection.ExecuteAsync(
-@"
-declare @ids table(ID int, Uid uniqueidentifier);
-insert into @ids 
-	select ResourceID, Uid from reporting.Global_Resource where Uid in @uids;
+				connection.Open();
+				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("Properties", "Properties");
+				await bulkCopy.WriteToServerAsync(table);
 
-insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
-	select	distinct
-			'Resource', 
-			res.ResourceId,
-			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-			@r, 
-			getutcdate(), 
-			'Deleted', 
-			'Resource', 
-			res.ResourceId,
-			'Resource', 
-			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-			'This user has been removed.',
-			mv.[Version]
-	from	reporting.Global_Resource res
-			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
-	where	res.ResourceID in (select ID from @ids);
+				await connection.ExecuteAsync(@"exec api.DeleteUsers @executionId", new { executionId });
+			}
 
-update	Asset
-set		State = @assetState
-where	Object = 'Resource'
-		and ObjectID in (select ID from @ids);
+			return response;
+		}
 
-update	reporting.Global_Resource
-set		State = @state
-where	ResourceID in (select ID from @ids);", new { uids, state = (int)CompanyResourceState.Deleted, assetState = (int)State.Deleted , r = CurrentUserId}
-				);
+		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false)
+		{
+			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
 
-				response = new(recordsImpacted, 200, true);
+			List<dynamic> fieldTypes = new();
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				fieldTypes = (await connection.QueryAsync<dynamic>(
+					"select f.ID, f.Name from FieldType f inner join AssetType a on a.Object = 'GroupType' and a.ObjectID = 1 and f.AssetTypeID = a.ID"
+					)).ToList();
+			}
+
+			#region Data Tables
+
+			var table = new DataTable();
+
+			table.Columns.Add("ExecutionId", typeof(int));
+			table.Columns.Add("ItemNumber", typeof(int));
+			table.Columns.Add("Properties", typeof(string));
+			table.Columns.Add("CustomProperties", typeof(string));
+
+			#endregion
+
+			// Load user and field data into data tables.
+			int itemNumber = 0;
+			items.ForEach(u => {
+				var row = table.NewRow();
+				var jsonObject = JObject.Parse("{}");
+
+				itemNumber++;
+				row["ExecutionId"] = executionId;
+				row["ItemNumber"] = itemNumber;
+
+				if (u.Uid.HasValue && u.Uid != Guid.Empty)
+				{
+					jsonObject.Add("Uid", u.Uid.Value);
+				}
+				jsonObject.Add("Name", u.Name);
+				jsonObject.Add("Description", u.Description);
+				jsonObject.Add("IsActiveDirectoryGroup", u.IsActiveDirectoryGroup);
+
+				if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid != Guid.Empty) 
+				{
+					jsonObject.Add("PrimaryOwnerUid", u.PrimaryOwnerUid);
+				}
+				if (u.SecondaryOwnerUid.HasValue && u.SecondaryOwnerUid != Guid.Empty)
+				{
+					jsonObject.Add("SecondaryOwnerUid", u.SecondaryOwnerUid);
+				}
+				row["Properties"] = jsonObject.ToString();
+
+				var jsonArray = JArray.Parse("[]");
+				foreach (var key in u.Fields.Keys)
+				{
+					var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
+					if (ft != null)
+					{
+						jsonObject = JObject.Parse("{}");
+
+						jsonObject.Add("FieldName", key.Trim());
+						jsonObject.Add("FieldValue", (u.Fields[key] ?? "").Trim());
+						jsonObject.Add("FieldTypeID", ft.ID);
+
+						jsonArray.Add(jsonObject);
+					}
+				}
+				row["CustomProperties"] = jsonArray.ToString();
+
+				table.Rows.Add(row);
+
+			});
+
+			SqlBulkCopy bulkCopy = null;
+			var UpdatedOn = DateTime.UtcNow;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("Properties", "Properties");
+				bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
+				await bulkCopy.WriteToServerAsync(table);
+
+				await connection.ExecuteAsync(@"exec api.UpsertGroups @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
+
+				response.Data = (await connection.QueryAsync<GroupResponseResult>(GROUP_RESULTS_SQL, new { executionId })).ToList();
 			}
 
 			return response;
@@ -530,57 +637,55 @@ end";
 
 			#region Data Tables
 
-			var userTable = new DataTable();
-			var fieldTable = new DataTable();
+			var table = new DataTable();
 
-			userTable.Columns.Add("ItemNumber", typeof(int));
-			userTable.Columns.Add("ResourceID", typeof(int));
-			userTable.Columns.Add("Uid", typeof(Guid));
-			userTable.Columns.Add("Username", typeof(string));
-			userTable.Columns.Add("Email", typeof(string));
-			userTable.Columns.Add("FirstName", typeof(string));
-			userTable.Columns.Add("LastName", typeof(string));
-			userTable.Columns.Add("State", typeof(int));
-			userTable.Columns.Add("IsAdministrator", typeof(bool));
-
-			fieldTable.Columns.Add("ItemNumber", typeof(int));
-			fieldTable.Columns.Add("ResourceID", typeof(int));
-			fieldTable.Columns.Add("FieldName", typeof(string));
-			fieldTable.Columns.Add("FieldValue", typeof(string));
-			fieldTable.Columns.Add("FieldTypeID", typeof(int));
+			table.Columns.Add("ExecutionId", typeof(int));
+			table.Columns.Add("ItemNumber", typeof(int));
+			table.Columns.Add("Properties", typeof(string));
+			table.Columns.Add("CustomProperties", typeof(string));
 
 			#endregion
 
 			// Load user and field data into data tables.
+			int itemNumber = 0;
 			users.ForEach(u => {
-				var userRow = userTable.NewRow();
-				userRow["ItemNumber"] = u.ItemNumber;
-				userRow["ResourceID"] = u.ResourceID;
-				userRow["Uid"] = u.uid;
-				userRow["Username"] = u.Username;
-				userRow["Email"] = u.Email;
-				userRow["FirstName"] = u.FirstName;
-				userRow["LastName"] = u.LastName;
-				userRow["State"] = u.State;
-				userRow["IsAdministrator"] = u.IsAdministrator;
-				userTable.Rows.Add(userRow);
+				var row = table.NewRow();
+				var jsonObject = JObject.Parse("{}");
 
+				itemNumber++;
+				row["ExecutionId"] = executionId;
+				row["ItemNumber"] = itemNumber;
+
+				jsonObject.Add("Uid", u.uid.Value);
+				jsonObject.Add("ObjectID", u.ResourceID);
+				jsonObject.Add("Username", u.Username);
+				jsonObject.Add("Email", u.Email);
+				jsonObject.Add("FirstName", u.FirstName);
+				jsonObject.Add("LastName", u.LastName);
+				jsonObject.Add("State", (int)(u.State ?? CompanyResourceState.Active));
+				jsonObject.Add("IsAdministrator", u.IsAdministrator);
+
+				row["Properties"] = jsonObject.ToString();
+
+				var jsonArray = JArray.Parse("[]");
 				foreach (var key in u.Fields.Keys)
-				{ 
+				{
 					var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
 					if (ft != null)
 					{
-						var fieldRow = fieldTable.NewRow();
+						jsonObject = JObject.Parse("{}");
 
-						fieldRow["ItemNumber"] = u.ItemNumber;
-						fieldRow["ResourceID"] = u.ResourceID;
-						fieldRow["FieldName"] = key.Trim();
-						fieldRow["FieldValue"] = (u.Fields[key]??"").Trim();
-						fieldRow["FieldTypeID"] = ft.ID;
+						jsonObject.Add("FieldName", key.Trim());
+						jsonObject.Add("FieldValue", (u.Fields[key] ?? "").Trim());
+						jsonObject.Add("FieldTypeID", ft.ID);
 
-						fieldTable.Rows.Add(fieldRow);
-					}				
+						jsonArray.Add(jsonObject);
+					}
 				}
+				row["CustomProperties"] = jsonArray.ToString();
+
+				table.Rows.Add(row);
+
 			});
 
 			SqlBulkCopy bulkCopy = null;
@@ -589,188 +694,16 @@ end";
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				connection.Open();
-				using (SqlTransaction trans = connection.BeginTransaction())
-				{
-					// Create temp tables.
-					await connection.ExecuteAsync(@"
-create table #Users (
-	ItemNumber int, ResourceID int, [Uid] uniqueidentifier, Username nvarchar(500), Email nvarchar(500),
-	FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit,
-	AssetID bigint,
-	IsValid bit, IsSuccess bit);
+				bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+				bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+				bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+				bulkCopy.ColumnMappings.Add("Properties", "Properties");
+				bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
+				await bulkCopy.WriteToServerAsync(table);
 
-create table #Fields (
-	ItemNumber int, ResourceID int, AssetID bigint,
-	FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)
-);", transaction: trans);
+				await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
-					bulkCopy = connection.CreateBulkCopy("#Users", 1000, 1200, trans);
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
-					bulkCopy.ColumnMappings.Add("Uid", "Uid");
-					bulkCopy.ColumnMappings.Add("Username", "Username");
-					bulkCopy.ColumnMappings.Add("Email", "Email");
-					bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
-					bulkCopy.ColumnMappings.Add("LastName", "LastName");
-					bulkCopy.ColumnMappings.Add("State", "State");
-					bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
-					await bulkCopy.WriteToServerAsync(userTable);
-
-					bulkCopy = connection.CreateBulkCopy("#Fields", 1000, 1200, trans);
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
-					bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-					bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-					bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
-					await bulkCopy.WriteToServerAsync(fieldTable);
-
-					// Merge into Global_Resource table.
-					await connection.ExecuteAsync(@"
-merge	reporting.Global_Resource as T
-using	(select * from #Users) as S
-on		(T.ResourceID = S.ResourceID)
-when	matched then
-update  set
-		T.IsAdministrator = S.IsAdministrator,
-		T.State = S.State,
-		T.FirstName = S.FirstName,
-		T.LastName = S.LastName,
-		T.Email = S.Email,
-		T.UpdatedOn = @UpdatedOn,
-		T.MostRecentExecutionId = @executionId
-when	not matched by target then
-insert	(ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, State, Uid, UpdatedOn, MostRecentExecutionId)
-values	(S.ResourceID, S.FirstName, S.LastName, S.Email, S.IsAdministrator, @UpdatedOn, S.State, S.Uid, @UpdatedOn, @executionId);
-", new { UpdatedOn, executionId }, transaction: trans);
-
-					// Merge into Asset table
-					await connection.ExecuteAsync(@"
-declare @assetTypeId int;
-select @assetTypeId = ID from AssetType where Object = 'ResourceType';
-
-merge	dbo.Asset as T
-using	(select * from #Users) as S
-on		(T.Object = 'Resource' and T.ObjectID = S.ResourceID)
-when	matched then
-update  set
-		T.UpdatedOn = @UpdatedOn,
-		T.UpdatedBy = @CurrentUserId
-when	not matched by target then
-insert	([uid], [AssetTypeID], [State], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-values	(S.Uid, @assetTypeId, 1, 'Resource', S.ResourceID, @UpdatedOn, @CurrentUserId, @UpdatedOn, @CurrentUserId);
-
-update	T
-set		T.AssetID = A.ID
-from	#Users T
-		inner join dbo.Asset A on A.Object = 'Resource' and A.ObjectID = T.ResourceID;
-
-update	T
-set		T.AssetID = A.AssetID
-from	#Fields T
-		inner join #Users A on A.ResourceID = T.ResourceID;
-", new { UpdatedOn, executionId, CurrentUserId }, transaction: trans);
-
-					// Validate lookup fields.
-					if (lookupFieldsPassedByValue)
-					{
-						connection.Execute(@"
-update	T
-set		T.LookupValue = T.[FieldValue]
-from	#Fields T
-		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup'",
-							transaction: trans);
-					}
-					else
-					{
-						connection.Execute(@"
-declare @listFieldTypes table (FieldTypeID int, AllowMultipleValues bit);
-declare @uniqueListValues table (FieldTypeID int, AllowMultipleValues bit, FieldValue nvarchar(max), LookupValue nvarchar(max))
-
-insert into @listFieldTypes
-select	t.FieldTypeID, s.AllowMultipleValues
-from	#Fields t
-		inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
-group by t.FieldTypeID, s.AllowMultipleValues;
-
-insert into @uniqueListValues (FieldTypeID, AllowMultipleValues, FieldValue)
-select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue
-from	#Fields t
-		inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
-		cross apply string_split(t.FieldValue, ',') tmv
-group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
-
-update	t
-set		t.LookupValue = s.[Value]
-from	@uniqueListValues t
-	inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
-
-update	t
-set		t.LookupValue = s.LookupValue
-from	#Fields t
-		inner join @uniqueListValues s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
-
-update	t
-set		t.LookupValue = ms.LookupValue
-from	#Fields t
-		inner join FieldType ft on ft.ID = t.FieldTypeID and ft.[Type] = 'Lookup' and ft.AllowMultipleValues = 1
-		cross apply (
-			select	string_agg(s.LookupValue, ',') as LookupValue
-			from	@uniqueListValues s
-			where	s.FieldTypeID = t.FieldTypeID
-					and LookupValue in (select [value] from string_split(t.FieldValue, ','))
-		) ms;",
-							transaction: trans);
-					}
-
-					// Save fields for users.	
-					await connection.ExecuteAsync(@"
-merge	Field as t
-using	(
-		select * from #Fields
-		) as s
-on		(t.ObjectType = 'Resource' and t.ObjectID = s.ResourceID and t.FieldTypeID = s.FieldTypeID)
-when	matched then
-update	set
-		t.Value = iif(s.LookupValue is null, null, s.LookupValue),
-		t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
-		t.UpdatedBy = @CurrentUserId,
-		t.UpdatedOn = @UpdatedOn
-when	not matched by target then
-insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-values	(s.AssetID, 'Resource', s.ResourceID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @CurrentUserId, @UpdatedOn);
-
-update	F
-set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-from	Field F
-		inner join #Fields t on t.AssetID = F.AssetId and t.FieldTypeID = F.FieldTypeID and F.[Value] is not null
-		inner join FieldType FT on FT.ID = f.FieldTypeID and FT.Type = 'Lookup'",
-						new { CurrentUserId, UpdatedOn }, transaction: trans
-					);
-
-					response.Data = (await connection.QueryAsync<UserApiUpsertResult>(@"
-select	ItemNumber, 
-		uid, 
-		'' as Message, 
-		coalesce(IsSuccess, cast(1 as bit)) as Success 
-from	#Users;", transaction: trans)
-					).ToList();
-
-					trans.Commit();
-				}
-
-				// Update Execution record.
-				await connection.ExecuteAsync(@"
-update	E 
-set		E.[State] = 4,
-		E.CompletedOn = @UpdatedOn,
-		E.[Total] = iif(Tc.Cnt = 0, E.[Total], Tc.Cnt),
-		E.Processed = iif(Pc.Cnt = 0, E.Processed, Pc.Cnt),
-		E.[Error] = iif(Ec.Cnt = 0, E.[Error], Ec.Cnt)
-from	api.Execution E
-		cross apply ( select count(1) as Cnt from #Users where IsSuccess = 0  ) Ec
-		cross apply ( select count(1) as Cnt from #Users where IsSuccess = 1 ) Pc
-		cross apply ( select count(1) as Cnt from #Users ) Tc
-where	E.Id = @executionId", new { UpdatedOn, executionId });
+				response.Data = (await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId })).ToList();
 			}
 
 			return response;
