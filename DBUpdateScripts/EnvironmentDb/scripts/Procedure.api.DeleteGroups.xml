@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteGroups-v1">
+  <changeSet author="Pappas" id="Procedure.api.DeleteGroups-v1.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.DeleteGroups
@@ -94,7 +94,7 @@ begin
 		
 		delete	t
 		from	Field t 
-				inner join #Items s on t.ObjectType = @object and s.ObjectID = t.GroupID and s.IsSuccess is null;
+				inner join #Items s on t.ObjectType = @object and s.ObjectID = t.ObjectID and s.IsSuccess is null;
 
 		delete	t
 		from	AssetDisplayValue t 

@@ -2729,7 +2729,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				from #DeletedRelationships t
 				inner join [Intersect] I on I.uid = t.Uid;
 
-				exec FillDataIntoInProcessRelationAuditLog(@ProcessUid);
+				exec FillDataIntoInProcessRelationAuditLog @ProcessUid;
 
 				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 				select	@Id,
