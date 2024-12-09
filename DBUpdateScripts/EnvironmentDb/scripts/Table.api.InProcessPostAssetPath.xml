@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Table.api.InProcessPostAssetPath-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessPostAssetPath')
+BEGIN
+	CREATE TABLE [api].[InProcessPostAssetPath](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		AssetTypeID int,
+		AssetID bigint
+		CONSTRAINT [PK_InProcessPostAssetPath] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.api.InProcessPostAssetPath-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessPostAssetPath_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessPostAssetPath_ProcessUid ON [api].[InProcessPostAssetPath] ([ProcessUid]) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessPostAssetPath_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessPostAssetPath_ProcessUid ON [api].[InProcessPostAssetPath]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
