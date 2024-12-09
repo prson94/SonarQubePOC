@@ -11,6 +11,7 @@ import { MessagesObservableService } from './messages-observable.service';
 })
 export class TagService extends BaseObservableService {
 
+
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTags(phrase: string, excludeObjects: string = ''): Observable<Tag[]> {
@@ -24,11 +25,16 @@ export class TagService extends BaseObservableService {
             catchError((err) => this.handleError(err)));
     }
 
-    getTagsList(getAll: boolean = true): Observable<TagType[]> {
+    getTagsList(getAll: boolean = true, tagtypeUid?: string): Observable<TagType[]> {
         let url = `api/v2/tags`;
 
+        
+        if (tagtypeUid) {
+            url += `?tagtypeuid=${tagtypeUid}`
+        }
+
         if (getAll) {
-			url += "?_includetotal=false";
+            url += tagtypeUid?.length > 0 ? "&_includetotal=false" : "?_includetotal=false";
         }
 
         return this.http.get(url)

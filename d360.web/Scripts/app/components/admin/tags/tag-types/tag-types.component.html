@@ -1,0 +1,40 @@
+<div class="main-container">
+    <div class="header">
+        <ig-search-field #searchinput [ngModel]="searchText$ | async" i18n-placeholder placeholder="Search "
+            mode="Keypress"
+            (onSearch)="filterTagTypes($event)"
+            ></ig-search-field>
+
+        <button class="p-element ig-button ig-button-icon-only ml-1" (click)="openEditor()">
+            <span aria-hidden="true" class="ig-button-icon fa  fa-plus"></span>
+        </button>
+    </div>
+    <div class="data">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <ul class="list">
+            @for (tagType of tagTypes; track tagType.uid) {
+                <li>
+                    <div (click)="loadTags(tagType)">
+                        <p class="text float-left ml-1 ">
+                            {{ tagType.Value}}
+                        </p>
+                    </div>
+                    <div>
+                        <span aria-hidden="true" class="ig-button-icon fa  fa-ellipsis-v"></span>
+                    </div>
+                </li>
+              }
+        </ul>
+    </div>
+
+    <d3s-dynamic-editor
+       [objectType]="'TagTypes'"
+       [title]="'Tag Type'"
+       (saveClick)="saveTagType($event)"
+       [showAsModal]="true"
+       [modalTitle]="'Add Tag Type'"
+       [isModalVisible]="showEditor"
+       (closeClick)="closeEditor()">
+
+            </d3s-dynamic-editor>
+</div>
