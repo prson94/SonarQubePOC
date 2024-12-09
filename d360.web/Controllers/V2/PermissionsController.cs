@@ -38,7 +38,10 @@ namespace d360.web.Controllers.V2
 
 		private bool IsNewPermissions
 		{
-			get { return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, GetFeatureFlagUser().Result); }
+			get {
+				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
+				return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, ffUser);
+			}
 		}
 
         public PermissionsController(ICoreComponentSet set, IAssetRepository repository, ISecurity security) : base(set)
