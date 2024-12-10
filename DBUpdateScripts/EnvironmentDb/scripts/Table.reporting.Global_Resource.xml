@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-	<changeSet author="Pappas" id="Table.reporting.Global_Resource-v1.0">
+	<changeSet author="Pappas" id="Table.reporting.Global_Resource-v1.1">
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 			<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Global_Resource')
@@ -21,9 +21,16 @@ BEGIN
 		[LastLoggedInOn] [datetime] NULL,
 		[uid] [uniqueidentifier] NOT NULL,
 		[UpdatedOn] [datetime] NULL,
+		[MostRecentExecutionId] int Null
 		CONSTRAINT [PK_ReportingGlobalResource] PRIMARY KEY CLUSTERED ( [ResourceID] ASC )
 	)
 END
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME = 'Global_Resource' and COLUMN_NAME = 'MostRecentExecutionId')
+begin
+	alter table [reporting].[Global_Resource] add MostRecentExecutionId int null;
+end
+
 		]]>
 		</sql>
 	</changeSet>

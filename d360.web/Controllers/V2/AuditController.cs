@@ -189,34 +189,27 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsAuditApiViewModel)),
 			SwaggerProduces("application/json", "application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by Date.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
 		]
-			public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
-	{
-		var prefix = "Audit.GetAuditByAssetAsync => ";
-
-		var queryParams = Request.GetQueryNameValuePairs();
-		bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-		int pageSizeLimit = isStreamResponse ? 200000 : 250;
-		bool IsassetUidReqUnion = false;
-
-
-		var orderBySql = "";
-		var dbArgs = new DynamicParameters();
-		List<string> whereStatements = new List<string>();
-		try
+		public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
 		{
+			var queryParams = Request.GetQueryNameValuePairs();
+			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+			int pageSizeLimit = isStreamResponse ? 200000 : 250;
+			bool IsassetUidReqUnion = false;
+
+			var orderBySql = "";
+			var dbArgs = new DynamicParameters();
+			List<string> whereStatements = new List<string>();
 
 			string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
-
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
 			}
 
 			List<DefaultFilter> fieldList = new List<DefaultFilter>
@@ -432,32 +425,9 @@ select count(1) from AuditView {whereSql};
 					items = items
 				};
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+				return Ok(model);
 			}
 		}
-		catch (ArgumentException ex)
-		{
-			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-			return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage));
-		}
-		catch (FilterExpressionParserException ex)
-		{
-			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-			return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
-		}
-		catch (Exception ex)
-		{
-			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-			SendException(ex, new Dictionary<string, string> {
-				{ApiMessages.EndpointMethod, prefix },
-				{ AssetsApiMessages.AssetUid, assetUid.ToString() }
-			});
-
-			return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-		}
-	}
 
 		/// <summary>
 		/// Gets displayname, object and objectid from Uid regardless of whether the UID is Asset, AssetType or Tag

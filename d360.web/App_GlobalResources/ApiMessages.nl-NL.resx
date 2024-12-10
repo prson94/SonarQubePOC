@@ -363,9 +363,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Bestand is geüpload</value>
   </data>
-  <data name="GroupUidNotExists" xml:space="preserve">
-    <value>De opgegeven groeps-UID is geen geldige groeps-UID. Groep bestaat niet.</value>
-  </data>
   <data name="InvalidAssetTypeID" xml:space="preserve">
     <value>Ongeldige assettype-ID. Geef een geldige assettype-ID op.</value>
   </data>
@@ -383,9 +380,6 @@
   </data>
   <data name="InvalidResourceuid" xml:space="preserve">
     <value>Ongeldige [_resourceuid] opgegeven!</value>
-  </data>
-  <data name="InvalidUserUids" xml:space="preserve">
-    <value>Een of meer doorgevoerde gebruikers-UID's is geen gebruiker.</value>
   </data>
   <data name="Invalid_Order" xml:space="preserve">
     <value>Ongeldige [_order] opgegeven!</value>

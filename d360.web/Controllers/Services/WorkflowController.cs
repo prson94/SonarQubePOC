@@ -107,13 +107,13 @@ namespace d360.web.Controllers.Services
 		[Route("my/issues"), HttpGet]
 		public HttpResponseMessage GetIssuesForMyUser()
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, getIssues(Company.CurrentResourceID));
+			return Request.CreateResponse(HttpStatusCode.OK, getIssues(SecurityContext.ResourceID));
 		}
 
 		[Route("all/issues/excel/excel.xls"), HttpGet]
 		public HttpResponseMessage GetIssuesForAllUsersExcel(bool all = true)
 		{
-			var results = all ? getIssues(null) : getIssues(Company.CurrentResourceID);
+			var results = all ? getIssues(null) : getIssues(SecurityContext.ResourceID);
 
 			var document = new SLDocument();
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
@@ -376,7 +376,7 @@ namespace d360.web.Controllers.Services
 				else
 				{
 					var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, sendFormEmails, clearAssignments);
+					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, SecurityContext.ResourceID, sendFormEmails, clearAssignments);
 				}
 
 				return Request.CreateResponse(HttpStatusCode.Accepted, -1);
@@ -460,7 +460,7 @@ namespace d360.web.Controllers.Services
 					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowID);
 				}
 
-				workflowItem.CompletedBy = Company.CurrentResourceID;
+				workflowItem.CompletedBy = SecurityContext.ResourceID;
 				workflowItem.CompletedOn = DateTime.UtcNow;
 
 				//mark the form as completed as well since it was reassisnged
@@ -480,7 +480,7 @@ namespace d360.web.Controllers.Services
 				if (isResourceReassignment)
 				{
 					reassigned.Add(new XAttribute("toResourceId", objectId));
-					reassigned.Add(new XAttribute("fromResourceId", resourceId ?? Company.CurrentResourceID));
+					reassigned.Add(new XAttribute("fromResourceId", resourceId ?? SecurityContext.ResourceID));
 				}
 				else
 				{
@@ -488,14 +488,14 @@ namespace d360.web.Controllers.Services
 					reassigned.Add(new XAttribute("objectType", objectType));
 				}
 
-				reassigned.Add(new XAttribute("byResourceId", Company.CurrentResourceID.ToString()));
+				reassigned.Add(new XAttribute("byResourceId", SecurityContext.ResourceID.ToString()));
 				reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 				reassigned.Add(new XAttribute("newIssueId", issue.ID.ToString()));
 
 				fieldElement.Add(reassigned);
 				workflowItemStep.Fields = fieldElement.ToString();
 
-				workflowItemStep.CompletedBy = Company.CurrentResourceID;
+				workflowItemStep.CompletedBy = SecurityContext.ResourceID;
 				workflowItemStep.CompletedOn = DateTime.UtcNow;
 				workflowItemStep.State = StepState.Complete;
 
@@ -574,7 +574,7 @@ namespace d360.web.Controllers.Services
 					int.TryParse((string)root.Attribute("TotalResources"), out totalResources);
 				}
 
-				var newForm = new XElement("form", new XAttribute("ResourceID", Company.CurrentResourceID));
+				var newForm = new XElement("form", new XAttribute("ResourceID", SecurityContext.ResourceID));
 
 				foreach (var field in model)
 				{
@@ -670,13 +670,13 @@ namespace d360.web.Controllers.Services
 				if (isCompleted)
 				{
 					itemStepsModel.CompletedOn = DateTime.UtcNow;
-					itemStepsModel.CompletedBy = Company.CurrentResourceID;					
+					itemStepsModel.CompletedBy = SecurityContext.ResourceID;					
 				}
 
 				Company.Entry(itemStepsModel).State = EntityState.Modified;
 
 				//remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
-				var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.ItemStepID == itemStepsModel.ID).FirstOrDefault();
+				var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == SecurityContext.ResourceID && x.ItemStepID == itemStepsModel.ID).FirstOrDefault();
 
 				if (assignment != null)
 				{
@@ -699,7 +699,7 @@ namespace d360.web.Controllers.Services
 					//clear other assignments
 					Company.CompleteItemStepAssignments(itemStepId);
 
-					SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });
+					SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", SecurityContext.ResourceID.ToString() } });
 					int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = obj != null ? obj.TypeID : -1, ObjectType = type });
 
 					if (transitionsCount == 0)
@@ -814,14 +814,14 @@ namespace d360.web.Controllers.Services
 					{
 						int.TryParse((string)form.Attribute("ResourceID") ?? "", out int completedById);
 
-						if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
+						if (completedById == SecurityContext.ResourceID && !isCompletedByCurrentUser)
 						{
 							isCompletedByCurrentUser = true;
 						}
 					}
 
 					// check if the user has access
-					var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == i.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+					var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == i.ID && x.ResourceObjectID == SecurityContext.ResourceID).Any();
 
 					// if user does not have access or item has been deleted, don't add it to the list of valid item steps
 					if (IsUserAllowedToComplete && !isCompletedByCurrentUser && !i.CompletedOn.HasValue && !isDeleted)
@@ -1119,14 +1119,14 @@ namespace d360.web.Controllers.Services
 			{
 				int.TryParse((string)form.Attribute("ResourceID") ?? "", out int completedById);
 
-				if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
+				if (completedById == SecurityContext.ResourceID && !isCompletedByCurrentUser)
 				{
 					isCompletedByCurrentUser = true;
 				}
 			}
 
 			// check if the user has access
-			var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+			var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == SecurityContext.ResourceID).Any();
 
 			//See if there are more than one user and the response type is first response if so we can give option to reassign to a sigle user and clear other assignments.
 			var assignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).Count();
@@ -1134,7 +1134,7 @@ namespace d360.web.Controllers.Services
 				&& (formSettings.ResponseType == FormResponseType.FirstResponse);
 
 			//replace any tokens in the description            
-			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
+			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), SecurityContext.CompanyPrefix, itemStep, true, false, false);
 			Guid? ObjectUid = null;
 
 			if (itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
@@ -1811,9 +1811,9 @@ namespace d360.web.Controllers.Services
 			var @type = new core.entities.Workflow.Type
 			{
 				ID = 0,
-				CreatedBy = Company.CurrentResourceID,
+				CreatedBy = SecurityContext.ResourceID,
 				CreatedOn = DateTime.UtcNow,
-				UpdatedBy = Company.CurrentResourceID,
+				UpdatedBy = SecurityContext.ResourceID,
 				UpdatedOn = DateTime.UtcNow,
 				Name = otype.Name + " (Copy)",
 				Description = otype.Description,
@@ -1830,9 +1830,9 @@ namespace d360.web.Controllers.Services
 			{
 				ID = 0,
 				TypeID = @type.ID,
-				CreatedBy = Company.CurrentResourceID,
+				CreatedBy = SecurityContext.ResourceID,
 				CreatedOn = DateTime.UtcNow,
-				UpdatedBy = Company.CurrentResourceID,
+				UpdatedBy = SecurityContext.ResourceID,
 				UpdatedOn = DateTime.UtcNow,
 				Version = 1
 			};
@@ -1945,9 +1945,9 @@ namespace d360.web.Controllers.Services
 					var version = new WorkflowVersion();
 
 					type.ID = 0;
-					type.CreatedBy = Company.CurrentResourceID;
+					type.CreatedBy = SecurityContext.ResourceID;
 					type.CreatedOn = DateTime.UtcNow;
-					type.UpdatedBy = Company.CurrentResourceID;
+					type.UpdatedBy = SecurityContext.ResourceID;
 					type.UpdatedOn = DateTime.UtcNow;
 					type.Name = model.Type.Name;
 					type.Description = model.Type.Description;
@@ -1960,9 +1960,9 @@ namespace d360.web.Controllers.Services
 
 					version.ID = 0;
 					version.TypeID = type.ID;
-					version.CreatedBy = Company.CurrentResourceID;
+					version.CreatedBy = SecurityContext.ResourceID;
 					version.CreatedOn = DateTime.UtcNow;
-					version.UpdatedBy = Company.CurrentResourceID;
+					version.UpdatedBy = SecurityContext.ResourceID;
 					version.UpdatedOn = DateTime.UtcNow;
 					version.Version = 1;
 
@@ -1986,7 +1986,7 @@ namespace d360.web.Controllers.Services
 					type.Description = model.Type.Description;
 					type.State = model.Type.State;
 					type.UpdatedOn = DateTime.UtcNow;
-					type.UpdatedBy = Company.CurrentResourceID;
+					type.UpdatedBy = SecurityContext.ResourceID;
 
 					var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
 					int version = currentVersion.Version;
@@ -2002,9 +2002,9 @@ namespace d360.web.Controllers.Services
 							currentVersion = new WorkflowVersion
 							{
 								TypeID = type.ID,
-								CreatedBy = Company.CurrentResourceID,
+								CreatedBy = SecurityContext.ResourceID,
 								CreatedOn = DateTime.UtcNow,
-								UpdatedBy = Company.CurrentResourceID,
+								UpdatedBy = SecurityContext.ResourceID,
 								UpdatedOn = DateTime.UtcNow,
 								Version = version + 1
 							};
@@ -2611,7 +2611,7 @@ namespace d360.web.Controllers.Services
 
 			type.State = State.Deleted;
 			type.UpdatedOn = DateTime.UtcNow;
-			type.UpdatedBy = Company.CurrentResourceID;
+			type.UpdatedBy = SecurityContext.ResourceID;
 			Company.SaveChanges();
 
 			return Ok(id);
@@ -2717,7 +2717,7 @@ namespace d360.web.Controllers.Services
 
 			var workflow = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-			var items = Company.Query<dynamic>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId });
+			var items = Company.Query<dynamic>(sql, new { r = resourceId > 0 ? resourceId : SecurityContext.ResourceID, typeId, verid = version, sid = stepId });
 
 			return Ok(new { items, workflow });
 		}
@@ -2782,7 +2782,7 @@ namespace d360.web.Controllers.Services
 								wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
 								and wv.[version]=@verid and wvs.id = @sid";
 
-			var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId }).FirstOrDefault();
+			var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = resourceId > 0 ? resourceId : SecurityContext.ResourceID, typeId, verid = version, sid = stepId }).FirstOrDefault();
 
 			return Ok(new { item });
 		}
@@ -3048,7 +3048,7 @@ namespace d360.web.Controllers.Services
 		[Route("openactions"), HttpGet]
 		public IHttpActionResult GetWorkflowActions(string types)
 		{
-			var resourceId = Company.CurrentResourceID;
+			var resourceId = SecurityContext.ResourceID;
 
 			types = Regex.Replace(types ?? "", "[^0123456789, ]", string.Empty);
 			types = types.Trim().TrimEnd(',');
@@ -3734,7 +3734,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (detail.Settings.MessageSubjectTemplate != null)
 						{
-							detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+							detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
 						}
 						else
 						{
@@ -3743,7 +3743,7 @@ namespace d360.web.Controllers.Services
 
 						if (detail.Settings.MessageBodyTemplate != null)
 						{
-							detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+							detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
 						}
 
 						if (detail.Settings.IncludePreviousFormResponses != null && detail.Settings.IncludePreviousFormResponses == "true")
@@ -3785,7 +3785,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (detail.Fields.form["@description"] != null)
 						{
-							detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+							detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
 						}
 					}
 
@@ -4017,9 +4017,9 @@ namespace d360.web.Controllers.Services
 							}
 
 							var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
-								&& i.ResourceObjectID == Company.CurrentResourceID);
+								&& i.ResourceObjectID == SecurityContext.ResourceID);
 							detail.AssignedUsers = users;
-							detail.IsAssignedLoginUser = userHasOpenAssignment && users.Any(x => x.ResourceID == Company.CurrentResourceID);
+							detail.IsAssignedLoginUser = userHasOpenAssignment && users.Any(x => x.ResourceID == SecurityContext.ResourceID);
 						}
 					}
 
@@ -4094,10 +4094,10 @@ namespace d360.web.Controllers.Services
 
 					if (request.Body != null)
 					{
-						request.Body = await Company.ProcessMessageTokens(request.Body.ToString(), eventInfo, Company.CurrentCompanyDomain, itemStep);
+						request.Body = await Company.ProcessMessageTokens(request.Body.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep);
 					}
 
-					request.Url = await Company.ProcessMessageTokens(request.Url.ToString(), eventInfo, Company.CurrentCompanyDomain, itemStep, false, false, false);
+					request.Url = await Company.ProcessMessageTokens(request.Url.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep, false, false, false);
 
 					detail.Settings.HTTPRequest = request;
 				}

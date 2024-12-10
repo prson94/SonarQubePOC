@@ -6,9 +6,11 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.indexer
 {
@@ -19,16 +21,20 @@ namespace igx.jobs.indexer
 		readonly ElasticSearchSource Search;
 		readonly IQueueSource Queue;
 
-		public IndexMaintainance(IConfiguration config, IQueueSource queue, ElasticSearchSource search) : base(config)
+		public IndexMaintainance(IConfiguration config, ICommunity community, IQueueSource queue, ElasticSearchSource search) : base(community, config)
 		{
 			Queue = queue;
 			Search = search;
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-        public void Run([TimerTrigger("0 0 17 * * 6")] TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 0 17 * * 6")] TimerInfo myTimer, ILogger log)
         {
-			foreach (var server in GetSearchServersByCurrentSlot())
+			var slot = GetEnvironmentLevelCurrentSlot();
+			var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot)).ToList();
+			var searchServers = tenants.Select(o => o.SearchServer).Distinct().ToList();
+
+			foreach (var server in searchServers)
             {
 				var logProperties = new Dictionary<string, object> {
 					{ "Function", FUNCTION_NAME },
@@ -44,9 +50,9 @@ namespace igx.jobs.indexer
 						 * slotCompanies are all companies of the current environment level hosted on the active search server
 						 */
 						var indexCompanies = ElasticSearchSource.GetCompanyByIndices(server);
-						var serverCompanies = GetCompaniesBySearchServer(server).Select(c => c.CompanyID);
-						var slotCompanies = GetCompaniesByCurrentSlot().Where(c => c.SearchServer == server);
-
+						var slotCompanies = tenants.Where(c => c.SearchServer == server);
+						var serverCompanies = slotCompanies.Select(c => c.CompanyID);
+						
 						var removeIndices = indexCompanies.Except(serverCompanies);
 						var missingIndices = slotCompanies.Select(c => c.CompanyID).Except(indexCompanies);
 						var checkIndicies = slotCompanies.Select(c => c.CompanyID).Except(missingIndices);

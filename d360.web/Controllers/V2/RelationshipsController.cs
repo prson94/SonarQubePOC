@@ -1398,7 +1398,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
 				}
 
-				var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionID };
+				var info = new ApiExecutionInfo { CompanyID = SecurityContext.CompanyID, ExecutionID = executionID };
 
 				List<DatabaseBulkAssetResult> results = null;
 				bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;

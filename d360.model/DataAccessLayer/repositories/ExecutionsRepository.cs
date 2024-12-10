@@ -27,10 +27,11 @@ namespace d360.model.DataAccessLayer
 
 		public ExecutionsRepository(
 			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queue,
 			IStorageProvider storage, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -40,7 +41,7 @@ namespace d360.model.DataAccessLayer
 		{
 			var execution = new ApiExecution
 			{
-				ResourceID = CompanyContext.CurrentResourceID,
+				ResourceID =  SecurityContext.ResourceID,
 				Action = ApiExecutionAction.PatchCatalog,
 				Total = 0,
 				StartedOn = DateTime.UtcNow,
@@ -48,8 +49,8 @@ namespace d360.model.DataAccessLayer
 
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = true
@@ -294,7 +295,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
+			var info = new ApiExecutionInfo { CompanyID = SecurityContext.CompanyID, ExecutionID = executionUid };
 
 			List<dynamic> results = null;
 
@@ -471,7 +472,7 @@ namespace d360.model.DataAccessLayer
 
 			#endregion Data Table Generation
 
-			var resourceId = CompanyContext.CurrentResourceID;
+			var resourceId =  SecurityContext.ResourceID;
 			var date = DateTime.UtcNow;
 
 			var executionProcessingInfoFields = CompanyContext.ApiExecutions.Single(x => x.Id == executionId).Fields ?? "{}";

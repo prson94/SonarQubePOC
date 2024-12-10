@@ -2,6 +2,7 @@
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using d360.core;
+using d360.core.enums;
 using d360.core.types;
 using d360.extensions;
 using d360.featureflags;
@@ -22,6 +23,7 @@ using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Owin;
 using Owin;
 using repositories;
+using repositories.azure;
 using System;
 using System.Web;
 using System.Web.Http;
@@ -112,7 +114,7 @@ namespace d360.web
 
 				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.Community);
+						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.ReadOnlyConnection);
 					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
@@ -147,7 +149,10 @@ namespace d360.web
 						if (req != null)
 						{
 							var ctx = req.GetOwinContext();
+							i.Instance.AuthenticationType = ctx.Get<AuthenticationType>("AuthenticationType");
+							i.Instance.AllowNewUserLogin = ctx.Get<bool>("AllowNewUserLogin");
 							i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
+							i.Instance.PrimaryCompanyPrefix = ctx.Get<string>("PrimaryCompanyPrefix");
 							i.Instance.ClientID = ctx.Get<int>("ClientID");
 							i.Instance.CompanyID = ctx.Get<int>("CompanyID");
 							i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
@@ -188,39 +193,64 @@ namespace d360.web
 				}).As<ILogger>().InstancePerRequest();
 
 				#region Repositories
+				
+				
+				builder.Register<ICommunity>(c => {
+					string rw = Config.GetValue<string>("ReadWriteConnectionString");
+					string ro = Config.GetValue<string>("ReadOnlyConnectionString");
+					var repo = new Community(rw, ro);
+					return repo;
+				}).InstancePerRequest();
 
-				builder.Register(o => {
-					var connectionString = Config.GetValue<string>(constants.Setting.Community);
-					var cache = o.Resolve<ICachingProvider>();
-					var queue = o.Resolve<IQueueSource>();
-					var ctx = o.Resolve<ISecurityContextProvider>();
-					return new CommunityContext(connectionString, cache, queue, ctx);
-					}).As<ICommunityContext>().InstancePerRequest();
-
-				builder.Register(c =>
+				builder.Register(i =>
 				{
-					var community = c.Resolve<ICommunityContext>();
-					var connectionString = community.GetCompanyConnectionString();
-					return new repositories.azure.DapperConnectionProvider { ConnectionString = connectionString };
+					var community = i.Resolve<ICommunity>();
+					var ctx = i.Resolve<ISecurityContextProvider>();
+					var cache = i.Resolve<ICachingProvider>();
+					string connectionString = "";
+					string cacheKey = "Company_ConnectionStrings";
+					if (cache.ListItemExists<string, int>(cacheKey, ctx.CompanyID))
+					{
+						connectionString = cache.GetItemInListByID<string, int>(cacheKey, ctx.CompanyID);
+					}
+					if (string.IsNullOrEmpty(connectionString))
+					{
+						connectionString = community.GetConnectionStringForTenant(ctx.CompanyID);
+						cache.SetItemInListByID(cacheKey, ctx.CompanyID, connectionString);
+					}
+
+					return new DapperConnectionProvider
+					{
+						ReadOnlyConnectionString = $"{connectionString}",//ApplicationIntent = ReadOnly",
+						ReadWriteConnectionString = $"{connectionString}"//ApplicationIntent=ReadWrite"
+					};
+				}).InstancePerRequest();
+
+				builder.Register(i =>
+				{
+					var cnn = i.Resolve<DapperConnectionProvider>();
+					return new TenantConnectionInfo
+					{
+						ConnectionString = cnn.ReadWriteConnectionString
+					};
 				}).InstancePerRequest();
 
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
-
 				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
-				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>()
+				builder.RegisterType<Catalog>().As<ICatalog>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
-				builder.RegisterType<repositories.azure.Security>().As<ISecurity>()
+				builder.RegisterType<Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
-				builder.RegisterType<repositories.azure.Workspaces>().As<IWorkspaces>()
+				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;

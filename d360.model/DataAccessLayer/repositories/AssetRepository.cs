@@ -37,19 +37,17 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-		internal ICommunityContext Community;
 
 		public AssetRepository(
 			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource,
 			IStorageProvider storageProvider,
-			ICommunityContext community,
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
-			Community = community;
 		}
 
 		public Asset GetAssetByObjectId(string obj, int objId)
@@ -294,11 +292,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 			}
 
-			if (!CompanyContext.CurrentResourceIsAdmin && !IsUICheckAssetTypeUid)
+			if (!SecurityContext.IsAdministrator && !IsUICheckAssetTypeUid)
 			{
 				extraJoins += $"outer apply (select max(case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end) as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
 				condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
-				dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+				dbArgs.Add("@userId", SecurityContext.ResourceID);
 			}
 
 			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty)
@@ -413,7 +411,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			List<string> tempTablelist = new List<string>();
 			bool addOwnerShipDataIntoTemp = false;
 			List<bool> addOwnerShipDataIntolist = new List<bool>();
-
+			bool IsBusTechAssetType = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -428,6 +426,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			assetTypeID = assetType.ID;
+
+			if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset)
+			{
+				IsBusTechAssetType = true;
+			}
 
 			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
@@ -552,8 +555,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			dbArgs.Add("@assetTypeID", assetTypeID);
 			whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
-			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
-			dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
+			dbArgs.Add("@userId", SecurityContext.ResourceID);
+			dbArgs.Add("@isAdmin", SecurityContext.IsAdministrator);
 
 			//Getting sql statement of referernce list LookUp type field
 			string ListQuery = $@"select * 
@@ -843,7 +846,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					 else 0
 					end as HasAssetPermission
 					option(recompile)
-					", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
+					", new { userId = SecurityContext.ResourceID, assetTypeID, p = (int)Permission.ReadAsset }
 					, ApiTimeout))
 					.FirstOrDefault();
 
@@ -1033,7 +1036,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 			}
 
-			if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
+			if (! SecurityContext.IsAdministrator && !useAsAdmin)
 			{
 				if (restrictions.HasAssetTypeRestriction)
 				{
@@ -1208,7 +1211,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 			}
 
-			if (restrictions.HasAssetPermission && !CompanyContext.CurrentResourceIsAdmin)
+			if (restrictions.HasAssetPermission && ! SecurityContext.IsAdministrator)
 			{
 				permissionDetailSQL = @"
 				left join #resolvedAssetPermissions [Permissions] on [Permissions].AssetId = A.ID";
@@ -1243,14 +1246,14 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
-					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment || IsBusTechAssetType))
 					{
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
@@ -1265,7 +1268,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && !IsBusTechAssetType && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -1296,7 +1299,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						}
 					}
 
-					if (simpleFilterFields.Any(x => x.IsPathSegment))
+					if (simpleFilterFields.Any(x => x.IsPathSegment) && !IsBusTechAssetType)
 					{
 						List<Guid> assetTypeUids = new List<Guid>();
 						foreach (var ft in simpleFilterFields.Where(x => x.IsPathSegment))
@@ -2028,7 +2031,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions);
 
 						//Override responsibilities for Admin users (as in GetAssets procedure)
-						if (CompanyContext.CurrentResourceIsAdmin)
+						if ( SecurityContext.IsAdministrator)
 						{
 							permissionObject.ModifyAsset = true;
 							permissionObject.DeleteAsset = true;
@@ -3114,8 +3117,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				model.pageSize = 250;
 			}
 
-			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
-			dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
+			dbArgs.Add("@userId", SecurityContext.ResourceID);
+			dbArgs.Add("@isAdmin", SecurityContext.IsAdministrator);
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
@@ -3380,7 +3383,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						PredicateID = predicateId,
 						Object = at.Object.ToString(),
 						ObjectID = at.ObjectID,
-						UpdatedBy = CompanyContext.CurrentResourceID,
+						UpdatedBy = SecurityContext.ResourceID,
 						UpdatedOn = DateTime.UtcNow
 					};
 
@@ -3576,7 +3579,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{
 					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
-						CompanyID = CompanyContext.CurrentCompanyID,
+						CompanyID = SecurityContext.CompanyID,
 						AssetTypeUid = assetType.uid,
 						Origin = "AssetType change permissions: " + assetType.Name
 					});
@@ -3603,8 +3606,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				results = CompanyContext.RemoveAssets(execution, assetType, assets);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssets);
 
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				
 				var distinctTypes = results.GroupBy(r => new { r.ObjectTypeID, r.ObjectType }).Select(grp => grp.First());
 
@@ -3622,8 +3625,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						{
 							var info = new ScoreQueueInfo
 							{
-								CompanyID = CompanyContext.CurrentCompanyID,
-								ResourceID = CompanyContext.CurrentResourceID,
+								CompanyID = SecurityContext.CompanyID,
+								ResourceID = SecurityContext.ResourceID,
 								ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
 								Payload = new RuleAssetRemovedModel { AssetUid = result.uid },
 								StartedOn = DateTime.UtcNow
@@ -3670,8 +3673,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					{
 						var info = new ScoreQueueInfo
 						{
-							CompanyID = CompanyContext.CurrentCompanyID,
-							ResourceID = CompanyContext.CurrentResourceID,
+							CompanyID = SecurityContext.CompanyID,
+							ResourceID =  SecurityContext.ResourceID,
 							ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
 							Payload = new RuleAssetRemovedModel { AssetUid = assetUid },
 							StartedOn = DateTime.UtcNow
@@ -3687,7 +3690,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{
 					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
-						CompanyID = CompanyContext.CurrentCompanyID,
+						CompanyID = SecurityContext.CompanyID,
 						AssetTypeUid = r.uid,
 						Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
 					});
@@ -3706,8 +3709,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = sendWorkflowEvents
@@ -3732,8 +3735,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID
 			};
@@ -3778,8 +3781,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = sendWorkflowEvents
@@ -3825,8 +3828,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = sendWorkflowEvents
@@ -4197,13 +4200,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			var includedAssetClasses = new List<AssetTypeClass>() {
 				AssetTypeClass.BusinessAsset,
 				AssetTypeClass.Diagram,
-				AssetTypeClass.Group,
 				AssetTypeClass.Model,
 				AssetTypeClass.Policy,
 				AssetTypeClass.Reference,
 				AssetTypeClass.Rule,
-				AssetTypeClass.TechnicalAsset,
-				AssetTypeClass.User
+				AssetTypeClass.TechnicalAsset
 			};
 
 			//total asset count
@@ -4235,7 +4236,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			string assetTypePermissionWhere = @" and not exists (select 1
 					from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = @AssetTypeID)";
 
-			if (CompanyContext.CurrentResourceIsAdmin)
+			if ( SecurityContext.IsAdministrator)
 			{
 				assetTypePermissionWhere = "";
 			}
@@ -4268,7 +4269,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 										{assetTypePermissionWhere}
 									end";
 
-			int count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
+			int count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId =  SecurityContext.ResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
 
 			return new AssetCountsModel { count = count };
 		}
@@ -4282,7 +4283,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			string assetTypePermissionWhere = @" and not exists (select 1
 					from dbo.AssetTypesUserCantRead(@ResourceID) atp where atp.AssetTypeID = att.ID)";
 
-			if (CompanyContext.CurrentResourceIsAdmin)
+			if (SecurityContext.IsAdministrator)
 			{
 				assetTypePermissionWhere = "";
 			}
@@ -4385,7 +4386,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						 {assetTypePermissionWhere}
 					order by att.name";
 
-			return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
+			return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId =  SecurityContext.ResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
 		}
 
 		public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
@@ -4667,7 +4668,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				whereSQL = $"where AT.Uid = '{assetTypeUid}'";
 			}
 
-			if ((!string.IsNullOrWhiteSpace(whereSQL)) || (string.IsNullOrWhiteSpace(whereSQL) && CompanyContext.CurrentResourceIsAdmin))
+			if ((!string.IsNullOrWhiteSpace(whereSQL)) || (string.IsNullOrWhiteSpace(whereSQL) && SecurityContext.IsAdministrator))
 			{
 				string exportTemplateSQL = $@"select 
 												ATET.ID, 

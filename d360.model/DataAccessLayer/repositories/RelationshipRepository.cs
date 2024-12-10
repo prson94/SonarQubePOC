@@ -29,19 +29,17 @@ namespace d360.model.DataAccessLayer
 	{
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
-		private readonly ICommunityContext CommunityContext;
 
 		public RelationshipRepository(
-			ICommunityContext communityContext, 
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			Storage = storageProvider;
-			CommunityContext = communityContext;
 		}
 
 		public Intersect GetRelationshipByUID(Guid relationshipUid)
@@ -484,7 +482,7 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
 						var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
-						dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
+						dbArgs.Add("@CurrentResourceID", SecurityContext.ResourceID);
 						dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
 						var subjectClause = "";
 						var objectClause = "";
@@ -541,7 +539,7 @@ namespace d360.model.DataAccessLayer
 							create clustered index ix_filteredIntersectAssets on #filteredIntersectAssets(ID);
 
 							insert into #filteredIntersectAssets
-							select  {(!CompanyContext.CurrentResourceIsAdmin ? " distinct " : "")}
+							select  {(!SecurityContext.IsAdministrator ? " distinct " : "")}
 									I.ID,
 									P.Name + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
 									ISNULL(AP.DisplayPath,OT2.Name) AssetPath
@@ -553,13 +551,13 @@ namespace d360.model.DataAccessLayer
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
 							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							{(!CompanyContext.CurrentResourceIsAdmin ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
 							where {subjectClause}
-							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
-							select  {(!CompanyContext.CurrentResourceIsAdmin ? " distinct " : "")}
+							select  {(!SecurityContext.IsAdministrator ? " distinct " : "")}
 									I.ID,
 									P.Inverse + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
 									ISNULL(AP.DisplayPath,ST2.Name) AssetPath
@@ -572,9 +570,9 @@ namespace d360.model.DataAccessLayer
 							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							{(!CompanyContext.CurrentResourceIsAdmin ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
 							where fia.id is null and {objectClause}
-							{(!CompanyContext.CurrentResourceIsAdmin ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 							";
 
@@ -1472,9 +1470,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.PostRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1495,9 +1493,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				SendWorkflowEvents = triggerWorkflow
 			};
@@ -1574,7 +1572,7 @@ from	IntersectType I
 
 			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyID = SecurityContext.CompanyID,
 				IntersectIDs = intersects,
 				BatchOperation = IsDelete ? ReindexBatchOperation.Delete : ReindexBatchOperation.Update
 			});
@@ -1605,7 +1603,7 @@ from	IntersectType I
 			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{ 
 				Action = PostExecutionQueueMessageAction.History, 
-				CompanyID = CompanyContext.CurrentCompanyID, 
+				CompanyID = SecurityContext.CompanyID, 
 				ExecutionId = execution.Id 
 			});
 
@@ -1634,9 +1632,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID =  SecurityContext.ResourceID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.DeleteRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1658,7 +1656,7 @@ from	IntersectType I
 			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, sendWorkflowEvents, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1683,7 +1681,7 @@ from	IntersectType I
 			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1713,7 +1711,7 @@ from	IntersectType I
 				results = CompanyContext.RemovePredicates(execution, predicates);
 				
 				// Send change log request.
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				
 				// Close execution record.
 				execution.Processed = results.Count;

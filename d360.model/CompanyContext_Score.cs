@@ -640,8 +640,8 @@ namespace d360.model
 		{
 			ScoreQueueInfo info = new ScoreQueueInfo
 			{
-				CompanyID = CurrentCompanyID,
-				ResourceID = CurrentResourceID,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID = SecurityContext.ResourceID,
 				ChangeType = changeType,
 				ExecutionId = executionId,
 				StartedOn = DateTime.UtcNow,
@@ -843,8 +843,8 @@ where	exists(
 			{
 				var info = new ScoreQueueInfo
 				{
-					CompanyID = CurrentCompanyID,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					ResourceID =  SecurityContext.ResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
@@ -859,8 +859,8 @@ where	exists(
 			{
 				var info = new ScoreQueueInfo
 				{
-					CompanyID = CurrentCompanyID,
-					ResourceID = CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					ResourceID =  SecurityContext.ResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = scoreType, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
@@ -1220,7 +1220,7 @@ group by	a.Uid",
 
 								";
 
-					Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
+					Connection.Execute(checkSQL, new { ResourceID =  SecurityContext.ResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
 
 					#endregion
 
@@ -2120,7 +2120,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 										and success is null;
 ";
 
-					Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
+					Connection.Execute(checkSQL, new { ResourceID =  SecurityContext.ResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
 
 					#endregion
 
@@ -2224,7 +2224,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 							{
 								try
 								{
-									Connection.Execute(assetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber, userId = CurrentResourceID, requestDate = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+									Connection.Execute(assetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber, userId =  SecurityContext.ResourceID, requestDate = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 									trans.Commit();
 									runCompleted = true;
 								}

@@ -1,73 +1,81 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using Dapper;
+using Microsoft.Extensions.Logging;
+using Microsoft.Owin;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using d360.core;
-using d360.core.entities;
-using Dapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.Owin;
-using Microsoft.Web.Infrastructure;
-using Newtonsoft.Json;
 
 namespace d360.web
 {
-
-
 	public class CompanyIDCheckMiddleware : BaseMiddleware
 	{
 		public class cd
 		{
+			public bool AllowNewUserLogin { get; set; }
+
+			public AuthenticationType AuthenticationType { get; set; }
+
 			public int ClientID { get; set; }
 			
 			public int CompanyID { get; set; }
-			
+
 			public int DomainSettingID { get; set; }
 			
 			public string UrlPrefix { get; set; }
 
-			public string AuthenticationSettings { get; set; }
-
-			public CompanyOpenIdAuthenticationSettings StructuredAuthenticationSettings
-			{
-				get
-				{
-					return JsonConvert.DeserializeObject<CompanyOpenIdAuthenticationSettings>(
-						AuthenticationSettings ?? "{}"
-						);
-				}
-			}
+			public string PrimaryUrlPrefix { get; set; }
 		}
 
 		public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
 		{
 		}
 
-		private async Task<List<cd>> loadCache()
+		private async Task<cd> loadCachedItem(string host)
 		{
 			var key = "CompanyPrefixes";
-			var dict = Cache.GetItem<List<cd>>(key);
+			var tenant = Cache.GetItemInListByID<cd, string>(key, host);
+			
+			var keyInactive = "CompanyPrefixesInactive";
+			var inactiveTenant = Cache.GetItemInListByID<string, string>(keyInactive, host);
 
-			if (dict == null)
+			if (tenant == null && inactiveTenant == null)
 			{
-				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
+				using (var cnn = new SqlConnection(Config.GetValue<string>("ReadOnlyConnectionString")))
 				{
 					cnn.Open();
-					dict = (await cnn.QueryAsync<cd>(@"
-													select	E.ClientID, S.CompanyID, S.DomainSettingID, S.UrlPrefix, D.AuthenticationSettings 
-													from	CompanyDomainSetting S 
-															inner join DomainSetting D on D.ID = S.DomainSettingID
-															inner join Company E on E.ID = S.CompanyID and E.Status = 'Active'")).ToList();
+					tenant = await cnn.QuerySingleOrDefaultAsync<cd>(@"
+select	s.AllowNewUserLogin,
+		s.AuthenticationType, 
+		e.ClientID, 
+		s.CompanyID, 
+		s.DomainSettingID, 
+		s.UrlPrefix, 
+		coalesce(p.UrlPrefix, s.UrlPrefix) as PrimaryCompanyPrefix
+from	CompanyDomainSetting s
+		inner join DomainSetting d on d.ID = s.DomainSettingID and s.UrlPrefix = @host
+		left join CompanyDomainSetting p on p.CompanyID = s.CompanyID and p.IsPrimary = 1
+		inner join Company e on e.ID = s.CompanyID and e.Status = 'Active'", new { host });
 				}
 
-				Cache.SetItem(key, dict, true, 5);
+				if (tenant != null)
+				{
+					Cache.SetItemInListByID(key, host, tenant, true, 10);
+				}
+				else 
+				{
+					Cache.SetItemInListByID(keyInactive, host, host, true, 10);
+				}
 			}
 
-			return dict;
+			return tenant;
 		}
 
 		public async Task Invoke(IDictionary<string, object> environment)
@@ -76,29 +84,32 @@ namespace d360.web
 			var host = context.Request.Headers["Host"].SanitizeHtml();
 			try
 			{
-				var dict = await loadCache();
+				
 				bool searchHeaders = true;
 				if (host.Contains(".data3sixty"))
 				{
 					host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
 					searchHeaders = false;
 				}
-				if (searchHeaders || !dict.Any(d => d.UrlPrefix == host))
+				if (searchHeaders)
 				{
 					if (!string.IsNullOrEmpty(context.Request.Headers["CompanyID"]))
 					{
 						host = context.Request.Headers["CompanyID"].ToLower().SanitizeHtml();
 					}
 				}
-
-				if (dict.Any(d => d.UrlPrefix == host))
+				
+				var tenant = await loadCachedItem(host);
+				
+				if (tenant != null)
 				{
-					var domainSetting = dict.Single(d => d.UrlPrefix == host);
-					context.Request.Set("CompanyDomain", host);
-					context.Request.Set("ClientID", domainSetting.ClientID);
-					context.Request.Set("CompanyID", domainSetting.CompanyID);
-					context.Request.Set("DomainSettingID", domainSetting.DomainSettingID);
-					context.Request.Set("AuthenticationSettings", domainSetting.StructuredAuthenticationSettings);
+					context.Request.Set("AllowNewUserLogin", tenant.AllowNewUserLogin);
+					context.Request.Set("AuthenticationType", tenant.AuthenticationType);
+					context.Request.Set("CompanyDomain", tenant.UrlPrefix);
+					context.Request.Set("PrimaryCompanyPrefix", tenant.PrimaryUrlPrefix);
+					context.Request.Set("ClientID", tenant.ClientID);
+					context.Request.Set("CompanyID", tenant.CompanyID);
+					context.Request.Set("DomainSettingID", tenant.DomainSettingID);
 				}
 				else
 				{

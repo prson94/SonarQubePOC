@@ -12,7 +12,6 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -36,10 +35,11 @@ namespace d360.model.DataAccessLayer
 		internal IStorageProvider Storage;
 
 		public MetricsRepository(
-			ICompanyContext context, 
+			ICompanyContext context,
+			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
 			IStorageProvider storage, 
-			IFeatureFlagService ff) : base(context, ff)
+			IFeatureFlagService ff) : base(context, securityContext, ff)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -166,8 +166,8 @@ namespace d360.model.DataAccessLayer
 
 			var info = new ScoreQueueInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				ResourceID = CompanyContext.CurrentResourceID,
+				CompanyID = SecurityContext.CompanyID,
+				ResourceID = SecurityContext.ResourceID,
 				ChangeType = ScoreQueueChangeType.MeasureRemoved,
 				Payload = new MeasureRemovedModel {
 					EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
@@ -917,9 +917,9 @@ namespace d360.model.DataAccessLayer
 							AllocationUid = model.AllocationUid,
 							IsGroup = model.IsGroup,
 							State = State.Active,
-							CreatedBy = CompanyContext.CurrentResourceID,
+							CreatedBy = SecurityContext.ResourceID,
 							CreatedOn = DateTime.UtcNow,
-							UpdatedBy = CompanyContext.CurrentResourceID,
+							UpdatedBy = SecurityContext.ResourceID,
 							UpdatedOn = DateTime.UtcNow
 						};
 
@@ -946,7 +946,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						metricAsset.UpdatedBy = CompanyContext.CurrentResourceID;
+						metricAsset.UpdatedBy = SecurityContext.ResourceID;
 						metricAsset.UpdatedOn = DateTime.Now;
 
 						var childMetricCount = CompanyContext.Connection.Query<int>(
@@ -1080,7 +1080,7 @@ namespace d360.model.DataAccessLayer
 							AssetUid = metricAsset.Uid,
 							Name = model.Name,
 							Description = model.Description.SanitizeHtml(),
-							CreatedBy = CompanyContext.CurrentResourceID,
+							CreatedBy = SecurityContext.ResourceID,
 							CreatedOn = DateTime.UtcNow,
 							MatchConditionsOnly = model.MatchConditionsOnly,
 							EffectiveDate = effectiveDate,
@@ -1596,8 +1596,8 @@ namespace d360.model.DataAccessLayer
 			{
 				var info = new ScoreQueueInfo
 				{
-					CompanyID = CompanyContext.CurrentCompanyID,
-					ResourceID = CompanyContext.CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					ResourceID = SecurityContext.ResourceID,
 					ChangeType = ScoreQueueChangeType.MeasureChanged,
 					Payload = new MeasureChangedModel
 					{
@@ -2197,7 +2197,7 @@ namespace d360.model.DataAccessLayer
 			parameters.Add("@pageSize", result.pageSize);
 			parameters.Add("@pageNum", result.pageNum);
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				outerFilters.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
 			}
@@ -2267,8 +2267,8 @@ namespace d360.model.DataAccessLayer
 				request.ScoreType = ScoreType.DataQuality;
 				var info = new ScoreQueueInfo
 				{
-					CompanyID = CompanyContext.CurrentCompanyID,
-					ResourceID = CompanyContext.CurrentResourceID,
+					CompanyID = SecurityContext.CompanyID,
+					ResourceID = SecurityContext.ResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
 					Payload = request,
 					StartedOn = DateTime.UtcNow
@@ -2595,8 +2595,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = sendWorkflowEvents

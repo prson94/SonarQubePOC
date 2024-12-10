@@ -32,11 +32,12 @@ namespace d360.model.DataAccessLayer
 		internal IStorageProvider StorageProvider;
 
 		public FieldsRepository(
-			ICompanyContext companyContext, 
+			ICompanyContext companyContext,
+			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
 			IStorageProvider storageProvider, 
 			IFeatureFlagService ff)
-			: base(companyContext, ff)
+			: base(companyContext, securityContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
@@ -63,6 +64,7 @@ namespace d360.model.DataAccessLayer
 			int? assetTypeID = null;
 			int? issueTypeID = null;
 			int? intersectTypeID = null;
+			string categorydefvalue = "General";
 
 			bool includeId = false;
 			string objectTypeIdProperty = "@assetTypeID";
@@ -171,6 +173,8 @@ namespace d360.model.DataAccessLayer
 
 			if (issueTypeID.HasValue)
 			{
+				categorydefvalue = "Form Fields";
+
 				dbArgs.Add("@issueTypeID", issueTypeID.Value);
 				objectTypeIdProperty = "@issueTypeID";
 				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IssueTypeID] = @issueTypeID";
@@ -272,7 +276,7 @@ namespace d360.model.DataAccessLayer
 										{(includeId ? "FT.Id," : "")}
 										FT.Name,
 										FT.FriendlyName,
-										FT.Category,
+										coalesce(FT.Category,'{categorydefvalue}') Category,
 										IIF(FT.IssueTypeID is not null, O_I.Uid , null) as ActionTypeUid,
 										IIF(FT.AssetTypeID is not null, O_A.Uid , null) as AssetTypeUid,
 										IIF(FT.IntersectTypeID is not null, O_R.Uid , null) as RelationshipTypeUid,
@@ -589,7 +593,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
 										case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
 										{(resolveUIDetails ? "case when FT.Type = 'Relationship' then ITName.Name else null end as 'Type.Relationship.IntersectTypeName'," : "")}
-										case when FT.Type = 'Relationship' then FT.IsRequired else null end as 'Type.Relationship.Validation.IsRequired',
+										case when FT.Type = 'Relationship' then Cast(0 as bit) else null end as 'Type.Relationship.Validation.IsRequired',
 										case when FT.Type = 'Relationship' then FT.IsDisplayable else null end as 'Type.Relationship.IsDisplayable',
 										case when FT.Type = 'Relationship' then FT.IsEditable else null end as 'Type.Relationship.IsEditable',
 										case when FT.Type = 'Relationship' then FT.IsListable else null end as 'Type.Relationship.IsListable',
@@ -768,6 +772,7 @@ namespace d360.model.DataAccessLayer
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
 			var currentFieldTypes = new List<FieldType>();
+			int fldColunmnOrder = 0;
 
 			if (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
 			{
@@ -854,21 +859,22 @@ namespace d360.model.DataAccessLayer
 					Category = f.Category,
 					Name = f.Name,
 					FriendlyName = f.FriendlyName,
-					UpdatedBy = CompanyContext.CurrentResourceID
+					UpdatedBy =  SecurityContext.ResourceID
 				};
 
 				if (isNew)
 				{
-					newFieldType.ColumnOrder = ++maxColumnIndex;
+					fldColunmnOrder = ++maxColumnIndex;
 				}
 				else
 				{
-					newFieldType.ColumnOrder = existingColumnorder;
+					fldColunmnOrder = existingColumnorder;
 				}
 
 				if (f.Type.Boolean != null)
 				{
 					newFieldType.Type = DataType.Boolean.ToString();
+					newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder.HasValue ? f.Type.Boolean.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
 
 					if (f.Type.Boolean.DefaultValue.HasValue)
@@ -950,6 +956,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortOrder = f.Type.Score.SortOrder;
 					newFieldType.SortByAscending = f.Type.Score.SortByAscending;
 					newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
+					newFieldType.ColumnOrder = f.Type.Score.ColumnOrder.HasValue ? f.Type.Score.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.DisplayInColumn = f.Type.Score.DisplayInColumn;
 
 					if (f.Type.Score.Description != null)
@@ -966,6 +973,7 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.OwnershipLookup.ToString();
+					newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder.HasValue ? f.Type.ComputedOwnershipLookup.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.ComputedOwnershipLookup.Description != null)
 					{
@@ -1005,7 +1013,9 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.ComputedRelationshipField != null)
 				{
 					newFieldType.Type = DataType.FieldFromRelationship.ToString();
+					newFieldType.ColumnOrder = f.Type.ComputedRelationshipField.ColumnOrder.HasValue ? f.Type.ComputedRelationshipField.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.ComputedRelationshipField.ColumnWidth;
+
 
 					if (f.Type.ComputedRelationshipField.Description != null)
 					{
@@ -1063,11 +1073,6 @@ namespace d360.model.DataAccessLayer
 
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
-					if (assetType.Class == AssetTypeClass.User)
-					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, assetType.Class.ToString(), f.Name));
-					}
-
 					if (f.Type.ComputedRelationshipLookup.Definition == null
 						|| !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
 						|| !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
@@ -1076,6 +1081,7 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.ComplexRelationLookup.ToString();
+					newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder.HasValue ? f.Type.ComputedRelationshipLookup.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.ComputedRelationshipLookup.Description != null)
 					{
@@ -1293,6 +1299,7 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.RefListRelationship.ToString();
+					newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder.HasValue ? f.Type.ComputedRelationshipReferenceList.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
 					{
@@ -1315,6 +1322,8 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Date != null)
 				{
 					newFieldType.Type = DataType.Date.ToString();
+					newFieldType.ColumnOrder = f.Type.Date.ColumnOrder.HasValue ? f.Type.Date.ColumnOrder.Value : fldColunmnOrder;
+
 					newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
 
 					if (f.Type.Date.DefaultValue.HasValue)
@@ -1363,6 +1372,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.DateTime != null)
 				{
 					newFieldType.Type = DataType.DateTime.ToString();
+					newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder.HasValue ? f.Type.DateTime.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.DateTime.ColumnWidth;
 
 					if (f.Type.DateTime.DefaultValue.HasValue)
@@ -1407,6 +1417,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Decimal != null)
 				{
 					newFieldType.Type = DataType.Decimal.ToString();
+					newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder.HasValue ? f.Type.Decimal.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
 
 					if (f.Type.Decimal.DefaultValue.HasValue)
@@ -1456,6 +1467,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Html != null)
 				{
 					newFieldType.Type = DataType.Html.ToString();
+					newFieldType.ColumnOrder = f.Type.Html.ColumnOrder.HasValue ? f.Type.Html.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.Html.DefaultValue))
@@ -1500,6 +1512,7 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.JSON.ToString();
+					newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.Json.Description != null)
 					{
@@ -1522,6 +1535,7 @@ namespace d360.model.DataAccessLayer
 					}
 
 					newFieldType.Type = DataType.JsonElement.ToString();
+					newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.JsonElement.ColumnWidth;
 
 					if (f.Type.JsonElement.Description != null)
@@ -1545,6 +1559,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Link != null)
 				{
 					newFieldType.Type = DataType.Link.ToString();
+					newFieldType.ColumnOrder = f.Type.Link.ColumnOrder.HasValue ? f.Type.Link.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
 
 					if (f.Type.Link.DefaultValue != null)
@@ -1598,6 +1613,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Lookup != null)
 				{
 					newFieldType.Type = DataType.Lookup.ToString();
+					newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder.HasValue ? f.Type.Lookup.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
 
 					if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
@@ -1786,6 +1802,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Number != null)
 				{
 					newFieldType.Type = DataType.Number.ToString();
+					newFieldType.ColumnOrder = f.Type.Number.ColumnOrder.HasValue ? f.Type.Number.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
 
 					if (f.Type.Number.DefaultValue.HasValue)
@@ -1833,6 +1850,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Path != null)
 				{
 					newFieldType.Type = DataType.Path.ToString();
+					newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
 
 					if (f.Type.Path.Definition != null)
@@ -1861,6 +1879,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Relationship != null)
 				{
 					newFieldType.Type = DataType.Relationship.ToString();
+					newFieldType.ColumnOrder = f.Type.Relationship.ColumnOrder.HasValue ? f.Type.Relationship.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Relationship.ColumnWidth;
 
 					if (f.Type.Relationship.Description != null)
@@ -1888,7 +1907,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
 					newFieldType.IsSubject = f.Type.Relationship.IsSubject;
-					newFieldType.IsRequired = f.Type.Relationship.Validation?.IsRequired ?? false;
+					newFieldType.IsRequired = false;
 
 					if (f.Type.Relationship.Search != null)
 					{
@@ -1901,6 +1920,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Text != null)
 				{
 					newFieldType.Type = DataType.Text.ToString();
+					newFieldType.ColumnOrder = f.Type.Text.ColumnOrder.HasValue ? f.Type.Text.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.Text.DefaultValue))
@@ -1949,6 +1969,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Tag != null)
 				{
 					newFieldType.Type = DataType.Tag.ToString();
+					newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder.HasValue ? f.Type.Tag.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
 
 					if (f.Type.Tag.Description != null)
@@ -1972,6 +1993,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.Counter != null)
 				{
 					newFieldType.Type = DataType.Counter.ToString();
+					newFieldType.ColumnOrder = f.Type.Counter.ColumnOrder.HasValue ? f.Type.Counter.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.Counter.ColumnWidth;
 
 					if (f.Type.Counter.Description != null)
@@ -2003,6 +2025,7 @@ namespace d360.model.DataAccessLayer
 				else if (f.Type.System != null)
 				{
 					newFieldType.Type = DataType.System.ToString();
+					newFieldType.ColumnOrder = f.Type.System.ColumnOrder.HasValue ? f.Type.System.ColumnOrder.Value : fldColunmnOrder;
 					newFieldType.ColumnWidth = f.Type.System.ColumnWidth;
 
 					if (string.IsNullOrEmpty(f.Type.System.DefaultValue))
@@ -2134,7 +2157,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.Type = newFieldType.Type;
 					currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
 					currentFieldType.Definition = newFieldType.Definition;
-					currentFieldType.UpdatedBy = CompanyContext.CurrentResourceID;
+					currentFieldType.UpdatedBy =  SecurityContext.ResourceID;
 					currentFieldType.SearchAddToResult = newFieldType.SearchAddToResult;
 					currentFieldType.SearchPrefix = newFieldType.SearchPrefix;
 					currentFieldType.SearchSuffix = newFieldType.SearchSuffix;
@@ -2158,7 +2181,7 @@ namespace d360.model.DataAccessLayer
 			if (model.ActionTypeUid.HasValue)
 			{
 				var action = CompanyContext.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
-				action.UpdatedBy = CompanyContext.CurrentResourceID;
+				action.UpdatedBy =  SecurityContext.ResourceID;
 				action.UpdatedOn = DateTime.UtcNow;
 
 			}
@@ -2166,7 +2189,7 @@ namespace d360.model.DataAccessLayer
 			if (model.RelationshipTypeUid.HasValue)
 			{
 				var intersectType = CompanyContext.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
-				intersectType.UpdatedBy = CompanyContext.CurrentResourceID;
+				intersectType.UpdatedBy =  SecurityContext.ResourceID;
 				intersectType.UpdatedOn = DateTime.UtcNow;
 
 			}
@@ -2174,7 +2197,7 @@ namespace d360.model.DataAccessLayer
 			if (model.AssetTypeUid.HasValue)
 			{
 				var assetType = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
-				assetType.UpdatedBy = CompanyContext.CurrentResourceID;
+				assetType.UpdatedBy =  SecurityContext.ResourceID;
 				assetType.UpdatedOn = DateTime.UtcNow;
 			}
 
@@ -2337,7 +2360,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						CompanyContext.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, CompanyContext.CurrentResourceID });
+						CompanyContext.Connection.Execute("update field set updatedby = @ResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, SecurityContext.ResourceID });
 					}
 
 					CompanyContext.FieldTypes.Remove(ft);
@@ -2371,8 +2394,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				CompanyID = SecurityContext.CompanyID,
+				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID
 			};
@@ -2735,7 +2758,7 @@ namespace d360.model.DataAccessLayer
 
 			var permissionSQL = "";
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!SecurityContext.IsAdministrator)
 			{
 				permissionSQL = $@"	
 									declare @hasPermission bit = 1,

@@ -88,6 +88,14 @@
       <Project>{11e0bc56-6f38-42eb-af5c-6fa9968ba0fa}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
+    <ProjectReference Include="..\repositories.azure\repositories.azure.csproj">
+      <Project>{b11ec76e-2791-4ee9-85e4-55c79241163d}</Project>
+      <Name>repositories.azure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\repositories\repositories.csproj">
+      <Project>{c2b66b7d-01ff-4c90-8b3d-5472af1aab9e}</Project>
+      <Name>repositories</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs">

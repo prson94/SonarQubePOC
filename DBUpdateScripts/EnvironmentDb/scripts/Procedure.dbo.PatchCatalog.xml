@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v2">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v2.1">
     <comment>GOV-31550</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -300,6 +300,7 @@ begin
 		delete	t from AssetDisplayValue t inner join #d_ids i on i.TargetId = t.AssetID;
 		delete	t from AssetDataProfile t inner join #d_ids i on i.TargetId = t.AssetID;
 		delete	t from AssetPath t inner join #d_ids i on i.TargetId = t.ID;
+		delete	t from AssetPathSegmentDtl t inner join #d_ids i on i.TargetId = t.AssetID;
 		delete	t from AssetProcessDiagram t inner join #d_ids i on i.TargetId = t.AssetID;
 		delete	t from AssetResult t inner join Asset a on a.Uid = t.OwningAssetUid inner join #d_ids i on i.TargetId = a.ID;
 		delete	t from AssetResult t inner join Asset a on a.Uid = t.EvaluatedAssetUid inner join #d_ids i on i.TargetId = a.ID;

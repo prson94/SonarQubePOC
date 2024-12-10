@@ -1,9 +1,11 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.enums;
-using d360.core.resources;
 using d360.core.security;
 using Dapper;
-using DocumentFormat.OpenXml.EMMA;
+using System.Data;
+using Dapper.Contrib.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -135,7 +137,7 @@ namespace repositories.azure
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				Rule rawRule = new() { 
+				d360.core.security.Rule rawRule = new() { 
 					ApplyToType = false, IsOverride = true, IsVisible = true, 
 					CreatedBy = CurrentUserId, CreatedOn = DateTime.UtcNow, Name = "", UpdatedBy = CurrentUserId, UpdatedOn = DateTime.UtcNow, 
 					Uid = Guid.NewGuid() 
@@ -364,7 +366,6 @@ select @Permissions";
 
 			return response;
 		}
-
 
 		public async Task<RepositoryResponse<IEnumerable<AssetOwnerModel>>> ReadVisibleOwnersByAssetAsync(Guid assetUid) 
 		{
@@ -834,7 +835,7 @@ order by p.DisplayPath",
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				Rule rawRule = new()
+				d360.core.security.Rule rawRule = new()
 				{
 					ApplyToType = false,
 					IsOverride = true,

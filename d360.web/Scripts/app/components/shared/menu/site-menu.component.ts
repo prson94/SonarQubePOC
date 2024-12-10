@@ -364,6 +364,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         });
         this.activeMenu$.next($event?.item?.menu);
         this.ref.detectChanges();
+        this.activeMenu$.subscribe((menu: SiteMenu) => {
+            menu?.NavigationItems?.forEach((item) => {
+               if(item.Items?.length > 0){
+                item.count = item.Items.length;
+               }
+            })
+        })
     }
 
     setIsMenuActive(item) {

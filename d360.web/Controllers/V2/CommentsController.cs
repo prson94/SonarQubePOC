@@ -103,7 +103,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var created = Comments.AddVote(commentUid, Company.CurrentResourceID, emoji, toggle);
+                var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
                 if (created)
                 {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
@@ -192,7 +192,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                Comments.DeleteVote(commentUid, Company.CurrentResourceID, emoji);
+                Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
             }
@@ -426,7 +426,7 @@ namespace d360.web.Controllers.V2
 
                 if (resourceId == 0)
                 {
-                    resourceId = Company.CurrentResourceID;
+                    resourceId = SecurityContext.ResourceID;
                 }
 
                 var counts = await Comments.GetCommentCountsByFollower(resourceId, null, dateStart, dateEnd);

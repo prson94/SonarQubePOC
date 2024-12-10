@@ -606,7 +606,7 @@ namespace d360.web.Controllers.V2
 
 			var res = await Company.Database.Connection.ExecuteAsync(@" insert into [dbo].[IssueType]([Name],[Description],[IsSystem],[UpdatedOn]
 				,[UpdatedBy],[uid]) values(@name,@desc,0,@date,@user,@uid)",
-				new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+				new { name = model.Name.Trim(), desc = model.Description, user = SecurityContext.ResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
 			if (res > 0)
 			{
@@ -692,7 +692,7 @@ namespace d360.web.Controllers.V2
 
 
 			var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
-			new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+			new { name = model.Name.Trim(), desc = model.Description, user = SecurityContext.ResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
 			AddIssueTypeApiModel result = new AddIssueTypeApiModel()
 			{
@@ -826,7 +826,7 @@ namespace d360.web.Controllers.V2
 
 			foreach (var issueModel in issueModels)
 			{
-				if (!Company.CurrentResourceIsAdmin && issueModel.Issue.AssetTypeID.HasValue && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID.Value, Permission.ReadAsset))
+				if (!SecurityContext.IsAdministrator && issueModel.Issue.AssetTypeID.HasValue && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID.Value, Permission.ReadAsset))
 				{
 					return errorMessageForbiddenResponse(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
 				}
@@ -865,7 +865,7 @@ namespace d360.web.Controllers.V2
 												   ,@userId
 												   ,@commentId)";
 
-				var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, assetID = issueModel.Issue.AssetID, assetTypeID = issueModel.Issue.AssetTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
+				var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, assetID = issueModel.Issue.AssetID, assetTypeID = issueModel.Issue.AssetTypeID, userId = SecurityContext.ResourceID, commentId = issueModel.Issue.CommentID });
 
 				issueModel.Issue.ID = res.FirstOrDefault().id;
 				issueModel.Issue.UID = res.FirstOrDefault().uid;
@@ -1046,9 +1046,9 @@ namespace d360.web.Controllers.V2
 
 				var issue = new Issue
 				{
-					CreatedBy = Company.CurrentResourceID,
+					CreatedBy = SecurityContext.ResourceID,
 					CreatedOn = DateTime.UtcNow,
-					UpdatedBy = Company.CurrentResourceID,
+					UpdatedBy = SecurityContext.ResourceID,
 					UpdatedOn = DateTime.UtcNow,
 					IssueTypeID = issueType.ID,
 					CommentID = 0

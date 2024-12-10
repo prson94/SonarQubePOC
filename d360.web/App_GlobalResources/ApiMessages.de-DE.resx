@@ -363,9 +363,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Datei hochgeladen</value>
   </data>
-  <data name="GroupUidNotExists" xml:space="preserve">
-    <value>Die angegebene Gruppen-UID ist nicht gültig. Die Gruppe ist nicht vorhanden.</value>
-  </data>
   <data name="InvalidAssetTypeID" xml:space="preserve">
     <value>Ungültige Asset-Typ-ID. Geben Sie eine gültige Asset-Typ-ID an.</value>
   </data>
@@ -383,9 +380,6 @@
   </data>
   <data name="InvalidResourceuid" xml:space="preserve">
     <value>Ungültige/r/s [_resourceuid] angegeben.</value>
-  </data>
-  <data name="InvalidUserUids" xml:space="preserve">
-    <value>Bei mindestens einer übergebenen Benutzer-UID handelt es sich nicht um einen Benutzer.</value>
   </data>
   <data name="Invalid_Order" xml:space="preserve">
     <value>Ungültige/r/s [_order] angegeben.</value>

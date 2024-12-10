@@ -22,6 +22,7 @@ namespace igx.jobs.indexer
 					 .AddAzureStorageQueues();
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, DummyQueueSource>();
 					services.AddScoped<IStorageProvider, DummyStorageProvider>();
@@ -30,7 +31,7 @@ namespace igx.jobs.indexer
 					services.AddScoped(s => {
 						return new ElasticSearchSource
 						{
-							CommunityConnectionString = context.Configuration[constants.Setting.Community]
+							CommunityConnectionString = context.Configuration[constants.Setting.ReadOnlyConnection]
 						};
 					});
 				});

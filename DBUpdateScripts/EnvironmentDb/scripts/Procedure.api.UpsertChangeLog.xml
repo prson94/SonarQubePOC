@@ -1,0 +1,88 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.UpsertChangeLog-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.UpsertChangeLog
+	@executionId int,
+	@object varchar(50)
+as
+begin
+	set nocount on;
+	declare @userId int,
+			@date datetime;
+		
+	select	@userId = ResourceID,
+			@date = StartedOn
+	from	api.Execution 
+	where	ID = @executionId;
+
+	drop table if exists #Assets;
+	create table #Assets ([Uid] uniqueidentifier, ObjectID int, AssetID bigint);
+	
+	-- Get data from JSON columns in api.ExecutionItem
+	insert into #Assets (Uid, ObjectID, AssetID)
+		select	JSON_VALUE(Properties, '$.Uid'),
+				cast(JSON_VALUE(Properties, '$.id') as int),
+				cast(JSON_VALUE(Properties, '$.assetId') as bigint)
+		from	api.ExecutionItem
+		where	ExecutionId = @executionId
+				and Success = 1;
+
+	declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
+	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
+		select	a.Object, 
+				a.ObjectId,
+				d.DisplayValue, 
+				@userId, 
+				@date, 
+				mv.[Version],
+				iif(mv.[Version] = 1, 'Created', 'Updated'), 
+				a.Object, 
+				a.ObjectId,
+				t.Name, 
+				d.DisplayValue, 
+				'This has been ' + iif(mv.[Version] = 1, 'created', 'updated') + '.' 
+		from	#Assets l
+				inner join Asset a on a.Id = l.AssetID
+				inner join AssetDisplayValue d on d.AssetID = a.Id
+				inner join AssetType t on t.Id = a.AssetTypeId 
+				cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = @object and ObjectID = l.ObjectID) mv
+
+	insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+		select	tt.ID as AuditID,
+				coalesce(f.FieldTypeID, 0),
+				ft.Name,
+				f.[FormattedValue],
+				pv.[Value] as PreviousValue
+		from	#Assets l
+				inner join Asset a on a.Id = l.AssetID
+				inner join @tbl tt on tt.Object = a.Object and tt.ObjectID = a.ObjectID
+				inner join Field f on f.AssetID = l.AssetID
+				inner join FieldType ft on ft.ID = f.FieldTypeID
+				outer apply (
+					select	top 1
+							ROW_NUMBER() OVER (PARTITION BY 
+								i_a.Object, 
+								i_a.ObjectID, 
+								iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) 
+								) 
+								ORDER BY i_p.[AuditId] DESC) as RowNum,
+							[Value]
+					from	reporting.Global_FieldAudit i_p
+							inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = @object and i_a.ObjectID = l.ObjectID and i_p.FieldTypeID = f.FieldTypeID
+					order by RowNum asc
+				) pv
+		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FormattedValue,'') != '') 
+					or (coalesce(f.Value,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

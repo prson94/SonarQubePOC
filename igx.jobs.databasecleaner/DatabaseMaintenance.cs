@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,16 +21,17 @@ namespace igx.jobs.databasecleaner
 		const bool RUN_ON_STARTUP = false;
 #endif
 
-		public DatabaseMaintenance(IConfiguration config) : base(config) { }
+		public DatabaseMaintenance(IConfiguration config, ICommunity community) : base(community, config) { }
 
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = RUN_ON_STARTUP)] TimerInfo myTimer, ILogger log)
 		{
 			try
 			{
-				var companies = GetCompaniesByCurrentSlot();
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
 
-				foreach (var c in companies)
+				foreach (var c in tenants)
 				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },

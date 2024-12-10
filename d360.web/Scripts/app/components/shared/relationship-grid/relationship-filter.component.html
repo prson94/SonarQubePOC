@@ -1,6 +1,6 @@
 ﻿<div class="relationship-detail-filter">
     <div class="relationships">
-        <div class="p-checkbox p-component p-checkbox-checked">
+        <div class="p-checkbox p-component p-checkbox-checked" (click)="toggleAll()">
             <div class="p-checkbox-box ig-checkbox {{hasSelectedValue ? 'p-highlight' : ''}}">
                 <span *ngIf="hasSelectedValue" class="p-checkbox-icon pi pi-minus"></span>
             </div>

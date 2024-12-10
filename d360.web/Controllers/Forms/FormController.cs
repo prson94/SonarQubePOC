@@ -26,7 +26,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.ModelBinding;
 using System.Web.Mvc;
  
 namespace d360.web.Controllers
@@ -981,7 +980,7 @@ order by Sort, title";
 						Object = typeParams.@object,
 						ObjectID = typeParams.objectID,
 						DateStarted = DateTime.UtcNow,
-						UpdatedBy = Company.CurrentResourceID,
+						UpdatedBy = SecurityContext.ResourceID,
 						AssetTypeUid = assetTypeUid,
 						IntersectTypeUid = intersectTypeUid
 					};
@@ -1236,8 +1235,8 @@ order by Sort, title";
 					load.ShouldTriggerWorkflow = triggerWorkflow;
 					load.File = null;
 					Company.Add(load);
-					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
-					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{SecurityContext.CompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = SecurityContext.CompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
 					json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
 				}
@@ -1396,7 +1395,7 @@ order by Sort, title";
 
 			if (bytes == null)
 			{
-				var fileString = Storage.GetFileContentsAsString($"{constants.Storage.BulkLoads}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}");
+				var fileString = Storage.GetFileContentsAsString($"{constants.Storage.BulkLoads}", $"{SecurityContext.CompanyID}/load_{load.ID}.{load.Extension}");
 				bytes = Encoding.Default.GetBytes(fileString);
 			}
 
@@ -1570,7 +1569,7 @@ order by Sort, title";
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.shortcut.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						shortcut.IconUrl = $"{imageFileName}";
@@ -1646,7 +1645,7 @@ order by Sort, title";
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.shortcut.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						shortcut.IconUrl = $"{imageFileName}";
@@ -1710,7 +1709,7 @@ order by Sort, title";
 				{
 					try
 					{
-						await Storage.DeleteFile(constants.Storage.Resources, $"{Company.CurrentCompanyID}_{existing.IconUrl}");
+						await Storage.DeleteFile(constants.Storage.Resources, $"{SecurityContext.CompanyID}_{existing.IconUrl}");
 					}
 					catch
 					{
@@ -1995,7 +1994,7 @@ order by Sort, title";
 							PredicateID = predicateId,
 							Object = model.Object.ToString(),
 							ObjectID = model.ObjectID,
-							UpdatedBy = Company.CurrentResourceID,
+							UpdatedBy = SecurityContext.ResourceID,
 							UpdatedOn = DateTime.UtcNow
 						};
 
@@ -2037,12 +2036,12 @@ order by Sort, title";
 					PredicateID = predicateId,
 					Object = objectType,
 					ObjectID = objectId,
-					CreatedBy = Company.CurrentResourceID,
-					UpdatedBy = Company.CurrentResourceID,
+					CreatedBy = SecurityContext.ResourceID,
+					UpdatedBy = SecurityContext.ResourceID,
 					UpdatedOn = DateTime.UtcNow
 				};
 
-				if (!Company.CurrentResourceIsAdmin && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
+				if (!SecurityContext.IsAdministrator && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
 				{
 					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 				}

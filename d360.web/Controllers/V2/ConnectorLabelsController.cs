@@ -189,7 +189,7 @@ namespace d360.web.Controllers.V2
             {
                 Value = labelValue
             };
-            dbRecord.UpdatedBy = dbRecord.CreatedBy = Company.CurrentResourceID;
+            dbRecord.UpdatedBy = dbRecord.CreatedBy = SecurityContext.ResourceID;
             dbRecord.UpdatedOn = dbRecord.CreatedOn = DateTime.UtcNow;
 
             Company.Add(dbRecord);
@@ -526,7 +526,7 @@ namespace d360.web.Controllers.V2
                                     {
                                         diagramId = process.ID,
                                         updatedDiagram = JsonConvert.SerializeObject(model),
-                                        resourceId = Company.CurrentResourceID
+                                        resourceId = SecurityContext.ResourceID
                                     }, transaction: trans);
                             }
                         }

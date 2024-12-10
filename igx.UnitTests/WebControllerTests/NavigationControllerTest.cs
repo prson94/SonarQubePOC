@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.web.Controllers;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Xunit;
 
@@ -70,7 +71,7 @@ namespace igx.UnitTests.WebControllerTests
         }
 
 
-        [Fact] void NoTechAssetsMenu()
+        [Fact] async Task NoTechAssetsMenu()
         {
             List<TopNavigationItem> nodes = new List<TopNavigationItem>();
 
@@ -90,11 +91,11 @@ namespace igx.UnitTests.WebControllerTests
 
             ;
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true, false).Count == 0);
+            Assert.True((await navigationController.GenerateSiteMenu(nodes, false, true, false)).Count == 0);
         }
 
         [Fact]
-        void HasTechAssetsMenu()
+        async Task HasTechAssetsMenu()
         {
             List<TopNavigationItem> nodes = new List<TopNavigationItem>();
 
@@ -112,7 +113,7 @@ namespace igx.UnitTests.WebControllerTests
                             </nav>"
             });
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true, false).Count == 1);
+            Assert.True((await navigationController.GenerateSiteMenu(nodes, true, true, false)).Count == 1);
         }
 
         [Fact]

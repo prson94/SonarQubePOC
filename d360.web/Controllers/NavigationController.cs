@@ -1,13 +1,12 @@
-﻿using System;
+﻿using constants;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Xml.Linq;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -17,7 +16,6 @@ using d360.featureflags;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
-
 using Resources;
 
 namespace d360.web.Controllers
@@ -75,19 +73,19 @@ namespace d360.web.Controllers
 			return items;
 		}
 
-		internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren, bool hasDataCatalog)
+		internal async Task<List<TopNavigationItem>> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren, bool hasDataCatalog)
 		{
 			if (!hasTechAssets)
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, await GetFeatureFlagUser(), true))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Dashboards").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser(), false))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser(), false))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
@@ -162,8 +160,8 @@ namespace d360.web.Controllers
 
 				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;")).First();
 
-			var showChildren = await GetCachedSettingValueById<bool>(Setting.ShowNavigationChildren);
-			var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
+			var showChildren = await GetCachedSettingValueById<bool>(core.enums.Setting.ShowNavigationChildren);
+			var menuItems = await GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = SecurityContext.ResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record
@@ -186,7 +184,7 @@ namespace d360.web.Controllers
 				Data = new
 				{
 					MenuItems = menuItems,
-					IsAdmin = Company.CurrentResourceIsAdmin
+					IsAdmin = SecurityContext.IsAdministrator
 				},
 				Formatting = Newtonsoft.Json.Formatting.None
 			};
@@ -226,7 +224,8 @@ namespace d360.web.Controllers
 		[HttpGet, Route("GetSiteNavItems")]
 		public JsonNetResult GetSiteNavItems()
 		{
-			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser());			
+			var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
+			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, ffUser);			
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
@@ -443,7 +442,7 @@ namespace d360.web.Controllers
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.menuicon.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						model.Folder.ImageIconUrl = $"{imageFileName}";
@@ -718,7 +717,7 @@ namespace d360.web.Controllers
 
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						var imageFileName = string.Format("{0}.menuicon.{1}{2}", SecurityContext.CompanyID, imageGuid, imageExtension);
 						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
@@ -991,12 +990,12 @@ namespace d360.web.Controllers
 
 			try
 			{
-				if (admin && !Company.CurrentResourceIsAdmin)
+				if (admin && !SecurityContext.IsAdministrator)
 				{
 					throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
 				}
 
-				var resid = admin ? 0 : Company.CurrentResourceID;
+				var resid = admin ? 0 : SecurityContext.ResourceID;
 
 				var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
 
@@ -1045,7 +1044,7 @@ namespace d360.web.Controllers
 		public async Task<JsonNetResult> GetCounts()
 		{
 			var ItemCounts = await Company.QueryAsync<dynamic>("GetSiteNavigationCounts @ResourceID",
-				new { ResourceID = Company.CurrentResourceID });
+				new { ResourceID = SecurityContext.ResourceID });
 
 			return new JsonNetResult
 			{
@@ -1167,7 +1166,7 @@ namespace d360.web.Controllers
 					responseModel.Object = SystemObjects.TaskType.ToString();
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 
-					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(core.enums.Setting.GovernanceRoleReferenceListUid);
 
 					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 				}
@@ -1260,7 +1259,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
-					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(core.enums.Setting.GovernanceRoleReferenceListUid);
 
 					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
 					{
@@ -1278,7 +1277,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.ResourceTypeUid);
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1308,7 +1307,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
+					responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.GroupTypeUid);
 					responseModel.DisplayValue = PageNames.PredicatesPage;
 					responseModel.MainTabTitle = PageNames.PredicatesPage;
 					responseModel.Items.HasAudit = true;
@@ -1317,7 +1316,7 @@ namespace d360.web.Controllers
 				{
 					var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
-					FillResponseModelForResource(asset, resource);
+					FillResponseModelForResource(resource);
 				}
 			}
 
@@ -1329,7 +1328,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-B00000000012");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.GroupTypeUid);
 					responseModel.DisplayValue = PageNames.GroupsTab;
 					responseModel.MainTabTitle = PageNames.GroupsTab;
 					responseModel.Items.HasAudit = true;
@@ -1341,7 +1340,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.ResourceTypeUid);
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1396,9 +1395,8 @@ namespace d360.web.Controllers
 
 				if (asset != null && (asset.Object == "Resource"))
 				{
-					var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
-					FillResponseModelForResource(asset, resource);
+					FillResponseModelForResource(resource);
 				}
 			}
 
@@ -1413,7 +1411,7 @@ namespace d360.web.Controllers
 				responseModel.Uid = model.AssetUid.Value;
 			}
 
-			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser()))
+			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser()))
 			{
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
@@ -1451,7 +1449,7 @@ namespace d360.web.Controllers
 					model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
 				}
 
-				var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+				var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = SecurityContext.ResourceID, isAdmin = SecurityContext.IsAdministrator }).ToList();
 				responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
 
 				if (responseModel != null)
@@ -1490,7 +1488,7 @@ namespace d360.web.Controllers
 				}
 			}
 
-			if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
+			if (responseModel != null && !SecurityContext.IsAdministrator && model.ObjectType != SystemObjects.SemanticType.ToString())
 			{
 				if (model.AssetUid != null)
 				{
@@ -1498,7 +1496,7 @@ namespace d360.web.Controllers
 
 					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
 					{
-						if ((responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() || responseModel?.Object == SystemObjects.Resource.ToString()) && !Company.CurrentResourceIsAdmin)
+						if ((responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() || responseModel?.Object == SystemObjects.Resource.ToString()) && !SecurityContext.IsAdministrator)
 						{
 							responseModel.Items.HasOwnership = false;
 						}
@@ -1520,7 +1518,7 @@ namespace d360.web.Controllers
 
 					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
 					{
-						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !SecurityContext.IsAdministrator)
 						{
 							responseModel.Items.HasOwnership = false;
 						}
@@ -1551,19 +1549,19 @@ namespace d360.web.Controllers
 				Formatting = Newtonsoft.Json.Formatting.None
 			};
 
-			void FillResponseModelForResource(Asset asset, GlobalReportingResource resource)
+			void FillResponseModelForResource(GlobalReportingResource resource)
 			{
 				execProcedure = false;
-				responseModel.Object = asset.Object;
-				responseModel.ObjectID = asset.ObjectID;
+				responseModel.Object = "Resource";
+				responseModel.ObjectID = resource.ResourceID;
 				responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
 				responseModel.MainTabTitle = PageNames.ProfilePage;
 				responseModel.Items.HasItemOwn = true;
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;
 				responseModel.Items.HasFollowing = true;
-				responseModel.AssetTypeClass = AssetTypeClass.User;
-				responseModel.Uid = asset.uid;
+				//responseModel.AssetTypeClass = AssetTypeClass.User;
+				responseModel.Uid = resource.Uid;
 			}
 		}
 

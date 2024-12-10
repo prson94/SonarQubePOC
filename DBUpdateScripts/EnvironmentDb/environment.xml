@@ -61,6 +61,7 @@
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetPath.xml"/>
+	<include file="scripts/Table.dbo.AssetPathSegmentDtl.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.Comment.xml"/>
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>
@@ -112,6 +113,7 @@
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
 	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
+	<include file="scripts/Table.dbo.InProcessRelationAuditLog.xml"/>
 	<include file="scripts/Table.metrics.Allocation.xml"/>
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
@@ -163,6 +165,7 @@
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
 
 	<include file="scripts/Table.api.Execution.xml"/>
+	<include file="scripts/Table.api.ExecutionItem.xml"/>
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionCatalogItem.xml"/>
 	<include file="scripts/Table.api.ExecutionCatalogItemProperty.xml"/>
@@ -175,12 +178,10 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
-	<include file="scripts/Table.api.ExecutionGroup.xml"/>
 	<include file="scripts/Table.api.ExecutionItemDependentChange.xml"/>
 	<include file="scripts/Table.api.ExecutionLog.xml"/>
 	<include file="scripts/Table.api.ExecutionScore.xml"/>
@@ -191,7 +192,6 @@
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
-	<include file="scripts/Table.api.ExecutionUser.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityTypeRelationOverrideItem.xml"/>
@@ -293,6 +293,13 @@
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->
+	<include file="scripts/Procedure.api.CompleteExecution.xml"/>
+	<include file="scripts/Procedure.api.UpsertChangeLog.xml"/>
+	<include file="scripts/Procedure.api.UpsertItemFields.xml"/>
+	<include file="scripts/Procedure.api.DeleteGroups.xml"/>
+	<include file="scripts/Procedure.api.DeleteUsers.xml"/>
+	<include file="scripts/Procedure.api.UpsertGroups.xml"/>
+	<include file="scripts/Procedure.api.UpsertUsers.xml"/>
 	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
@@ -328,6 +335,7 @@
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
     <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
     <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>

@@ -66,6 +66,10 @@ namespace d360.core.entities
         public EnvironmentLevel EnvironmentLevel { get; set; }
 
         public int Priority { get; set; }
+
+		public string GetConnectionString() {
+			return CompanyConnectionStringHelper.ConnectionString(CompanyID, Server, Username, Password);
+		}
     }
 
     public class FieldsObjectModel

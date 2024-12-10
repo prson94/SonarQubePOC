@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="entities\Graph\**" />
     <Compile Remove="entities\reference\**" />
+    <EmbeddedResource Remove="entities\Graph\**" />
     <EmbeddedResource Remove="entities\reference\**" />
+    <None Remove="entities\Graph\**" />
     <None Remove="entities\reference\**" />
   </ItemGroup>
 
@@ -82,6 +85,11 @@
       <DependentUpon>DataQualityErrors.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\Error.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Error.resx</DependentUpon>
     </Compile>
     <Compile Update="resources\FieldErrors.Designer.cs">
       <DependentUpon>FieldErrors.resx</DependentUpon>
@@ -228,6 +236,30 @@
       <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.nl-NL.resx">
+      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.it-IT.resx">
+      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.fr-FR.resx">
+      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.es-ES.resx">
+      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.de-DE.resx">
+      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Error.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Error.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="resources\FieldErrors.resx">
       <SubType>Designer</SubType>
       <LastGenOutput>FieldErrors.Designer.cs</LastGenOutput>
@@ -328,10 +360,6 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="entities\Graph\" />
   </ItemGroup>
 
 </Project>

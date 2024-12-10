@@ -988,7 +988,6 @@
     <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="Controllers\V2\AssetController_Simplified.cs" />
     <Compile Include="Controllers\V2\NavigationController.cs" />
-    <Compile Include="Controllers\V2\SecurityController.cs" />
     <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
@@ -1018,7 +1017,6 @@
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
-    <Compile Include="Controllers\V2\Filter\CompanyStateValidator.cs" />
     <Compile Include="Controllers\V2\ExecutionsController.cs" />
     <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
@@ -1781,17 +1779,8 @@
     <Content Include="Content\styles\infogix-ui\IgInputGroup.less" />
     <Content Include="angular.json" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <Content Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-delete.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-editor.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-delete.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-detail.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-editor.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-list.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
-    <Content Include="Scripts\app\components\admin\security\roles.html" />
+    <Content Include="Scripts\app\components\admin\groups\log.html" />
+    <Content Include="Scripts\app\components\admin\groups\fields.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
@@ -1997,12 +1986,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
-    <Content Include="Scripts\app\components\admin\security\policy.less" />
     <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -2010,18 +1994,9 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-detail.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-delete.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-delete.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-detail.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-list.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-list.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\_base.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\log.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\fields.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
@@ -2106,9 +2081,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\list.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\_module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\groups\_routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
@@ -2170,8 +2145,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.table.directive.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.component.ts" />
@@ -3024,7 +2997,7 @@
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-template-style-form.component.html" />
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-template-styles.component.html" />
     <None Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.component.html" />
-    <None Include="Scripts\app\components\admin\groups\admin-groups.component.html" />
+    <None Include="Scripts\app\components\admin\groups\list.html" />
     <None Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation-editor.component.html" />
     <None Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.html" />
     <None Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.html" />
@@ -3060,8 +3033,6 @@
     <None Include="Scripts\app\components\admin\scoring\measure-history.component.html" />
     <None Include="Scripts\app\components\admin\scoring\measure-list.component.html" />
     <None Include="Scripts\app\components\admin\search\admin-search.component.html" />
-    <None Include="Scripts\app\components\admin\security\policies.html" />
-    <None Include="Scripts\app\components\admin\security\roles.html" />
     <None Include="Scripts\app\components\admin\settings\admin-home.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-ip-restriction.component.html" />
     <None Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
@@ -3412,7 +3383,7 @@
     <None Include="Scripts\app\components\admin\branding\admin-branding.component.less" />
     <None Include="Scripts\app\components\admin\branding\theme-details.component.less" />
     <None Include="Scripts\app\components\admin\branding\theme-editor.component.less" />
-    <None Include="Scripts\app\components\admin\groups\admin-groups.component.less" />
+    <None Include="Scripts\app\components\admin\groups\list.less" />
     <None Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.less" />
     <None Include="Scripts\app\components\admin\issuetypes\definition\issue-type-definition.component.less" />
     <None Include="Scripts\app\components\admin\issuetypes\issuetypes-sidepanel-wrapper\issuetype-sidepanel-wrapper.component.less" />

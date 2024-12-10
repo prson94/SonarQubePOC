@@ -19,6 +19,7 @@ namespace igx.jobs.responsibilityruleprocessor
 					c.AddTimers();
 				})
 				.ConfigureGovernLogging()
+				.AddScopedCommunity()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource

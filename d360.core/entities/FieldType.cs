@@ -883,9 +883,6 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool IsSubject { get; set; }
-
-		[DataMember]
-		public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
 	}
 
 	public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
@@ -1379,15 +1376,27 @@ namespace d360.core.entities
 	/// <summary>
 	/// This class is used to load bare bones required field types for adding / updating / validating api requests.
 	/// </summary>
-	public class FieldTypeCore : BaseIntObject, IIntObject
+	public class FieldTypeCore : FieldTypeValidation, IIntObject
+	{
+		[DataMember]
+		[StringLength(250)]
+		public string FriendlyName { get; set; }
+
+		[DataMember]
+		public bool HasDefaultValue { get; set; }
+
+		[DataMember]
+		public bool IsPartOfKey { get; set; }
+	}
+
+	/// <summary>
+	/// This class is used to load bare bones required field types for adding / updating / validating api requests.
+	/// </summary>
+	public class FieldTypeValidation : BaseIntObject
 	{
 		[DataMember]
 		[StringLength(128)]
 		public string Name { get; set; }
-
-		[DataMember]
-		[StringLength(250)]
-		public string FriendlyName { get; set; }
 
 		[DataMember]
 		[Column(TypeName = "varchar"), StringLength(25)]
@@ -1410,12 +1419,13 @@ namespace d360.core.entities
 		public int? Length { get; set; }
 
 		[DataMember]
-		public bool HasDefaultValue { get; set; }
-
-		[DataMember]
 		public bool IsRequired { get; set; }
+	}
 
-		[DataMember]
-		public bool IsPartOfKey { get; set; }
+	public class FieldValidationResult 
+	{
+		public bool IsValid { get; set; } = true;
+		public string Message { get; set; } = "";
+		public string? CorrectedValue { get; set; }
 	}
 }

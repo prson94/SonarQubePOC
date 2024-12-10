@@ -7,8 +7,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,7 +22,7 @@ namespace igx.jobs.indexer
 
 		readonly ElasticSearchSource Search;
 
-		public PostExecutionIndexListener(IConfiguration config, ElasticSearchSource search) : base(config)
+		public PostExecutionIndexListener(IConfiguration config, ICommunity community, ElasticSearchSource search) : base(community, config)
 		{
 			Search = search;
 		}
@@ -44,9 +46,12 @@ namespace igx.jobs.indexer
 					var searchDeletes = new List<Guid>();
 
 					ApiExecutionAction action = ApiExecutionAction.Miscellaneous;
-					
-					using (var company = CompanyConnectionUtils.GetCompanyConnection(message.CompanyID, ConnString))
+
+					var connectionString = Community.GetConnectionStringForTenant(message.CompanyID);
+					using (var company = new SqlConnection(connectionString))
 					{
+						await company.OpenAsync();
+
 						var execution = await company.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = message.ExecutionId });
 
 						if (execution != null)

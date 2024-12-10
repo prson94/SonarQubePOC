@@ -4,6 +4,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,20 +20,22 @@ namespace igx.jobs.apiexecutionprocessor
 		private const string FUNCTION_NAME = "UserProcessor";
 		private const string TIMER_SETTINGS = "0 */2 * * * *";
 
-		public UserProcessor(IConfiguration config) : base(config) { }
+		public UserProcessor(IConfiguration config, ICommunity community) : base(community, config) { }
 
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)] TimerInfo myTimer, ILogger log)
 		{
 			try
 			{
-				var companies = GetCompaniesByCurrentSlot();
+				var slot = GetEnvironmentLevelCurrentSlot();
+				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
 
-				using (var cnn = new SqlConnection(ConnString))
+				string roConnectionString = Configuration["ReadOnlyConnectionString"];
+				using (var cnn = new SqlConnection(roConnectionString))
 				{
 					await cnn.OpenIfClosed();
 
-					foreach (var c in companies)
+					foreach (var c in tenants)
 					{
 						var logProperties = new Dictionary<string, object> {
 							{ "Function", FUNCTION_NAME},
@@ -229,7 +232,7 @@ namespace igx.jobs.apiexecutionprocessor
 							}
 							catch (Exception ex)
 							{
-								log.LogError(ex, "When when processing users for company.");
+								log.LogError(ex, "When processing users for company.");
 							}
 						}
 					}
