@@ -5,7 +5,7 @@
             (onSearch)="filterTagTypes($event)"
             ></ig-search-field>
 
-        <button class="p-element ig-button ig-button-icon-only ml-1" (click)="openEditor()">
+        <button class="p-element ig-button ig-button-icon-only ml-1" (click)="openEditor({mTitle: 'Add Tag Type', action: 'add'})">
             <span aria-hidden="true" class="ig-button-icon fa  fa-plus"></span>
         </button>
     </div>
@@ -20,7 +20,17 @@
                         </p>
                     </div>
                     <div>
-                        <span aria-hidden="true" class="ig-button-icon fa  fa-ellipsis-v"></span>
+                        <span aria-hidden="true" class="ig-button-icon fa  fa-ellipsis-v" (click)="selectRow(tagType)"></span>
+                        <div class="popup-tagtype-actions" *ngIf="showTagTypeActions == true && selectedTag.uid == tagType.uid">
+                            <ul >
+                                <li (click)="openEditor({mTitle: 'Edit Tag Type', action: 'edit'})">
+                                    <p> Edit </p>
+                                </li>
+                                <li (click)="openDeleteModal()">
+                                    <p> Delete </p>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </li>
               }
@@ -29,12 +39,31 @@
 
     <d3s-dynamic-editor
        [objectType]="'TagTypes'"
+       [objectID]="selectedTag?.Uid"
+       [selection]="selectedTag"
        [title]="'Tag Type'"
        (saveClick)="saveTagType($event)"
        [showAsModal]="true"
-       [modalTitle]="'Add Tag Type'"
+       [modalTitle]="modalTitle"
        [isModalVisible]="showEditor"
        (closeClick)="closeEditor()">
+    </d3s-dynamic-editor>
 
-            </d3s-dynamic-editor>
+   <d3s-delete-form *ngIf="selectedTag?.uid"
+      [callback]="theDeleteCallback"
+      [method]="'callback'"
+      [items]="selectedTag"
+      [showAsModal]="true"
+      [modalTitle]="'Delete TagType'"
+      [isModalVisible]="showDeleteModal"
+      (onCancel)="showDeleteModal=false;">
+        <div prompt>
+            <div *ngIf="selectedTag?.uid">
+              <ng-container i18n>
+                Please confirm that you wish to delete the tag type '{{this.selectedTag.Value}}'
+             </ng-container>
+            </div>
+        </div>
+    </d3s-delete-form>
+
 </div>

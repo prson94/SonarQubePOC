@@ -6,31 +6,40 @@ import { TagTypesService } from './tag-types.service';
 @Component({
     selector: 'd3s-tag-types',
     templateUrl: './tag-types.component.html',
-    styleUrls: ['./tag-types.component.less'],
+    styleUrls: ['./tag-types.component.css'],
 })
 export class TagTypesPanelComponent {
 
+
     @Output('onTagTypeSelected') onTagTypeSelected = new EventEmitter<TagTypesViewModel>();
-
     @ViewChild('searchinput', { static: true }) searchInput: SearchFieldComponent;
-
+    
+    
     tagTypes: TagTypesViewModel[] = [];
     tagTypesCopy: TagTypesViewModel[] = [];
     isLoading = true;
     searchText$ = "";
     showEditor = false;
+    showTagTypeActions = false;
+    selectedTag: any = null;
+    modalTitle: string = 'Add Tag Type';
+    formSubmitAction: string = 'add';
+    selectedAction = 'add';
+    showDeleteModal = false;
+    theDeleteCallback: Function;
 
     constructor(private ts: TagTypesService) { }
 
     ngOnInit() {
         this.isLoading = true;
-        if(this.tagTypesCopy.length === 0){
+        if (this.tagTypesCopy.length === 0) {
             this.ts.getAllTagTypes().subscribe((data) => {
                 this.tagTypes = data
                 this.tagTypesCopy = data;
             });
         }
         this.isLoading = false;
+        this.theDeleteCallback = this.deleteTagType.bind(this);
     }
 
     filterTagTypes(val: string) {
@@ -46,22 +55,61 @@ export class TagTypesPanelComponent {
 
     saveTagType(formData: { item: { Value: string } }) {
         const { item } = formData;
-        this.ts.addNewTagType(item.Value).subscribe((res) => {
+        if (this.formSubmitAction === 'add') {
+            this.ts.addNewTagType(item.Value).subscribe((res) => {
 
-            this.tagTypes = [{ uid: res.uid, Value: res.Value }, ...this.tagTypes];
-            this.showEditor = false;
-        })
+                this.tagTypes = [{ uid: res.uid, Value: res.Value }, ...this.tagTypes];
+                this.showEditor = false;
+            });
+            return;
+        }
+        if (this.formSubmitAction === 'edit') {
+            this.ts.updateTagType(item.Value, this.selectedTag.uid).subscribe((res) => {
+                const index = this.tagTypes.findIndex((tag) => tag.uid === this.selectedTag.uid);
+                this.tagTypes[index].Value = item.Value;
+                this.showEditor = false;
+            });
+            this.onTagTypeSelected.emit(null);
+            return;
+        }
+
     }
 
     closeEditor() {
         this.showEditor = false;
     }
 
-    openEditor() {
+    openEditor(obj: any) {
+        this.showTagTypeActions = false;
+        const { mTitle, action } = obj;
+        this.modalTitle = mTitle;
+        this.formSubmitAction = action;
         this.showEditor = true;
+
     }
 
-    loadTags(tagType: TagTypesViewModel){
+    openDeleteModal() {
+        this.showDeleteModal = true;
+        this.showTagTypeActions = false;
+    }
+
+    loadTags(tagType: TagTypesViewModel) {
         this.onTagTypeSelected.emit(tagType);
     }
+
+    selectRow(row: any, forceRefresh: boolean = false) {
+        this.selectedTag = row;
+        this.showTagTypeActions = !this.showTagTypeActions;
+    }
+
+    deleteTagType() {
+        this.ts.deleteTagType(this.selectedTag.uid).subscribe((res) => {
+            this.tagTypes = this.tagTypes.filter((tag) => tag.uid !== this.selectedTag.uid);
+            this.showDeleteModal = false;
+            this.onTagTypeSelected.emit(null);
+        });
+
+
+    }
+
 }
