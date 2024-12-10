@@ -921,8 +921,7 @@ select * from [Resource] where ID = @userId";
 					{
 						if (companyResource.State == d360.core.enums.CompanyResourceState.Active)
 						{
-							companyResource.LastLoggedInOn = DateTime.UtcNow;
-							await connection.UpdateAsync(companyResource);
+							await connection.ExecuteAsync("update CompanyResource set LastLoggedInOn = getutcdate() where ResourceID = @resourceId and CompanyID = @companyId", dbArgs);
 						}
 						else //User no longer active in company.
 						{
