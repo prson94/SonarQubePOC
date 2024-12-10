@@ -35,7 +35,7 @@
 				</div>
 				<div *ngSwitchCase="'Date'">
 					<div
-						class="ig-value"> {{ (actionItems[fieldTypeModelField.Name] | date:'shortDate') ?? '---' }} </div>
+						class="ig-value"> {{ (actionItems[fieldTypeModelField.Name] | date:'shortDate':'GMT') ?? '---' }} </div>
 				</div>
 				<div *ngSwitchCase="'Lookup'">
 					<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class !== 'Reference'">
