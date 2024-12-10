@@ -1011,6 +1011,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				bool hasLookupFieldTypes = false;
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
+				Guid processUid = new Guid();
 
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
@@ -1858,7 +1859,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (hasRelationshipFieldTypes)
 									{
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
-										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, processUid, timeout, lookupFieldsPassedByValue);
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
@@ -1946,6 +1947,44 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									#endregion
 
 									#region Execution Log
+									if (hasRelationshipFieldTypes)
+									{
+										string rlogSql = @"
+exec FillDataIntoInProcessRelationAuditLog @processUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+	select	@Id,
+			(select i.Object, 
+					i.ObjectId,
+					i.ObjectName,
+					i.IntersectID as ActionObjectId,
+					i.ObjActionObjectName as ActionObjectName,
+					i.ObjActionObjectTypeName as TypeName,
+					i.Action as [Action]
+			for json path
+			) as Payload,
+			'R'
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @processUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+	select	@Id,
+			(select i.Subject as Object, 
+					i.SubjectId as ObjectId,
+					i.SubjectName as ObjectName,
+					i.IntersectID as ActionObjectId,
+					i.SubActionObjectName as ActionObjectName,
+					i.SubActionObjectTypeName as TypeName,
+					i.Action as [Action]
+			for json path
+			) as Payload,
+			'R'
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @processUid;
+";
+
+										Connection.Execute(rlogSql, new { execution.Id, execution.ExecutionID, processUid}, transaction: trans, commandTimeout: timeout);
+									}
 
 									string logSql = @"
 insert into api.ExecutionLog (ExecutionId, [Payload])
