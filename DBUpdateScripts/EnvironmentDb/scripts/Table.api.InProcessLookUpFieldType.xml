@@ -1,0 +1,65 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Table.api.InProcessLookUpFieldType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessLookUpFieldType')
+BEGIN
+	CREATE TABLE [api].[InProcessLookUpFieldType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		[Executionid] [int],
+		Processdatetime datetime,
+		FieldTypeID int,
+		FieldName varchar(500),
+		FieldType  nvarchar(25),
+		[ObjectID] int, 
+		LookupDisplayFormat nvarchar(250) null,
+		LookupObjectType varchar(25) null,
+		LookupObjectID int null,
+		AllowMultipleValues bit,
+		FormattedValueNew nvarchar(max)
+		CONSTRAINT [PK_InProcessLookUpFieldType] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.api.InProcessLookUpFieldType-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessLookUpFieldType_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessLookUpFieldType_ProcessUid ON [api].[InProcessLookUpFieldType] ([ProcessUid],AllowMultipleValues) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessLookUpFieldType_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessLookUpFieldType_ProcessUid ON [api].[InProcessLookUpFieldType]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,69 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Table.api.InProcessAudit-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessAudit')
+BEGIN
+	CREATE TABLE [api].[InProcessAudit](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		[Executionid] [int],
+		Processdatetime datetime,
+		ItemNumber int,
+		AssetID bigint,
+		[Object] [varchar](50) not null,
+		[ObjectID] [int] not null,
+		[ObjectName] [nvarchar](250) not null,
+		[ResourceID] [int] not null,
+		[Action] [varchar](15) not null,
+		[ActionObject] [varchar](50) not null,
+		[ActionObjectID] [int] not null,
+		[ActionObjectTypeName] [nvarchar](250) not null,
+		[ActionObjectName] [nvarchar](250) not null,
+		[ActionDescription] [nvarchar](max) not null,
+		ProcessID Varchar(20)
+		CONSTRAINT [PK_InProcessAudit] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.api.InProcessAudit-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessAudit_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessAudit_ProcessUid ON [api].[InProcessAudit] ([ProcessUid],ItemNumber,ProcessID) INCLUDE (ID)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessAudit_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessAudit_ProcessUid ON [api].[InProcessAudit]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

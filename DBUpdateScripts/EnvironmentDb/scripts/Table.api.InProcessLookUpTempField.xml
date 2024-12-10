@@ -1,0 +1,62 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Table.api.InProcessLookUpTempField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessLookUpTempField')
+BEGIN
+	CREATE TABLE [api].[InProcessLookUpTempField](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		[Executionid] [int],
+		Processdatetime datetime,
+		FieldTypeID int,
+		FieldName varchar(500),
+		AssetID bigint,
+		FieldID int,
+		FormattedValue nvarchar(max),
+		IsMatch bit
+		CONSTRAINT [PK_InProcessLookUpTempField] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.api.InProcessLookUpTempField-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessLookUpTempField_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessLookUpTempField_ProcessUid ON [api].[InProcessLookUpTempField] ([ProcessUid],IsMatch) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessLookUpTempField_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessLookUpTempField_ProcessUid ON [api].[InProcessLookUpTempField]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

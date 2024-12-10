@@ -25,15 +25,21 @@ END
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.api.ExecutionLog.Indices-v1">
+  <changeSet author="Pappas" id="Table.api.ExecutionLog.Indices-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionLog_ExecutionId')
+		
+IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionLog_ExecutionId')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_ApiExecutionLog_ExecutionId] ON [api].[ExecutionLog] ( [ExecutionId] DESC )
+	DROP INDEX [IX_ApiExecutionLog_ExecutionId] ON [api].[ExecutionLog];
+END
+		
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionLog_ExecutionId_SubTask')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionLog_ExecutionId_SubTask] ON [api].[ExecutionLog] ( [ExecutionId] DESC ,SubTask ASC)
 END
 		]]>
     </sql>

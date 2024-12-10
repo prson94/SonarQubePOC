@@ -197,6 +197,17 @@
 	<include file="scripts/Table.api.ExecutionResponsibilityTypeRelationOverrideItem.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	<include file="scripts/Table.api.ExecutionExternal.xml"/>
+	<include file="scripts/Table.api.InProcessPostAssetPath.xml"/>
+	<include file="scripts/Table.api.InProcessAuditField.xml"/>
+	<include file="scripts/Table.api.InProcessHisUpdField.xml"/>
+	<include file="scripts/Table.api.InProcessAssetIDFieldTypeID.xml"/>
+	<include file="scripts/Table.api.InProcessLookUpTempField.xml"/>
+	<include file="scripts/Table.api.InProcessLookUpFieldType.xml"/>
+	<include file="scripts/Table.api.InProcessLookUpField.xml"/>
+	<include file="scripts/Table.api.InProcessHisUpdExeLog.xml"/>
+	<include file="scripts/Table.api.InProcessAudit.xml"/>
+	<include file="scripts/Table.api.InProcessLookUpTempFieldMulti.xml"/>	
+	
 
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
@@ -307,6 +318,9 @@
 	<include file="scripts/Procedure.api.DeleteTagTypes.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
 	<include file="scripts/Procedure.api.ParseAssetPaths.xml"/>
+	<include file="scripts/Procedure.api.PostLookAssetPathPK.xml"/>
+	<include file="scripts/Procedure.api.PostAuditLogAssetUpsert.xml"/>
+	<include file="scripts/Procedure.api.PostAuditLogData.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>

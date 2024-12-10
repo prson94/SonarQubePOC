@@ -1,0 +1,349 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogAssetUpsert-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.PostAuditLogAssetUpsert
+	@Id int,
+	@processGuid Uniqueidentifier,
+	@processDateTime datetime,
+	@actionText varchar(20),
+	@r		   int
+as
+begin
+		set nocount on;
+
+			declare @StartedOn date,
+			@ExecutionID uniqueidentifier;
+
+			select @StartedOn = StartedOn , @ExecutionID = ExecutionID
+			from api.Execution e
+			where e.Id = @id;
+
+			--Store data from Execution Log into In Process table
+			
+			insert into api.InProcessHisUpdExeLog (ProcessUid, Executionid, Processdatetime,ItemNumber, 
+						AssetID, Object, ObjectID, ObjectName, TypeName)
+			select  @processGuid,@Id,@Processdatetime,P.ItemNumber,
+					P.AssetID,P.Object, P.ObjectID, P.ObjectName, P.TypeName
+			from	api.ExecutionLog a
+			cross apply openjson(a.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, 
+												  ObjectName nvarchar(250), TypeName nvarchar(250)) p
+			inner join api.Execution e on e.Id = a.ExecutionId 
+			where a.ExecutionId = @Id and a.SubTask is null;
+
+			insert into api.InProcessHisUpdField (ProcessUid, Executionid, Processdatetime, Object, ObjectID, ItemNumber, 
+						FieldTypeID, FieldName, FieldValue,LookupValue, FieldType)
+			select  @processGuid,@Id,@Processdatetime,a.Object ,a.ObjectID, a.ItemNumber,
+						coalesce(f.FieldTypeID,0), f.FieldName, f.FieldValue, f.LookupValue, ft.type
+			from	api.ExecutionField f
+			inner join api.InProcessHisUpdExeLog a on  a.ProcessUid = @processGuid and f.ItemNumber = a.ItemNumber 
+			left join FieldType ft on ft.ID = f.FieldTypeID 
+			where f.ExecutionID = @ExecutionID and ft.type != 'Relationship';
+
+			if exists(select 1 from api.InProcessHisUpdField where ProcessUid = @processGuid and FieldType = 'Lookup')
+			begin
+				update t
+				set FieldValue = utility.GetFormattedFieldLookupValueWithMultiple( t.FieldType, ft.LookupDisplayFormat, ft.LookupObjectType, ft.LookupObjectID, t.LookupValue, ft.AllowMultipleValues)
+				from api.InProcessHisUpdField t
+				inner join Fieldtype ft on t.FieldTypeId = ft.ID  and t.FieldType = 'Lookup'
+				where t.ProcessUid = @processGuid;
+			end
+			
+			-- create audit log data and stroe into in process audit tables
+			
+			insert into api.InProcessAudit (ProcessUid, Executionid, Processdatetime,ItemNumber, 
+					AssetID, Object , ObjectID, ObjectName, ResourceID, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, ProcessID)
+			select  @processGuid,@id,@Processdatetime,P.ItemNumber,
+					p.AssetID,
+					p.Object, 
+					p.ObjectId,
+					p.ObjectName, 
+					@r, 
+					@actionText, 
+					p.Object, 
+					p.ObjectId,
+					p.TypeName, 
+					p.ObjectName, 
+					'This asset has been ' + lower(@actionText) + '.',
+					'ASSETUPSERT'
+			from	api.InProcessHisUpdExeLog p
+			where p.ProcessUid = @processGuid;
+			
+			insert into api.InProcessAuditField (ProcessUid, Executionid, Processdatetime,ItemNumber, 
+					Object,ObjectId,FieldTypeID,FieldName,Value,PreviousValue, ProcessID)
+			select  @processGuid,@id,@Processdatetime,fields.ItemNumber,
+					fields.Object,
+					fields.ObjectId,
+					fields.FieldTypeId,
+					fields.FieldName,
+					fields.FieldValue,
+					fields.PreviousValue,
+					'ASSETUPSERT'
+			from	api.InProcessHisUpdField fields
+			where	fields.ProcessUid = @processGuid;
+	
+		---Create Audit Log data from Relationship
+		insert into api.InProcessAudit (ProcessUid, Executionid, Processdatetime,ItemNumber, 
+				Object , ObjectID, ObjectName, ResourceID, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, ProcessID)
+		select	@processGuid, @id, @Processdatetime, 
+				p.ObjectID ItemNumber,
+				p.Object, 
+				p.ObjectId,
+				p.ObjectName, 
+				@r, 
+				case p.[Action]
+					when 'D' then 'Deleted'
+					when 'U' then 'Updated'
+					else 'Created'
+				end, 
+				'Intersect',
+				p.ActionObjectId,
+				p.TypeName, 
+				coalesce(p.ActionObjectName, 'Relationship'), 
+				'' + 
+				case p.[Action]
+					when 'D' then 'The relationship was removed because one of the associated assets was updated.'
+					when 'U' then 'This relationship has been updated.'
+					else 'This relationship has been created.'
+				end	 + '.',
+				'RELATIONSHIP'
+		from	api.ExecutionLog l
+				cross apply openjson(l.Payload) with (ActionObjectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectName nvarchar(max), TypeName nvarchar(250), [Action] char(1)) p 
+		where	l.ExecutionId = @Id and  l.SubTask = 'R';
+		
+		
+		--Get any field types where we use a lookup that relies on any assets from above.
+
+		insert into api.InProcessLookUpFieldType 
+		(ProcessUid, Executionid, Processdatetime,
+		FieldTypeID,FieldName, FieldType, ObjectID, LookupDisplayFormat, LookupObjectType, LookupObjectID, AllowMultipleValues)
+		select  distinct @processGuid, @id, @Processdatetime, 
+				f.ID, f.Name, 
+				f.Type, 
+				cast(fh.ObjectID as nvarchar(10)), 
+				f.LookupDisplayFormat, 
+				f.LookupObjectType, 
+				f.LookupObjectID, 
+				f.AllowMultipleValues
+		from	api.InProcessHisUpdField fh
+		inner join FieldType ft on fh.FieldtypeID = ft.Id
+		inner join AssetType t on t.Id = ft.AssetTypeId
+		inner join FieldType f on f.Type = 'Lookup' and f.LookupObjectType = replace(t.[Object],'Type','') and f.LookupObjectID = t.ObjectID
+		where fh.ProcessUid = @processGuid and f.LookupDisplayFormat like '%{' + trim(fh.FieldName) + '}%';
+		
+		--Calculate any formatted values we will use to update the fields(AllowMultipleValues false).
+		if exists(select 1 from api.InProcessLookUpFieldType t where t.ProcessUid = @processGuid and t.AllowMultipleValues = 0)
+		begin
+
+			update t
+			set FormattedValueNew = utility.GetFormattedFieldLookupValueWithMultiple(FieldType, LookupDisplayFormat, LookupObjectType, LookupObjectID, ObjectId, AllowMultipleValues)
+			from api.InProcessLookUpFieldType t
+			where t.ProcessUid = @processGuid and AllowMultipleValues = 0;
+
+			insert into api.InProcessLookUpTempField 
+			(ProcessUid, Executionid, Processdatetime,FieldTypeID, FieldName, AssetID, FieldID, FormattedValue, IsMatch)
+			select	@processGuid, @id, @Processdatetime,
+					fv.FieldtypeId,
+					fv.FieldName,
+					f.AssetID,
+					f.ID,
+					fv.FormattedValueNew,
+					case when coalesce(fv.FormattedValueNew,'') = coalesce(f.FormattedValue,'') COLLATE SQL_Latin1_General_CP1_CS_AS then 1 else 0 end IsMatch
+			from	api.InProcessLookUpFieldType fv
+			inner join Field F on fv.FieldtypeId = F.FieldtypeId and fv.ObjectId = F.[Value] and coalesce(F.[Value],'') != ''
+			where fv.ProcessUid = @processGuid and fv.AllowMultipleValues = 0;
+
+			UPDATE	F
+			SET		F.FormattedValue = FT.FormattedValue
+			from	Field F
+			inner join api.InProcessLookUpTempField FT on FT.ProcessUid = @processGuid and FT.FieldID = F.ID and FT.IsMatch = 0;
+
+			insert into api.InProcessLookUpField 
+			(ProcessUid, Executionid, Processdatetime,AssetID, Object, ObjectID, TypeName, ObjectName, FieldName,FieldTypeID,FormattedValueNew)
+			select	@processGuid, @id, @Processdatetime,
+					F.AssetID,
+					A.Object,
+					A.ObjectID,
+					Att.Name,
+					substring(Adv.DisplayValue,1,1000) as ObjectName,
+					F.FieldName,
+					F.FieldTypeID,
+					F.FormattedValue as FieldValue
+			from	api.InProcessLookUpTempField F
+					inner join Asset A on A.ID = F.AssetID
+					inner join AssetType att on att.ID = A.AssetTypeID
+					inner join AssetdisplayValue adv on adv.AssetID = F.AssetID
+			where	F.ProcessUid = @processGuid and F.IsMatch = 0;
+		end
+		
+		--Get Required Field from Field table AllowMultipleValues = 1
+		if exists(select 1 from api.InProcessLookUpFieldType where ProcessUid = @processGuid and AllowMultipleValues = 1)
+		begin
+			insert into api.InProcessLookUpTempFieldMulti 
+			(ProcessUid, Executionid, Processdatetime,FieldID)
+			select	@processGuid, @id, @Processdatetime,F.ID as FieldID
+			from	api.InProcessLookUpFieldType fv
+			inner join Field F on fv.FieldtypeId = F.FieldtypeId and coalesce(F.[Value],'') != '' 
+			cross apply (select top 1 [Value] 
+						from string_split(F.[Value], ',') V 
+						where V.[Value] = fv.ObjectId and coalesce(V.[Value],'') !='') C
+			where	fv.ProcessUid = @processGuid and fv.AllowMultipleValues = 1;
+
+
+			if exists(select 1 from api.InProcessLookUpTempFieldMulti where ProcessUid = @processGuid)
+			begin
+				Update tempF
+				Set FieldtypeId = F.FieldtypeId,
+				AssetID = F.AssetID,
+				FormattedValue = F.FormattedValue,
+				FieldValue = F.[Value]
+				from api.InProcessLookUpTempFieldMulti tempF
+				inner join Field F on F.ID = tempF.FieldID
+				where tempF.ProcessUid = @processGuid;
+
+				Update F
+				Set FormattedValue_New = utility.GetFormattedFieldLookupValueWithMultiple(FT.FieldType, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.[FieldValue], FT.AllowMultipleValues),
+				FieldName = FT.FieldName
+				from api.InProcessLookUpTempFieldMulti F
+				inner join api.InProcessLookUpFieldType FT on FT.ProcessUid = F.ProcessUid and F.FieldtypeId = FT.FieldTypeID
+				where F.ProcessUid = @processGuid;
+			
+				Update F
+				Set IsMatch = case when coalesce(fv.FormattedValueNew,'') = coalesce(f.FormattedValue,'') COLLATE SQL_Latin1_General_CP1_CS_AS then 1 else 0 end
+				from #api.InProcessLookUpTempFieldMulti F
+				inner join api.InProcessLookUpFieldType FT on FT.ProcessUid = F.ProcessUid and F.FieldtypeId = FT.FieldTypeID
+				where F.ProcessUid = @processGuid;
+
+				UPDATE	F
+				SET		F.FormattedValue = FT.FormattedValue_New
+				from	Field F
+				inner join api.InProcessLookUpTempFieldMulti FT on FT.ProcessUid = @processGuid and FT.FieldID = F.ID and FT.IsMatch = 0;
+
+				insert into api.InProcessLookUpField 
+				(ProcessUid, Executionid, Processdatetime,AssetID, Object, ObjectID, TypeName, ObjectName, FieldName,FieldTypeID,FormattedValueNew)
+				select	@processGuid, @id, @Processdatetime,
+						F.AssetID,
+						A.Object,
+						A.ObjectID,
+						Att.Name,
+						Adv.DisplayValue as ObjectName,
+						F.FieldName,
+						F.FieldTypeID,
+						F.FormattedValue_New as FieldValue
+				from	api.InProcessLookUpTempFieldMulti F
+						inner join Asset A on A.ID = F.AssetID
+						inner join AssetType att on att.ID = A.AssetTypeID
+						inner join AssetdisplayValue adv on adv.AssetID = F.AssetID
+				where	F.ProcessUid = @processGuid and F.IsMatch = 0;
+			end
+			
+		end
+		
+		-- Add the audit history header records for the asset that rely on the first set of assets.
+		-- Only when updated field type affected display value of lookup field on target asset
+
+		if exists (select 1 from api.InProcessLookUpField where ProcessUid = @processGuid)
+		begin
+			insert into api.InProcessAssetIDFieldTypeID 
+			(ProcessUid, Executionid, Processdatetime,AssetID, FieldTypeID)
+			select	distinct @processGuid, @id, @Processdatetime,
+			ea.AssetID,ef.FieldTypeID
+			from api.ExecutionAsset ea
+			inner join api.ExecutionField ef on ea.ExecutionID = ef.ExecutionID and ea.ItemNumber = ef.ItemNumber
+			where ea.ExecutionID = @ExecutionID;
+			
+			drop table if exists #updatedFieldTypeIds;
+			
+			select ea.FieldTypeID,
+					cast(null as nvarchar(500)) Name, 
+					max(f.UpdatedOn) MaxUpdatedOn
+			into #updatedFieldTypeIds
+			from api.InProcessAssetIDFieldTypeID ea
+			inner join Field f on f.AssetID = ea.AssetID and f.FieldTypeID = ea.FieldTypeID
+			where ProcessUid = @processGuid
+			group by ea.FieldTypeID;
+
+			if (@StartedOn is not null)
+			begin
+				delete t
+				from #updatedFieldTypeIds t
+				where MaxUpdatedOn < @StartedOn and MaxUpdatedOn is not null;
+			end
+			
+			update u
+			set Name = ft.name
+			from #updatedFieldTypeIds u
+			inner join fieldtype ft on u.FieldTypeId = ft.id;
+			
+			drop table if exists #tempQualifiedTypeID;
+			create table #tempQualifiedTypeID (FieldtypeID int,IsApply Bit default 0);
+
+			create clustered index cx_tempQualifiedTypeID on #tempQualifiedTypeID(FieldtypeID);
+
+
+			insert into #tempQualifiedTypeID(FieldTypeID)
+			select distinct FieldtypeID
+			from api.InProcessLookUpField
+			where ProcessUid = @processGuid;
+
+			update f
+			Set IsApply = cast(1 as bit)
+			from #tempQualifiedTypeID f
+			inner join FieldType ft on ft.ID = f.FieldtypeId
+			inner join #updatedFieldTypeIds uft on ft.LookupDisplayFormat like '%'+uft.Name+'%';
+
+			drop table if exists #updatedFieldTypeIds;
+
+			drop table if exists #tempfieldsdata;
+			
+			select	distinct F.Object,
+					F.ObjectId,
+					F.ObjectName,
+					F.AssetID,
+					F.TypeName
+			into	#tempfieldsdata
+			from	api.InProcessLookUpField F
+			inner join #tempQualifiedTypeID ft on ft.FieldTypeID = F.FieldtypeId and ft.IsApply = 1
+			where ProcessUid = @processGuid;
+
+			insert into api.InProcessAudit (ProcessUid, Executionid, Processdatetime,ItemNumber,AssetID,
+					Object, ObjectID, ObjectName, ResourceID, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, ProcessID)
+			select	@processGuid, @id, @Processdatetime, F.ObjectID ItemNumber,F.AssetID,
+					F.Object,
+					F.ObjectId,
+					F.ObjectName,
+					@r, 
+					'Updated', 
+					F.Object, 
+					F.ObjectId,
+					F.TypeName, 
+					F.ObjectName, 
+					'Underlying asset from lookup was updated.',
+					'LOOKUPFIELD'
+			from	#tempfieldsdata F;
+
+			drop table if exists #tempfieldsdata;
+
+			insert into api.InProcessAuditField (ProcessUid, Executionid, Processdatetime,ItemNumber, 
+					Object,ObjectId,FieldTypeID,FieldName,Value,ProcessID)
+			select  @processGuid,@id,@Processdatetime,f.ObjectID,
+					f.Object,
+					f.ObjectID,
+					coalesce(f.FieldTypeID, 0),
+					f.FieldName,
+					f.FormattedValueNew,
+					'LOOKUPFIELD'
+			from	api.InProcessLookUpField f
+			where ProcessUid = @processGuid;
+		End
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>
