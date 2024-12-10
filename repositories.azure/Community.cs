@@ -910,7 +910,7 @@ select * from [Resource] where ID = @userId";
 			dbArgs.Add("@password", PasswordHelper.HashPassword(password));
 			using (var connection = Connect())
 			{
-				model = await connection.QuerySingleAsync<Resource>("select * from [Resource] where Username = @username and [assword] = @password", dbArgs);
+				model = await connection.QuerySingleAsync<Resource>("select * from [Resource] where Username = @username and [password] = @password", dbArgs);
 				if (model != null && companyId.HasValue)
 				{
 					dbArgs = new DynamicParameters();
