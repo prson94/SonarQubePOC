@@ -58,7 +58,7 @@ namespace d360.model
 
 		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
-		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
+		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, Guid processUid, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
 
@@ -2515,14 +2515,14 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		/// <summary>
 		/// This method is primarily used when adding assets that have relationship fields on them, where the edit form allows for add/deletes to relationships.
 		/// </summary>
-		public void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
+		public void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, Guid processUid, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 			string assetrefJoin = resolveRelationshipOnObjectId ? "att.ObjectID = try_cast(V.[value] as int)" : "att.Name = V.[value]";
 
 			string sql = $@"
-				declare @ProcessUid uniqueidentifier = newid(),
+				declare @ProcessUid uniqueidentifier = @proUid,
 				@processdatetime datetime = getutcdate();
 
 				drop table if exists #Relationships;
@@ -2729,42 +2729,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				from #DeletedRelationships t
 				inner join [Intersect] I on I.uid = t.Uid;
 
-				exec FillDataIntoInProcessRelationAuditLog @ProcessUid;
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-				select	@Id,
-						(select i.Object, 
-								i.ObjectId,
-								i.ObjectName,
-								i.IntersectID as ActionObjectId,
-								i.ObjActionObjectName as ActionObjectName,
-								i.ObjActionObjectTypeName as TypeName,
-								'D' as [Action]
-						for json path
-						) as Payload,
-						'R'
-				from dbo.InProcessRelationAuditLog i
-				where ProcessUid = @ProcessUid;;
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Subject as Object, 
-									i.SubjectId as ObjectId,
-									i.SubjectName as ObjectName,
-									i.IntersectID as ActionObjectId,
-									i.SubActionObjectName as ActionObjectName,
-									i.SubActionObjectTypeName as TypeName,
-									'D' as [Action]
-							for json path
-							) as Payload,
-							'R'
-				from	dbo.InProcessRelationAuditLog i
-				where ProcessUid = @ProcessUid;
-
-				delete t
-				from dbo.InProcessRelationAuditLog t
-				where ProcessUid = @ProcessUid;
-
 				delete	i
 				from	[Intersect] I 
 				where	exists (select 1 from #DeletedRelationships d where d.uid = I.[uid]);
@@ -2803,52 +2767,16 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 
 				insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
-				select @ProcessUid, @Id, @processdatetime,i.ID,t.Action,i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
+				select @ProcessUid, @Id, @processdatetime,i.ID,'A',i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
 				from #RelationshipsFinal t
 				inner join [Intersect] I on I.uid = t.Uid
 				Where t.IsNew = 1;
-
-				exec FillDataIntoInProcessRelationAuditLog(@ProcessUid);
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Object, 
-									i.ObjectId,
-									i.ObjectName,
-									i.IntersectID as ActionObjectId,
-									i.ObjActionObjectName as ActionObjectName,
-									i.ObjActionObjectTypeName as TypeName,
-									'A' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	dbo.InProcessRelationAuditLog i
-					where ProcessUid = @ProcessUid;
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Subject as Object, 
-									i.SubjectId as ObjectId,
-									i.SubjectName as ObjectName,
-									i.IntersectID as ActionObjectId,
-									i.SubActionObjectName as ActionObjectName,
-									i.SubActionObjectTypeName as TypeName,
-									'A' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	dbo.InProcessRelationAuditLog i
-					where ProcessUid = @ProcessUid;
-
-				delete t
-				from dbo.InProcessRelationAuditLog t
-				where ProcessUid = @ProcessUid;
 
 				select [uid], 1 as Success, 'Intersect' as [Object], 0 as isDelete, IntersectTypeID, ID as IntersectID from #RelationshipsFinal
 				union all
 				select [uid], 1 as Success, 'Intersect' as [Object], 1 as isDelete, IntersectTypeID, IntersectID from #DeletedRelationships";
 
-            var results = Connection.Query<dynamic>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            var results = Connection.Query<dynamic>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, prouid = processUid }, transaction: trans, commandTimeout: timeout);
 			
 			foreach(var result in results.GroupBy(x=> new { x.IntersectTypeID, x.isDelete }).Select(r=> r.First()))
 			{
