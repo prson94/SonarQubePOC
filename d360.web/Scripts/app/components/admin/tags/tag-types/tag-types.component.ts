@@ -6,14 +6,12 @@ import { TagTypesService } from './tag-types.service';
 @Component({
     selector: 'd3s-tag-types',
     templateUrl: './tag-types.component.html',
-    styleUrls: ['./tag-types.component.css'],
+    styleUrls: ['./tag-types.component.less'],
 })
 export class TagTypesPanelComponent {
 
-
     @Output('onTagTypeSelected') onTagTypeSelected = new EventEmitter<TagTypesViewModel>();
     @ViewChild('searchinput', { static: true }) searchInput: SearchFieldComponent;
-    
     
     tagTypes: TagTypesViewModel[] = [];
     tagTypesCopy: TagTypesViewModel[] = [];
