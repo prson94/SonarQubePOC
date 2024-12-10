@@ -19,12 +19,12 @@ export class TagTypesPanelComponent {
     searchText$ = "";
     showEditor = false;
     showTagTypeActions = false;
-    selectedTag: any = null;
+    selectedTag: TagTypesViewModel = null;
     modalTitle: string = 'Add Tag Type';
     formSubmitAction: string = 'add';
     selectedAction = 'add';
     showDeleteModal = false;
-    theDeleteCallback: Function;
+    theDeleteCallback: unknown;
 
     constructor(private ts: TagTypesService) { }
 
@@ -62,7 +62,7 @@ export class TagTypesPanelComponent {
             return;
         }
         if (this.formSubmitAction === 'edit') {
-            this.ts.updateTagType(item.Value, this.selectedTag.uid).subscribe((res) => {
+            this.ts.updateTagType(item.Value, this.selectedTag.uid).subscribe(() => {
                 const index = this.tagTypes.findIndex((tag) => tag.uid === this.selectedTag.uid);
                 this.tagTypes[index].Value = item.Value;
                 this.showEditor = false;
@@ -77,7 +77,7 @@ export class TagTypesPanelComponent {
         this.showEditor = false;
     }
 
-    openEditor(obj: any) {
+    openEditor(obj: { mTitle: string, action: string }) {
         this.showTagTypeActions = false;
         const { mTitle, action } = obj;
         this.modalTitle = mTitle;
@@ -95,13 +95,13 @@ export class TagTypesPanelComponent {
         this.onTagTypeSelected.emit(tagType);
     }
 
-    selectRow(row: any, forceRefresh: boolean = false) {
+    selectRow(row: TagTypesViewModel) {
         this.selectedTag = row;
         this.showTagTypeActions = !this.showTagTypeActions;
     }
 
     deleteTagType() {
-        this.ts.deleteTagType(this.selectedTag.uid).subscribe((res) => {
+        this.ts.deleteTagType(this.selectedTag.uid).subscribe(() => {
             this.tagTypes = this.tagTypes.filter((tag) => tag.uid !== this.selectedTag.uid);
             this.showDeleteModal = false;
             this.onTagTypeSelected.emit(null);
