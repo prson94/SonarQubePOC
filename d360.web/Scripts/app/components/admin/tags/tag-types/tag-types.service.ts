@@ -39,4 +39,16 @@ export class TagTypesService {
                 .post<TagTypesViewModel>('/api/v2/tags/tagTypes', { 'Value': tagType });
     }
 
+    updateTagType(tagType: string, tagId: string): Observable<TagTypesViewModel> {
+        return this
+                .http
+                .put<TagTypesViewModel>(`/api/v2/tags/tagTypes/${tagId}`, { 'Value': tagType });
+    }
+
+    deleteTagType(tagId: string): Observable<TagTypesViewModel> {
+        return this
+                .http
+                .delete<TagTypesViewModel>(`/api/v2/tags/tagTypes/${tagId}`);
+    }
+
 }

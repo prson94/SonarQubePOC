@@ -15,6 +15,7 @@ export class TagsHeaderComponent implements OnInit {
 
 	@Input() flowContext: string = 'Tags';
 	@Output() onTagTypeSelected = new EventEmitter<string>();
+
 	icon: string;
 	iconPath: string;
 	header: string;
@@ -46,8 +47,8 @@ export class TagsHeaderComponent implements OnInit {
 	}
 		
 	tagTypeSelectedHandler(tagType: TagTypesViewModel){
-		this.onTagTypeSelected.emit(tagType.uid);
-		this.btnTagsText = tagType.Value;
+		this.onTagTypeSelected.emit(tagType?.uid);
+		this.btnTagsText = tagType?.Value ?? 'Tag Types';
 		this.toggleTagTypesPanel();
 	} 
 
