@@ -17,9 +17,8 @@
         <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}">
             <d3s-highlight-search-text [text]="item.Name" [highlight]="searchText"></d3s-highlight-search-text>
         </div>
-        <div *ngIf="count > 0 && !item.Disabled" class="d3s-badge pull-right">{{count}}</div>
     </div>
 </a>
 <div *ngIf="item.ShowChildren">
-    <d3s-site-menu-mega-item [category]="category" [parentUrl]="item.Url" *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>
+    <d3s-site-menu-mega-item [category]="category" [parentUrl]="item.Url" *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>
 </div>
