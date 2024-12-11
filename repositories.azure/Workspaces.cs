@@ -732,6 +732,7 @@ end";
 			var table = new DataTable();
 
 			table.Columns.Add("ExecutionId", typeof(int));
+			table.Columns.Add("ExecutionItemUid", typeof(Guid));
 			table.Columns.Add("ItemNumber", typeof(int));
 			table.Columns.Add("Properties", typeof(string));
 			table.Columns.Add("CustomProperties", typeof(string));
@@ -747,6 +748,11 @@ end";
 				itemNumber++;
 				row["ExecutionId"] = executionId;
 				row["ItemNumber"] = itemNumber;
+
+				if (u.ExecutionItemUid.HasValue)
+				{
+					row["ExecutionItemUid"] = u.ExecutionItemUid.Value;
+				}
 
 				jsonObject.Add("Uid", u.uid.Value);
 				jsonObject.Add("ObjectID", u.ResourceID);
@@ -779,6 +785,7 @@ end";
 					connection.Open();
 					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 					bulkCopy.ColumnMappings.Add("Properties", "Properties");
 					bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
