@@ -17,7 +17,6 @@ namespace d360.extensions.storage
         {
             var client = new BlobServiceClient(StorageConnectionString);
 			var container = client.GetBlobContainerClient(name);
-			container.CreateIfNotExists();
 			return container;
         }
 
