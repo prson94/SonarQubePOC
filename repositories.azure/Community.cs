@@ -147,7 +147,7 @@ namespace repositories.azure
 				{
 					user.uid = Guid.NewGuid();
 				}
-				else if (user.uid.HasValue && user.uid == Guid.Empty)
+				else if (user.uid == Guid.Empty)
 				{
 					user.uid = Guid.NewGuid();
 				}
