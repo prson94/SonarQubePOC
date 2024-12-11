@@ -36,4 +36,19 @@ GO
     </sql>
   </changeSet>
 
+	<changeSet author="PuneetGupta" id="DefaultConstraint.api.ExecutionItem-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
+IF EXISTS (SELECT * FROM sys.default_constraints WHERE name = 'DF_ApiExecutionItem_ExecutionItemUid')
+BEGIN
+	alter table api.ExecutionItem DROP constraint DF_ApiExecutionItem_ExecutionItemUid;
+END
+IF NOT EXISTS (SELECT * FROM sys.default_constraints WHERE name = 'DF_ApiExecutionItem_ExecutionItemUid')
+BEGIN
+	alter table api.ExecutionItem add constraint DF_ApiExecutionItem_ExecutionItemUid default(cast('00000000-0000-0000-0000-000000000000' as uniqueidentifier)) for ExecutionItemUid;
+END
+GO
+		]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>

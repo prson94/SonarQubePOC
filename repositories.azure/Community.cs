@@ -147,6 +147,10 @@ namespace repositories.azure
 				{
 					user.uid = Guid.NewGuid();
 				}
+				else if (user.uid.HasValue && user.uid == Guid.Empty)
+				{
+					user.uid = Guid.NewGuid();
+				}
 				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
@@ -198,7 +202,7 @@ update  U
 set     U.ResourceID = coalesce(R2.ID, R.ID, R3.ID)
 from    #Users U
 		left join [Resource] R on R.Username = U.Username
-		left join [Resource] R2 on R2.[uid] = U.[uid]
+		left join [Resource] R2 on R2.[uid] = U.[uid] and U.[uid] != '00000000-0000-0000-0000-000000000000'
 		left join [Resource] R3 on R.Email = U.Email;
 
 update	T
