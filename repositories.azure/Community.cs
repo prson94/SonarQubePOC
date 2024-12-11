@@ -147,6 +147,7 @@ namespace repositories.azure
 				{
 					user.uid = Guid.NewGuid();
 				}
+
 				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
@@ -198,8 +199,19 @@ update  U
 set     U.ResourceID = coalesce(R2.ID, R.ID, R3.ID)
 from    #Users U
 		left join [Resource] R on R.Username = U.Username
-		left join [Resource] R2 on R2.[uid] = U.[uid]
+		left join [Resource] R2 on R2.[uid] = U.[uid] and U.[uid] != '00000000-0000-0000-0000-000000000000'
 		left join [Resource] R3 on R.Email = U.Email;
+
+update  U
+set     U.[uid] = R.[uid]
+from    #Users U
+inner join [Resource] R on R.ID = U.ResourceID
+where U.[uid] = '00000000-0000-0000-0000-000000000000';
+
+update  U
+set     U.[uid] = newid()
+from    #Users U
+where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 update	T
 set		T.FirstName = S.FirstName,
@@ -238,7 +250,14 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 							if (user != null)
 							{
 								user.ResourceID = result.ResourceID;
-								user.uid = user.IsNew ? result.uid : user.uid;
+								if (user.IsNew)
+								{
+									user.uid = result.uid;
+								}
+								else
+								{
+									user.uid = user.uid == Guid.Empty ? result.uid : user.uid;
+								}
 								user.CompanyResourceState = CompanyResourceState.Active;
 							}
 						}
@@ -910,7 +929,7 @@ select * from [Resource] where ID = @userId";
 			dbArgs.Add("@password", PasswordHelper.HashPassword(password));
 			using (var connection = Connect())
 			{
-				model = await connection.QuerySingleAsync<Resource>("select * from [Resource] where Username = @username and [assword] = @password", dbArgs);
+				model = await connection.QuerySingleAsync<Resource>("select * from [Resource] where Username = @username and [password] = @password", dbArgs);
 				if (model != null && companyId.HasValue)
 				{
 					dbArgs = new DynamicParameters();
@@ -921,8 +940,7 @@ select * from [Resource] where ID = @userId";
 					{
 						if (companyResource.State == d360.core.enums.CompanyResourceState.Active)
 						{
-							companyResource.LastLoggedInOn = DateTime.UtcNow;
-							await connection.UpdateAsync(companyResource);
+							await connection.ExecuteAsync("update CompanyResource set LastLoggedInOn = getutcdate() where ResourceID = @resourceId and CompanyID = @companyId", dbArgs);
 						}
 						else //User no longer active in company.
 						{

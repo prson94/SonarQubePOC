@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.CompleteExecution-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.CompleteExecution
+	@executionId int,
+	@date datetime,
+	@errorMessage nvarchar(2500)
+as
+begin
+	set nocount on;
+	update	E 
+	set		E.ErrorMessage = @errorMessage,
+			E.[State] = 4,
+			E.CompletedOn = @date,
+			E.[Total] = iif(Tc.Cnt = 0, E.[Total], Tc.Cnt),
+			E.Processed = iif(Pc.Cnt = 0, E.Processed, Pc.Cnt),
+			E.[Error] = iif(Ec.Cnt = 0, E.[Error], Ec.Cnt)
+	from	api.Execution E
+			cross apply ( select count(1) as Cnt from api.ExecutionItem where ExecutionId = @executionId and Success = 0  ) Ec
+			cross apply ( select count(1) as Cnt from api.ExecutionItem where ExecutionId = @executionId and Success = 1 ) Pc
+			cross apply ( select count(1) as Cnt from api.ExecutionItem where ExecutionId = @executionId ) Tc
+	where	E.Id = @executionId;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,194 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogData-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.PostAuditLogData
+	@Id int,
+	@processGuid Uniqueidentifier,
+	@dt datetime
+as
+begin
+		set nocount on;
+		declare @totalcount bigint = 0,
+				@runcount bigint = 1,
+				@batchsize int = 10000,
+				@ProcessID varchar(20),
+				@IsFieldTypeIDExists int = 0,
+				@IsFieldTypeIDNotExists int = 0;
+		
+		create table #TempAuditProcessType (id int identity(1,1),ProcessID varchar(20));
+		
+		insert into #TempAuditProcessType (ProcessID)
+		select distinct ProcessID
+		from api.InProcessAudit
+		where ProcessUid = @processGuid;
+		
+		select @totalcount = max(id)
+		from #TempAuditProcessType ;
+		while (@runcount <= @totalcount)
+		begin
+			select @ProcessID = ProcessID
+			from #TempAuditProcessType
+			where id = @runcount;
+			
+			set @runcount = @runcount + 1;
+			
+			if (@ProcessID in ('ASSETUPSERT','LOOKUPFIELD'))
+			begin
+					drop table if exists #MaxAuditIDField;
+
+					create table #MaxAuditIDField (TransID int,MaxAuditID int);
+					Create clustered index cx_MaxAuditIDField on #MaxAuditIDField(TransID);
+
+					if exists(select 1 from api.InProcessAuditField t 
+							  where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldtypeID > 0)
+					begin
+						set @IsFieldTypeIDExists = 1;
+					end
+
+					if exists(select 1 from api.InProcessAuditField t 
+							  where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldtypeID = 0)
+					begin
+						set @IsFieldTypeIDNotExists = 1;
+					end
+
+
+					if (@IsFieldTypeIDExists =  1)
+					begin
+						insert into #MaxAuditIDField
+						select t.ID TransID,
+								Max(i_a.ID) MaxAuditID
+						from api.InProcessAuditField t
+						inner join reporting.Global_Audit i_a on i_a.Object = t.Object  and i_a.ObjectID = t.ObjectID
+						inner join reporting.Global_FieldAudit i_f on i_f.AuditID = i_a.ID  and i_f.FieldtypeID = t.FieldtypeID
+						where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldtypeID > 0
+						group by t.id;
+					end
+					
+					if (@IsFieldTypeIDNotExists = 1)
+					begin
+						insert into #MaxAuditIDField
+						select t.ID TransID,
+								Max(i_a.ID) MaxAuditID
+						from api.InProcessAuditField t
+						inner join reporting.Global_Audit i_a on i_a.Object = t.Object  and i_a.ObjectID = t.ObjectID
+						inner join reporting.Global_FieldAudit i_f on i_f.AuditID = i_a.ID  and i_f.FieldName = t.FieldName and i_f.FieldtypeID = 0
+						where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldtypeID = 0
+						group by t.id;
+					end
+
+					update t
+					set t.MaxAuditID = i.MaxAuditID
+					from api.InProcessAuditField t
+					inner join #MaxAuditIDField i on i.TransID = t.ID
+					where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID;
+
+					drop table if exists #MaxAuditIDField;
+
+					if (@IsFieldTypeIDExists = 1)
+					begin
+						update t
+						set t.PreviousValue = i_f.[Value]
+						from api.InProcessAuditField t
+						inner join reporting.Global_FieldAudit i_f on i_f.AuditID = t.MaxAuditID and i_f.FieldTypeID = t.FieldTypeID
+						where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldTypeID > 0;
+					end
+					
+					
+					if (@IsFieldTypeIDNotExists = 1)
+					begin
+						update t
+						set t.PreviousValue = i_f.[Value]
+						from api.InProcessAuditField t
+						inner join reporting.Global_FieldAudit i_f on i_f.AuditID = t.MaxAuditID and i_f.FieldName = t.FieldName and i_f.FieldtypeID = 0
+						where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldTypeID = 0;
+					end
+					
+					delete t
+					from api.InProcessAuditField t
+					where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID 
+					and coalesce(t.Value,'') = coalesce(t.PreviousValue,'') COLLATE SQL_Latin1_General_CP1_CS_AS;
+
+					delete t
+					from api.InProcessAudit t
+					where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID
+					and not exists (select 1 from InProcessAuditField f 
+									  where f.ProcessUid = @processGuid and f.ItemNumber = t.ItemNumber and f.ProcessId = @ProcessID)
+			end
+			
+			declare @tbl table (ID bigint, ObjectID int, index cx_objectid  clustered (ObjectID))
+
+			drop table if exists #MaxVersion;
+			
+			select t.ObjectID, 
+				   max(ga.[Version]) MaxVersion
+			into #MaxVersion
+			from api.InProcessAudit t
+			inner join reporting.Global_Audit ga on ga.Object = t.Object and ga.ObjectID = t.ObjectID
+			where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID
+			group by t.ObjectID;
+			
+			create clustered index cx_MaxVersion on #MaxVersion(ObjectID);
+			
+			if (@ProcessID in ('ASSETUPSERT','LOOKUPFIELD'))
+				begin
+					insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+					output inserted.ID, inserted.ObjectID into @tbl
+					select t.Object,
+						   t.ObjectID, 
+						   t.ObjectName, 
+						   t.ResourceID, 
+						   @dt, 
+						   coalesce(mv.[MaxVersion],0) + 1 as [Version], 
+						   t.Action, 
+						   t.ActionObject, 
+						   t.ActionObjectID, 
+						   t.ActionObjectTypeName, 
+						   t.ActionObjectName, 
+						   t.ActionDescription
+					from api.InProcessAudit t
+					left join #MaxVersion mv on mv.ObjectID = t.ObjectID 
+					where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID;
+
+					insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+					select distinct tt.id as AuditID,
+					gaf.FieldTypeID, 
+					gaf.FieldName, 
+					gaf.[Value], 
+					gaf.PreviousValue
+					from api.InProcessAuditField gaf
+					inner join @tbl tt on tt.ObjectID = gaf.ObjectID
+					where gaf.ProcessUid = @processGuid and gaf.ProcessId = @ProcessID;
+				End
+			else
+				begin
+					insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+					output inserted.ID, inserted.ObjectID into @tbl
+					select t.Object,
+						   t.ObjectID, 
+						   t.ObjectName, 
+						   t.ResourceID, 
+						   @dt, 
+						   coalesce(mv.[MaxVersion],0) + 1 as [Version], 
+						   t.Action, 
+						   t.ActionObject, 
+						   t.ActionObjectID, 
+						   t.ActionObjectTypeName, 
+						   t.ActionObjectName, 
+						   t.ActionDescription
+					from api.InProcessAudit t
+					left join #MaxVersion mv on mv.ObjectID = t.ObjectID 
+					where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID;
+				end
+		end
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

@@ -990,6 +990,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			else {
 				this.savingInProgress = false;
 				this.savingInProgressWithAddNew = false;
+				event.Success = false;
+				this.saveClick.emit(event);
 
 				this.ref.markForCheck();
 				this.showMessageForApiResult(this.messagesService, res);

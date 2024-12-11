@@ -58,7 +58,7 @@ namespace d360.model
 
 		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
-		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
+		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, Guid processUid, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
 
@@ -2055,16 +2055,11 @@ where   ER.ExecutionID = @ExecutionID
 								#region Execution Log
 
 								string logSql = @"
-drop table if exists #tempexeclog;
-drop table if exists #tempintersectname;
+		declare @ProcessUid uniqueidentifier = newid(),
+		@processdatetime datetime = getutcdate();
 
-select e.id,
-itemnumber,
-SubjectId,
-ObjectID,
-intersectId,
-I.IntersectTypeID
-into #tempexeclog
+insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+select @ProcessUid, @Id, @processdatetime,i.ID,'D',i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
 from api.Execution e
 inner join api.ExecutionDeletedRelationship o on o.ExecutionID = e.ExecutionID 
 inner join [Intersect] I on I.ID = o.IntersectID
@@ -2072,53 +2067,42 @@ where e.ExecutionID = @ExecutionID
 and o.ItemNumber between @beginItemNumber and @endItemNumber 
 and o.Success is null;
 
-
-select distinct o.IntersectTypeID,
-cast(null as nvarchar(250)) TypeName
-into #tempintersectname
-from #tempexeclog o;
-
-update t
-set TypeName = substring(TName.[Name],1,250)
-from #tempintersectname t
-cross apply dbo.getIntersectTypeNames(t.IntersectTypeID) TName;
-
-create clustered index cx_tempintersectname on #tempintersectname (IntersectTypeID)
+exec FillDataIntoInProcessRelationAuditLog @ProcessUid ;
 
 
 insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	o.Id,
-			(select o.IntersectId,
-					A.Object, 
-					A.ObjectId,
-					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-					TName.[TypeName],
-					SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
+	select	@Id,
+			(select i.IntersectId,
+					i.Subject Object, 
+					i.SubjectId ObjectId,
+					SUBSTRING(coalesce(i.SubjectName, '-Unknown-'), 1, 250) as ObjectName,
+					i.SubActionObjectName ActionObjectName,
+					SUBSTRING(coalesce(i.SubActionObjectTypeName, '-Unknown-'), 1, 250) as TypeName
 			for json path
 			) as Payload
-	from	#tempexeclog o
-	inner join Asset a on (a.Id = o.SubjectID)
-	left join AssetDisplayValue d on d.AssetID = a.Id
-	left join AssetDisplayValue ado on ado.AssetID = o.ObjectID
-	inner join #tempintersectname TName on TName.IntersectTypeID = o.IntersectTypeID;
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @ProcessUid;
 
-	insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	o.Id,
-			(select o.IntersectId,
-					A.Object, 
-					A.ObjectId,
-					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-					TName.[TypeName],
-					SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	@Id,
+			(select i.IntersectId,
+					i.Object, 
+					i.ObjectId,
+					SUBSTRING(coalesce(i.ObjectName, '-Unknown-'), 1, 250) as ObjectName,
+					i.ObjActionObjectName ActionObjectName,
+					SUBSTRING(coalesce(i.ObjActionObjectTypeName, '-Unknown-'), 1, 250) as TypeName
 			for json path
 			) as Payload
-	from	#tempexeclog o
-	inner join Asset a on (a.Id = o.ObjectID)
-	left join AssetDisplayValue d on d.AssetID = a.Id
-	left join AssetDisplayValue ado on ado.AssetID = o.SubjectID
-	inner join #tempintersectname TName on TName.IntersectTypeID = o.IntersectTypeID";
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @ProcessUid;
 
-								Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+	delete t
+	from dbo.InProcessRelationAuditLog t
+	where ProcessUid = @ProcessUid;
+
+";
+
+								Connection.Execute(logSql, new { execution.Id, execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 								#endregion
 
@@ -2531,13 +2515,16 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		/// <summary>
 		/// This method is primarily used when adding assets that have relationship fields on them, where the edit form allows for add/deletes to relationships.
 		/// </summary>
-		public void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
+		public void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, Guid processUid, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 			string assetrefJoin = resolveRelationshipOnObjectId ? "att.ObjectID = try_cast(V.[value] as int)" : "att.Name = V.[value]";
 
 			string sql = $@"
+				declare @ProcessUid uniqueidentifier = @proUid,
+				@processdatetime datetime = getutcdate();
+
 				drop table if exists #Relationships;
 				create table #Relationships
 				(
@@ -2736,35 +2723,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				left join #Relationships R on R.ID = I.Id
 				where R.ID is null;	
 
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Object, 
-									i.ObjectId,
-									i.ObjectName,
-									i.ID as ActionObjectId,
-									i.Name as ActionObjectName,
-									i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
-									'D' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	#DeletedRelationships o
-							inner join IntersectDetail i on i.Uid = o.uid;
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Subject as Object, 
-									i.SubjectId as ObjectId,
-									i.SubjectName as ObjectName,
-									i.ID as ActionObjectId,
-									i.Name as ActionObjectName,
-									i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
-									'D' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	#DeletedRelationships o
-							inner join IntersectDetail i on i.Uid = o.uid;
+				
+				insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+				select @ProcessUid, @Id, @processdatetime,i.ID,'D',i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
+				from #DeletedRelationships t
+				inner join [Intersect] I on I.uid = t.Uid;
 
 				delete	i
 				from	[Intersect] I 
@@ -2803,43 +2766,17 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID;
 
 
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Object, 
-									i.ObjectId,
-									i.ObjectName,
-									i.ID as ActionObjectId,
-									i.Name as ActionObjectName,
-									i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
-									'A' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	#RelationshipsFinal o
-							inner join IntersectDetail i on i.Uid = o.uid
-					Where o.IsNew = 1;
-
-				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
-					select	@Id,
-							(select i.Subject as Object, 
-									i.SubjectId as ObjectId,
-									i.SubjectName as ObjectName,
-									i.ID as ActionObjectId,
-									i.Name as ActionObjectName,
-									i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
-									'A' as [Action]
-							for json path
-							) as Payload,
-							'R'
-					from	#RelationshipsFinal o
-							inner join IntersectDetail i on i.Uid = o.uid
-					Where o.IsNew = 1;
+				insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+				select @ProcessUid, @Id, @processdatetime,i.ID,'A',i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
+				from #RelationshipsFinal t
+				inner join [Intersect] I on I.uid = t.Uid
+				Where t.IsNew = 1;
 
 				select [uid], 1 as Success, 'Intersect' as [Object], 0 as isDelete, IntersectTypeID, ID as IntersectID from #RelationshipsFinal
 				union all
 				select [uid], 1 as Success, 'Intersect' as [Object], 1 as isDelete, IntersectTypeID, IntersectID from #DeletedRelationships";
 
-            var results = Connection.Query<dynamic>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            var results = Connection.Query<dynamic>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, prouid = processUid }, transaction: trans, commandTimeout: timeout);
 			
 			foreach(var result in results.GroupBy(x=> new { x.IntersectTypeID, x.isDelete }).Select(r=> r.First()))
 			{
@@ -3774,7 +3711,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														on      ( T.ID = S.IntersectID)
 														when matched then
 															update set
-																	T.UpdatedBy = @CurrentResourceID,
+																	T.UpdatedBy = @ResourceID,
 																	T.UpdatedOn = getutcdate(),
 																	T.Owner = coalesce(S.Owner,T.Owner)
 														when not matched by target then
@@ -3816,95 +3753,53 @@ QueryID = "-Q10000014";
 
 									string logSql = $@"
 
-declare @PredicateName Nvarchar(250),
-		@PredicateInverse Nvarchar(250),
-		@ObjectRefList bit;
+declare @ProcessUid uniqueidentifier = newid(),
+@processdatetime datetime = getutcdate();
 
-select	@PredicateName = Name,
-		@PredicateInverse = Inverse,
-		@ObjectRefList = case when T.ObjectClass = 9  and T.ObjectAssetTypeID = 0 then 1 else 0 end 
-from	IntersectType T
-inner join [Predicate] P on P.ID = T.PredicateID
-where T.id = @rtID;
-
-drop table if exists #tempexecurelat;
-
-select e.id,o.IsNew,o.IntersectID,
-o.SubjectAssetID,cast(null as nvarchar(100)) Subject,
-cast(null as int) SubjectID,cast(null as varchar(2000)) as SubjectName,
-cast(null as nvarchar(500)) SubjectTypeName,
-o.ObjectAssetID,cast(null as nvarchar(100)) Object,
-cast(null as int) ObjectID,cast(null as varchar(2000)) as ObjectName,
-cast(null as nvarchar(500)) ObjectTypeName,o.ObjectAssetTypeID
-into #tempexecurelat
+insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID,IsNew)
+select @ProcessUid, @Id, @processdatetime,i.IntersectID,'A',@rtID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID,i.IsNew
 from api.Execution e
-inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
+inner join api.ExecutionRelationship i on i.ExecutionID = e.ExecutionID 
 and e.ExecutionID = @ExecutionID 
-and o.ItemNumber between @beginItemNumber and @endItemNumber 
-and o.Success is null;
+and i.ItemNumber between @beginItemNumber and @endItemNumber 
+and i.Success is null;
 
-update t
-set Subject = A.Object,
-SubjectID = A.ObjectID,
-SubjectName = ADV.DisplayValue,
-SubjectTypeName = ATT.Name
-from #tempexecurelat t
-inner join Asset A on A.ID = t.SubjectAssetID
-inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
-inner join AssetType ATT on ATT.ID = A.AssetTypeID;
-
-if (@ObjectRefList = 0)
-	begin
-
-		update t
-		set Object = A.Object,
-		ObjectID = A.ObjectID,
-		ObjectName = ADV.DisplayValue,
-		ObjectTypeName = ATT.Name
-		from #tempexecurelat t
-		inner join Asset A on A.ID = t.ObjectAssetID
-		inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
-		inner join AssetType ATT on ATT.ID = A.AssetTypeID;
-	end
-else
-	begin
-		update t
-		set Object = ATT.Object,
-		ObjectID = ATT.ObjectID,
-		ObjectName = ATT.Name,
-		ObjectTypeName = ATT.Name
-		from #tempexecurelat t
-		inner join AssetType ATT on ATT.ID = t.ObjectAssetTypeID;
-	end
+exec FillDataIntoInProcessRelationAuditLog @ProcessUid ;
 
 insert into api.ExecutionLog (ExecutionId, [Payload])
-select * from 
-(
-select	e.Id,
+select	@id,
 		(select e.Subject as Object, 
 				e.SubjectId as ObjectId,
 				e.SubjectName as ObjectName,
 				e.IntersectID as ActionObjectId,
-				e.ObjectName as ActionObjectName,
-				e.ObjectTypeName + ' (' + @PredicateName + ')'  as ActionObjectTypeName,
+				e.SubActionObjectName as ActionObjectName,
+				e.SubActionObjectTypeName  as TypeName,
 				e.IsNew
 		for json path
 		) as Payload
-from	#tempexecurelat e
-union all
-select	e.Id,
+from	dbo.InProcessRelationAuditLog e
+where ProcessUid = @ProcessUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload])
+select	@Id,
 		(select e.Object, 
 				e.ObjectId,
 				e.ObjectName,
 				e.IntersectID as ActionObjectId,
-				e.SubjectName as ActionObjectName,
-				e.SubjectTypeName + ' (' + @PredicateInverse + ')'  as ActionObjectTypeName,
+				e.ObjActionObjectName as ActionObjectName,
+				e.ObjActionObjectTypeName as TypeName,
 				e.IsNew
 		for json path
 		) as Payload
-from	#tempexecurelat e
-)a;";
-									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
+from	dbo.InProcessRelationAuditLog e
+where ProcessUid = @ProcessUid;
+
+delete t
+from dbo.InProcessRelationAuditLog t
+where ProcessUid = @ProcessUid;
+
+";
+									Connection.Execute(logSql, new { execution.Id, execution.ExecutionID, beginItemNumber, endItemNumber, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 
 									#endregion
 
@@ -6072,148 +5967,103 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                     }
                     else
                     {
+						FieldValidationResult validationResult;
+
                         if (string.IsNullOrEmpty(fieldValue))
                         {
-                            if (fieldType.IsRequired)
-                            {
-                                success = false;
-                                errorMessages.Add(string.Format(CompanyContextApiError.FieldValueIsRequired, fieldName));
-                            }
-
-                            if (isValueEmptyString)
-                            {
-                                switch (fieldType.Type)
-                                {
-                                    case "Boolean":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
-                                        success = false;
-                                        break;
-                                    case "Date":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
-                                        success = false;
-                                        break;
-                                    case "DateTime":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
-                                        success = false;
-                                        break;
-                                    case "Decimal":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
-                                        success = false;
-                                        break;
-                                    case "Number":
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "number"));
-                                        success = false;
-                                        break;
-                                }
-                            }
+							validationResult = DataType.Text.ValidateRequirement(fieldName, fieldType.IsRequired, fieldValue);
+							if (!validationResult.IsValid)
+							{
+								errorMessages.Add(validationResult.Message);
+								success = false;
+							}
                         }
                         else
                         {
                             switch (fieldType.Type)
                             {
                                 case "Boolean":
-									if (!string.IsNullOrEmpty(fieldValue))
+									validationResult = DataType.Boolean.ValidateBoolean(fieldName, fieldValue);
+									if (!validationResult.IsValid)
 									{
-										fieldValue = fieldValue.ToLowerInvariant();
+										errorMessages.Add(validationResult.Message);
+										success = false;
 									}
-
-									if ((fieldValue != "true" && fieldValue != "false") && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
-                                    }
                                     break;
                                 case "Date":
-                                    DateTime dTest;
-
-                                    if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
-                                    }
-
-                                    if (success)
-                                    {
-                                        fieldValue = dTest.Date.ToString();
-                                    }
-
+									validationResult = DataType.Date.ValidateDate(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "DateTime":
-                                    DateTime dtTest;
-
-                                    if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
-                                    }
-
-                                    if (success)
-                                    {
-                                        fieldValue = dtTest.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); ;
-                                    }
-
+									validationResult = DataType.DateTime.ValidateDateTime(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Decimal":
-                                    decimal decTest;
-
-                                    if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
-                                    }
-
+									validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Link":
-
-                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateLinkValue, fieldName));
-                                    }
-
-                                    if (success)
-                                    {
-                                        //Remove 'inner' trailing/leading spaces in link value
-                                        fieldValue = Regex.Replace(fieldValue, "(\\s*\\|\\s*)", "|");
-                                    }
-
+									validationResult = DataType.Link.ValidateLink(fieldName, fieldValue);
+									if (validationResult.IsValid)
+									{
+										fieldValue = validationResult.CorrectedValue ?? fieldValue;
+									}
+									else
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Lookup":
-
-                                    if (fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1 && IslookupFieldsPassedByValue)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies, fieldName));
-                                    }
-
+									validationResult = DataType.Lookup.ValidateList(fieldName, fieldType.AllowMultipleValues, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Number":
-
-                                    if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, -9223372036854775808, 9223372036854775807));
-                                    }
-
+									validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
                                     break;
                                 case "Percentage":
                                     decimal pctTest;
-
                                     if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
                                     }
-
                                     break;
                                 case "JSON":
-
                                     if (jsonElementsEnabled && (fieldValue.Length > 2500))
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
                                     }
-
                                     validationFieldProperties.JsonFieldCount++;
                                     break;
                                 case "Counter":
@@ -6224,7 +6074,6 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
                                     }
-
                                     break;
                                 case "System":
                                     if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
@@ -6232,70 +6081,15 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                         success = false;
                                         errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
                                     }
-
                                     break;
                                 default: // Html, Text
-
-                                    if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        if (!Regex.IsMatch(fieldValue, fieldType.Pattern))
-                                        {
-                                            success = false;
-                                            errorMessages.Add(string.Format(CompanyContextApiError.RegularExpressionPatternMatch, fieldName));
-                                        }
-                                    }
-
-                                    break;
-                            }
-
-                            if (fieldType.Length.HasValue)
-                            {
-                                if (fieldValue.Length < fieldType.Length.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add(string.Format(CompanyContextApiError.CheckExactLength, fieldName, fieldType.Length.Value));
-                                }
-                            }
-
-                            if (fieldType.MinimumLength.HasValue)
-                            {
-                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                                {
-                                    if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumValueCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-                                else
-                                {
-                                    if (fieldValue.Length < fieldType.MinimumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumLengthCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-
-                            }
-
-                            if (fieldType.MaximumLength.HasValue)
-                            {
-                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                                {
-                                    if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaximumValueCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
-                                else
-                                {
-                                    if (fieldValue.Length > fieldType.MaximumLength.Value)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaxmiumLengthCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
-                                    }
-                                }
+									validationResult = DataType.Text.ValidateText(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldType.Pattern, fieldValue);
+									if (!validationResult.IsValid)
+									{
+										errorMessages.Add(validationResult.Message);
+										success = false;
+									}
+									break;
                             }
                         }
                     }

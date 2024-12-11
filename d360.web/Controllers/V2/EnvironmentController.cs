@@ -62,8 +62,18 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
-		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser().Result); } }
-		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser().Result, true); } }
+		private bool IsCustomCssEnabled {
+			get {
+				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
+				return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, ffUser);
+			}
+		}
+		private bool IsDashboardingEnabled {
+			get {
+				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
+				return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, ffUser, true);
+			}
+		}
 
 
 		public EnvironmentController(

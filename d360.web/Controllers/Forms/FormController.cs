@@ -305,6 +305,9 @@ namespace d360.web.Controllers
 				case "TAG":
 					objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
 					return await DynamicEditorEditFields(o, objectId);
+				case "TAGTYPES":
+					objectId = Company.TagTypes.FirstOrDefault(x => x.uid == uid).ID;
+					return await DynamicEditorEditFields(o, objectId);
 				case "INTERSECTTYPE":
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
 					return await DynamicEditorEditFields(o, objectId);
@@ -370,6 +373,9 @@ namespace d360.web.Controllers
 					break;
 				case "TAG":
 					res = Tag_EditFields(oid);
+					break;
+				case "TAGTYPES":
+					res = TagTypes_EditFields(oid);
 					break;
 				case "GROUP":
 					res = await Group_EditFields(oid);
@@ -499,6 +505,9 @@ namespace d360.web.Controllers
 					break;
 				case "TAG":
 					res = Tag_AddFields();
+					break;
+				case "TAGTYPES":
+					res = TagType_AddFields();
 					break;
 				case "GROUP":
 					res = await Group_AddFields();
@@ -1802,6 +1811,17 @@ order by Sort, title";
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
 
+		[Route("TagType_AddFields")]
+		public JsonResult TagType_AddFields()
+		{
+			var list = new List<EditableField>
+			{
+				new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) }
+			};
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
 		/// <param name="id">tag identifier</param>
 		[Route("Tag_EditFields"), NonNullableParameters]
 		public JsonResult Tag_EditFields(int id)
@@ -1811,6 +1831,18 @@ order by Sort, title";
 
 			list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
 			list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		[Route("TagTypes_EditFields"), NonNullableParameters]
+		public JsonResult TagTypes_EditFields(int id)
+		{
+			var list = new List<EditableField>();
+			var a = Company.GetById<TagType>(id);
+
+			list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+			list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "TagType name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}

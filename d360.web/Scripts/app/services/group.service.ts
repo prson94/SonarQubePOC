@@ -113,14 +113,14 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     putGroup(group: Group): Observable<any> {
-        return this.http.put('api/v2/membership/groups', [group]).pipe(
+		return this.http.put('api/v2/membership/groups?lookupFieldsPassedByValue=true', [group]).pipe(
             map((response) => <any>response),
             catchError((err) => this.handleError(err))
         );
     }
 
     postGroup(group: Group): Observable<any> {
-        return this.http.post('api/v2/membership/groups', [group]).pipe(
+		return this.http.post('api/v2/membership/groups?lookupFieldsPassedByValue=true', [group]).pipe(
             map((response) => <any>response),
             catchError((err) => this.handleError(err))
         );

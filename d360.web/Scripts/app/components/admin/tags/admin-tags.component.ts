@@ -47,7 +47,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     deletePopupTitle: string = $localize`Delete Tag`;
     editPopupTitle: string = $localize`Edit Tag`;
-
+    private generalTagTypeUId = '00000001-0000-0000-0000-b00000000011';
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
@@ -87,8 +87,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         },
     ]);
 
-	constructor(
-		private cdRef: ChangeDetectorRef,
+    constructor(
+        private cdRef: ChangeDetectorRef,
         private uiAdvancedFiltering: UiAdvancedFiltering,
         private searchService: SearchService,
         private router: Router,
@@ -128,7 +128,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         const uniqCreatedBy = _uniqWith(createdBy, _isEqual)
             .filter((s: string) => s.toLowerCase().includes(params.filter?.toLowerCase() ?? ""));
 
-        if(uniqCreatedBy.length === 1 && uniqCreatedBy[0].name === '') {
+        if (uniqCreatedBy.length === 1 && uniqCreatedBy[0].name === '') {
             return of({
                 items: [],
                 count: 0
@@ -141,12 +141,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
     }
 
-    updateSort(event) { 
+    updateSort(event) {
         this.sort = event;
     }
     onFilterChange(event) {
-        if (event !== 'globalSearch')
-            {this.filters.globalSearch = '';}
+        if (event !== 'globalSearch') { this.filters.globalSearch = ''; }
 
         this.filters[event.prop] = event.value;
     }
@@ -160,9 +159,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.searchService.serachTableLocally(this.tableEl, searchString);
     }
 
-    getTags() {
+    getTags(tagtypeUid: string = this.generalTagTypeUId) {
         this.isLoading = true;
-        this.tagsService.getTagsList().pipe(
+        this.tagsService.getTagsList(true, tagtypeUid).pipe(
             tap((tags: TagType[]) => {
                 this.sortTags(tags);
             }),
@@ -197,47 +196,47 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.selected = this.selected.slice();
     }
 
-	selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
-		this.editPopupTitle = $localize`Edit Tag`;
+    selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
+        this.editPopupTitle = $localize`Edit Tag`;
 
-		//p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
-		if (event && element) {
-			if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-				this.lastSelectedElement = item;
-				return;
-			}
-			if (event.shiftKey) {
-				this.cdRef.detectChanges();
-				var lastIndex = this.tags.indexOf(this.lastSelectedElement);
-				if (lastIndex === -1 && this.selected.length === 1) {
-					lastIndex = this.tags.indexOf(this.selected[0]);
-				}
-				var currentIndex = this.tags.indexOf(item);
+        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+        if (event && element) {
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+                this.lastSelectedElement = item;
+                return;
+            }
+            if (event.shiftKey) {
+                this.cdRef.detectChanges();
+                var lastIndex = this.tags.indexOf(this.lastSelectedElement);
+                if (lastIndex === -1 && this.selected.length === 1) {
+                    lastIndex = this.tags.indexOf(this.selected[0]);
+                }
+                var currentIndex = this.tags.indexOf(item);
 
-				if (lastIndex > currentIndex) {
-					lastIndex += currentIndex;
-					currentIndex = lastIndex - currentIndex;
-					lastIndex -= currentIndex;
-				}
-				var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
-				for (var i = lastIndex; i <= currentIndex; i++) {
-					if (!tableRows[i].classList.contains('p-highlight')) {
-						if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
-							this.selected.push(this.tags[i]);
-						}
-					}
-				}
-				this.triggerRerenderOfSelection();
-				this.lastSelectedElement = item;
+                if (lastIndex > currentIndex) {
+                    lastIndex += currentIndex;
+                    currentIndex = lastIndex - currentIndex;
+                    lastIndex -= currentIndex;
+                }
+                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+                for (var i = lastIndex; i <= currentIndex; i++) {
+                    if (!tableRows[i].classList.contains('p-highlight')) {
+                        if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
+                            this.selected.push(this.tags[i]);
+                        }
+                    }
+                }
+                this.triggerRerenderOfSelection();
+                this.lastSelectedElement = item;
 
-				this.cdRef.markForCheck();
-				return;
-			}
-			this.lastSelectedElement = item;
-		}
-	}
+                this.cdRef.markForCheck();
+                return;
+            }
+            this.lastSelectedElement = item;
+        }
+    }
 
-	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+    selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
@@ -270,12 +269,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
                 for (var i = lastIndex; i <= currentIndex; i++) {
-					if (!tableRows[i].classList.contains('p-highlight')) {
-						if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
-							this.selected.push(this.tags[i]);
-							this.triggerRerenderOfSelection();
-						}
-					}
+                    if (!tableRows[i].classList.contains('p-highlight')) {
+                        if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
+                            this.selected.push(this.tags[i]);
+                            this.triggerRerenderOfSelection();
+                        }
+                    }
                 }
 
                 this.lastSelectedElement = item;
@@ -378,10 +377,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
                     result.forEach((t) => {
-                        if (t.UseCount !== 0)
-                            {this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;}
-                        else if (t.uid !== parentUid)
-                            {this.tags = this.tags.filter((x) => x.uid !== t.uid);}
+                        if (t.UseCount !== 0) { this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount; }
+                        else if (t.uid !== parentUid) { this.tags = this.tags.filter((x) => x.uid !== t.uid); }
                     });
                 }
                 this.selected = [];
@@ -400,7 +397,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.uid === uid) {return index;}
+            if (tag.uid === uid) { return index; }
         }
     }
 
@@ -416,5 +413,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         const draft = this.tags.slice();
         mutator(draft);
         this.tags = draft;
+    }
+
+    loadTagsOnTagTypeSelected(val: string) {
+        this.getTags(val);
     }
 }

@@ -344,7 +344,7 @@ select @id";
 			var executionId = CompanyContext.Query<int>(logSql, 
 				new { 
 					alloc.Uid,
-					CureentResourceID = SecurityContext.ResourceID, 
+					CurrentResourceID = SecurityContext.ResourceID, 
 					action = (int)ApiExecutionAction.PostScoreAllocation, 
 					CalculationMethod = alloc.CalculationMethod.ToString(),
 					ScoreType = alloc.ScoreType.ToString()

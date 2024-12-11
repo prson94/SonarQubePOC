@@ -27,18 +27,22 @@ namespace repositories
 
 		Task<T> ReadSettingValueAsync<T>(Setting setting);
 
-		Task<bool> RemoveGroupsAsync(List<Guid> uids);
+		Task<bool> RemoveFavoritesAsync(int resourceId, List<int> favoriteIds);
+
+		Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids);
 		
 		Task<bool> RemoveMemberFromGroupAsync(Guid groupUid, Guid userUid);
 
 		Task<RepositoryResponse<bool>> RemoveSettingAsync(Setting setting);
 
-		Task<RepositoryResponse<int>> RemoveUsersAsync(List<Guid> uids);
+		Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids);
+
+		Task<RepositoryResponse<List<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false);
 
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
 		Task<RepositoryResponse<bool>> UpsertSettingAsync(Setting setting, string value);
 
-		Task<RepositoryResponse<IEnumerable<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false);
+		Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false);
 	}
 }

@@ -1,0 +1,80 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Table.dbo.InProcessRelationAuditLog-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'InProcessRelationAuditLog')
+BEGIN
+	CREATE TABLE [dbo].[InProcessRelationAuditLog](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		[Executionid] [int],
+		Processdatetime datetime,
+		IntersectID int,
+		Action nvarchar(100),
+		IntersectTypeID int,
+		SubjectAssetID bigint,
+		SubjectAssetTypeID int,
+		ObjectAssetID bigint,
+		ObjectAssetTypeID int,
+		[Object] varchar(50),
+		[ObjectID] int, 
+		ObjectName nvarchar(4000),
+		ObjectTypeName nvarchar(1000), 
+		[Subject] varchar(50),
+		[SubjectID] int,
+		SubjectName nvarchar(4000),
+		SubjectTypeName nvarchar(1000),
+		PredicateName varchar(500),
+		PredicateInverse varchar(500),
+		SubActionObjectName Nvarchar(4000),
+		ObjActionObjectName Nvarchar(4000),
+		SubActionObjectTypeName Nvarchar(4000),
+		ObjActionObjectTypeName Nvarchar(4000),
+		ISSubject bit default 0,
+		IsNew bit default 0,
+		IsFlag varchar(50)
+		CONSTRAINT [PK_InProcessRelationAuditLog] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.dbo.InProcessRelationAuditLog-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessRelationAuditLog_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessRelationAuditLog_ProcessUid ON [dbo].[InProcessRelationAuditLog] ([ProcessUid])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessRelationAuditLog_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessRelationAuditLog_ProcessUid ON [dbo].[InProcessRelationAuditLog]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

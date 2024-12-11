@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,Puneet" id="Procedure.api.MergeAssetPaths-v11">
+  <changeSet author="TDuric,Puneet" id="Procedure.api.MergeAssetPaths-v12">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -15,7 +15,9 @@ create or alter procedure [api].[MergeAssetPaths]
 	@begin int,
 	@end int,
 	@assetTypeUid uniqueidentifier = null,
-	@onlyInsert bit = 0
+	@onlyInsert bit = 0,
+	@processGuid uniqueidentifier = null,
+	@AssetTypeID int = 0
 as
 begin
 	set nocount on;
@@ -56,7 +58,23 @@ begin
 		select	AssetID
 		from	api.ExecutionAsset
 		where	ExecutionID = @executionId
-				and ItemNumber between @begin and @end
+				and ItemNumber between @begin and @end;
+				
+	if (@processGuid is not null)
+	begin
+		if (coalesce(@AssetTypeID,0)  > 0)
+			begin
+				insert into #incoming 
+				select IPA.AssetID from api.InProcessPostAssetPath IPA
+				where IPA.ProcessUid = @processGuid and IPA.AssetTypeID = @AssetTypeID and IPA.AssetID > 0;
+			end
+		else
+			begin
+				insert into #incoming 
+				select IPA.AssetID from api.InProcessPostAssetPath IPA
+				where IPA.ProcessUid = @processGuid and IPA.AssetID > 0;
+			end
+	end
 				
 	if @class = 15
 	begin

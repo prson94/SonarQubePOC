@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="entities\Graph\**" />
     <Compile Remove="entities\reference\**" />
+    <EmbeddedResource Remove="entities\Graph\**" />
     <EmbeddedResource Remove="entities\reference\**" />
+    <None Remove="entities\Graph\**" />
     <None Remove="entities\reference\**" />
   </ItemGroup>
 
@@ -357,10 +360,6 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="entities\Graph\" />
   </ItemGroup>
 
 </Project>

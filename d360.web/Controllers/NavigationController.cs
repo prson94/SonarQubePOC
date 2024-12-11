@@ -224,7 +224,8 @@ namespace d360.web.Controllers
 		[HttpGet, Route("GetSiteNavItems")]
 		public JsonNetResult GetSiteNavItems()
 		{
-			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser().Result);			
+			var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
+			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, ffUser);			
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'

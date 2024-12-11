@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Table.api.InProcessHisUpdField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessHisUpdField')
+BEGIN
+	CREATE TABLE [api].[InProcessHisUpdField](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ProcessUid] [uniqueidentifier],
+		[Executionid] [int],
+		Processdatetime datetime,
+		[Object] varchar(50),
+		[ObjectID] int, 
+		ItemNumber int,
+		FieldTypeID int,
+		FieldName varchar(500),
+		FieldValue nvarchar(max),
+		LookupValue nvarchar(max), 
+		FieldType  nvarchar(25),
+		MaxAuditID int null,
+		PreviousValue nvarchar(max)
+		CONSTRAINT [PK_InProcessHisUpdField] PRIMARY KEY CLUSTERED ([ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Table.api.InProcessHisUpdField-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessHisUpdField_ProcessUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_InProcessHisUpdField_ProcessUid ON [api].[InProcessHisUpdField] ([ProcessUid],ItemNumber) INCLUDE (FieldTypeID, ID, MaxAuditID)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_InProcessHisUpdField_ProcessUid')
+BEGIN
+	DROP INDEX IX_InProcessHisUpdField_ProcessUid ON [api].[InProcessHisUpdField]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

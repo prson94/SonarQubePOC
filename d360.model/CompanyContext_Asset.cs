@@ -284,6 +284,124 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#endregion
 
+			#region Delete Intersects
+
+			string strintersect = $@"
+								declare @totalcount bigint = 0,
+									@runcount bigint = 0,
+									@struncount bigint = 0,
+									@enruncount bigint = 0,
+									@batchsize int = {SqlBulkIntersectFieldDeleteSize},
+									@ProcessUid uniqueidentifier = newid(),
+									@processdatetime datetime = getutcdate();
+
+									drop table if exists #tempexecdelass;
+
+									select IntersectID, [AssetID]
+									into #tempexecdelass
+									from api.ExecutionDeletedAsset S
+									where {querySuffix};
+
+									create nonclustered index [cix_tempexecdelass] on #tempexecdelass ([AssetID]);
+									create nonclustered index [cix_tempexecdelass2] on #tempexecdelass (IntersectID);
+
+									drop table if exists #tempintersect;
+									create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int, IntersecttypeID int,IsSubject bit default 0); 
+									create Clustered index [cix_tempintersect] on #tempintersect(IntersectID);
+
+									if(@predicateType = 1)
+									begin
+										insert into #tempintersect (IntersectID,IntersecttypeID)
+										select T.ID,T.IntersecttypeID
+										from [Intersect] T 
+										where exists (select 1 from #tempexecdelass S where S.IntersectID = T.ID and S.IntersectID is not null);
+									end;
+
+									insert into #tempintersect (IntersectID,IntersecttypeID)
+									select T.ID,T.IntersecttypeID
+									from [Intersect] T 
+									where exists (select 1 from #tempexecdelass S where S.AssetID = T.SubjectAssetID);
+
+									insert into #tempintersect (IntersectID,IntersecttypeID)
+									select T.ID,T.IntersecttypeID
+									from [Intersect] T 
+									where exists (select 1 from #tempexecdelass S where S.AssetID = T.ObjectAssetID);
+
+									delete T
+									from #tempintersect T
+									where T.ID > (select min(t1.ID)
+										from #tempintersect t1
+										where t.IntersectID = t1.IntersectID
+										);
+
+
+									update t
+									set IsSubject = 1
+									from #tempintersect t
+									inner join [Intersecttype] it on t.IntersecttypeID = it.Id and it.subjectassettypeid = @assetTypeID;
+
+									insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID,IsSubject)
+									select @ProcessUid, @Id, @processdatetime,i.ID,'D',i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID,t.IsSubject 
+									from #tempintersect t
+									inner join [Intersect] i on IntersectID = i.ID
+
+									exec FillDataIntoInProcessRelationAuditLog @ProcessUid;
+
+
+									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
+										select	@Id,
+												(select i.IntersectId,
+														i.Object, 
+														i.ObjectId,
+														i.ObjectName as ObjectName,
+														i.ObjActionObjectTypeName as TypeName,
+														SUBSTRING(coalesce(i.ObjActionObjectName, '-Unknown-'), 1, 250) as ActionObjectName
+												for json path
+												) as Payload,
+												'R'
+										from dbo.InProcessRelationAuditLog i
+										where ProcessUid = @ProcessUid
+										and i.IsSubject = 1;
+
+			
+									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
+										select	@Id,
+												(select i.IntersectId,
+														i.Subject Object, 
+														i.SubjectId ObjectId,
+														i.SubjectName as ObjectName,
+														i.SubActionObjectTypeName as TypeName,
+														SUBSTRING(coalesce(i.SubActionObjectName, '-Unknown-'), 1, 250) as ActionObjectName
+												for json path
+												) as Payload,
+												'R'
+										from dbo.InProcessRelationAuditLog i
+										where ProcessUid = @ProcessUid
+										and i.IsSubject = 0;
+
+
+									select @totalcount = count(id) from #tempintersect;
+									while (@runcount <= @totalcount)
+									begin
+										set @struncount = @runcount + 1;
+										set @enruncount = @runcount + @batchsize;
+
+										delete  T
+										from    [Intersect] T
+										inner join #tempintersect S on S.IntersectID = T.ID and S.id between @struncount and @enruncount
+										option(recompile);
+
+										set @runcount = @enruncount;
+									end;
+
+									drop table if exists #tempexecdelass;
+									drop table if exists #tempintersect;";
+			Connection.Execute(strintersect, new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0, assetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
+
+			sw.Restart();
+
+			#endregion
+
 			#region Asset table
 
 			Connection.Execute(
@@ -343,122 +461,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				drop table if exists #tempruleresults;",
 				new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 			addMeasurement(metrics, $"remove from asset table>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-			sw.Restart();
-
-			#endregion
-
-			#region Delete Intersects
-
-			string strintersect = $@"
-								declare @totalcount bigint = 0,
-									@runcount bigint = 0,
-									@struncount bigint = 0,
-									@enruncount bigint = 0,
-									@batchsize int = {SqlBulkIntersectFieldDeleteSize};
-
-									drop table if exists #tempexecdelass;
-
-									select IntersectID, [AssetID]
-									into #tempexecdelass
-									from api.ExecutionDeletedAsset S
-									where {querySuffix};
-
-									create nonclustered index [cix_tempexecdelass] on #tempexecdelass ([AssetID]);
-									create nonclustered index [cix_tempexecdelass2] on #tempexecdelass (IntersectID);
-
-									drop table if exists #tempintersect;
-									create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int, IntersecttypeID int,IsSubject bit default 0); 
-									create Clustered index [cix_tempintersect] on #tempintersect(IntersectID);
-
-									if(@predicateType = 1)
-									begin
-										insert into #tempintersect (IntersectID,IntersecttypeID)
-										select T.ID,T.IntersecttypeID
-										from [Intersect] T 
-										where exists (select 1 from #tempexecdelass S where S.IntersectID = T.ID and S.IntersectID is not null);
-									end;
-
-									insert into #tempintersect (IntersectID,IntersecttypeID)
-									select T.ID,T.IntersecttypeID
-									from [Intersect] T 
-									where exists (select 1 from #tempexecdelass S where S.AssetID = T.SubjectAssetID);
-
-									insert into #tempintersect (IntersectID,IntersecttypeID)
-									select T.ID,T.IntersecttypeID
-									from [Intersect] T 
-									where exists (select 1 from #tempexecdelass S where S.AssetID = T.ObjectAssetID);
-
-									delete T
-									from #tempintersect T
-									where T.ID > (select min(t1.ID)
-										from #tempintersect t1
-										where t.IntersectID = t1.IntersectID
-										);
-
-
-									update t
-									set IsSubject = 1
-									from #tempintersect t
-									inner join [Intersecttype] it on t.IntersecttypeID = it.Id and it.subjectassettypeid = @assetTypeID;
-
-
-									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
-										select	@Id,
-												(select t.IntersectId,
-														A.Object, 
-														A.ObjectId,
-														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-														TName.[Name] as TypeName,
-														SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
-												for json path
-												) as Payload,
-												'R'
-										from	#tempintersect t
-										inner join [intersect] i on t.IntersectID = i.ID
-										inner join Asset a on (a.Id = I.ObjectAssetID)
-										left join AssetDisplayValue d on d.AssetID = a.Id
-										left join AssetDisplayValue ado on ado.AssetID = I.SubjectAssetID
-										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
-										where IsSubject = 1;
-
-			
-									insert into api.ExecutionLog (ExecutionId, [Payload],SubTask)
-										select	@Id,
-												(select t.IntersectId,
-														A.Object, 
-														A.ObjectId,
-														SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-														TName.[Name] as TypeName,
-														SUBSTRING(coalesce(ado.DisplayValue, '-Unknown-'), 1, 250) as ActionObjectName
-												for json path
-												) as Payload,
-												'R'
-										from	#tempintersect t
-										inner join [intersect] i on t.IntersectID = i.ID
-										inner join Asset a on (a.Id = I.SubjectAssetID)
-										left join AssetDisplayValue d on d.AssetID = a.Id
-										left join AssetDisplayValue ado on ado.AssetID = I.ObjectAssetID
-										cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
-										where IsSubject = 0;
-
-									select @totalcount = count(id) from #tempintersect;
-									while (@runcount <= @totalcount)
-									begin
-										set @struncount = @runcount + 1;
-										set @enruncount = @runcount + @batchsize;
-
-										delete  T
-										from    [Intersect] T
-										inner join #tempintersect S on S.IntersectID = T.ID and S.id between @struncount and @enruncount
-										option(recompile);
-
-										set @runcount = @enruncount;
-									end;
-
-									drop table if exists #tempexecdelass;
-									drop table if exists #tempintersect;";
-			Connection.Execute(strintersect, new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0, assetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
-
 			sw.Restart();
 
 			#endregion
@@ -1009,6 +1011,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				bool hasLookupFieldTypes = false;
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
+				Guid processUid = new Guid();
 
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
@@ -1856,7 +1859,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (hasRelationshipFieldTypes)
 									{
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
-										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, processUid, timeout, lookupFieldsPassedByValue);
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
@@ -1944,6 +1947,44 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									#endregion
 
 									#region Execution Log
+									if (hasRelationshipFieldTypes)
+									{
+										string rlogSql = @"
+exec FillDataIntoInProcessRelationAuditLog @processUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+	select	@Id,
+			(select i.Object, 
+					i.ObjectId,
+					i.ObjectName,
+					i.IntersectID as ActionObjectId,
+					i.ObjActionObjectName as ActionObjectName,
+					i.ObjActionObjectTypeName as TypeName,
+					i.Action as [Action]
+			for json path
+			) as Payload,
+			'R'
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @processUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+	select	@Id,
+			(select i.Subject as Object, 
+					i.SubjectId as ObjectId,
+					i.SubjectName as ObjectName,
+					i.IntersectID as ActionObjectId,
+					i.SubActionObjectName as ActionObjectName,
+					i.SubActionObjectTypeName as TypeName,
+					i.Action as [Action]
+			for json path
+			) as Payload,
+			'R'
+	from	dbo.InProcessRelationAuditLog i
+	where ProcessUid = @processUid;
+";
+
+										Connection.Execute(rlogSql, new { execution.Id, execution.ExecutionID, processUid}, transaction: trans, commandTimeout: timeout);
+									}
 
 									string logSql = @"
 insert into api.ExecutionLog (ExecutionId, [Payload])
@@ -1971,101 +2012,65 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (intersectTypeID.HasValue && parentIntersectGuids != null && parentIntersectGuids.Count() > 0)
 									{
 										string logSqlR = @"
+
+		declare @ProcessUid uniqueidentifier = newid(),
+		@processdatetime datetime = getutcdate();
+		
 		drop table if exists #PCRelationships;
 		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
 		insert into #PCRelationships 
 		select distinct t.Uid,t.operation
 		from @TableData t;
 
-		drop table if exists #tempintersectdetail;
-		create table #tempintersectdetail(ID int,Action nvarchar(100),IntersectTypeID int,SubjectAssetID bigint,SubjectAssetTypeID int,ObjectAssetID bigint,ObjectAssetTypeID int,
-		[Object] varchar(50),[ObjectID] int, ObjectName nvarchar(4000),ObjectTypeName nvarchar(1000), 
-		[Subject] varchar(50),[SubjectID] int,SubjectName nvarchar(4000),SubjectTypeName nvarchar(1000),
-		PredicateName varchar(500),PredicateInverse varchar(500),
-		Name Nvarchar(4000));
+		if exists (select 1 from dbo.InProcessRelationAuditLog where ProcessUid = @ProcessUid)
+		begin
+			delete t
+			from dbo.InProcessRelationAuditLog t
+			where ProcessUid = @ProcessUid;
+		end
 
-		insert into #tempintersectdetail(ID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
-		select i.ID,t.Action,i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
+		insert into dbo.InProcessRelationAuditLog(ProcessUid,Executionid,Processdatetime,IntersectID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+		select @ProcessUid, @Id, @processdatetime,i.ID,t.Action,i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
 		from #PCRelationships t
 		inner join [Intersect] I on I.uid = t.Uid;
 
-		update t
-		set t.Subject = a.Object,
-		t.SubjectID = a.ObjectID,
-		t.SubjectName = cast(adv.DisplayValue as nvarchar(4000))
-		from #tempintersectdetail t
-		inner join Asset A on t.SubjectAssetID = a.ID
-		left join AssetDisplayValue ADV on adv.AssetID = a.ID;
-
-		update t
-		set t.SubjectTypeName = att.Name
-		from #tempintersectdetail t
-		inner join AssetType Att on t.SubjectAssetTypeID = att.ID;
-
-		update t
-		set t.Object = a.Object,
-		t.ObjectID = a.ObjectID,
-		t.ObjectName = cast(adv.DisplayValue as nvarchar(4000))
-		from #tempintersectdetail t
-		inner join Asset A on t.ObjectAssetID = a.ID
-		left join AssetDisplayValue ADV on adv.AssetID = a.ID;
-
-		update t
-		set t.Object = a.Object,
-		t.ObjectID = a.ObjectID,
-		t.ObjectName = cast(a.Name as nvarchar(4000)),
-		t.ObjectTypeName = cast(a.Name as nvarchar(4000))
-		from #tempintersectdetail t
-		inner join AssetType A on t.ObjectAssetTypeID = a.ID
-		where t.Object is null and t.ObjectAssetID = 0;
-
-		update t
-		set t.ObjectTypeName = att.Name
-		from #tempintersectdetail t
-		inner join AssetType Att on t.ObjectAssetTypeID = att.ID
-		where t.ObjectTypeName is null;
-
-		update t
-		set t.PredicateName = p.Name,
-		t.PredicateInverse =p.Inverse
-		from #tempintersectdetail t
-		inner join IntersectType it on it.ID = t.IntersectTypeID
-		inner join [Predicate] p on p.id = it.PredicateID;
-
-		update t
-		set Name = coalesce(t.SubjectName,'---') + ' ' + coalesce(t.PredicateName,'---') + ' ' + coalesce(t.ObjectName,'---')
-		from #tempintersectdetail t
-
-		create clustered index cix_tempintersectdetail on #tempintersectdetail (ID);
+		exec FillDataIntoInProcessRelationAuditLog @ProcessUid;
 
 		insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 		select	@Id,
 			(select i.Object, 
 					i.ObjectId,
 					i.ObjectName,
-					i.ID as ActionObjectId,
-					i.Name as ActionObjectName,
-					i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
+					i.IntersectID as ActionObjectId,
+					coalesce(i.ObjActionObjectName, '-Unknown-') as ActionObjectName,
+					i.ObjActionObjectTypeName as TypeName,
 					case when i.Action = 'INSERT' then 'A' else 'U' end as [Action]
 			for json path
 			) as Payload,
 			'R'
-	from	#tempintersectdetail i;
+		from	dbo.InProcessRelationAuditLog i
+		where ProcessUid = @ProcessUid;
 
 	insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 		select	@Id,
 				(select i.Subject as Object, 
 						i.SubjectId as ObjectId,
 						i.SubjectName as ObjectName,
-						i.ID as ActionObjectId,
-						i.Name as ActionObjectName,
-						i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
+						i.IntersectID as ActionObjectId,
+						coalesce(i.SubActionObjectName, '-Unknown-') as ActionObjectName,
+						i.SubActionObjectTypeName as TypeName,
 						case when i.Action = 'INSERT' then 'A' else 'U' end as [Action]
 				for json path
 				) as Payload,
 				'R'
-		from	#tempintersectdetail i;
+		from	dbo.InProcessRelationAuditLog i
+		where ProcessUid = @ProcessUid;
+
+		delete t
+		from dbo.InProcessRelationAuditLog t
+		where ProcessUid = @ProcessUid;
 ";
+
 
 										Connection.Execute(logSqlR, new { execution.Id, TableData = getRelationParentChildTable(parentIntersectGuids).AsTableValuedParameter("dbo.ParentIntersect") }, transaction: trans, commandTimeout: timeout);
 									}

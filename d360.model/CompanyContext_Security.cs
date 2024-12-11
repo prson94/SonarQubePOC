@@ -1,4 +1,12 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Views;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using Dapper;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -8,16 +16,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.core.entities.Metric;
-using d360.core.entities.Views;
-using d360.core.enums;
-using d360.core.queue;
-using d360.core.resources;
-using Dapper;
-using Newtonsoft.Json;
 
 namespace d360.model
 {
@@ -48,8 +46,6 @@ namespace d360.model
 		#region Methods
 
 		Task BulkInsertResponsibilityOverrideAsync(List<BulkResponsibilityOverridePostModel> request, ApiExecution execution, int timeout = 3600);
-
-		List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
 
 		string GetNoReadSqlStatement(string identifier = null);
 
@@ -110,8 +106,6 @@ namespace d360.model
 		Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber);
 
 		void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
-
-		List<GroupResponseResult> UpsertGroups(ApiExecution execution, List<UpdateGroupModel> groups);
 
 		Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
 
@@ -1053,192 +1047,6 @@ where R.ID = @ID
 			Connection.Execute(securitysql, commandTimeout: 7200);
 		}
 		
-		public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
-		{
-			DynamicParameters dbArgs = new DynamicParameters();
-			bool generalChecksCompleted = false;
-			int itemNumber = 1;
-			List<GroupResponseResult> results = new List<GroupResponseResult>();
-			CurrentExecutionLocationModel currentLocation = null;
-
-			SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-			try
-			{
-				#region Build data tables.
-
-				currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "[api].[ExecutionDeletedGroup]");
-
-				DataTable table = new DataTable();
-
-				table.Columns.Add("ExecutionID", typeof(Guid));
-				table.Columns.Add("ItemNumber", typeof(int));
-				table.Columns.Add("GroupUid", typeof(Guid));
-
-				#region Generate data sets
-
-				foreach (DeleteGroupModel item in groups)
-				{
-					DataRow row = table.NewRow();
-					row["ExecutionID"] = execution.ExecutionID;
-					row["ItemNumber"] = itemNumber;
-					row["GroupUid"] = item.Uid;
-
-					table.Rows.Add(row);
-
-					itemNumber++;
-				}
-
-				#endregion
-
-				if (Database.Connection.State != ConnectionState.Open)
-				{
-					Connection.Open();
-				}
-
-				#region Bulk Copy
-
-				using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection)
-				{
-					BatchSize = table.Rows.Count,
-					DestinationTableName = "[api].[ExecutionDeletedGroup]",
-					BulkCopyTimeout = 3600
-				})
-				{
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
-
-					bulkCopy.WriteToServer(table);
-				}
-
-				#endregion
-
-				string checkSQL = $@"
-update	[api].[ExecutionDeletedGroup]
-set		Success = 0,
-		[Message] = coalesce([Message] + '; ', '') + 'Not a valid group'
-from	[api].[ExecutionDeletedGroup] EP
-		left join Asset A on A.UID = EP.GroupUid and A.Object = 'Group'
-where	ExecutionID = @ExecutionID and A.uid is null";
-
-				Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
-
-				#endregion
-
-				generalChecksCompleted = true;
-			}
-			catch (Exception generalEx)
-			{
-				generalChecksCompleted = false;
-				string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = msg;
-				execution.Processed = 0;
-				execution.Error = groups.Count();
-
-				results = new List<GroupResponseResult>();
-				results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
-			}
-
-			itemNumber = 1;
-
-			if (generalChecksCompleted)
-			{
-				int loopSize = 250;
-				int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
-				int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
-				int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-
-				for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-				{
-					bool runCompleted = false;
-					int retryCount = 0;
-
-					while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-					{
-						using (SqlTransaction trans = Connection.BeginTransaction())
-						{
-							try
-							{
-								Connection.Execute($@"
-insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	@Id,
-			(select G.ID,
-					A.ID as AssetId,
-					G.Name as ObjectName,
-					A.[Object]
-			for json path
-			) as Payload
-	from	api.ExecutionDeletedGroup o
-			inner join [Asset] A on A.Uid = o.GroupUid and A.[Object] = 'Group' 
-			inner join [Group] G on G.ID = A.ObjectID 
-	where	o.Success is null and o.ExecutionID = @ExecutionID and o.ItemNumber between @beginItemNumber and @endItemNumber;
-
-DELETE	F
-from	[Field] F
-		inner join Asset A on A.ID = F.AssetID
-		inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.GroupUid = A.uid and A.[Object] = 'Group';
-
-DELETE	G
-FROM	[Group] G
-		inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
-		inner join Asset A on A.uid = EG.GroupUid and A.[Object] = 'Group' and A.ObjectID = G.ID;
-
-DELETE	A
-FROM	Asset A
-		inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.GroupUid = A.uid and A.[Object] = 'Group';
-
-update	EG 
-set		EG.Success = 1, 
-		EG.Message = 'Deleted Successfully' 
-from	api.ExecutionDeletedGroup EG 
-where	EG.Success is null 
-		and EG.ExecutionID = @ExecutionID 
-		and EG.ItemNumber between @beginItemNumber and @endItemNumber;",
-									new { execution.ExecutionID, execution.Id, SecurityContext.ResourceID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
-								);
-
-								trans.Commit();
-								runCompleted = true;
-							}
-							catch (Exception ex)
-							{
-								try
-								{
-									if (trans != null)
-									{
-										trans.Rollback();
-									}
-								}
-								catch
-								{
-								}
-
-								retryCount++;
-
-								if (retryCount > API_V2_RETRY_LIMIT)
-								{
-									LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedGroup", ex.GetFullExceptionData(false), timeout);
-								}
-							}
-						}
-					}
-				}
-
-				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-
-				results.AddRange(
-								Query<GroupResponseResult>(
-									$"select [ItemNumber], [GroupUid] as uid,  [ExecutionID] as ExecutionItemUid, [Message], [Success] from api.ExecutionDeletedGroup where ExecutionID = @ExecutionID",
-									new { execution.ExecutionID }
-								)
-							);
-			}
-
-			return results;
-		}
-		
 		public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id)
 		{
 			try
@@ -1818,6 +1626,7 @@ where id = @IntersectTypeID";
 				DeclareVariable = declareVar.ToString()
 			};
 		}
+		
 		public string GetUserPermissionQuery(string tempTableName = "PermissiondAssets", string userParam = "ResourceID", string typeParam = "AssetTypeID")
 		{
 			return $@"drop table if exists #{tempTableName};
@@ -1876,7 +1685,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)		
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int)
@@ -1887,7 +1696,7 @@ where id = @IntersectTypeID";
 								rasset.AssetID,
 								rasset.AssetTypeID
 						from	#AssetRule rasset
-								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID and r.IsVisible = 1)
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
@@ -1958,7 +1767,7 @@ where id = @IntersectTypeID";
 							select distinct A.Id as AssetId 
 							into #resourceResponsibilities
 							from Asset a
-							inner join ResponsibilityDetail R on R.AssetID = A.ID and R.isvisible = 1 and R.ResourceID = cast(@{userParam} as int)
+							inner join ResponsibilityDetail R on R.AssetID = A.ID and R.ResourceID = cast(@{userParam} as int)
 							where a.AssetTypeId = cast(@{typeParam} as int)
 
 							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
@@ -2653,524 +2462,6 @@ where id = @IntersectTypeID";
 				Execute(@"delete queue.task
 					where MachineAssigned = @batchID", new { batchID });
 			}
-		}
-
-		public List<GroupResponseResult> UpsertGroups(ApiExecution execution, List<UpdateGroupModel> groups)
-		{
-			DynamicParameters dbArgs = new DynamicParameters();
-			bool generalChecksCompleted = false;
-			bool hasCounterField = false;
-			int itemNumber = 1;
-			List<GroupResponseResult> results = new List<GroupResponseResult>();
-			Dictionary<int, List<string>> importFields = new Dictionary<int, List<string>>();
-			CurrentExecutionLocationModel currentLocation = null;
-			bool isInsert = execution.Action == ApiExecutionAction.PostGroups;
-
-			var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
-
-			Add(execution);
-			SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-			FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
-
-			if (dups.Any())
-			{
-				string message = $"Duplicate Names: {string.Join(", ", dups.Select(i => i.Items.First().Name.Trim()))}. Name must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
-				results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
-			}
-			else
-			{
-				try
-				{
-					currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionGroup");
-
-					#region Generate data sets
-
-					DataTable table = new DataTable();
-
-					table.Columns.Add("ExecutionID", typeof(Guid));
-					table.Columns.Add("ItemNumber", typeof(int));
-					table.Columns.Add("GroupUid", typeof(Guid));
-					table.Columns.Add("Name", typeof(string));
-					table.Columns.Add("Description", typeof(string));
-					table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
-					table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
-					table.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
-					table.Columns.Add("ExecutionItemUid", typeof(Guid));
-
-					DataTable fieldTable = new DataTable();
-
-					fieldTable.Columns.Add("ExecutionID", typeof(Guid));
-					fieldTable.Columns.Add("ItemNumber", typeof(int));
-					fieldTable.Columns.Add("FieldName", typeof(string));
-					fieldTable.Columns.Add("FieldValue", typeof(string));
-					fieldTable.Columns.Add("FieldTypeID", typeof(int));
-
-					foreach (UpdateGroupModel item in groups)
-					{
-						DataRow row = table.NewRow();
-						row["ExecutionID"] = execution.ExecutionID;
-						row["ItemNumber"] = itemNumber;
-
-						if (item.Uid.HasValue && item.Uid.Value != Guid.Empty)
-						{
-							row["GroupUid"] = item.Uid;
-						}
-						row["Name"] = (item.Name == null) ? "" : item.Name.Trim();
-						row["Description"] = item.Description.SanitizeHtml();
-
-						if (item.PrimaryOwnerUid != null)
-						{
-							row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
-						}
-
-						if (item.SecondaryOwnerUid != null)
-						{
-							row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
-						}
-
-						row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
-						row["ExecutionItemUid"] = Guid.NewGuid();
-
-						table.Rows.Add(row);
-
-						itemNumber++;
-					}
-
-					#endregion
-
-					if (Database.Connection.State != ConnectionState.Open)
-					{
-						Connection.Open();
-					}
-
-					using (SqlBulkCopy bulkCopy = Connection.CreateBulkCopy("api.ExecutionGroup", table.Rows.Count, 3600))
-					{
-						bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-						bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
-						bulkCopy.ColumnMappings.Add("Name", "Name");
-						bulkCopy.ColumnMappings.Add("Description", "Description");
-						bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
-						bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
-						bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
-						bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-
-						bulkCopy.WriteToServer(table);
-					}
-
-					#region Handle Custom Fields
-
-					// Get field types.                    
-					List<FieldTypeCore> fieldTypes = GetAssetTypeFieldTypesCore("GroupType", 1);
-
-					List<string> requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
-					hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
-
-					int i = 1;
-					foreach (UpdateGroupModel group in groups)
-					{
-						List<DataRow> fieldRows = ValidateFields("Group", 1, isInsert, fieldTypes, requiredFieldTypeNames, group.Fields, execution.ExecutionID, i, fieldTable, out bool success, out string errorMessage, validationFieldProperties: fieldLoadProperties);
-
-						if (success)
-						{
-							importFields.Add(i, group.Fields.Keys.ToList());
-							fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
-						}
-						else
-						{
-							Connection.Execute(@"update	[api].[ExecutionGroup]
-												set		Success = 0,
-														[Message] = coalesce([Message], '') + @errorMessage
-												where	ExecutionID = @ExecutionID;", new { execution.ExecutionID, emptyUid = Guid.Empty, errorMessage }, commandTimeout: timeout);
-						}
-
-						i++;
-					}
-
-					using (SqlBulkCopy bulkCopy = Connection.CreateBulkCopy(ApiExecutionFieldTable, SqlBulkBatchSize, SqlBulkBatchTimeout))
-					{
-						bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-						bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-						bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-						bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
-
-						bulkCopy.WriteToServer(fieldTable);
-					}
-
-					#endregion
-
-					#region Validation
-
-					string checkSQL = $@"update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Name field cannot be empty;'
-										where	ExecutionID = @ExecutionID and (Name is null or TRIM(Name) = '');
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Already a group called ' + EG.[Name] + ';'
-										from [api].[ExecutionGroup] EG 
-										inner join [Group] G on G.[Name] = EG.[Name]
-										left join [Asset] A on A.ObjectID = G.[ID] and A.Object = 'Group' and A.uid = EG.[GroupUid]
-										where	ExecutionID = @ExecutionID and A.uid is null and G.Name is not null;
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Uid provided is not a group uid;'
-										from [api].[ExecutionGroup] EG 
-										Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
-										left join [Asset] A on A.[uid] = EG.[GroupUid] and A.Object = 'Group'
-										where	E.Method = 'PUT' and EG.ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Uid already exists;'
-										from [api].[ExecutionGroup] EG 
-										Inner Join [api].[Execution] E on E.ExecutionID = EG.ExecutionID
-										left join [Asset] A on A.[uid] = EG.[GroupUid]
-										where	E.Method = 'POST' and EG.ExecutionID = @ExecutionID and A.uid is not null and EG.[GroupUid] is not null;
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Primary Owner Uid provided is not a resource uid;'
-										from [api].[ExecutionGroup] EG 
-										left join [Asset] A on A.[uid] = EG.[PrimaryOwnerUid] and A.Object = 'Resource'
-										where	ExecutionID = @ExecutionID and coalesce(EG.[PrimaryOwnerUid], @emptyUid) <> @emptyUid and A.uid is null;
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Secondary Owner Uid provided is not a resource uid;'
-										from [api].[ExecutionGroup] EG 
-										left join [Asset] A on A.[uid] = EG.[SecondaryOwnerUid] and A.Object = 'Resource'
-										where	ExecutionID = @ExecutionID and A.uid is null and EG.SecondaryOwnerUid is not null;
-
-										update	[api].[ExecutionGroup]
-										set		Success = 0,
-												[Message] = coalesce([Message], '') + 'Lookup Field has invalid values;'
-										from [api].[ExecutionGroup] EG 
-										inner join api.executionfield ef on ef.ExecutionID = eg.ExecutionID and ef.FieldValue is not null
-										inner join FieldType ft on ft.id = ef.fieldtypeid
-										cross apply (select Value from string_split(ef.FieldValue, ','))Val(Value)
-										left join FieldLookupValue flv on flv.FieldTypeID = ef.FieldTypeID and flv.Value = try_parse(Val.Value as int)
-										where EG.ExecutionID = @ExecutionID  and ft.type = 'Lookup' and flv.Value is null and ef.FieldValue is not null";
-
-					Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);
-
-					#endregion
-
-					generalChecksCompleted = true;
-				}
-				catch (Exception generalEx)
-				{
-					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = msg;
-					execution.Processed = 0;
-					execution.Error = groups.Count();
-
-					results = new List<GroupResponseResult>();
-					results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
-				}
-
-				if (generalChecksCompleted)
-				{
-					int loopSize = 250;
-					int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
-					int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
-					int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
-					var date = DateTime.UtcNow;
-
-					for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-					{
-						bool runCompleted = false;
-						int retryCount = 0;
-
-						while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-						{
-							string querySuffix = $"EG.ExecutionID = @ExecutionID and EG.Success is null and EG.ItemNumber between @beginItemNumber and @endItemNumber";
-							using (SqlTransaction trans = Connection.BeginTransaction())
-							{
-								try
-								{
-									string insertSQL = $@"
-drop table if exists #mergeResultTable
-create table #mergeResultTable (GroupID int, [Action] nvarchar(10), GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
-
-merge	into [Group] G
-using	( 
-		select	AG.ObjectID as GroupID ,
-				EG.Name,EG.Description,
-				EG.ExecutionItemUid,
-				EG.IsActiveDirectoryGroup,
-				PO.ObjectID as PrimaryID,
-				SO.ObjectID as SecondaryID,
-				EG.GroupUid
-		from	api.ExecutionGroup EG
-				left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
-				left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
-				left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
-		where	{querySuffix}
-		) S on (G.ID = GroupID)
-when	matched then
-update  set 
-		G.Name = TRIM(S.Name),
-		G.Description = TRIM(S.Description),
-		G.PrimaryOwnerResourceID = PrimaryID,
-		G.SecondaryOwnerResourceID = SecondaryID,
-		G.UpdatedBy = @ResourceID,
-		G.UpdatedOn = @date,
-		G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
-when	not matched then
-insert	(Uid, Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID, IsActiveDirectoryGroup, UpdatedOn, UpdatedBy)
-values	(coalesce(S.GroupUid, newid()), TRIM(S.Name), TRIM(S.Description), S.PrimaryID, S.SecondaryID, S.IsActiveDirectoryGroup, @date, @ResourceID)
-output	inserted.ID, $action, inserted.Name, S.ExecutionItemUid into #mergeResultTable;
-
-INSERT	INTO Asset (
-		[uid], 
-		[AssetTypeID], 
-		[State], 
-		[Object], 
-		[ObjectID], 
-		[CreatedOn], 
-		[CreatedBy], 
-		[UpdatedOn], 
-		[UpdatedBy]
-		)
-SELECT	G.Uid, 
-		T.ID, 
-		1, 
-		'Group', 
-		M.GroupID, 
-		G.UpdatedOn, 
-		coalesce(G.UpdatedBy, 0), 
-		G.UpdatedOn, 
-		coalesce(G.UpdatedBy, 0)
-FROM	#mergeResultTable M
-		INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
-		INNER JOIN [Group] G on G.ID = M.GroupID
-		INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
-WHERE	EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
-
-update  A
-set		A.UpdatedBy = @ResourceID,
-		A.UpdatedOn = @date
-from	Asset A
-		inner join #mergeResultTable R on A.Object = 'Group' and A.ObjectID = R.GroupID and R.[Action] = 'UPDATE';
-				
-INSERT	INTO ResourceGroup (GroupID, ResourceID)
-SELECT	G.ID, G.PrimaryOwnerResourceID
-FROM	[Group] G
-		inner join api.ExecutionGroup EG on EG.Name = G.Name
-where	{querySuffix}
-		and EG.GroupUid is null
-		and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
-		and G.PrimaryOwnerResourceID is not null;
-
-INSERT	INTO ResourceGroup (GroupID, ResourceID)
-SELECT	G.ID, G.SecondaryOwnerResourceID
-FROM	[Group] G
-		inner join api.ExecutionGroup EG on EG.Name = G.Name
-where	{querySuffix}
-		and EG.GroupUid is null
-		and G.SecondaryOwnerResourceID is not null
-		and G.PrimaryOwnerResourceID != G.SecondaryOwnerResourceID;
-
-IF NOT EXISTS (
-	SELECT	1
-	FROM	ResourceGroup RG
-			inner join api.ExecutionGroup EG on {querySuffix}
-			inner join [Group] G on G.Name = EG.Name     
-	WHERE	RG.ResourceID = G.PrimaryOwnerResourceID 
-			and RG.GroupID = G.ID 
-			and G.PrimaryOwnerResourceID is not null
-)
-BEGIN
-	INSERT INTO ResourceGroup ( GroupID, ResourceID)
-		SELECT	G.ID, 
-				G.PrimaryOwnerResourceID
-		FROM	[Group] G
-				inner join api.ExecutionGroup EG on EG.Name = G.Name
-		WHERE	{querySuffix}
-				and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
-END
-
-IF NOT EXISTS (
-	SELECT	1
-	FROM	ResourceGroup RG
-			inner join api.ExecutionGroup EG on {querySuffix}
-			inner join [Group] G on G.Name = EG.Name     
-	WHERE	RG.ResourceID = G.SecondaryOwnerResourceID 
-			and RG.GroupID = G.ID 
-			and G.SecondaryOwnerResourceID is not null
-)    
-BEGIN
-	INSERT INTO ResourceGroup (GroupID, ResourceID)
-		SELECT	G.ID, 
-				G.SecondaryOwnerResourceID
-		FROM	[Group] G
-				inner join api.ExecutionGroup EG on EG.Name = G.Name
-		WHERE	{querySuffix}
-				and G.SecondaryOwnerResourceID is not null
-END
-
-update	EG
-set		EG.GroupUid = AG.uid
-from	api.ExecutionGroup EG
-		inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionItemUid
-		inner join [Group] G on G.Name = Res.GroupName
-		inner join Asset AG on AG.ObjectID = G.ID and AG.[Object] ='Group'
-where	EG.ExecutionID = @ExecutionID and EG.Success is null;
-
-insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	@Id,
-			(select G.ID,
-					A.Id as AssetId,
-					EG.ItemNumber,
-					G.Name as ObjectName,
-					coalesce(G.Description, '') as Description,
-					G.IsActiveDirectoryGroup,
-					G.PrimaryOwnerResourceID,
-					G.SecondaryOwnerResourceID
-			for json path
-			) as Payload
-	from	api.ExecutionGroup EG
-			inner join [Asset] A on A.Uid = EG.GroupUid and A.[Object] = 'Group' 
-			inner join [Group] G on G.ID = A.ObjectID 
-	where	{querySuffix};";
-
-									Connection.Execute(
-										insertSQL,
-										new { execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber, SecurityContext.ResourceID, date }, transaction: trans, commandTimeout: timeout
-									);
-
-									if (hasCounterField)
-									{
-										UpdateGroupCounterFields(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout: timeout);
-									}
-
-									string fieldValuesSql = $@"
-select	F.FieldTypeID as [FieldTypeID]
-		,case 
-			when FT.Type = 'Lookup' then F.FieldValue
-			else null
-		end as [Value]
-		,case 
-			when FT.Type = 'Lookup' then utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.FieldValue, FT.AllowMultipleValues)
-			else F.FieldValue
-		end as [FormattedValue]
-		,getutcdate() as [UpdatedOn]
-		,@resourceId as [UpdatedBy]
-		,A.Id as [AssetID] 
-from    api.ExecutionGroup EG
-		inner join Asset A on A.uid = eg.GroupUid and A.[Object] = 'Group'
-		inner join [Group] G on g.ID = A.ObjectID
-		inner join api.executionfield F on F.ExecutionID = EG.ExecutionID
-			and F.ItemNumber = EG.ItemNumber 
-			and A.ObjectID is not null 
-			and F.FieldTypeID is not null
-			and EG.Success is null
-		inner join FieldType FT on FT.Id = F.FieldTypeID
-where   {querySuffix}
-		and (F.Ignore = 0 or F.Ignore is null)
-		and FT.Type != 'Relationship'
-		and FT.Type != 'Counter'
-		and FieldValue is not null";
-
-									if (isInsert)
-									{
-										Connection.Execute(
-											$"INSERT INTO Field (FieldTypeID, [Value], FormattedValue, UpdatedOn, UpdatedBy, AssetID) {fieldValuesSql}", 
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout
-										);
-									}
-									else
-									{
-										Connection.Execute($@"
-DELETE	F
-FROM	Field F
-		inner join api.ExecutionGroup EG on {querySuffix}
-		inner join Asset A on A.uid = EG.GroupUid and A.[Object] = 'Group'
-		inner join [Group] G on G.ID = A.ObjectID
-		inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = EG.ExecutionId and EF.ItemNumber = EG.ItemNumber
-WHERE	EF.Ignore is null
-		and EF.FieldTypeID is not null
-		and F.AssetID = A.ID
-		and F.FieldTypeID = EF.FieldTypeID
-		and EF.FieldValue is null 
-		and EF.LookupValue is null;",
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout
-										);
-
-										Connection.Execute($@"
-merge       Field as T
-using       (
-				{fieldValuesSql}
-			) as S 
-on          ( T.FieldTypeID = S.FieldTypeID and T.AssetID = S.AssetID)
-when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
-update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = @date                    
-when		not matched by target then
-insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
-values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID);",
-											new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID, date }, transaction: trans, commandTimeout: timeout
-										);
-									}
-
-									MergeGroupAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout: timeout, isInsert);
-
-									Connection.Execute(
-										$"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
-										new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout
-									);
-
-									trans.Commit();
-									runCompleted = true;
-								}
-								catch (Exception ex)
-								{
-									try
-									{
-										if (trans != null)
-										{
-											trans.Rollback();
-										}
-									}
-									catch
-									{
-									}
-
-									retryCount++;
-
-									if (retryCount > API_V2_RETRY_LIMIT)
-									{
-										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionGroup", ex.GetFullExceptionData(false), timeout);
-									}
-								}
-							}
-						}
-
-						results.AddRange(
-								Query<GroupResponseResult>(
-									$"select [ItemNumber], [GroupUid] as uid, [ExecutionItemUid], [Message], [Success] from api.ExecutionGroup where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
-									new { execution.ExecutionID, beginItemNumber, endItemNumber }
-								)
-							);
-
-						beginItemNumber += loopSize;
-						endItemNumber += loopSize;
-					}
-
-					Connection.Close();
-
-					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-				}
-			}
-
-			return results;
 		}
 
 		public async Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
@@ -3996,7 +3287,6 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 			return results;
 		}
 
-
 		public void addChangeLogResponsibility(ResponsibilityType current, string action, ResponsibilityType previous = null)
 		{
 			int deleteSameValue = action == "Updated" ? 1 : 0;
@@ -4067,6 +3357,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 													end
 												", new { audit.ID, deleteSameValue });
 		}
+		
 		#endregion
 	}
 }
