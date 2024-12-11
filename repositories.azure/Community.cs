@@ -147,10 +147,7 @@ namespace repositories.azure
 				{
 					user.uid = Guid.NewGuid();
 				}
-				else if (user.uid == Guid.Empty)
-				{
-					user.uid = Guid.NewGuid();
-				}
+
 				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
@@ -205,6 +202,17 @@ from    #Users U
 		left join [Resource] R2 on R2.[uid] = U.[uid] and U.[uid] != '00000000-0000-0000-0000-000000000000'
 		left join [Resource] R3 on R.Email = U.Email;
 
+update  U
+set     U.[uid] = R.[uid]
+from    #Users U
+inner join [Resource] R on R.ID = U.ResourceID
+where U.[uid] = '00000000-0000-0000-0000-000000000000';
+
+update  U
+set     U.[uid] = newid()
+from    #Users U
+where U.[uid] = '00000000-0000-0000-0000-000000000000';
+
 update	T
 set		T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
@@ -242,7 +250,14 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 							if (user != null)
 							{
 								user.ResourceID = result.ResourceID;
-								user.uid = user.IsNew ? result.uid : user.uid;
+								if (user.IsNew)
+								{
+									user.uid = result.uid;
+								}
+								else
+								{
+									user.uid = user.uid == Guid.Empty ? result.uid : user.uid;
+								}
 								user.CompanyResourceState = CompanyResourceState.Active;
 							}
 						}
