@@ -27,7 +27,12 @@ namespace igx.jobs.workflowsubscriber
 		internal readonly IMailProvider Mail;
 		internal readonly IQueueSource Queue;
 
-		public WorkflowQueueListener(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config) { }
+		public WorkflowQueueListener(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
+		{
+			Cache = cache;
+			Mail = mail;
+			Queue = queue;
+		}
 
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Listen([QueueTrigger(constants.Queue.Workflow, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
