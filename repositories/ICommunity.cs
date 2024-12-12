@@ -83,5 +83,20 @@ namespace repositories
 		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
+
+		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
+
+		Task<SettingInfo> ReadSettingAsync(int companyId, Setting setting);
+
+		Task<List<SettingInfo>> ReadSettingsAsync(int companyId);
+
+		Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting);
+
+		Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId);
+
+		Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting);
+
+		Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value);
+
 	}
 }

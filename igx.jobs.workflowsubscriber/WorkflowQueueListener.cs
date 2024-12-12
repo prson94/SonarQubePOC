@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Workflow;
+using d360.core.entities.Membership;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
@@ -118,7 +119,9 @@ namespace igx.jobs.workflowsubscriber
 							{
 								log.LogTrace($"Debug - Event is an item step.");
 
-								await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info);
+								SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(companyId);
+
+								await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info, wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail);
 							}
 						}
 					}

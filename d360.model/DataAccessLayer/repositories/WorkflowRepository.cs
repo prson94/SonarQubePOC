@@ -379,7 +379,7 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
-		public async Task<WorkflowItemStepStateAPIModel> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
+		public async Task<WorkflowItemStepStateAPIModel> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid, string defaultGroup)
 		{
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("resourceId",  SecurityContext.ResourceID);
@@ -418,7 +418,7 @@ namespace d360.model.DataAccessLayer
 
 			var result = (await CompanyContext.QueryAsync<WorkflowItemStepStateAPIModel>(sql, dbArgs, ApiTimeout)).FirstOrDefault();						
 
-			return CheckAccessAndAssigneeStatus(result, SecurityContext.ResourceID);
+			return CheckAccessAndAssigneeStatus(result, SecurityContext.ResourceID, defaultGroup);
 		}
 
 		public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
@@ -2101,13 +2101,13 @@ namespace d360.model.DataAccessLayer
 			return userAssignments;
 		}
 
-		private WorkflowItemStepStateAPIModel CheckAccessAndAssigneeStatus(WorkflowItemStepStateAPIModel state, long resourceID)
+		private WorkflowItemStepStateAPIModel CheckAccessAndAssigneeStatus(WorkflowItemStepStateAPIModel state, long resourceID, string defaultGroup)
 		{			
 			var steps = CompanyContext.WorkflowItemSteps.Where(x => x.ItemID == state.ItemId).ToList();
 
 			foreach (var step in steps)
 			{
-				List<GlobalReportingResource> assignees = CompanyContext.GetWorkflowStepUsers(step).ToList();
+				List<GlobalReportingResource> assignees = CompanyContext.GetWorkflowStepUsers(step, defaultGroup).ToList();
 				if(assignees.Count >0 && assignees.Any(x => x.ResourceID == resourceID))
 				{
 					state.HasAccess = true;

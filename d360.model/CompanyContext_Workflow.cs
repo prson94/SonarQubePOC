@@ -67,7 +67,7 @@ namespace d360.model
 		/// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
 		/// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
 		/// <returns></returns>
-		Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false);
+		Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, string defaultGroup, string fromName, string fromEmail, bool sendFormEmails = true, bool clearAssignments = false);
 
 		Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
 
@@ -80,7 +80,7 @@ namespace d360.model
 		/// <returns></returns>
 		Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
 
-		Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId);
+		Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId, string fromName, string fromEmail);
 
 		/// <summary>
 		/// Evaluate a given workflow step, if we succeed we need to add a new event for the transitions that follow
@@ -89,7 +89,7 @@ namespace d360.model
 		/// <param name="itemStepID"></param>
 		/// <param name="itemID"></param>
 		/// <returns></returns>
-		Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo);
+		Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo, string defaultGroup, string fromName, string fromEmail);
 
 		bool ExecuteTimerSteps();
 
@@ -97,13 +97,13 @@ namespace d360.model
 
 		IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
 
-		IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
+		IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, string defaultGroup, bool sendToDefaultUsers = true);
 
 		Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
 
 		void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
 
-		List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep);
+		List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep, string defaultGroup);
 		#endregion
 	}
 
@@ -464,11 +464,8 @@ namespace d360.model
 																		WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3 and GRAA.State = 1");
 		}
 
-		private int GetWorkflowAdminGroup()
+		private int GetWorkflowAdminGroup(string defaultGroup)
 		{
-
-			List<SettingInfo> companySettings = GetSettings();
-			string defaultGroup = companySettings.First(s => s.ID == Setting.WorkflowCatchAllGroup).Value;
 
 			int.TryParse(defaultGroup, out int defaultWorkflowUserGroup);
 
@@ -786,16 +783,11 @@ namespace d360.model
 			}
 		}
 
-		private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
+		private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, string fromName, string fromEmail)
 		{
 			settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.EmailMessageTemplate}";
 
 			settings.EmailMessageTemplate += "</body></html>";
-
-			List<SettingInfo> companySettings = GetSettings();
-
-			string fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
-			string fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
 			if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
 			{
@@ -813,7 +805,7 @@ namespace d360.model
 			}
 		}
 
-		private async Task<bool> SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+		private async Task<bool> SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings, string defaultGroup)
 		{
 			if (settings == null)
 			{
@@ -860,7 +852,7 @@ namespace d360.model
 				if (!string.IsNullOrEmpty(requestSettings.Body))
 				{
 					bool lookupfieldspassedbyvalue = requestSettings.LookupFieldsPassedByValue;
-					string body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue);
+					string body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, defaultGroup, false, true, lookupfieldspassedbyvalue);
 					byte[] contentArray = Encoding.UTF8.GetBytes(body);
 					request.Content = new ByteArrayContent(contentArray);
 				}
@@ -873,7 +865,7 @@ namespace d360.model
 						List<string> contentHeaderKeys = new List<string> { "content-type", "content-md5", "content-length", "content-encoding" };
 						requestSettings.Headers.ForEach(async h =>
 						{
-							string value = await ProcessMessageTokens(h.Value, info, prefix, item, false);
+							string value = await ProcessMessageTokens(h.Value, info, prefix, item, defaultGroup, false);
 
 							if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
 							{
@@ -894,7 +886,7 @@ namespace d360.model
 						});
 					}
 
-					string uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false);
+					string uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, defaultGroup, false);
 
 					if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
 					{
@@ -932,7 +924,7 @@ namespace d360.model
 			}
 		}
 
-		private async Task<bool> SendWorkflowEmail(WorkflowItemStep item, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
+		private async Task<bool> SendWorkflowEmail(WorkflowItemStep item, EventInfo eventInfo, WorkflowItemStepSettingModel settings, string defaultGroup, string fromName, string fromEmail)
 		{
 			List<string> emailedUsers = new List<string>();
 			EventObjectInfo objectInfo = eventInfo.Object;
@@ -948,15 +940,10 @@ namespace d360.model
 
 			string url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
 
-			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
-			settings.SubjectTemplate = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false);
+			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item, defaultGroup);
+			settings.SubjectTemplate = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, defaultGroup, false);
 
 			settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
-
-			List<SettingInfo> companySettings = GetSettings();
-
-			string fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
-			string fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
 			//if the setting to include responses from froms is enabled then get previous form responses and put in xml
 			if (settings.ShouldIncludeFormResponses)
@@ -1001,7 +988,7 @@ namespace d360.model
 					return false;
 				}
 
-				IEnumerable<GlobalReportingResource> users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID, settings.SendToDefaultUsers);
+				IEnumerable<GlobalReportingResource> users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID, defaultGroup, settings.SendToDefaultUsers);
 
 				foreach (GlobalReportingResource user in users)
 				{
@@ -1223,7 +1210,7 @@ namespace d360.model
 			}
 
 			//validate list field value
-			if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
+			if (fieldType.Type == d360.core.DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
 			{
 				List<int> lookupValues = val.Split(',').Select(x => int.Parse(x)).ToList();
 				List<int> value = (await QueryAsync<int>(@"select value
@@ -1777,13 +1764,11 @@ namespace d360.model
 			{
 				Fields.Add(new Field { Value = field.Value, IssueID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = SecurityContext.ResourceID });
 			}
-
 			SaveChanges();
-
 			return issue;
 		}
 
-		public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
+		public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, string defaultGroup, string fromName, string fromEmail, bool sendFormEmails = true, bool clearAssignments = false)
 		{
 			foreach (WorkflowItemStep itemStep in itemSteps)
 			{
@@ -1930,7 +1915,7 @@ namespace d360.model
 					//resend email to the reassigned user
 					stepSettings.SpecificUser = resource.Email;
 					stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-					await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, eventInfo, stepSettings);
+					await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, eventInfo, stepSettings,defaultGroup, fromName, fromEmail);
 				}
 				else
 				{
@@ -2054,7 +2039,7 @@ namespace d360.model
 			return true;
 		}
 
-		public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId)
+		public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId, string fromName, string fromEmail)
 		{
 			Log.LogTrace($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
 
@@ -2203,7 +2188,7 @@ namespace d360.model
 				//if the scheduled workflow needs an aggregate email send it
 				if (settings.SendAggregateEmail && matchingItems > 0)
 				{
-					await SendAggregateWorkflowEmail(settings);
+					await SendAggregateWorkflowEmail(settings, fromName, fromEmail);
 				}
 			}
 
@@ -2385,7 +2370,7 @@ namespace d360.model
 			}
 		}
 
-		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
+		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo, string defaultGroup, string fromName, string fromEmail)
 		{
 			try
 			{
@@ -2433,11 +2418,11 @@ namespace d360.model
 					switch (itemStep.Step.ActivityType)
 					{
 						case WorkflowActivityType.EmailNotification:
-							isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings);
+							isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings, defaultGroup, fromName, fromEmail);
 							break;
 						case WorkflowActivityType.Form:
 							// send form notification to owners
-							await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
+							await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings, defaultGroup, fromName, fromEmail);
 							break;
 						case WorkflowActivityType.StatusChange:
 							// deprecated, just set to true and move on
@@ -2466,7 +2451,7 @@ namespace d360.model
 							isStepCompleted = true;
 							break;
 						case WorkflowActivityType.HTTPRequest:
-							isStepCompleted = await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
+							isStepCompleted = await SendHttpRequestAsync(itemStep, objectInfo, stepSettings, defaultGroup);
 							break;
 						case WorkflowActivityType.HTTPResponse:
 							await ParseHttpResponseAsync(itemStep, stepSettings);
@@ -2773,7 +2758,7 @@ namespace d360.model
 					where rg.groupid= @groupId and R.[State] = 1", new { groupId });
 		}
 
-		public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true)
+		public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, string defaultGroup, bool sendToDefaultUsers = true)
 		{
 			IEnumerable<GlobalReportingResource> users = Query<GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
@@ -2785,7 +2770,7 @@ namespace d360.model
 				}
 
 				//check if there is a system setting that says to use a group.
-				int defaultWorkflowUserGroup = GetWorkflowAdminGroup();
+				int defaultWorkflowUserGroup = GetWorkflowAdminGroup(defaultGroup);
 
 				if (defaultWorkflowUserGroup > 0)
 				{
@@ -2855,12 +2840,12 @@ namespace d360.model
 			return transitionCount;
 		}
 
-		public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
+		public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, string defaultGroup, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
 		{
-			return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson, lookupFieldsPassedByValue);
+			return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, defaultGroup, supportHtml, forJson, lookupFieldsPassedByValue);
 		}
 
-		public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue)
+		public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, string defaultGroup, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue)
 		{
 
 			if (string.IsNullOrEmpty(bodyTemplate))
@@ -3353,7 +3338,7 @@ namespace d360.model
 
 						FieldTypeDefinition_JsonElement jsonElementDefinition = null;
 
-						if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
+						if (fieldType != null && fieldType.Type == d360.core.DataType.JsonElement.ToString())
 						{
 							jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
 
@@ -3537,7 +3522,7 @@ namespace d360.model
 							//check how many users would recieve this if responsibility
 							if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
 							{
-								int adminGroupId = GetWorkflowAdminGroup();
+								int adminGroupId = GetWorkflowAdminGroup(defaultGroup);
 
 								if (adminGroupId <= 0)
 								{
@@ -3718,12 +3703,8 @@ namespace d360.model
 			QueueSource.CreateMessages(constants.Queue.Workflow, events);
 		}
 
-		public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
+		public async Task SendDigestEmails(EnvironmentLevel environmentLevel, string fromName, string fromEmail, int digestDays)
 		{
-			List<SettingInfo> companySettings = GetSettings();
-
-			// 0 check if the workflow digest emails are enabled for today
-			int digestDays = int.TryParse(companySettings.First(s => s.ID == Setting.WorkflowDigestEmailDays).Value, out digestDays) ? digestDays : 0;
 			int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
 			//Check if today is a day to send digest emails
@@ -3748,9 +3729,6 @@ namespace d360.model
 			// 2 loop through the users with outstanding workflows and create an email for each
 			if (users != null && users.Any())
 			{
-				string fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
-				string fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
-
 				string tblHeader = string.Empty;
 				string tblTR = string.Empty;
 				string span = string.Empty;
@@ -3861,7 +3839,7 @@ namespace d360.model
 			}
 		}
 
-		public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep itemStep, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
+		public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep itemStep, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings, string defaultGroup, string fromName, string fromEmail)
 		{
 			List<string> emailedUsers = new List<string>();
 			List<GlobalReportingResource> users = new List<GlobalReportingResource>();
@@ -3869,10 +3847,6 @@ namespace d360.model
 			string typeName = itemStep?.Step?.Version?.Type?.Name ?? "";
 			EventObjectInfo objectInfo = eventInfo.Object;
 			//based on the step settings get the users
-
-			List<SettingInfo> companySettings = GetSettings();
-			string fromName = companySettings.First(s => s.ID == Setting.WorkflowFromName).Value;
-			string fromEmail = companySettings.First(s => s.ID == Setting.WorkflowFromEmail).Value;
 
 			if (settings.RecipientType == EmailTaskRecipientType.Initiator)
 			{
@@ -3928,7 +3902,7 @@ namespace d360.model
 					}
 				}
 
-				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID).ToList();
+				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID, defaultGroup).ToList();
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
 			{
@@ -4022,7 +3996,7 @@ namespace d360.model
 
 				if (!string.IsNullOrEmpty(settings.SubjectTemplate))
 				{
-					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, itemStep, false);
+					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, itemStep, defaultGroup, false);
 				}
 				else
 				{
@@ -4031,7 +4005,7 @@ namespace d360.model
 
 				string emailBody = $"<p>The Data3Sixty workflow <b>{typeName}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
-				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, itemStep);
+				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, itemStep, defaultGroup);
 
 				if (!string.IsNullOrEmpty(customBody))
 				{
@@ -4126,9 +4100,8 @@ namespace d360.model
 			}
 		}
 
-		public List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep)
+		public List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep, string defaultGroup)
 		{
-
 			WorkflowItemStepSettingModel settings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
 			List<GlobalReportingResource> users = new List<GlobalReportingResource>();
 
@@ -4155,7 +4128,7 @@ namespace d360.model
 			else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
 			{
 				int typeId = itemStep?.Step?.Version?.TypeID ?? 0;
-				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID).ToList();
+				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID, defaultGroup).ToList();
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
 			{

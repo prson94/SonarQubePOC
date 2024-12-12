@@ -52,7 +52,7 @@ namespace d360.model
 
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
 
-		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
+		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool enableJsonAttributes = false);
 
 		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
 
@@ -888,7 +888,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			return wildcardValue(escapeForSQLLike(filter), isContains);
 		}
 
-		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
+		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool enableJsonAttributes = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportAssets";
@@ -898,18 +898,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			int step = 0;
 			bool hasDuplicateUids = false;
-			bool enableJsonAttributes = false;
 			bool hasCounterField = false;
 			bool sendAssetGraphPostExecutionEvent = false;
-
-			try
-			{
-				enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
-			}
-			catch
-			{
-				// Safely ignore. Just assume it is false.
-			}
 
 			FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 

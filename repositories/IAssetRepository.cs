@@ -32,11 +32,11 @@ namespace repositories
 
 		dynamic GetFieldTypes(Guid assetTypeUid);
 
-		List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
+		List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 
 		Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
 
-		List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
+		List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 
 		Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
 
@@ -66,7 +66,7 @@ namespace repositories
 
 		bool DoesAssetExists(Guid uid);
 
-		bool IsReachedTransformationLimit(AssetTypeUpsert model);
+		bool IsReachedTransformationLimit(AssetTypeUpsert model, int useAsTransformationLimit);
 
 		Task<dynamic> GetAssetDetails(Asset asset);
 

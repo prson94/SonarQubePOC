@@ -446,7 +446,7 @@ namespace d360.web.Controllers
 			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
 			if (settings == null)
 			{
-				settings = await Workspace.ReadSettingsAsync();
+				settings = await Community.ReadSettingsAsync(SecurityContext.CompanyID);
 				settings.ForEach(s =>
 				{
 					s.Value = s.Value ?? s.DefaultValue;
@@ -799,7 +799,7 @@ namespace d360.web.Controllers
 			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
 			if (settings == null)
 			{
-				settings = await Workspace.ReadSettingsAsync();
+				settings = await Community.ReadSettingsAsync(SecurityContext.CompanyID);
 				Cache.SetItem(cacheKey, settings, true, 1);
 			}
 
@@ -2285,7 +2285,7 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 				return;
 			}
 
-			var settings = await Workspace.ReadSettingsAsDictionaryAsync();
+			var settings = await Community.ReadSettingsAsDictionaryAsync(SecurityContext.CompanyID);
 
 			settings["CustomCSSLocation"] = "";
 			settings["CompanyIcon"] = "";
