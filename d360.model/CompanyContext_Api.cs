@@ -5889,10 +5889,9 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
             foreach (KeyValuePair<string, string> k in fields)
             {
-                bool isValueEmptyString = k.Value == string.Empty;
-
                 string fieldName = k.Key.Trim();
                 string fieldValue = (k.Value + "").Trim();
+				bool isValueEmptyString = k.Value == string.Empty;
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 
@@ -5978,120 +5977,119 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								success = false;
 							}
                         }
-                        else
+       
+                        switch (fieldType.Type)
                         {
-                            switch (fieldType.Type)
-                            {
-                                case "Boolean":
-									validationResult = DataType.Boolean.ValidateBoolean(fieldName, fieldValue);
-									if (!validationResult.IsValid)
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Date":
-									validationResult = DataType.Date.ValidateDate(fieldName, fieldValue);
-									if (validationResult.IsValid)
-									{
-										fieldValue = validationResult.CorrectedValue ?? fieldValue;
-									}
-									else
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "DateTime":
-									validationResult = DataType.DateTime.ValidateDateTime(fieldName, fieldValue);
-									if (validationResult.IsValid)
-									{
-										fieldValue = validationResult.CorrectedValue ?? fieldValue;
-									}
-									else
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Decimal":
-									validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
-									if (!validationResult.IsValid)
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Link":
-									validationResult = DataType.Link.ValidateLink(fieldName, fieldValue);
-									if (validationResult.IsValid)
-									{
-										fieldValue = validationResult.CorrectedValue ?? fieldValue;
-									}
-									else
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Lookup":
-									validationResult = DataType.Lookup.ValidateList(fieldName, fieldType.AllowMultipleValues, fieldValue);
-									if (!validationResult.IsValid)
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Number":
-									validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
-									if (!validationResult.IsValid)
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-                                    break;
-                                case "Percentage":
-                                    decimal pctTest;
-                                    if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
-                                    }
-                                    break;
-                                case "JSON":
-                                    if (jsonElementsEnabled && (fieldValue.Length > 2500))
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
-                                    }
-                                    validationFieldProperties.JsonFieldCount++;
-                                    break;
-                                case "Counter":
-                                    int counterValue = 0;
+                            case "Boolean":
+								validationResult = DataType.Boolean.ValidateBoolean(fieldName, fieldValue);
+								if (!validationResult.IsValid)
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Date":
+								validationResult = DataType.Date.ValidateDate(fieldName, fieldValue);
+								if (validationResult.IsValid)
+								{
+									fieldValue = validationResult.CorrectedValue ?? fieldValue;
+								}
+								else
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "DateTime":
+								validationResult = DataType.DateTime.ValidateDateTime(fieldName, fieldValue);
+								if (validationResult.IsValid)
+								{
+									fieldValue = validationResult.CorrectedValue ?? fieldValue;
+								}
+								else
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Decimal":
+								validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+								if (!validationResult.IsValid)
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Link":
+								validationResult = DataType.Link.ValidateLink(fieldName, fieldValue);
+								if (validationResult.IsValid)
+								{
+									fieldValue = validationResult.CorrectedValue ?? fieldValue;
+								}
+								else
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Lookup":
+								validationResult = DataType.Lookup.ValidateList(fieldName, fieldType.AllowMultipleValues, fieldValue);
+								if (!validationResult.IsValid)
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Number":
+								validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+								if (!validationResult.IsValid)
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+                                break;
+                            case "Percentage":
+                                decimal pctTest;
+                                if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
+                                }
+                                break;
+                            case "JSON":
+                                if (jsonElementsEnabled && (fieldValue.Length > 2500))
+                                {
+                                    success = false;
+                                    errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
+                                }
+                                validationFieldProperties.JsonFieldCount++;
+                                break;
+                            case "Counter":
+                                int counterValue = 0;
 
-                                    if (!int.TryParse(fieldValue, out counterValue) || counterValue <= 0)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
-                                    }
-                                    break;
-                                case "System":
-                                    if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
-                                    {
-                                        success = false;
-                                        errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
-                                    }
-                                    break;
-                                default: // Html, Text
-									validationResult = DataType.Text.ValidateText(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldType.Pattern, fieldValue);
-									if (!validationResult.IsValid)
-									{
-										errorMessages.Add(validationResult.Message);
-										success = false;
-									}
-									break;
-                            }
+                                if (!int.TryParse(fieldValue, out counterValue) || counterValue <= 0)
+                                {
+                                    success = false;
+                                    errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
+                                }
+                                break;
+                            case "System":
+                                if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
+                                {
+                                    success = false;
+                                    errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
+                                }
+                                break;
+                            default: // Html, Text
+								validationResult = DataType.Text.ValidateText(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldType.Pattern, fieldValue);
+								if (!validationResult.IsValid)
+								{
+									errorMessages.Add(validationResult.Message);
+									success = false;
+								}
+								break;
                         }
+                        
                     }
                 }
 

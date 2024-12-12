@@ -212,7 +212,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (value != "")
+			if (value != null)
 			{
 				bool bValue;
 				if (bool.TryParse(value, out bValue))
@@ -233,7 +233,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (value != "")
+			if (value != null)
 			{
 				DateTime dValue;
 				if (DateTime.TryParse(value, out dValue))
@@ -276,7 +276,7 @@ namespace d360.core
 			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 			FieldValidationResult result = new();
 
-			if (value != "")
+			if (value != null)
 			{
 				decimal dValue;
 				if (decimal.TryParse(value, out dValue))
@@ -358,7 +358,7 @@ namespace d360.core
 			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 			FieldValidationResult result = new();
 
-			if (value != "")
+			if (value != null)
 			{
 				long dValue;
 				if (long.TryParse(value, out dValue))
@@ -428,7 +428,7 @@ namespace d360.core
 					if (value.Length > maxLength.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+						result.Message += string.Format(CompanyContextApiError.ExceedsMaximumLength, name, maxLength.Value.ToString(decimalFormatString));
 					}
 				}
 

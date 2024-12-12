@@ -143,7 +143,7 @@ namespace repositories.azure
 				row["IsAdministrator"] = user.IsAdministrator;
 				row["State"] = user.State ?? CompanyResourceState.Active;
 
-				if (!user.uid.HasValue)
+				if (!user.uid.HasValue || (user.uid.HasValue && user.uid == Guid.Empty))
 				{
 					user.uid = Guid.NewGuid();
 				}
