@@ -22,11 +22,5 @@
 		public static readonly string TEMP_NEW_SECURITY_MODEL = "govern-security-security-policy-conversion-temp";
 
 		#endregion
-
-		#region Micro Service Feature Flags
-
-		public static readonly string CATALOG_MICRO = "UseCatalogMicroserviceTemp20231011";
-
-		#endregion
 	}
 }

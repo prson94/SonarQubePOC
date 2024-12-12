@@ -4158,8 +4158,13 @@ namespace d360.web.Controllers.V2
 		[HttpGet]
 		[ApiExplorerSettings(IgnoreApi = true)]
 		[Route("asset/{assetUid:Guid}/hierarchy")]
-		public IEnumerable<dynamic> GetAssetHierarchy(Guid assetUid)
+		public IHttpActionResult GetAssetHierarchy(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				return errorMessageArgumentResponse("Invalid [assetUid] provided");
+			}
+
 			var querySql = $@"
 				declare @typeId int = (select top 1 AssetTypeID from asset where uid = @assetuid)
 				select A.ID as ID, 
@@ -4172,7 +4177,9 @@ namespace d360.web.Controllers.V2
 				where A.AssetTypeID = @typeId
 				order by TD.DisplayValue";
 
-			return Company.Query<dynamic>(querySql, new { assetUid }).ToList();
+			var items = Company.Query<dynamic>(querySql, new { assetUid });
+
+			return Ok(items);
 		}
 
 		#region Request / Response models

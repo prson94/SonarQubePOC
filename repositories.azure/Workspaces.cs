@@ -205,6 +205,17 @@ where	g.id = @groupId;
 					}
 				}
 			}
+			string simpleFilter = null;
+			var simpleQueryFilters = new List<string>();
+			if (queryParams.Any(q => q.Key.ToLower() == "_simplefilter"))
+			{
+				simpleFilter = queryParams.FirstOrDefault(q => q.Key.ToLower() == "_simplefilter").Value.Trim();
+				if (!string.IsNullOrEmpty(simpleFilter))
+				{
+					simpleQueryFilters.Add(@"g.Name like @simpleFilter");
+					dbArgs.Add("@simpleFilter", "%" + simpleFilter + "%");
+				}
+			}
 
 			// _simpleFilter checks Name, Description,
 
@@ -233,10 +244,22 @@ where	g.id = @groupId;
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
 						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");					
 					}
+					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
+					{
+						simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+					}
 				});
 			}
-
+			
 			var countSql = $@"select count(1) from [Group] g";
+			
+			if (simpleQueryFilters.Count > 0)
+			{
+				queryFilters.Add(string.Join(" or ", simpleQueryFilters));
+				countSql += $" {string.Join("\n", fieldJoins)}";
+			}
+
+			
 
 			var sql = $@"
 select	{string.Join(", ", fieldColumns)}
@@ -754,7 +777,10 @@ end";
 					row["ExecutionItemUid"] = u.ExecutionItemUid.Value;
 				}
 
-				jsonObject.Add("Uid", u.uid.Value);
+				if (u.uid.HasValue && u.uid != Guid.Empty)
+				{
+					jsonObject.Add("Uid", u.uid.Value);
+				}
 				jsonObject.Add("ObjectID", u.ResourceID);
 				jsonObject.Add("Username", u.Username);
 				jsonObject.Add("Email", u.Email);
