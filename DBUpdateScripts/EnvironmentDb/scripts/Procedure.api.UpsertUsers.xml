@@ -37,6 +37,8 @@ begin
 		[Message] nvarchar(max)
 	);
 	
+	create clustered index cx_Items on #Items(ItemNumber);
+	
 	drop table if exists #Fields;
 	create table #Fields (ItemNumber int, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max));	
 
@@ -63,12 +65,37 @@ begin
 		from	api.ExecutionItem i
 				cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)) f
 		where	ExecutionId = @executionId;
+		
+	--Validate Request
+	drop table if exists #tempdupusername;
+	
+	select Username
+	into #tempdupusername
+	from #Items
+	where IsValid is null
+	group by Username
+	having count(1)>1;
+	
+	update t
+	set [Message] = 'Username must be unique within the request.',
+	IsValid = 0
+	from #Items t
+	inner join #tempdupusername tu on t.Username = tu.Username
+	where IsValid is null;
+	
+	
+	--Remove record from Field table because record already mark as invalid and execution record mark sucess = 0
+	
+	delete f
+	from #Fields f
+	inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
 
+	-- Start load sucessfull record.
 	begin try
 		begin transaction;
 
 		merge	reporting.Global_Resource as T
-		using	(select * from #Items) as S
+		using	(select * from #Items where IsValid is null) as S
 		on		(T.ResourceID = S.ObjectID)
 		when	matched then
 		update  set
@@ -98,7 +125,8 @@ begin
 		update	T
 		set		T.AssetID = A.ID
 		from	#Items T
-				inner join dbo.Asset A on A.Object = @object and A.ObjectID = T.ObjectID;
+				inner join dbo.Asset A on A.Object = @object and A.ObjectID = T.ObjectID
+		where IsValid is null;
 
 		-- Asset Path
 		merge	dbo.AssetPath as T
@@ -114,6 +142,7 @@ begin
 						) as Segments
 				from	#Items i
 						inner join reporting.[Global_Resource] g on g.ResourceID = i.ObjectID
+				where i.IsValid is null
 				) as S
 		on		(T.ID = S.ID)
 		when	matched then
@@ -130,7 +159,7 @@ begin
 						g.FirstName + ' ' + g.LastName as DisplayValue
 				from	#Items i
 						inner join reporting.[Global_Resource] g on g.ResourceID = i.ObjectID
-				) as S
+				where i.IsValid is null) as S
 		on		(T.AssetID = S.ID)
 		when	matched then
 		update  set
@@ -144,7 +173,7 @@ begin
 		exec api.UpsertItemFields @userId, @date, @object, @lookupFieldsPassedByValue;
 	
 		exec api.UpsertChangeLog @executionId, @object;
-	
+
 		commit transaction;
 		set @transactionCompleted = 1;
 	end try
@@ -165,7 +194,8 @@ begin
 		set		t.Success = s.IsValid,
 				t.Message = s.Message
 		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId;
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId
+		where t.Success is null and t.Message is null;
 
 		update	t
 		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)

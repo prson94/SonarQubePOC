@@ -27,12 +27,11 @@ begin
 	
 	-- Get data from JSON columns in api.ExecutionItem
 	insert into #Assets (Uid, ObjectID, AssetID)
-		select	JSON_VALUE(Properties, '$.Uid'),
-				cast(JSON_VALUE(Properties, '$.id') as int),
-				cast(JSON_VALUE(Properties, '$.assetId') as bigint)
-		from	api.ExecutionItem
-		where	ExecutionId = @executionId
-				and Success = 1;
+		select	Uid,
+				ObjectID,
+				AssetID
+		from	#Items
+		where	IsValid is null;
 
 	declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
 	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
