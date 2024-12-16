@@ -287,7 +287,7 @@ namespace igx.jobs.apiexecutionprocessor
 									case ApiExecutionAction.UpsertUsers:
 										var workspace = new Workspaces(dapperProvider);
 										UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
-										var communityResponse = await Community.CreateUsersInTenantAsync(info.CompanyID, model.Users.ToList());
+										await Community.CreateUsersInTenantAsync(info.CompanyID, model.Users.ToList());
 										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, model.Users.ToList(), model.LookupFieldsPassedByValue);
 										await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, userResponse.Data);
 										resultsSql = "";// @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
