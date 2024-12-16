@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.extensions;
 using d360.extensions.info;
 using d360.model;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using repositories;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,6 +61,9 @@ namespace igx.jobs.workflowdigestprocessor
 						{ "UrlPrefix", c.UrlPrefix }
 					};
 
+					int digestDays = await Community.ReadSettingValueAsync<int>(c.CompanyID, d360.core.enums.Setting.WorkflowCatchAllGroup);
+					SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(c.CompanyID);
+
 					using (log.BeginScope(logProperties))
 					{
 						try
@@ -87,7 +92,7 @@ namespace igx.jobs.workflowdigestprocessor
 								};
 								using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() } ))
 								{
-									await company.SendDigestEmails(c.EnvironmentLevel);
+									await company.SendDigestEmails(c.EnvironmentLevel, wfsv.fromName, wfsv.fromEmail, digestDays);
 								}
 							}
 						}

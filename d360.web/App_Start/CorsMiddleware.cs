@@ -8,6 +8,7 @@ using d360.core;
 using d360.core.enums;
 using d360.model;
 using Microsoft.Owin;
+using repositories;
 
 namespace d360.web
 {
@@ -33,8 +34,8 @@ namespace d360.web
 					isPreflight = context.Request.Method == "OPTIONS";
 
 					string originsSetting = "";
-					var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
-					originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
+					var cmy = DependencyResolver.Current.GetService<ICommunity>();
+					originsSetting = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.AllowedOrigins);
 
 					List<string> allowedOrigins = new List<string> {
 						"https://shell-dev.dis.cloud.precisely.services",

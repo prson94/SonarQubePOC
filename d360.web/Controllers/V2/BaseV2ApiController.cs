@@ -290,7 +290,7 @@ namespace d360.web.Controllers.V2
 
 				if (long.TryParse(_pageSize, out pageSize))
 				{
-					int maxRows = validateForExport ? Company.GetSettingValue<int>(Setting.MaxExcelExportRows) : 200000;
+					int maxRows = validateForExport ? Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).GetAwaiter().GetResult() : 200000;
 
 					if (pageSize > maxRows)
 					{

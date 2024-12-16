@@ -1269,7 +1269,9 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.CanEditParent, AssetTypeErrors.CanEditParentClassRestriction));
 				}
 
-				if (AssetRepository.IsReachedTransformationLimit(model))
+				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+
+				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.ReachedTransformationlimit, AssetTypeErrors.TransformationLimitExceeded));
 				}
@@ -1536,7 +1538,8 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.UseAsTransformation, AssetTypeErrors.TransformationClassRestriction));
 				}
 
-				if (AssetRepository.IsReachedTransformationLimit(model))
+				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetsApiMessages.ReachedTransformationlimit, AssetTypeErrors.TransformationLimitExceeded));
 				}
@@ -1663,7 +1666,17 @@ namespace d360.web.Controllers.V2
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
 				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
+
+				bool enableJsonAttributes = false;
+				try
+				{
+					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
+				}
+				catch
+				{
+					// Safely ignore. Just assume it is false.
+				}
+				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -1746,9 +1759,19 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
 				}
 
+				bool enableJsonAttributes = false;
+				try
+				{
+					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
+				}
+				catch
+				{
+					// Safely ignore. Just assume it is false.
+				}
+
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
 				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
+				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}

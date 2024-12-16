@@ -3744,12 +3744,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, enableJsonAttributes: enableJsonAttributes);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutAssets);
 
 				#region Send score recalculation notifications.
@@ -3791,12 +3791,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue,enableJsonAttributes: enableJsonAttributes);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostAssets);
 
 				#region Send score recalculation notifications.
@@ -4050,12 +4050,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return CompanyContext.Any<Asset>(i => i.uid == uid);
 		}
 
-		public bool IsReachedTransformationLimit(AssetTypeUpsert model)
+		public bool IsReachedTransformationLimit(AssetTypeUpsert model,int useAsTransformationLimit)
 		{
 			bool reached = false;
 			if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
 			{
-				var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
 				var transformationUids = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Select(i => i.uid).ToList();
 				if (transformationUids.Contains(model.Uid))
 				{

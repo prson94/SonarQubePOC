@@ -1,5 +1,4 @@
-﻿using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.enums;
 using d360.model;
 using d360.utils.company;
@@ -9,6 +8,7 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
+using repositories;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace d360.web
 {
@@ -303,16 +304,13 @@ namespace d360.web
 			// not in cache query community
 			if (string.IsNullOrEmpty(cnName))
 			{
-				var connectionString = CompanyConnectionUtils.GetCompanyConnectionString(companyId);
-				using (var cnn = new SqlConnection(connectionString))
-				{
-					cnn.Open();
-					cnName = (await cnn.QueryAsync<string>(@"select Value from Setting where ID = @s", new { @s = (int)Setting.JwtAuthority })).FirstOrDefault();
+				var cmy = DependencyResolver.Current.GetService<ICommunity>();
 
-					if (string.IsNullOrEmpty(cnName))
-					{
-						cnName = Setting.JwtAuthority.AsInfoModel().DefaultValue;
-					}
+				cnName = await cmy.ReadSettingValueAsync<string>(companyId, Setting.JwtAuthority );
+
+				if (string.IsNullOrEmpty(cnName))
+				{
+					cnName = Setting.JwtAuthority.AsInfoModel().DefaultValue;
 				}
 
 				// Stick in cache

@@ -178,9 +178,9 @@ namespace d360.model
 
 		bool IsUserFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID);
 
-        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false);
+        Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, string defaultGroup, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false);
         
-        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
+        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, string defaultGroup, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
 
 		IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
 
@@ -208,7 +208,7 @@ namespace d360.model
         
         bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject;
         
-        Task SendDigestEmails(EnvironmentLevel environmentLevel);
+        Task SendDigestEmails(EnvironmentLevel environmentLevel, string fromName, string fromEmail, int digestDays);
         
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         
@@ -273,40 +273,6 @@ namespace d360.model
         string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc");
         
         string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000);
-
-        #endregion
-
-        #region Environment Settings
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        void DeleteSetting(Setting setting);
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        SettingInfo GetSetting(Setting setting);
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        T GetSettingValue<T>(Setting setting);
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        List<SettingInfo> GetSettings();
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        Dictionary<string, string> GetSettingsAsDictionary();
-
-        /// <summary>
-        /// When at all possible, do not call directly. You should use the SettingsRepository instead.
-        /// </summary>
-        void UpsertSetting(Setting setting, string value);
 
         #endregion
 

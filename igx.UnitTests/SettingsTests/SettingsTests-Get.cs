@@ -10,24 +10,24 @@ namespace igx.UnitTests.SettingsTests
         [Fact]
         public async Task Settings_CountGreaterThanZero()
         {
-            var repo = GetWorkspacesRepository();
-            var settings = await repo.ReadSettingsAsync();
+            var repo = GetCommunity();
+            var settings = await repo.ReadSettingsAsync(-1);
             Assert.True(settings.Count > 0);
         }
 
         [Fact]
         public async Task Settings_DescriptionsPopulated()
         {
-            var repo = GetWorkspacesRepository();
-			var settings = await repo.ReadSettingsAsync();
+            var repo = GetCommunity();
+			var settings = await repo.ReadSettingsAsync(-1);
 			Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Description)));
         }
 
         [Fact]
         public async Task Settings_NamesPopulated()
         {
-            var repo = GetWorkspacesRepository();
-			var settings = await repo.ReadSettingsAsync();
+            var repo = GetCommunity();
+			var settings = await repo.ReadSettingsAsync(-1);
 			Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Name)));
         }
     }
