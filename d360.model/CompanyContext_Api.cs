@@ -5891,7 +5891,6 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
             {
                 string fieldName = k.Key.Trim();
                 string fieldValue = (k.Value + "").Trim();
-				bool isValueEmptyString = k.Value == string.Empty;
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 
@@ -5981,7 +5980,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                         switch (fieldType.Type)
                         {
                             case "Boolean":
-								validationResult = DataType.Boolean.ValidateBoolean(fieldName, fieldValue);
+								validationResult = DataType.Boolean.ValidateBoolean(fieldName, k.Value);
 								if (!validationResult.IsValid)
 								{
 									errorMessages.Add(validationResult.Message);
@@ -5989,7 +5988,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								}
                                 break;
                             case "Date":
-								validationResult = DataType.Date.ValidateDate(fieldName, fieldValue);
+								validationResult = DataType.Date.ValidateDate(fieldName, k.Value);
 								if (validationResult.IsValid)
 								{
 									fieldValue = validationResult.CorrectedValue ?? fieldValue;
@@ -6013,7 +6012,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								}
                                 break;
                             case "Decimal":
-								validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+								validationResult = DataType.Decimal.ValidateDecimal(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, k.Value);
 								if (!validationResult.IsValid)
 								{
 									errorMessages.Add(validationResult.Message);
@@ -6041,7 +6040,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								}
                                 break;
                             case "Number":
-								validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, fieldValue);
+								validationResult = DataType.Number.ValidateNumber(fieldName, fieldType.Length, fieldType.MinimumLength, fieldType.MaximumLength, k.Value);
 								if (!validationResult.IsValid)
 								{
 									errorMessages.Add(validationResult.Message);
