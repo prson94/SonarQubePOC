@@ -53,7 +53,29 @@ namespace repositories.azure
 
 			using (var connection = Connect())
 			{
-				int id = await connection.InsertAsync(claim);
+				string sql = $@"
+								declare @id int;
+
+								declare @id_tbl table
+								(id int);
+
+								insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) 
+								OUTPUT INSERTED.ID into @id_tbl
+								values (@ClientID, @CompanyID, @DomainSettingID, @AuthenticationType, @ClaimType, @Path, @IsArray, @Action);
+								select top 1 id from @id_tbl;
+								";
+				int id = await connection.QueryFirstOrDefaultAsync<int>(sql, 
+				new
+				{
+					claim.ClientId,
+					claim.CompanyId,
+					claim.DomainSettingId,
+					AuthenticationType = (int)claim.AuthenticationType,
+					ClaimType = (int)claim.ClaimType,
+					claim.Path,
+					claim.IsArray,
+					Action = (int)claim.Action
+				});
 				response.Data = id;
 				response.IsSuccess = id > 0;
 			}
