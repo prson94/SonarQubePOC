@@ -1004,6 +1004,7 @@ namespace d360.web.Controllers.V2
 				Users = users.Select(u => new UserApiModel
 				{
 					Username = u.Username,
+					Email = u.Email,
 					FirstName = u.FirstName,
 					LastName = u.LastName,
 					Password = u.Password,
