@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
 using d360.featureflags;
@@ -17,7 +18,6 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using repositories;
-using Resources;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -275,7 +275,7 @@ namespace d360.web.Controllers
 		[Obsolete("You should throw appropriate exception instead of this method.")]
 		protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
 		{
-			return ReturnApiError(status, OthersMessages.BadRequestSubmitted, message);
+			return ReturnApiError(status, Error.BadRequestSubmitted, message);
 		}
 
 		[Obsolete("You should throw appropriate exception instead of this method.")]
@@ -346,15 +346,15 @@ namespace d360.web.Controllers
 
 			if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("invalid filter expression"))
 			{
-				throw new ArgumentException($"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}", ex);
+				throw new ArgumentException($"{Error.InvalidFilterExpressionUsed}{ex.Message.Replace(Error.InvalidFilterExpression, "")}", ex);
 			}
 
 			if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("conversion failed when converting from"))
 			{
-				throw new ArgumentException(ApiMessages.InvalidFilterExpressionUsedMessage, ex);
+				throw new ArgumentException(Error.InvalidFilterExpressionUsedMessage, ex);
 			}
 
-			throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+			throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, Error.UnknownErrorInvestigatingMessage);
 		}
 
 		protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
@@ -370,17 +370,17 @@ namespace d360.web.Controllers
 
 		protected internal IHttpActionResult errorMessageForbiddenResponse(string message)
 		{
-			return ResponseMessage(ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.Forbidden, message));
+			return ResponseMessage(ReturnApiError(HttpStatusCode.Forbidden, Error.Forbidden, message));
 		}
 
 		protected internal IHttpActionResult errorMessageArgumentResponse(string message)
 		{
-			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message));
+			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, Error.BadRequest, message));
 		}
 
 		protected internal IHttpActionResult errorMessageNotFoundResponse(string message)
 		{
-			return ResponseMessage(ReturnApiError(HttpStatusCode.NotFound, ApiMessages.NotFound, message));
+			return ResponseMessage(ReturnApiError(HttpStatusCode.NotFound, Error.NotFound, message));
 		}
 
 		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
@@ -586,7 +586,7 @@ namespace d360.web.Controllers
 			// make sure its a valid field name
 			if (!isValidFieldName(sortDataField))
 			{
-				throw new ArgumentException(ApiMessages.InvalidSortField);
+				throw new ArgumentException(Error.InvalidSortField);
 			}
 
 			if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
@@ -845,18 +845,18 @@ namespace d360.web.Controllers
 				{
 					if (fieldType == "Number")
 					{
-						validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
+						validationMessage = string.Format(Error.Pattern_Tokenized, friendlyName, "must be a whole number");
 					}
 					if (fieldType == "Decimal")
 					{
-						validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
+						validationMessage = string.Format(Error.Pattern_Tokenized, friendlyName, "must be a decimal number");
 					}
 				}
 
 				// Required validation
 				if (required)
 				{
-					models.Add(new FieldValidationModel { message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
+					models.Add(new FieldValidationModel { message = string.Format(Error.Required_Tokenized, friendlyName), rule = "required" });
 				}
 
 				// Pattern validation
@@ -880,17 +880,17 @@ namespace d360.web.Controllers
 				// Min/Max next precedent
 				if (maxLength.HasValue && minLength.HasValue)
 				{
-					models.Add(new FieldValidationModel { message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
+					models.Add(new FieldValidationModel { message = string.Format(Error.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
 				}
 				// Min next precedent
 				else if (minLength.HasValue)
 				{
-					models.Add(new FieldValidationModel { message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
+					models.Add(new FieldValidationModel { message = string.Format(Error.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
 				}
 				// Max next precedent
 				else if (maxLength.HasValue)
 				{
-					models.Add(new FieldValidationModel { message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
+					models.Add(new FieldValidationModel { message = string.Format(Error.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
 				}
 			}
 
@@ -2181,13 +2181,13 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			//validate inputs            
 			if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
 			{
-				throw new ArgumentNullException(ApiMessages.InvalidSortOrder);
+				throw new ArgumentNullException(Error.InvalidSortOrder);
 			}
 
 			// make sure its a valid field name
 			if (!isValidFieldName(sortDataField))
 			{
-				throw new ArgumentNullException(ApiMessages.InvalidSortField);
+				throw new ArgumentNullException(Error.InvalidSortField);
 			}
 
 			if ((sortFieldType ?? "").ToUpper() == "NUMBER")

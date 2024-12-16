@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using d360.model;
 using d360.utils.company;
 using d360.web.Extensions;
@@ -9,7 +10,6 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
-using Resources;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -204,7 +204,7 @@ namespace d360.web
 					{
 						u = null;
 						System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-						context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
+						context.Response.Write($"\"{Error.EndpointNotAuthorizedHeading}\"");
 						context.Response.StatusCode = 401;
 
 						return;
@@ -218,7 +218,7 @@ namespace d360.web
 						{
 							System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
 
-							context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
+							context.Response.Write($"\"{Error.EndpointNotAuthorizedHeading}\"");
 							context.Response.StatusCode = 401;
 
 							return;

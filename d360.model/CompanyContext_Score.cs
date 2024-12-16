@@ -1020,7 +1020,7 @@ group by	a.Uid",
 														System.Globalization.DateTimeStyles.None,
 														out effectiveDateStart))
 								{
-									row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd");
+									row["Message"] = string.Format(Error.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd");
 									row["Success"] = 0;
 								}
 							}
@@ -1035,12 +1035,12 @@ group by	a.Uid",
 														System.Globalization.DateTimeStyles.None,
 														out DateTime effectiveDateEnd))
 								{
-									row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd");
+									row["Message"] = string.Format(Error.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd");
 									row["Success"] = 0;
 								}
 								else if (model.EffectiveDateStart != null && effectiveDateStart > effectiveDateEnd)
 								{
-									messages.Add(string.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+									messages.Add(string.Format(Error.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
 									row["Success"] = 0;
 								}
 							}
@@ -1055,7 +1055,7 @@ group by	a.Uid",
 														System.Globalization.DateTimeStyles.None,
 														out runDateStart))
 								{
-									row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss");
+									row["Message"] = string.Format(Error.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss");
 									row["Success"] = 0;
 								}
 							}
@@ -1070,12 +1070,12 @@ group by	a.Uid",
 														System.Globalization.DateTimeStyles.None,
 														out DateTime runDateEnd))
 								{
-									row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
+									row["Message"] = string.Format(Error.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
 									row["Success"] = 0;
 								}
 								else if (model.RunDateStart != null && runDateStart > runDateEnd)
 								{
-									messages.Add(string.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+									messages.Add(string.Format(Error.GreaterThanError, "RunDateStart", "RunDateEnd"));
 									row["Success"] = 0;
 								}
 							}
@@ -1745,19 +1745,19 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 														System.Globalization.DateTimeStyles.None,
 														out DateTime rundate))
 								{
-									row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
+									row["Message"] = string.Format(Error.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
 									row["Success"] = 0;
 								}
 								else
 								{
 									if (rundate > DateTime.Now)
 									{
-										row["Message"] = string.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+										row["Message"] = string.Format(Error.GreaterThanTodayError, "RunDate");
 										row["Success"] = 0;
 									}
 									else if (rundate == DateTime.MinValue)
 									{
-										row["Message"] = string.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
+										row["Message"] = string.Format(Error.GenericInvalidFieldValueError, model.RunDate, "RunDate");
 										row["Success"] = 0;
 									}
 								}
@@ -1777,41 +1777,41 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 															System.Globalization.DateTimeStyles.None,
 															out DateTime effectiveDate))
 									{
-										row["Message"] = string.Format(DataQualityErrors.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
+										row["Message"] = string.Format(Error.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
 										row["Success"] = 0;
 									}
 									else if (effectiveDate == DateTime.MinValue)
 									{
-										row["Message"] = string.Format(DataQualityErrors.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
+										row["Message"] = string.Format(Error.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
 										row["Success"] = 0;
 									}
 									else if (effectiveDate > DateTime.Now)
 									{
-										row["Message"] = string.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+										row["Message"] = string.Format(Error.GreaterThanTodayError, "EffectiveDate");
 										row["Success"] = 0;
 									}
 								}
 								else
 								{
-									row["Message"] = string.Format(DataQualityErrors.RequiredFieldError, "EffectiveDate");
+									row["Message"] = string.Format(Error.RequiredFieldError, "EffectiveDate");
 									row["Success"] = 0;
 								}
 
 								if (model.RunDate == null)
 								{
-									row["Message"] = string.Format(DataQualityErrors.RequiredFieldError, "RunDate");
+									row["Message"] = string.Format(Error.RequiredFieldError, "RunDate");
 									row["Success"] = 0;
 								}
 
 								if (!model.PassCount.HasValue)
 								{
-									row["Message"] = string.Format(DataQualityErrors.RequiredFieldError, "PassCount");
+									row["Message"] = string.Format(Error.RequiredFieldError, "PassCount");
 									row["Success"] = 0;
 								}
 
 								if (!model.FailCount.HasValue)
 								{
-									row["Message"] = string.Format(DataQualityErrors.RequiredFieldError, "FailCount");
+									row["Message"] = string.Format(Error.RequiredFieldError, "FailCount");
 									row["Success"] = 0;
 								}
 							}
@@ -1822,7 +1822,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 
 								if (!model.EvaluatedAssetUid.HasValue && model.RunDate == null && !model.PassCount.HasValue && !model.FailCount.HasValue)
 								{
-									row["Message"] = DataQualityErrors.InvalidUpdateError;
+									row["Message"] = Error.InvalidUpdateError;
 									row["Success"] = 0;
 								}
 							}
@@ -1855,13 +1855,13 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 
 							if (model.PassCount.HasValue && (model.PassCount < 0 || model.PassCount > 9223372036854775807))
 							{
-								row["Message"] = string.Format(DataQualityErrors.ValueBetweenError, "PassCount", 0, 9223372036854775807);
+								row["Message"] = string.Format(Error.ValueBetweenError, "PassCount", 0, 9223372036854775807);
 								row["Success"] = 0;
 							}
 
 							if (model.FailCount.HasValue && (model.FailCount < 0 || model.FailCount > 9223372036854775807))
 							{
-								row["Message"] = string.Format(DataQualityErrors.ValueBetweenError, "FailCount", 0, 9223372036854775807);
+								row["Message"] = string.Format(Error.ValueBetweenError, "FailCount", 0, 9223372036854775807);
 								row["Success"] = 0;
 							}
 
@@ -1871,7 +1871,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 
 								if (total > 9223372036854775807)
 								{
-									row["Message"] = string.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
+									row["Message"] = string.Format(Error.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
 									row["Success"] = 0;
 								}
 
@@ -2060,7 +2060,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 								-- check PassCount/FailCount on Put
 								update EAR
 								set		Success = 0,
-										[Message] = coalesce([Message] + '; ', '') + '{string.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0)}'
+										[Message] = coalesce([Message] + '; ', '') + '{string.Format(Error.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0)}'
 								from api.[ExecutionAssetResult] EAR
 									inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID 
 									left join AssetResult AR on AR.Uid = EAR.Uid

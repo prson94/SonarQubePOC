@@ -1188,7 +1188,7 @@ namespace d360.model.DataAccessLayer
 										IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
 										if (issueType == null)
 										{
-											throw new ArgumentException(Workflows.InvalidActionTypeUid);
+											throw new ArgumentException(Error.InvalidActionTypeUid);
 										}
 										var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
 										getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);

@@ -1,4 +1,12 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using repositories;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,21 +15,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 
-using d360.core.entities;
-using d360.core.enums;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-
-using Microsoft.Web.Http;
-using repositories;
-using Resources;
-
-using Swashbuckle.Swagger.Annotations;
-
 namespace d360.web.Controllers.V2
 {
-    [ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/comments"), Authorize]
+	[ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/comments"), Authorize]
     public class CommentsController : BaseV2ApiController
     {
         #region DI
@@ -52,25 +48,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
         {
-            try
-            {
-                var detail = await Comments.AddComment(comment);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, detail));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission}
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    "Error adding comment",
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "AddComment" } }
-                );
-            }
+            var detail = await Comments.AddComment(comment);
+            return Created("", detail);
         }
 
         /// <summary>
@@ -101,31 +80,14 @@ namespace d360.web.Controllers.V2
                 bool.TryParse(toggleString, out toggle);
             }
 
-            try
+            var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
+            if (created)
             {
-                var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
-                if (created)
-                {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
-                }
-                else
-                {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
-                }
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
             }
-            catch (Exception ex)
+            else
             {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.VotingOnCommentUsingEmoji,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "AddVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
-                );
+				return Ok();
             }
         }
 
@@ -146,31 +108,13 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteComment(Guid commentUid)
         {
-            try
+            if (Comments.DeleteComment(commentUid))
             {
-                if (Comments.DeleteComment(commentUid))
-                {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
-                }
-                else
-                {
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, CommentsAPIMessages.CommentRetryRemove);
-                }
+                return Ok();
             }
-            catch (Exception ex)
+            else
             {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorDeletingComment,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "DeleteComment" }, { "CommentUid", commentUid.ToString() } }
-                );
+                return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.CommentRetryRemove);
             }
         }
 
@@ -190,26 +134,8 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteVote(Guid commentUid, Emoji emoji)
         {
-            try
-            {
-                Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.RestrictVoteRemove,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "DeleteVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
-                );
-            }
+            Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
+            return Ok();
         }
 
         /// <summary>
@@ -228,27 +154,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
         {
-            try
-            {
-                var detail = await Comments.EditComment(commentUid, comment);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, detail));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid) }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorUpdateComment,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "EditComment" }, { "CommentUid", commentUid.ToString() } }
-                );
-            }
+            var detail = await Comments.EditComment(commentUid, comment);
+            return Ok(detail);
         }
 
         /// <summary>
@@ -297,27 +204,10 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetComments()
         {
-            try
-            {
-                var queryParams = Request.GetQueryNameValuePairs();
-                var comments = await Comments.GetCommentDetails(queryParams);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var comments = await Comments.GetCommentDetails(queryParams);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, comments));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentViewPermission }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorGetComment,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "GetComments" } }
-                );
-            }
+            return Ok(comments);
         }
 
         /// <summary>
@@ -335,27 +225,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetCommentVotersByEmoji(Guid commentUid, Emoji emoji)
         {
-            try
-            {
-                var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorGetVoterBasedOnCommentEmoji,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "GetCommentVotersByEmoji" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
-                );
-            }
+            var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
+            return Ok(model);
         }
 
         /// <summary>
@@ -373,27 +244,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetCommentVotes(Guid commentUid)
         {
-            try
-            {
-                var model = await Comments.GetCommentVotesByCommentUid(commentUid);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
-            }
-            catch (Exception ex)
-            {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission},
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorGetVoterBasedOnComment,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "GetCommentVotes" }, { "CommentUid", commentUid.ToString() } }
-                );
-            }
+            var model = await Comments.GetCommentVotesByCommentUid(commentUid);
+            return Ok(model);
         }
 
         [
@@ -408,58 +260,40 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetCountsRolledUpByCommentType(int resourceId, int days)
         {
-            try
+            days *= -1;
+
+            DateTime dateStart;
+            DateTime dateEnd = DateTime.UtcNow;
+
+            if (days == 0)
             {
-                days *= -1;
-
-                DateTime dateStart;
-                DateTime dateEnd = DateTime.UtcNow;
-
-                if (days == 0)
-                {
-                    dateStart = new DateTime(2000, 1, 1);
-                }
-                else
-                {
-                    dateStart = (days < 0) ? dateEnd.AddDays(days) : dateEnd.AddDays(-days);
-                }
-
-                if (resourceId == 0)
-                {
-                    resourceId = SecurityContext.ResourceID;
-                }
-
-                var counts = await Comments.GetCommentCountsByFollower(resourceId, null, dateStart, dateEnd);
-                var items = new List<CountModel>();
-
-                Func<CommentType, int> getCommentCategoryCount = delegate (CommentType ct)
-                {
-                    var commentsItem = counts.FirstOrDefault(x => x.CommentType == ct);
-
-                    return commentsItem == null ? 0 : commentsItem.Count;
-                };
-
-                //need to add a record for Discussion, Issue
-                items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(CommentType.Social) });
-                items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(CommentType.Issue) });
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, items));
+                dateStart = new DateTime(2000, 1, 1);
             }
-            catch (Exception ex)
+            else
             {
-                var messages = new List<StatusCodeErrorMessage>
-                {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.ErrorInvalidDatasetMessage },
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.RollupCountPermission }
-                };
-
-                return DetermineUnhandledException(
-                    ex,
-                    CommentsAPIMessages.ErrorGetRollupCount,
-                    messages,
-                    new Dictionary<string, string> { { "Method Name", "GetCountsRolledUpByCommentType" }, { "resourceId", resourceId.ToString() } }
-                );
+                dateStart = (days < 0) ? dateEnd.AddDays(days) : dateEnd.AddDays(-days);
             }
+
+            if (resourceId == 0)
+            {
+                resourceId = SecurityContext.ResourceID;
+            }
+
+            var counts = await Comments.GetCommentCountsByFollower(resourceId, null, dateStart, dateEnd);
+            var items = new List<CountModel>();
+
+            Func<CommentType, int> getCommentCategoryCount = delegate (CommentType ct)
+            {
+                var commentsItem = counts.FirstOrDefault(x => x.CommentType == ct);
+
+                return commentsItem == null ? 0 : commentsItem.Count;
+            };
+
+            //need to add a record for Discussion, Issue
+            items.Add(new CountModel { Name = Label.CommentType_Social, Total = getCommentCategoryCount(CommentType.Social) });
+            items.Add(new CountModel { Name = Label.CommentType_Action, Total = getCommentCategoryCount(CommentType.Issue) });
+
+            return Ok(items);
         }
 
     }

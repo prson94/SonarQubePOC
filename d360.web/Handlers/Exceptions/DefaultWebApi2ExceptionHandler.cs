@@ -1,8 +1,8 @@
-﻿using System;
+﻿using d360.core.resources;
+using d360.web.Utilities;
+using System;
 using System.Configuration;
 using System.Web.Http.ExceptionHandling;
-using d360.web.Utilities;
-using Resources;
 
 namespace d360.web.Handlers.Exceptions
 {
@@ -26,12 +26,12 @@ namespace d360.web.Handlers.Exceptions
 
 			if (hideErrorDetails)
 			{
-				problemDetails.Title = OthersMessages.CriticalException;
-				problemDetails.Detail = OthersMessages.NeedAdministratorHelp;
+				problemDetails.Title = Error.CriticalException;
+				problemDetails.Detail = Error.NeedAdministratorHelp;
 			}
 			else
 			{
-				problemDetails.Title = ApiMessages.UnknownError;
+				problemDetails.Title = Error.UnknownError;
 			}
 		}
 	}

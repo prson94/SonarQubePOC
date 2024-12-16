@@ -780,13 +780,13 @@ from	CompanyResource CR
 
 			if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(currentPassword))
 			{
-				response = new(400, MemberShipErrors.MissingCurrentPasswordParameter);
+				response = new(400, Error.MissingCurrentPasswordParameter);
 				return response;
 			}
 
 			if (string.IsNullOrEmpty(newPassword) || string.IsNullOrWhiteSpace(newPassword))
 			{
-				response = new(400, MemberShipErrors.PasswordRule);
+				response = new(400, Error.PasswordRule);
 				return response;
 			}
 
@@ -795,7 +795,7 @@ from	CompanyResource CR
 			
 			if (currentPassword.Equals(newPassword))
 			{
-				response = new(400, MemberShipErrors.PasswordRule);
+				response = new(400, Error.PasswordRule);
 				return response;
 			}
 
@@ -808,7 +808,7 @@ from	CompanyResource CR
 
 				if (user.Password != currentPasswordHash)
 				{
-					response = new(400, MemberShipErrors.PasswordRule);
+					response = new(400, Error.PasswordRule);
 				}
 				else 
 				{

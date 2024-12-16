@@ -1,20 +1,19 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.web.Models;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Resources;
 
 namespace d360.web.Controllers
 {
-    public partial class FormController : BaseController
+	public partial class FormController : BaseController
     {
         #region Artifact
 
@@ -62,7 +61,7 @@ namespace d360.web.Controllers
 
             if (!Company.HasAssetTypePermission(type, at, Permission.AddAsset))
             {
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                return jsonException(Label.Permisions_Error_Add, HttpStatusCode.Forbidden);
             }
 
             var list = new List<EditableField>();
@@ -90,7 +89,7 @@ namespace d360.web.Controllers
         {
             if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                return jsonException(Label.Permisions_Error_Edit, HttpStatusCode.Forbidden);
             }
 
             var list = new List<EditableField>();
@@ -183,16 +182,16 @@ namespace d360.web.Controllers
                     case AssetTypeClass.BusinessAsset:
                     case AssetTypeClass.TechnicalAsset:
                         ot = SystemObjects.ArtifactType;
-                        appendTitle = FormInfo.ArtifactType;
+                        appendTitle = Label.ArtifactType;
                         break;
                     case AssetTypeClass.Model:
                         ot = SystemObjects.TaxonomyType;
-                        appendTitle = FormInfo.TaxonomyType;
+                        appendTitle = Label.TaxonomyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
                     case AssetTypeClass.Policy:
                         ot = SystemObjects.PolicyType;
-                        appendTitle = FormInfo.PolicyType;
+                        appendTitle = Label.PolicyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
                     case AssetTypeClass.Reference:
@@ -207,14 +206,14 @@ namespace d360.web.Controllers
                 {
                     if (!id.HasValue)
                     {
-                        return jsonNetException(FormControllerApiMessage.NoAssetTypeIDProvided, HttpStatusCode.BadRequest);
+                        return jsonNetException(Error.NoAssetTypeIDProvided, HttpStatusCode.BadRequest);
                     }
 
                     var assetType = Company.GetById<AssetType>(id.Value);
 
                     if (assetType == null)
                     {
-                        return jsonNetException(string.Format(FormControllerApiMessage.NoAssetTypeFound, id.Value.ToString()), HttpStatusCode.NotFound);
+                        return jsonNetException(string.Format(Error.NoAssetTypeFound, id.Value.ToString()), HttpStatusCode.NotFound);
                     }
 
                     var style = assetType.AssetTypeStyle;
@@ -294,8 +293,8 @@ namespace d360.web.Controllers
                             break;
                     }
                     model.AssetType.Object = ot.ToString();
-                    model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
-                    model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
+                    model.FormName = string.Format(Label.Add_Asset_Type_Title, appendTitle);
+                    model.FormDescription = string.Format(Label.Add_Asset_Type_Directions, appendTitle.ToLower());
 
                     if (@class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
@@ -351,8 +350,8 @@ namespace d360.web.Controllers
                         model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                     }
 
-                    model.FormName = string.Format(FormInfo.Edit_Asset_Type_Title, appendTitle);
-                    model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
+                    model.FormName = string.Format(Label.Edit_Asset_Type_Title, appendTitle);
+                    model.FormDescription = string.Format(Label.Add_Asset_Type_Directions, appendTitle.ToLower());
                 }
 
                 if (loadPredicates)

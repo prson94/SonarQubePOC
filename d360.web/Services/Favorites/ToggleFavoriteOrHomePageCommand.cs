@@ -1,22 +1,18 @@
-﻿using System.Data.Entity;
+﻿using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.resources;
+using d360.model;
+using MediatR;
+using repositories;
+using SmartFormat;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.model;
-using d360.model.DataAccessLayer;
-
-using MediatR;
-using repositories;
-using Resources;
-
-using SmartFormat;
-
 namespace d360.web.Services.Favorites
 {
-    public class ToggleFavoriteOrHomePageCommand : IRequestHandler<ToggleFavoriteOrHomePageCommand.Argument, Unit>
+	public class ToggleFavoriteOrHomePageCommand : IRequestHandler<ToggleFavoriteOrHomePageCommand.Argument, Unit>
     {
         private readonly ICompanyContext companyContext;
         private readonly FavoriteRouteMatcherService matcherService;
@@ -43,7 +39,7 @@ namespace d360.web.Services.Favorites
 
             if (routeMatch.Matcher.PageType == FavoritePageType.Unknown)
             {
-                throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownRoute, new { request.Route }));
+                throw new InvalidRequestException(Smart.Format(Error.FavoriteUnknownRoute, new { request.Route }));
             }
 
             var favoriteDetails = (await favoritesRepository.GetFavoriteDetails(new[] { routeMatch.ObjectId })).SingleOrDefault();
@@ -51,7 +47,7 @@ namespace d360.web.Services.Favorites
 
             if (!isCorrect)
             {
-                throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownObject, new { request.Route }));
+                throw new InvalidRequestException(Smart.Format(Error.FavoriteUnknownObject, new { request.Route }));
             }
 
             request.Route = matcherService.GetNormalizedRoute(request.Route, routeMatch.Matcher, favoriteDetails);

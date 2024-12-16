@@ -17,7 +17,6 @@ using DocumentFormat.OpenXml.Packaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
-using Resources;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -254,7 +253,7 @@ namespace d360.web.Controllers
 
 				if (parentAsset == null)
 				{
-					return jsonException(string.Format(ActionApiMessages.AssetNotFound, parentUid.Value), HttpStatusCode.NotFound);
+					return jsonException(string.Format(Error.AssetNotFound, parentUid.Value), HttpStatusCode.NotFound);
 				}
 
 				parentId = parentAsset.ObjectID;
@@ -266,7 +265,7 @@ namespace d360.web.Controllers
 
 				if (asset == null)
 				{
-					return jsonException(string.Format(ActionApiMessages.AssetNotFound, assetUid.Value), HttpStatusCode.NotFound);
+					return jsonException(string.Format(Error.AssetNotFound, assetUid.Value), HttpStatusCode.NotFound);
 				}
 
 				return await DynamicEditorEditFields(asset.Object, assetUid.Value);
@@ -277,7 +276,7 @@ namespace d360.web.Controllers
 
 				if (assetType == null)
 				{
-					return jsonException(string.Format(ActionApiMessages.AssetTypeNotFound, assetUid.Value), HttpStatusCode.NotFound);
+					return jsonException(string.Format(Error.AssetTypeNotFound, assetUid.Value), HttpStatusCode.NotFound);
 				}
 
 				return await DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
@@ -292,7 +291,7 @@ namespace d360.web.Controllers
 
 			return await DynamicEditorEditFields(o, assetUid);
 
-			throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
+			throw new ArgumentNullException(Error.InvalidEditorType);
 		}
 
 		[HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
@@ -332,7 +331,7 @@ namespace d360.web.Controllers
 					return await DynamicEditorEditFields(o, objectId);
 			}
 
-			throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
+			throw new ArgumentNullException(Error.InvalidEditorType);
 		}
 
 		[HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
@@ -388,7 +387,7 @@ namespace d360.web.Controllers
 					res = await Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
 					break;
 				default:
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
+					throw new ArgumentNullException(Error.InvalidEditorType);
 			}
 
 			res.MaxJsonLength = int.MaxValue;
@@ -417,7 +416,7 @@ namespace d360.web.Controllers
 					}
 					else
 					{
-						throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
+						throw new ArgumentException(Error.IssueTypeNotFound);
 					}
 				}
 				else if (objectType == SystemObjects.IssueTypeRelation.ToString())
@@ -430,7 +429,7 @@ namespace d360.web.Controllers
 					}
 					else
 					{
-						throw new ArgumentException(FormControllerApiMessage.IssueTypeNotFound);
+						throw new ArgumentException(Error.IssueTypeNotFound);
 					}
 				}
 				else if (objectType == SystemObjects.IntersectType.ToString())
@@ -443,7 +442,7 @@ namespace d360.web.Controllers
 					}
 					else
 					{
-						throw new ArgumentException(FormControllerApiMessage.InvalidIntersectTypeAndTargetUID);
+						throw new ArgumentException(Error.InvalidIntersectTypeAndTargetUID);
 					}
 				}
 				else
@@ -456,12 +455,12 @@ namespace d360.web.Controllers
 					}
 					else
 					{
-						throw new ArgumentException(FormControllerApiMessage.AssetTypeNotFound);
+						throw new ArgumentException(Error.AssetTypeNotFound);
 					}
 				}
 			}
 
-			throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
+			throw new ArgumentException(string.Format(Error.InvalidGuid, ""));
 		}
 
 		[HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
@@ -522,7 +521,7 @@ namespace d360.web.Controllers
 					res = await Hierarchy_AddFields(SystemObjects.TaxonomyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				default:
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
+					throw new ArgumentNullException(Error.InvalidEditorType);
 
 			}
 
@@ -551,7 +550,7 @@ namespace d360.web.Controllers
 				case "TAXONOMYTYPELEVEL":
 					return EditTaxonomyTypeLevel(form);
 				default:
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
+					throw new ArgumentNullException(Error.InvalidEditType);
 			}
 		}
 
@@ -572,7 +571,7 @@ namespace d360.web.Controllers
 				case "TAXONOMYTYPELEVEL":
 					return DeleteTaxonomyTypeLevel(form);
 				default:
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
+					throw new ArgumentNullException(Error.InvalidDeleteType);
 			}
 		}
 
@@ -598,7 +597,7 @@ namespace d360.web.Controllers
 				case "TAXONOMYTYPELEVEL":
 					return AddTaxonomyTypeLevel(form);
 				default:
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
+					throw new ArgumentNullException(Error.InvalidCreateType);
 			}
 		}
 
@@ -695,15 +694,15 @@ namespace d360.web.Controllers
 					#region
 					sql = $@"
 select * from (
-select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
+select 'ArtifactType|0' as value, '{Label.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
+select 'ArtifactType|0' as value, '{Label.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'TaxonomyType|0' as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}' as title
+select 'TaxonomyType|0' as value, '{Label.AssetTypeClass_Model.CleanForSql()}' as title
 union
-select 'PolicyType|0' as value, '{CommonNames.AssetTypeClass_Policy.CleanForSql()}' as title
+select 'PolicyType|0' as value, '{Label.AssetTypeClass_Policy.CleanForSql()}' as title
 union
-select 'ReferenceItemType|0' as value, '{CommonNames.AssetTypeClass_Reference.CleanForSql()}' as title
+select 'ReferenceItemType|0' as value, '{Label.AssetTypeClass_Reference.CleanForSql()}' as title
 ) O order by title";
 					break;
 				#endregion
@@ -715,7 +714,7 @@ select	value,
 from	(
 		select		1 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
-					'{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + P.[Path] as title 
+					'{Label.AssetTypeClass_Business.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 1 
@@ -724,7 +723,7 @@ from	(
 
 		select		2 as Sort,
 					'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 
-					'{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title 
+					'{Label.AssetTypeClass_Model.CleanForSql()}: ' + Name as title 
 		from		AssetType
 		where		[Class] = 2
 
@@ -732,7 +731,7 @@ from	(
 
 		select		3 as Sort,
 					'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 
-					'{CommonNames.ReferenceItem.CleanForSql()}: ' + P.[Path] as title 
+					'{Label.ReferenceItem.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType  A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 9
@@ -741,14 +740,14 @@ from	(
 
 		select		8 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
-					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
+					'{Label.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 8 
 		union
 		select		9 as Sort,
 					'RuleType|' + cast(ObjectID as varchar(10)) as value, 
-					'{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' + P.[Path] as title 
+					'{Label.AssetTypeClass_Rule.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 7
@@ -772,12 +771,12 @@ order by Sort, title";
 				#endregion
 				case "M":   // Users/Groups
 					models = new List<OptionModel> {
-						new OptionModel { title = CommonNames.Text_GroupMembership, value = "Membership|0" },
-						new OptionModel { title = CommonNames.Text_Users, value = "Membership|1" }
+						new OptionModel { title = Label.Text_GroupMembership, value = "Membership|0" },
+						new OptionModel { title = Label.Text_Users, value = "Membership|1" }
 					};
 					break;
 				case "BL":   // Lineage
-					models = new List<OptionModel> { new OptionModel { title = Values.Default, value = "Lineage|-1" } };
+					models = new List<OptionModel> { new OptionModel { title = Label.Default, value = "Lineage|-1" } };
 					break;
 				default:
 					models = new List<OptionModel>();
@@ -937,12 +936,12 @@ order by Sort, title";
 				// Perform checks to make sure fields are populated.
 				if (string.IsNullOrEmpty(model.Type))
 				{
-					throw new NoFormDataException(FormControllerApiMessage.TypeConstant);
+					throw new NoFormDataException(Label.TypeConstant);
 				}
 
 				if (string.IsNullOrEmpty(model.LoadAction))
 				{
-					throw new NoFormDataException(FormControllerApiMessage.LoadAction);
+					throw new NoFormDataException(Label.LoadAction);
 				}
 
 				var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
@@ -1238,7 +1237,7 @@ order by Sort, title";
 					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{SecurityContext.CompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
 					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = SecurityContext.CompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
-					json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
+					json = jsonSuccess(Information.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
 				}
 				else
 				{
@@ -1427,7 +1426,7 @@ order by Sort, title";
 		{
 			if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.AddAsset))
 			{
-				return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+				return jsonException(Label.Permisions_Error_Add, HttpStatusCode.Forbidden);
 			}
 
 			var list = new List<EditableField>();
@@ -1479,7 +1478,7 @@ order by Sort, title";
 
 			if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.EditAsset))
 			{
-				return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+				return jsonException(Label.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 			}
 
 			var row = 1;
@@ -1537,22 +1536,22 @@ order by Sort, title";
 		{
 			if (string.IsNullOrEmpty(shortcut.Name))
 			{
-				return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortCutRequireName, HttpStatusCode.BadRequest);
 			}
 
 			if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
 			{
-				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
 			if (!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
 			{
-				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
+				return jsonException(Error.IconIsInvalid, HttpStatusCode.BadRequest);
 			}
 
 			if (!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
 			{
-				return jsonException(FormControllerApiMessage.ShortcutInvalidURL, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortcutInvalidURL, HttpStatusCode.BadRequest);
 			}
 
 			try
@@ -1588,7 +1587,7 @@ order by Sort, title";
 				return jsonException(ex, HttpStatusCode.InternalServerError);
 			}
 
-			return jsonSuccess(FormControllerApiMessage.ShortcutAdded, shortcut.ID.ToString(), "add", HttpStatusCode.OK);
+			return jsonSuccess(Information.ShortcutAdded, shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 		}
 
 		[HttpPut, Route("shortcut/edit"), RequireAdminPermissions]
@@ -1598,27 +1597,27 @@ order by Sort, title";
 
 			if (existing == null)
 			{
-				return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, shortcut.ID.ToString()), HttpStatusCode.BadRequest);
+				return jsonException(string.Format(Error.ShortCutNotFound, shortcut.ID.ToString()), HttpStatusCode.BadRequest);
 			}
 
 			if (string.IsNullOrEmpty(shortcut.Name))
 			{
-				return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortCutRequireName, HttpStatusCode.BadRequest);
 			}
 
 			if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
 			{
-				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
 			if (!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
 			{
-				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
+				return jsonException(Error.IconIsInvalid, HttpStatusCode.BadRequest);
 			}
 
 			if (!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
 			{
-				return jsonException(FormControllerApiMessage.ShortcutInvalidURL, HttpStatusCode.BadRequest);
+				return jsonException(Error.ShortcutInvalidURL, HttpStatusCode.BadRequest);
 			}
 
 			try
@@ -1678,7 +1677,7 @@ order by Sort, title";
 				return jsonException(ex, HttpStatusCode.InternalServerError);
 			}
 
-			return jsonSuccess(FormControllerApiMessage.ShortcutModified, shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
+			return jsonSuccess(Information.ShortcutModified, shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
 		}
 
 		private bool ValidateShortcutUrl(string url)
@@ -1700,7 +1699,7 @@ order by Sort, title";
 
 			if (existing == null)
 			{
-				return jsonException(string.Format(FormControllerApiMessage.ShortCutNotFound, id.ToString()), HttpStatusCode.BadRequest);
+				return jsonException(string.Format(Error.ShortCutNotFound, id.ToString()), HttpStatusCode.BadRequest);
 			}
 
 			try
@@ -1725,7 +1724,7 @@ order by Sort, title";
 				return jsonException(ex, HttpStatusCode.InternalServerError);
 			}
 
-			return jsonSuccess(FormControllerApiMessage.ShortcutDeleted, id.ToString(), "delete", HttpStatusCode.OK);
+			return jsonSuccess(Information.ShortcutDeleted, id.ToString(), "delete", HttpStatusCode.OK);
 		}
 
 		[HttpPut, Route("shortcut/Move")]
@@ -1739,7 +1738,7 @@ order by Sort, title";
 				var shortcut = Company.GetById<Shortcut>(id);
 				if (shortcut == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutIDNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.ShortcutIDNotFound, id.ToString()));
 				}
 
 				direction = moveUp ? "up" : "down";
@@ -1756,7 +1755,7 @@ order by Sort, title";
 
 				if (adjacentShortcut == null)
 				{
-					throw new ArgumentNullException(moveUp ? FormControllerApiMessage.ShortcutAlreadySortedTop : FormControllerApiMessage.ShortcutAlreadySortedBottom);
+					throw new ArgumentNullException(moveUp ? Error.ShortcutAlreadySortedTop : Error.ShortcutAlreadySortedBottom);
 				}
 
 				int newOrder = adjacentShortcut.DisplayOrder;
@@ -1764,7 +1763,7 @@ order by Sort, title";
 				shortcut.DisplayOrder = newOrder;
 
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.ShortcutMoved, shortcut.Name, direction);
+				message = string.Format(Information.ShortcutMoved, shortcut.Name, direction);
 			}
 			catch (Exception ex)
 			{
@@ -1856,11 +1855,11 @@ order by Sort, title";
 		{
 			var list = new List<EditableField>
 			{
-				new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) },
-				new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, FieldType = DataType.Boolean.ToString() },
-				new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" },
-				new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" },
-				new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, FieldType = DataType.Html.ToString() }
+				new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Label.Name_Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) },
+				new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = Label.IsActiveDirectoryGroup_Name, FieldType = DataType.Boolean.ToString() },
+				new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = Label.PrimaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" },
+				new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = Label.SecondaryOwner_Name, FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" },
+				new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = Label.Description_Name, FieldType = DataType.Html.ToString() }
 			};
 
 			var tempList = new List<EditableField>();
@@ -1890,11 +1889,11 @@ order by Sort, title";
 			var asset = Company.Filter<Asset>(i => i.Object == "Group" && i.ObjectID == groupId).SingleOrDefault();
 
 			list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = asset.uid.ToString() });
-			list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, Value = group.Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
-			list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, Value = group.IsActiveDirectoryGroup.ToString(), FieldType = DataType.Boolean.ToString() });
+			list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Label.Name_Name, Value = group.Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
+			list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = Label.IsActiveDirectoryGroup_Name, Value = group.IsActiveDirectoryGroup.ToString(), FieldType = DataType.Boolean.ToString() });
 
-			var primaryField = new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = FieldInfo.PrimaryOwner_Name, Value = group?.PrimaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
-			var secondaryField = new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = FieldInfo.SecondaryOwner_Name, Value = group?.SecondaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+			var primaryField = new EditableField { Category = "General", Row = 2, Column = 1, Required = false, FieldName = "PrimaryOwnerUid", Name = Label.PrimaryOwner_Name, Value = group?.PrimaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
+			var secondaryField = new EditableField { Category = "General", Row = 2, Column = 2, Required = false, FieldName = "SecondaryOwnerUid", Name = Label.SecondaryOwner_Name, Value = group?.SecondaryOwnerUid?.ToString(), FieldType = DataType.Lookup.ToString(), LookupObjectType = "Resource" };
 
 			if (group.PrimaryOwnerUid.HasValue)
 			{
@@ -1911,7 +1910,7 @@ order by Sort, title";
 			list.Add(primaryField);
 			list.Add(secondaryField);
 
-			list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, Value = group.Description, FieldType = DataType.Html.ToString() });
+			list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = Label.Description_Name, Value = group.Description, FieldType = DataType.Html.ToString() });
 
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
@@ -1974,7 +1973,7 @@ order by Sort, title";
 			{
 				if (!Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddRelationships) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditRelationships))
 				{
-					return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+					return jsonException(Label.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 				}
 
 				// delete any existing allocations
@@ -2002,7 +2001,7 @@ order by Sort, title";
 					}
 				}
 
-				return jsonSuccess(FormControllerApiMessage.GrammarAllocationModified, "", "add", HttpStatusCode.Created);
+				return jsonSuccess(Information.GrammarAllocationModified, "", "add", HttpStatusCode.Created);
 			}
 			catch (BaseException ex)
 			{
@@ -2022,7 +2021,7 @@ order by Sort, title";
 			{
 				if (!form.HasKeys())
 				{
-					throw new NoFormDataException(FormControllerApiMessage.CustomSynonym);
+					throw new NoFormDataException(Label.CustomSynonym);
 				}
 
 				var name = parseTextField(form, "Name");
@@ -2043,12 +2042,12 @@ order by Sort, title";
 
 				if (!SecurityContext.IsAdministrator && !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.AddAsset) || !Company.HasAssetPermission(model.Object, model.ObjectID, Permission.EditAsset))
 				{
-					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+					return jsonException(Label.Permisions_Error_Add, HttpStatusCode.Forbidden);
 				}
 
 				Company.Add(model);
 
-				return jsonSuccess(string.Format(FormControllerApiMessage.SynonymCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
+				return jsonSuccess(string.Format(Information.SynonymCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
 			}
 			catch (BaseException ex)
 			{
@@ -2069,7 +2068,7 @@ order by Sort, title";
 			{
 				if (!form.HasKeys())
 				{
-					throw new NoFormDataException(FormControllerApiMessage.Synonym);
+					throw new NoFormDataException(Label.Synonym);
 				}
 				var id = parseIntField(form, "ID");
 
@@ -2077,12 +2076,12 @@ order by Sort, title";
 
 				if (detail == null)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.CustomSynonymNotFound);
+					throw new ArgumentNullException(Error.CustomSynonymNotFound);
 				}
 
 				if (!Company.HasAssetPermission(detail.Object, detail.ObjectID, Permission.DeleteRelationships))
 				{
-					return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+					return jsonException(Label.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 				}
 
 				if (detail != null)
@@ -2090,7 +2089,7 @@ order by Sort, title";
 					Company.Delete(detail);
 				}
 
-				return jsonSuccess(FormControllerApiMessage.SynRemoved, id.ToString(), "delete", HttpStatusCode.OK);
+				return jsonSuccess(Information.SynRemoved, id.ToString(), "delete", HttpStatusCode.OK);
 			}
 			catch (BaseException ex)
 			{

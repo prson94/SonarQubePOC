@@ -30,7 +30,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Label), Name = "ID_Name", Description = "ID_Description")
         ]
         public Guid ID { get; set; }
     }
@@ -56,7 +56,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Label), Name = "ID_Name", Description = "ID_Description")
         ]
         public int ID { get; set; }
     }
@@ -172,7 +172,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Label), Name = "ID_Name", Description = "ID_Description")
         ]
         public long ID { get; set; }
     }

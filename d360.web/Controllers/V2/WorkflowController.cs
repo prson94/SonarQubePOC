@@ -1,4 +1,19 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Workflow;
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.exceptions;
+using d360.core.resources;
+using d360.model.validators;
+using d360.utils.excel;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using repositories;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,26 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Workflow;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.exceptions;
-using d360.core.resources;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using d360.utils.excel;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-
-using Microsoft.Web.Http;
-using Newtonsoft.Json;
-using repositories;
-using Resources;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -79,27 +74,27 @@ namespace d360.web.Controllers.V2
 
 			if (!validator.IsValidGuidCountForWorkflowGetTypeModel(queryParams))
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.MoreThanOneUidPassed);
+				return errorMessageArgumentResponse(Error.MoreThanOneUidPassed);
 			}
 
 			if (!validator.IsValidGuidForWorkflowGetTypeModel(queryParams))
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.InvalidTypeWorkflowVersionRequest);
+				return errorMessageArgumentResponse(Error.InvalidTypeWorkflowVersionRequest);
 			}
 
 			if (!validator.IsValidAssetType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")));
 			}
 
 			if (!validator.IsValidActionType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, GetUidFromQueryParams(queryParams, "ActionTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.ActionTypeUidIsNotValid, GetUidFromQueryParams(queryParams, "ActionTypeUid")));
 			}
 
 			if (!validator.IsValidRelationshipType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
 			}
 
 			var workflowtypes = await workflowRepository.GetWorkflowTypes(queryParams);
@@ -143,37 +138,37 @@ namespace d360.web.Controllers.V2
 
 			if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.MoreThanOneTypeUidPassedInclWorkflow);
+				return errorMessageArgumentResponse(Error.MoreThanOneTypeUidPassedInclWorkflow);
 			}
 
 			if (!validator.IsValidOrderByFieldForWorkflowGetVersionModel(queryParams))
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.InvalidParameterWorkflowVersion);
+				return errorMessageArgumentResponse(Error.InvalidParameterWorkflowVersion);
 			}
 
 			if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.InvalidTypeWorkflowVersionRequestIncWF);
+				return errorMessageArgumentResponse(Error.InvalidTypeWorkflowVersionRequestIncWF);
 			}
 
 			if (!validator.IsValidAssetType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")));
 			}
 
 			if (!validator.IsValidActionType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "ActionTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "ActionTypeUid")));
 			}
 
 			if (!validator.IsValidRelationshipType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
 			}
 
 			if (!validator.IsValidWorkflowType(queryParams))
 			{
-				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
+				return errorMessageNotFoundResponse(string.Format(Error.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
 			}
 
 			var workflowVersions = await workflowRepository.GetWorkflowVersions(queryParams);
@@ -199,7 +194,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (!validator.IsValidWorkflowVersion(workflowVersionUid))
 			{
-				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, workflowVersionUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.WorkflowVersionUIDNotFound, workflowVersionUid.ToString()));
 			}
 
 			var workflowVersionSteps = await workflowRepository.GetWorkflowVersionSteps(workflowVersionUid);
@@ -242,7 +237,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (!validator.IsValidWorkflowInstance(workflowUid))
 			{
-				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.WorkflowUIDNotFound, workflowUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.WorkflowUIDNotFound, workflowUid.ToString()));
 			}
 
 			var workflowInstances = await workflowRepository.GetWorkflowInstances(workflowUid);
@@ -286,47 +281,47 @@ namespace d360.web.Controllers.V2
 
 			if (!validator.IsValidGuidCountForGetWorkflowModel(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.MoreThanOneUidPassed);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.MoreThanOneUidPassed);
 			}
 
 			if (!validator.IsValidOrderByFieldForGetWorkflowModel(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidOrderParameterPassed);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidOrderParameterPassed);
 			}
 
 			if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidDirection);
 			}
 
 			if (!validator.IsValidGuidForGetWorkflowModel(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidUidWorkflowVersionRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidUidWorkflowVersionRequest);
 			}
 
 			if (!validator.IsValidAsset(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(Error.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")));
 			}
 
 			if (!validator.IsValidAction(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.ActionUidNotFound, GetUidFromQueryParams(queryParams, "ActionUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(Error.ActionUidNotFound, GetUidFromQueryParams(queryParams, "ActionUid")));
 			}
 
 			if (!validator.IsValidRelationship(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.RelationShipUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipUidNotFound_Explicit, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
 			}
 
 			if (!validator.IsValidWorkflowType(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(Error.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
 			}
 
 			if (!validator.IsValidWorkflowVersion(queryParams))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, GetUidFromQueryParams(queryParams, "versionUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(Error.WorkflowVersionUIDNotFound, GetUidFromQueryParams(queryParams, "versionUid")));
 			}
 
 			var workflows = await workflowRepository.GetWorkflows(queryParams);
@@ -359,7 +354,7 @@ namespace d360.web.Controllers.V2
 
 			if (result == null)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(Error.WorkflowInstanceNotFound);
 			}
 
 			return Ok(result.ID);
@@ -377,7 +372,7 @@ namespace d360.web.Controllers.V2
 
 			if (result == null)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(Error.WorkflowInstanceNotFound);
 			}
 
 			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(result.ID, query, cancellationToken: cancellationToken));
@@ -395,7 +390,7 @@ namespace d360.web.Controllers.V2
 
 			if (result == null)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(Error.WorkflowInstanceNotFound);
 			}
 
 			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(id, query, cancellationToken: cancellationToken));
@@ -438,7 +433,7 @@ namespace d360.web.Controllers.V2
 
 				if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidDirection));
 				}
 
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
@@ -446,7 +441,7 @@ namespace d360.web.Controllers.V2
 					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatoruid").Value;
 					if (!Guid.TryParse(initiatorUidString, out Guid initiatorUid))
 					{
-						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid")));
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidGuid, initiatorUidString, "_initiatorUid")));
 					}
 					else
 					{
@@ -454,7 +449,7 @@ namespace d360.web.Controllers.V2
 
 						if (initiator == null)
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidInitiatorUid));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidInitiatorUid));
 						}
 					}
 				}
@@ -466,7 +461,7 @@ namespace d360.web.Controllers.V2
 					string assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assettypeuid").Value;
 					if (!Guid.TryParse(assetTypeUidString, out Guid assetTypeUid))
 					{
-						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, assetTypeUidString, "_assettypeuid")));
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidGuid, assetTypeUidString, "_assettypeuid")));
 					}
 					else
 					{
@@ -474,7 +469,7 @@ namespace d360.web.Controllers.V2
 
 						if (assetType == null)
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid)));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetTypeUid, assetTypeUid)));
 						}
 					}
 				}
@@ -484,7 +479,7 @@ namespace d360.web.Controllers.V2
 					string assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
 					if (!Guid.TryParse(assetUidString, out Guid assetUid))
 					{
-						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, assetUidString, "_assetuid")));
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidGuid, assetUidString, "_assetuid")));
 					}
 					else
 					{
@@ -492,12 +487,12 @@ namespace d360.web.Controllers.V2
 
 						if (asset == null)
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetUid, assetUid)));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetUid, assetUid)));
 						}
 
 						if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assettypeuid") && asset.AssetTypeID != assetType.ID)
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.AssetValidateWithAssetType));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.AssetValidateWithAssetType));
 						}
 					}
 				}
@@ -509,7 +504,7 @@ namespace d360.web.Controllers.V2
 					ExcelDocument document = CreateResponseDocumentForAssignmentsExport(response, queryParams);
 					var stream = new MemoryStream();
 					var sldoc = document.ToSLDocument();
-					sldoc.SelectWorksheet(ExcelExports.WorkflowAssignments_Assignments);
+					sldoc.SelectWorksheet(Label.WorkflowAssignments_Assignments);
 					sldoc.SaveAs(stream);
 					byte[] bytes = stream.ToArray();
 
@@ -520,7 +515,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (ArgumentException aex)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, aex.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, aex.Message)).ConfigureAwait(false);
 			}
 			catch (GenericException gex)
 			{
@@ -533,7 +528,7 @@ namespace d360.web.Controllers.V2
 					{ "Endpoint Method", prefix }
 				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 
 		}
@@ -569,7 +564,7 @@ namespace d360.web.Controllers.V2
 
 			if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 			{
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidDirection));
 			}
 
 			try
@@ -580,7 +575,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (ArgumentException aex)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, aex.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, aex.Message)).ConfigureAwait(false);
 			}
 			catch (GenericException gex)
 			{
@@ -593,7 +588,7 @@ namespace d360.web.Controllers.V2
 					{ "Endpoint Method", prefix }
 				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 
 		}
@@ -617,7 +612,7 @@ namespace d360.web.Controllers.V2
 
 			if (workflowItem == null)
 			{
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowItemUidNotFound, workflowItemUid.ToString())));
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.WorkflowItemUidNotFound, workflowItemUid.ToString())));
 			}
 
 			return Ok(await workflowRepository.GetWorkflowItemDetails(workflowItemUid));
@@ -655,7 +650,7 @@ namespace d360.web.Controllers.V2
 
 				if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidDirection));
 				}
 
 				var response = await workflowRepository.GetWorkflowInstanceDetailsByVersion(queryParams).ConfigureAwait(false);
@@ -669,7 +664,7 @@ namespace d360.web.Controllers.V2
 					{ "Endpoint Method", prefix }
 				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 		}
 
@@ -744,7 +739,7 @@ namespace d360.web.Controllers.V2
 
 			if (!allowedTypes.Contains(type))
 			{
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidObjectType, type)));
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidObjectType, type)));
 			}
 
 
@@ -752,14 +747,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Company.Assets.Any(a => a.uid == uid))
 				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetUid, uid)));
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetUid, uid)));
 				}
 			}
 
 			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (!Company.AssetTypes.Any(ast => ast.uid == uid)) {
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, uid)));
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetTypeUid, uid)));
 				}
 			}
 
@@ -788,7 +783,7 @@ namespace d360.web.Controllers.V2
 		private ExcelDocument CreateResponseDocumentForAssignmentsExport(WorkflowAssignmentApiModel assignments, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 
-			var exportName = ExcelExports.WorkflowAssignments_Assignments;
+			var exportName = Label.WorkflowAssignments_Assignments;
 			var hasSingleActionFilter = false;
 			var isRequestExport = false;
 			Guid actionTypeUid = new Guid();
@@ -803,7 +798,7 @@ namespace d360.web.Controllers.V2
 
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_actionsonly") && queryParams.FirstOrDefault(x => x.Key.ToLower() == "_actionsonly").Value.ToLower() == "true")
 				{
-					exportName = ExcelExports.WorkflowAssignments_Requests;
+					exportName = Label.WorkflowAssignments_Requests;
 					isRequestExport = true;
 				}
 			}
@@ -826,7 +821,7 @@ namespace d360.web.Controllers.V2
 
 						if (issueType == null)
 						{
-							throw new ArgumentException(Workflows.InvalidActionTypeUid);
+							throw new ArgumentException(Error.InvalidActionTypeUid);
 						}
 
 						actionTypeName = issueType.Name;
@@ -835,7 +830,7 @@ namespace d360.web.Controllers.V2
 					}
 					else
 					{
-						throw new ArgumentException(Workflows.InvalidActionTypeUid);
+						throw new ArgumentException(Error.InvalidActionTypeUid);
 					}
 				}
 			}
@@ -845,33 +840,33 @@ namespace d360.web.Controllers.V2
 
 			var headerRow = new ExcelRow
 									{
-										ExcelExports.WorkflowMonitor_WorkflowName,
-										ExcelExports.WorkflowAssignments_AssociatedWith,
+										Label.WorkflowMonitor_WorkflowName,
+										Label.WorkflowAssignments_AssociatedWith,
 									};
 
 			if (!hasSingleActionFilter)
 			{
-				headerRow.Add(ExcelExports.WorkflowMonitor_Type);
-				headerRow.Add(ExcelExports.WorkflowMonitor_TypeName);
+				headerRow.Add(Label.WorkflowMonitor_Type);
+				headerRow.Add(Label.WorkflowMonitor_TypeName);
 			}
 
 			if (!isRequestExport)
 			{
-				headerRow.Add(ExcelExports.WorkflowMonitor_Initiator);
+				headerRow.Add(Label.WorkflowMonitor_Initiator);
 			}
 
-			headerRow.Add(ExcelExports.WorkflowAssignments_Initiated);
-			headerRow.Add(ExcelExports.WorkflowAssignments_Assignees);
-			headerRow.Add(ExcelExports.WorkflowMonitor_Completed);
-			headerRow.Add(ExcelExports.WorkflowMonitor_Status);
+			headerRow.Add(Label.WorkflowAssignments_Initiated);
+			headerRow.Add(Label.WorkflowAssignments_Assignees);
+			headerRow.Add(Label.WorkflowMonitor_Completed);
+			headerRow.Add(Label.WorkflowMonitor_Status);
 
 			foreach (var fieldtype in fieldTypes)
 			{
 				headerRow.Add(fieldtype.FriendlyName);
 			}
 
-			headerRow.Add(ExcelExports.WorkflowMonitor_WorkflowInstanceUID);
-			headerRow.Add(ExcelExports.WorkflowMonitor_Url);
+			headerRow.Add(Label.WorkflowMonitor_WorkflowInstanceUID);
+			headerRow.Add(Label.WorkflowMonitor_Url);
 
 			headers.Add(headerRow);
 
@@ -917,26 +912,26 @@ namespace d360.web.Controllers.V2
 			}
 
 			var exportSheetRows = new List<ExcelRow> {
-				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")}
+				new ExcelRow { Label.WorkflowAssignments_ExportDate, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")}
 			};
 
 			if (isRequestExport)
 			{
-				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowMonitor_Initiator, assignments.items[0].initiator });
-				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_InitiatorUid, initiatorUid });
+				exportSheetRows.Add(new ExcelRow { Label.WorkflowMonitor_Initiator, assignments.items[0].initiator });
+				exportSheetRows.Add(new ExcelRow { Label.WorkflowAssignments_InitiatorUid, initiatorUid });
 			}
 
 			if (hasSingleActionFilter)
 			{
-				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeName, actionTypeName });
-				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeUID, actionTypeUid.ToString() });
+				exportSheetRows.Add(new ExcelRow { Label.WorkflowAssignments_ActionTypeName, actionTypeName });
+				exportSheetRows.Add(new ExcelRow { Label.WorkflowAssignments_ActionTypeUID, actionTypeUid.ToString() });
 			}
 
-			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString() });
-			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString() });
-			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString() });
+			exportSheetRows.Add(new ExcelRow { Label.Common_PageSize, assignments.pageSize.ToString() });
+			exportSheetRows.Add(new ExcelRow { Label.Common_PageNum, assignments.pageNum.ToString() });
+			exportSheetRows.Add(new ExcelRow { Label.Common_Total, assignments.total.ToString() });
 
-			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
+			var document = new ExcelDocument(string.Format(Label.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{
 				new ExcelSheet(exportName)
 				{
@@ -945,7 +940,7 @@ namespace d360.web.Controllers.V2
 					ValueRows = assignmentSheetRows,
 				},
 
-				new ExcelSheet(ExcelExports.WorkflowAssignments_ExportInfoTab)
+				new ExcelSheet(Label.WorkflowAssignments_ExportInfoTab)
 				{
 					ValueRows = exportSheetRows
 				}

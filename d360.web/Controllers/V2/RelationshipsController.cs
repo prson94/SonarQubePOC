@@ -1,5 +1,22 @@
-﻿using System;
-using System.Collections;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.model;
+using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using d360.web.Services;
+using Dapper;
+using Microsoft.Web.Http;
+using Newtonsoft.Json.Linq;
+using repositories;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,30 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.queue;
-using d360.extensions;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.model.helpers.filters;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using d360.web.Services;
-using Dapper;
-
-using Microsoft.Web.Http;
-
-using Newtonsoft.Json.Linq;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -135,17 +128,17 @@ namespace d360.web.Controllers.V2
 
 			if (predicates == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (predicates.Count == 0)
 			{
-				return errorMessageArgumentResponse(RelationshipsApiMessages.PredicateRequired);
+				return errorMessageArgumentResponse(Error.PredicateRequired);
 			}
 
 			if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
 			}
 
 			var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.DeletePredicates);
@@ -182,29 +175,29 @@ namespace d360.web.Controllers.V2
 
 			if (predicates == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (predicates.Count == 0)
 			{
-				return errorMessageArgumentResponse(RelationshipsApiMessages.PredicateRequired);
+				return errorMessageArgumentResponse(Error.PredicateRequired);
 			}
 
 			if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				return errorMessageArgumentResponse(string.Format(Error.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			foreach (var pred in predicates)
 			{
 				if (pred.Name.Length > 100)
 				{
-					return errorMessageArgumentResponse(RelationshipsApiMessages.InvalidNameLength);
+					return errorMessageArgumentResponse(Error.InvalidNameLength);
 				}
 
 				if (pred.Inverse.Length > 250)
 				{
-					return errorMessageArgumentResponse(RelationshipsApiMessages.InvalidInverseLength);
+					return errorMessageArgumentResponse(Error.InvalidInverseLength);
 				}
 			}
 
@@ -277,7 +270,7 @@ namespace d360.web.Controllers.V2
 
 			if (intersectType == null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidIntersectTypeUid, intersectTypeUid));
 			}
 
 			int id = intersectType.ID;
@@ -446,13 +439,13 @@ namespace d360.web.Controllers.V2
 					Guid.TryParse(value, out RelationshipTypeUid);
 					if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidRelatioshipTypeUid);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidRelatioshipTypeUid);
 					}
 					else
 					{
 						if (!RelationshipRepository.AnyExists(RelationshipTypeUid))
 						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, RelationshipTypeUid.ToString()));
+							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, RelationshipTypeUid.ToString()));
 						}
 					}
 				}
@@ -464,13 +457,13 @@ namespace d360.web.Controllers.V2
 					Guid.TryParse(value, out PredicateUid);
 					if (PredicateUid == null || PredicateUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidPredicateUid);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidPredicateUid);
 					}
 					else
 					{
 						if (!RelationshipRepository.AnyPredicateExists(PredicateUid))
 						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.PredicateUidNotFound, PredicateUid.ToString()));
+							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.PredicateUidNotFound, PredicateUid.ToString()));
 						}
 					}
 				}
@@ -482,7 +475,7 @@ namespace d360.web.Controllers.V2
 					Guid.TryParse(value, out SubjectUid);
 					if (SubjectUid == null || SubjectUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidSubjectUid);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidSubjectUid);
 					}
 					else
 					{
@@ -491,7 +484,7 @@ namespace d360.web.Controllers.V2
 							var assetType = AssetRepository.GetAssetTypeByUID(SubjectUid);
 							if (assetType == null || assetType.Class != AssetTypeClass.Reference)
 							{
-								return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.SubjectUidNotFound, SubjectUid.ToString()));
+								return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, SubjectUid.ToString()));
 							}
 						}
 					}
@@ -504,7 +497,7 @@ namespace d360.web.Controllers.V2
 					Guid.TryParse(value, out ObjectUid);
 					if (ObjectUid == null || ObjectUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidObjectUid);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidObjectUid);
 					}
 					else
 					{
@@ -513,7 +506,7 @@ namespace d360.web.Controllers.V2
 							var assetType = AssetRepository.GetAssetTypeByUID(ObjectUid);
 							if (assetType == null || assetType.Class != AssetTypeClass.Reference)
 							{
-								return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.ObjectUidNotFound, ObjectUid.ToString()));
+								return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.ObjectUidNotFound, ObjectUid.ToString()));
 							}
 						}
 					}
@@ -529,7 +522,7 @@ namespace d360.web.Controllers.V2
 						var assetType = AssetRepository.GetAssetTypeByUID(AssetUid);
 						if (assetType == null || assetType.Class != AssetTypeClass.Reference)
 						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.SubjectUidNotFound, AssetUid.ToString()));
+							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, AssetUid.ToString()));
 						}
 					}
 				}
@@ -540,12 +533,12 @@ namespace d360.web.Controllers.V2
 
 					if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.DirectionAllowedForRelation);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.DirectionAllowedForRelation);
 					}
 
 					if (!new[] { "asc", "desc" }.Contains(value))
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidDirection);
 					}
 				}
 
@@ -553,7 +546,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.OrderForRelation);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.OrderForRelation);
 					}
 					var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -568,7 +561,7 @@ namespace d360.web.Controllers.V2
 
 					if (!fieldTypes.Contains(orderValue))
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidOrderValue);
+						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidOrderValue);
 					}
 				}
 
@@ -642,7 +635,7 @@ namespace d360.web.Controllers.V2
 				
 			if (intersect == null || uid == Guid.Empty)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(RelationshipsApiMessages.RelationShipUidNotFound, uid.ToString()));
+				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipUidNotFound_Explicit, uid.ToString()));
 			}
 
 			var hasObjectReadPermission = Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.ReadRelationships);
@@ -650,14 +643,14 @@ namespace d360.web.Controllers.V2
 				
 			if (!hasObjectReadPermission || !hasSubjectReadPermission)
 			{
-				throw new ForbiddenBusinessLayerException(RelationshipsApiMessages.ViewthisRelationNotAllowed);
+				throw new ForbiddenBusinessLayerException(Error.ViewthisRelationNotAllowed);
 			}
 
 			var result = await RelationshipRepository.GetRelationship(uid);
 				
 			if (result == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, uid.ToString()));
+				throw new NotFoundBusinessLayerException(string.Format(Error.InvalidGuid, uid.ToString()));
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);
@@ -698,7 +691,7 @@ namespace d360.web.Controllers.V2
 					
 				if (!int.TryParse(value, out pageNum))
 				{
-					return errorMessageArgumentResponse(ApiMessages.Invalid_PageNum);
+					return errorMessageArgumentResponse(Error.Invalid_PageNum);
 				}
 			}
 
@@ -708,17 +701,17 @@ namespace d360.web.Controllers.V2
 
 				if (!int.TryParse(value, out pageSize))
 				{
-					return errorMessageArgumentResponse(ApiMessages.Invalid_PageSize);
+					return errorMessageArgumentResponse(Error.Invalid_PageSize);
 				}
 
 				if (pageSize > 100000)
 				{
-					return errorMessageArgumentResponse(ApiMessages._PageSizeLimit);
+					return errorMessageArgumentResponse(Error._PageSizeLimit);
 				}
 
 				if (pageSize <= 0)
 				{
-					return errorMessageArgumentResponse(ApiMessages._PageSizePassedZeroLess);
+					return errorMessageArgumentResponse(Error._PageSizePassedZeroLess);
 				}
 			}
 
@@ -728,7 +721,7 @@ namespace d360.web.Controllers.V2
 
 				if (!bool.TryParse(value, out includeTotal))
 				{
-					return errorMessageArgumentResponse(RelationshipsApiMessages.Invalid_includeTotal);
+					return errorMessageArgumentResponse(Error.Invalid_includeTotal_Boolean);
 				}
 			}
 
@@ -738,20 +731,20 @@ namespace d360.web.Controllers.V2
 					
 				if (owner.Length > 100)
 				{
-					return errorMessageArgumentResponse(RelationshipsApiMessages.Invalid_owner);
+					return errorMessageArgumentResponse(Error.Invalid_owner);
 				}
 			}
 
 			if (RelationshipTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(RelationshipsApiMessages.PassedValidRelationTypeUid);
+				return errorMessageArgumentResponse(Error.PassedValidRelationTypeUid);
 			}
 
 			int intersectTypeID = await (Company.QueryFirstOrDefaultAsync<int>("select id from [intersecttype] where [uid] = @uid", new { uid = RelationshipTypeUid }));
 
 			if (intersectTypeID <= 0)
 			{
-				return errorMessageArgumentResponse(RelationshipsApiMessages.PassedValidForExistingRelationType);
+				return errorMessageArgumentResponse(Error.PassedValidForExistingRelationType);
 			}
 
 			var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
@@ -785,12 +778,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationshiptypes == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
 			}
 
 			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
@@ -824,12 +817,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationshiptypes == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
 			}
 
 			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
@@ -863,12 +856,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationshiptypes == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				return errorMessageArgumentResponse(string.Format(Error.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
@@ -1103,24 +1096,24 @@ namespace d360.web.Controllers.V2
 			Guid intersectTypeUid,
 			RelationshipInserts relationships,
 			bool lookupFieldsPassedByValue = false,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			if (applicationId != null && applicationId.Length > 200)
 			{
-				throw new ArgumentException(ApiMessages.ApplicationIdMaxLengthViolated);
+				throw new ArgumentException(Error.ApplicationIdMaxLengthViolated);
 			}
 
 			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 			if (intersectType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
+				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 			else
 			{
 				if (intersectType.SubjectClass == intersectType.ObjectClass && intersectType.SubjectClass == AssetTypeClass.Reference
 					&& intersectType.ObjectAssetTypeID == intersectType.SubjectAssetTypeID)
 				{
-					throw new ForbiddenBusinessLayerException(string.Format(ActionApiMessages.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
+					throw new ForbiddenBusinessLayerException(string.Format(Error.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
 				}
 			}
 
@@ -1131,12 +1124,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationships == null)
 			{
-				throw new ArgumentException(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(Error.JSONValidMessage);
 			}
 
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				throw new ArgumentException(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			var execution = getApiExecution(
@@ -1181,20 +1174,20 @@ namespace d360.web.Controllers.V2
 			Guid intersectTypeUid,
 			RelationshipUpdates relationships,
 			bool lookupFieldsPassedByValue = false,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Relationships.PutRelationshipsAsync => ";
 
 			if (applicationId != null && applicationId.Length > 200)
 			{
-				throw new ArgumentException(ApiMessages.ApplicationIdMaxLengthViolated);
+				throw new ArgumentException(Error.ApplicationIdMaxLengthViolated);
 			}
 
 			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 			if (intersectType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
+				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 
 			if (relationships == null)
@@ -1204,12 +1197,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationships == null)
 			{
-				throw new ArgumentException(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(Error.JSONValidMessage);
 			}
 
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				throw new ArgumentException(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			var execution = getApiExecution(
@@ -1253,21 +1246,21 @@ namespace d360.web.Controllers.V2
 			Guid intersectTypeUid,
 			RelationshipInserts relationships,
 			bool triggerWorkflow = false,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Relationships.PostBulkRelationshipsAsync => ";
 			try
 			{
 				if (applicationId != null && applicationId.Length > 200)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 				}
 
 				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 				if (intersectType == null)
 				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
 				}
 
 				if (relationships == null)
@@ -1277,7 +1270,7 @@ namespace d360.web.Controllers.V2
 
 				if (relationships == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
 				}
 
 				var execution = getApiExecution(
@@ -1319,21 +1312,21 @@ namespace d360.web.Controllers.V2
 			Guid intersectTypeUid,
 			RelationshipUpdates relationships,
 			bool triggerWorkflow = false,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Relationships.PutBulkRelationshipsAsync => ";
 			try
 			{
 				if (applicationId != null && applicationId.Length > 200)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 				}
 
 				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 				if (intersectType == null)
 				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
 				}
 
 				if (relationships == null)
@@ -1343,7 +1336,7 @@ namespace d360.web.Controllers.V2
 
 				if (relationships == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
 				}
 
 				var execution = getApiExecution(
@@ -1395,7 +1388,7 @@ namespace d360.web.Controllers.V2
 
 				if (dbExecutionItem == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ExecutionUIDNotFound)).ConfigureAwait(false);
 				}
 
 				var info = new ApiExecutionInfo { CompanyID = SecurityContext.CompanyID, ExecutionID = executionID };
@@ -1430,14 +1423,14 @@ namespace d360.web.Controllers.V2
 			}
 			catch (ArgumentException)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ExecutionUIDNotFound)).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
 
@@ -1464,7 +1457,7 @@ namespace d360.web.Controllers.V2
 			Guid intersectTypeUid,
 			RelationshipDeletes relationships,
 			bool triggerWorkflow = false,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
 
@@ -1472,14 +1465,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (applicationId != null && applicationId.Length > 200)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 				}
 
 				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 				if (intersectType == null)
 				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
 				}
 
 				if (relationships == null)
@@ -1489,7 +1482,7 @@ namespace d360.web.Controllers.V2
 
 				if (relationships == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
 				}
 
 				var execution = getApiExecution(
@@ -1534,18 +1527,18 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> DeleteRelationships(
 			Guid intersectTypeUid,
 			RelationshipDeletes relationships,
-			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
+			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
 			if (applicationId != null && applicationId.Length > 200)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
 
 			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 			if (intersectType == null)
 			{
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
 			}
 
 			if (relationships == null)
@@ -1555,17 +1548,17 @@ namespace d360.web.Controllers.V2
 
 			if (relationships == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
 			}
 
 			if (relationships.Count == 0)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.RelationNotProvided)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.RelationNotProvided)).ConfigureAwait(false);
 			}
 
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
 			}
 
 			var execution = getApiExecution(
@@ -1589,7 +1582,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (relationship.Success)
 				{
-					relationship.Message = RelationshipsApiMessages.RelationshipSucessfullyRemoved;
+					relationship.Message = Error.RelationshipSucessfullyRemoved;
 				}
 			});
 

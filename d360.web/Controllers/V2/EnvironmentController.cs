@@ -1,5 +1,4 @@
-﻿using ComponentSpace.SAML2.Data;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -12,13 +11,11 @@ using d360.web.Models;
 using d360.web.Models.Usage;
 using d360.web.Utilities;
 using Dapper;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.PowerBI.Api.V2;
 using Microsoft.Rest;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -107,7 +104,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
 			var response = await Workspace.UpsertRebuildStatusAsync(model.Job, CompanyRebuildJobStatusState.Active, 12);
@@ -124,7 +121,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 			return (response.IsSuccess) ?
-				Ok(new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" }) :
+				Ok(new { type = Label.confirm, title = Error.Success, action = Label.add, message = Information.RebuildRequest, id = "" }) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
@@ -193,7 +190,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(_settingId, out int val) || val <= 0)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.SettingIDNotValid);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.SettingIDNotValid);
 				}
 				else
 				{
@@ -210,7 +207,7 @@ namespace d360.web.Controllers.V2
 
 			if (settingId.HasValue && settings.Count() == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.SettingIDNotFound);
 			}
 
 			var response = settings.Select(s => new CompanySettingApiModel(s, s.Value));
@@ -242,21 +239,21 @@ namespace d360.web.Controllers.V2
 		{
 			if (setting == null)
 			{
-				throw new GenericException(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
+				throw new GenericException(HttpStatusCode.NotFound, Error.SettingIDNotFound);
 			}
 			if (setting.Locked)
 			{
-				throw new GenericException(HttpStatusCode.Forbidden, ApiMessages.SettingLocked);
+				throw new GenericException(HttpStatusCode.Forbidden, Error.SettingLocked);
 			}
 			if (!model.HasExactlyOneValue)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.SettingValueProvided);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.SettingValueProvided);
 			}
 
 			bool clearSetting = false;
 			string value = "";
 
-			string valueErrorMessage = ApiMessages.DataTypeValueNotMatched;
+			string valueErrorMessage = Error.DataTypeValueNotMatched;
 			switch (setting.Type)
 			{
 				case SettingType.Number:
@@ -277,7 +274,7 @@ namespace d360.web.Controllers.V2
 						}
 						else
 						{
-							throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.InvalidNumber);
+							throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidNumber);
 						}
 					}
 					break;
@@ -299,7 +296,7 @@ namespace d360.web.Controllers.V2
 						}
 						else
 						{
-							throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.InvalidBoolean);
+							throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidBoolean);
 						}
 					}
 
@@ -325,23 +322,23 @@ namespace d360.web.Controllers.V2
 
 							if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
 							{
-								throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.MissingIPAddressValue);
+								throw new GenericException(HttpStatusCode.BadRequest, Error.MissingIPAddressValue);
 							}
 							if (!IPAddress.TryParse(ip.Start, out IPAddress _))
 							{
-								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.StartIPAddressNotValid, ip.Start));
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(Error.StartIPAddressNotValid, ip.Start));
 							}
 							if (!IPAddress.TryParse(ip.End, out IPAddress _))
 							{
-								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.EndIPAddressNotValid, ip.End));
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(Error.EndIPAddressNotValid, ip.End));
 							}
 							if (disallowedIp.Contains(IPAddress.Parse(ip.Start)))
 							{
-								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.IpSettingNotAllowed, ip.Start));
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(Error.IpSettingNotAllowed, ip.Start));
 							}
 							if (disallowedIp.Contains(IPAddress.Parse(ip.End)))
 							{
-								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.IpSettingNotAllowed, ip.End));
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(Error.IpSettingNotAllowed, ip.End));
 							}
 
 							xml.Add(new XElement("ip",
@@ -428,7 +425,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
@@ -451,7 +448,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (models == null || models.Count == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			var list = Setting.ActionMessage.GetAsList();
@@ -553,7 +550,7 @@ namespace d360.web.Controllers.V2
 				string isValid = isPageSizeAndNumValid(queryParams);
 				if (!string.IsNullOrEmpty(isValid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 				}
 
 				var dbArgs = new DynamicParameters();
@@ -590,7 +587,7 @@ namespace d360.web.Controllers.V2
 					var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
 					if (!allowedDirections.Contains(order.Trim().ToLower()))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), ApiMessages.InvalidDirection)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), Error.InvalidDirection)).ConfigureAwait(false);
 					}
 
 					orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
@@ -621,7 +618,7 @@ namespace d360.web.Controllers.V2
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = ApiMessages.Invalid_Order;
+								errorMessage = Error.Invalid_Order;
 							}
 						}
 						else if (key == "_pagenum")
@@ -652,7 +649,7 @@ namespace d360.web.Controllers.V2
 							if (!DateTime.TryParse(q.Value, out startDate))
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = ApiMessages.InvalidStartDate;
+								errorMessage = Error.InvalidStartDate;
 							}
 							else
 							{
@@ -667,7 +664,7 @@ namespace d360.web.Controllers.V2
 							if (!DateTime.TryParse(q.Value, out endDate))
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = ApiMessages.InvalidEndDate;
+								errorMessage = Error.InvalidEndDate;
 							}
 							else
 							{
@@ -688,13 +685,13 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = ApiMessages.InvalidResourceuid;
+									errorMessage = Error.InvalidResourceUID;
 								}
 							}
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = ApiMessages.InvalidResourceuid;
+								errorMessage = Error.InvalidResourceUID;
 							}
 						}
 						else if (key == "_assetuid")
@@ -711,13 +708,13 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = string.Format(ApiMessages.InvalidAssetUid, q.Value);
+									errorMessage = string.Format(Error.InvalidAssetUid, q.Value);
 								}
 							}
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = string.Format(ApiMessages.InvalidAssetUid, q.Value);
+								errorMessage = string.Format(Error.InvalidAssetUid, q.Value);
 							}
 						}
 						else if (key == "_assettypeuid")
@@ -734,13 +731,13 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
+									errorMessage = string.Format(Error.AssetTypeNotFound, q.Value);
 								}
 							}
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
+								errorMessage = string.Format(Error.AssetTypeNotFound, q.Value);
 							}
 						}
 						else if (key == "_semanticuid")
@@ -855,7 +852,7 @@ select	r.uid as ResourceUid,
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetUsageDetails => " } });
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
 
@@ -1127,7 +1124,7 @@ select	r.uid as ResourceUid,
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
 
@@ -1156,7 +1153,7 @@ select	r.uid as ResourceUid,
 			}
 			catch (Exception e)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
 
@@ -1186,35 +1183,35 @@ select	r.uid as ResourceUid,
 				{
 					if (item.Name == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpName)).ConfigureAwait(false);
 					}
 					if (item.Name.Trim() == "")
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpName)).ConfigureAwait(false);
 					}
 					if (item.Name.Length > 500)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpNameLength)).ConfigureAwait(false);
 					}
 					if (item.Url == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrl)).ConfigureAwait(false);
 					}
 					if (item.Url.Trim() == "")
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrl)).ConfigureAwait(false);
 					}
 					if (item.Url.Length > 2000)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrlLength)).ConfigureAwait(false);
 					}
 					if (!visibilties.Contains(item.visibility))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.HelpMenuVisibilityError)).ConfigureAwait(false);
 					}
 					if (item.order < 0)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.HelpMenuOrderError)).ConfigureAwait(false);
 					}
 
 					var uid = Guid.NewGuid();
@@ -1235,7 +1232,7 @@ select	r.uid as ResourceUid,
 				Company.SaveChanges();
 				foreach (var i in uids)
 				{
-					result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
+					result.Add(new HelpMenuItemMessage { uid = i, title = Information.HelpMenuItemsCreated, message = Information.HelpItemsAdded });
 				}
 				return await Task.FromResult<IHttpActionResult>(
 							ResponseMessage(
@@ -1247,7 +1244,7 @@ select	r.uid as ResourceUid,
 			}
 			catch (Exception e)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
 
@@ -1278,35 +1275,35 @@ select	r.uid as ResourceUid,
 
 					if (item.Name == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpName)).ConfigureAwait(false);
 					}
 					if (item.Name.Trim() == "")
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpName)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpName)).ConfigureAwait(false);
 					}
 					if (item.Name.Length > 500)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpNameLength)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpNameLength)).ConfigureAwait(false);
 					}
 					if (item.Url == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrl)).ConfigureAwait(false);
 					}
 					if (item.Url.Trim() == "")
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrl)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrl)).ConfigureAwait(false);
 					}
 					if (item.Url.Length > 2000)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidHelpUrlLength)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidHelpUrlLength)).ConfigureAwait(false);
 					}
 					if (!visibilties.Contains(item.visibility))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.HelpMenuVisibilityError)).ConfigureAwait(false);
 					}
 					if (item.order < 0)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.HelpMenuOrderError)).ConfigureAwait(false);
 					}
 
 					if (helpItem != null)
@@ -1328,7 +1325,7 @@ select	r.uid as ResourceUid,
 				{
 					foreach (var i in uids)
 					{
-						result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsUpdated, message = ApiMessages.HelpMenuSuccess });
+						result.Add(new HelpMenuItemMessage { uid = i, title = Information.HelpMenuItemsUpdated, message = Information.HelpMenuSuccess });
 					}
 					return await Task.FromResult<IHttpActionResult>(
 								ResponseMessage(
@@ -1340,7 +1337,7 @@ select	r.uid as ResourceUid,
 				}
 				else
 				{
-					result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpUpdateUid });
+					result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = Error.BadRequest, message = Error.InvalidHelpUpdateUid });
 					return await Task.FromResult<IHttpActionResult>(
 								ResponseMessage(
 									Request.CreateResponse(
@@ -1352,7 +1349,7 @@ select	r.uid as ResourceUid,
 			}
 			catch (Exception e)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
 
@@ -1381,7 +1378,7 @@ select	r.uid as ResourceUid,
 					var helpItem = Company.HelpResources.Where(x => x.uid == item.uid).FirstOrDefault();
 					if (helpItem != null && helpItem.isSystem)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ErrorDeletingDefaultHelpItem)).ConfigureAwait(false);
 					}
 					if (helpItem != null && !helpItem.isSystem)
 					{
@@ -1395,7 +1392,7 @@ select	r.uid as ResourceUid,
 				{
 					foreach (var i in uids)
 					{
-						result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsDeleted, message = ApiMessages.HelpItemsDeleted });
+						result.Add(new HelpMenuItemMessage { uid = i, title = Information.HelpMenuItemsDeleted, message = Information.HelpItemsDeleted });
 					}
 					return await Task.FromResult<IHttpActionResult>(
 								ResponseMessage(
@@ -1407,7 +1404,7 @@ select	r.uid as ResourceUid,
 				}
 				else
 				{
-					result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = ApiMessages.BadRequest, message = ApiMessages.InvalidHelpDeleteUid });
+					result.Add(new HelpMenuItemMessage { uid = Guid.Empty, title = Error.BadRequest, message = Error.InvalidHelpDeleteUid });
 					return await Task.FromResult<IHttpActionResult>(
 								ResponseMessage(
 									Request.CreateResponse(
@@ -1419,7 +1416,7 @@ select	r.uid as ResourceUid,
 			}
 			catch (Exception e)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
 
@@ -1457,7 +1454,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGetMany, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1513,7 +1510,7 @@ select	r.uid as ResourceUid,
 
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoActiveThemeExists);
 				}
 
 				var css = new StringBuilder();
@@ -1578,7 +1575,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGetMany, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1602,7 +1599,7 @@ select	r.uid as ResourceUid,
 
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
 				}
 
 				var css = new StringBuilder();
@@ -1635,7 +1632,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGet, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1658,19 +1655,19 @@ select	r.uid as ResourceUid,
 			{
 				if (!IsCustomCssEnabled)
 				{
-					throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnGet, ThemeErrors.CustomCssNotAllowed);
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnGet, Error.CustomCssNotAllowed);
 				}
 
 
 				var theme = ThemeRepository.GetThemeByUid(uid);
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
 				}
 
 				if (string.IsNullOrEmpty(theme.CustomCss))
 				{
-					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.CustomCssNotFound);
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.CustomCssNotFound);
 				}
 
 				return ResponseMessage(
@@ -1686,7 +1683,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGet, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1717,7 +1714,7 @@ select	r.uid as ResourceUid,
 
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
 				}
 
 				var svg = new StringBuilder();
@@ -1837,7 +1834,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGet, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1870,7 +1867,7 @@ select	r.uid as ResourceUid,
 				{
 					if (!IsCustomCssEnabled)
 					{
-						throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, ThemeErrors.CustomCssNotAllowed);
+						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.CustomCssNotAllowed);
 					}
 				}
 
@@ -1884,7 +1881,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnCreate, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1917,7 +1914,7 @@ select	r.uid as ResourceUid,
 				{
 					if (!IsCustomCssEnabled)
 					{
-						throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.CustomCssNotAllowed);
+						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
 					}
 				}
 
@@ -1931,7 +1928,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -1972,7 +1969,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2006,7 +2003,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnDelete, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2082,7 +2079,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2169,7 +2166,7 @@ select	r.uid as ResourceUid,
 
 			if (getModelFilter.Errors.Count > 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Join(", ", getModelFilter.Errors));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Join(", ", getModelFilter.Errors));
 			}
 
 			if (getModelFilter.AssetTypeUid.HasValue)
@@ -2177,13 +2174,13 @@ select	r.uid as ResourceUid,
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == getModelFilter.AssetTypeUid);
 				if (assetType == null)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(Messages.AssetTypeNotFound, getModelFilter.AssetTypeUid));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, getModelFilter.AssetTypeUid));
 				}
 
 				var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset };
 				if (!allowedClasses.Contains(assetType.Class))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
 				}
 			}
 
@@ -2191,7 +2188,7 @@ select	r.uid as ResourceUid,
 			{
 				if (!Company.Assets.Any(x => x.uid == getModelFilter.AssetUid))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(Messages.AssetNotFound, getModelFilter.AssetUid));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetNotFound, getModelFilter.AssetUid));
 				}
 			}
 
@@ -2199,7 +2196,7 @@ select	r.uid as ResourceUid,
 			{
 				if (!Company.Reports.Any(x => x.uid == getModelFilter.Uid))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DashboardMessages.DashboardNotFound, getModelFilter.Uid));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Information.DashboardNotFound, getModelFilter.Uid));
 				}
 			}
 
@@ -2256,7 +2253,7 @@ select	r.uid as ResourceUid,
 		{
 			if (!IsDashboardingEnabled)
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnCreate, Error.EndpointNotAuthorizedMessage);
 			}
 
 			NameValueCollection data = HttpContext.Current.Request.Form;
@@ -2284,14 +2281,14 @@ select	r.uid as ResourceUid,
 
 					if (!isPowerBiFileValid(memoryStream))
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorOnCreate, Error.FailedToLoadPowerBI);
 					}
 					memoryStream.Position = 0; // Reset position to read again.
 
 					var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name);
 					if (importResult.ImportState == "Failed")
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorOnCreate, Error.FailedToLoadPowerBI);
 					}
 
 					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
@@ -2310,12 +2307,12 @@ select	r.uid as ResourceUid,
 				}
 				catch (Exception ex)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorOnCreate, Error.FailedToLoadPowerBI);
 				}
 			}
 			else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnCreate, Label.FileRequired);
 			}
 
 			var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
@@ -2366,7 +2363,7 @@ select	r.uid as ResourceUid,
 		{
 			if (!IsDashboardingEnabled)
 			{
-				return errorMessageForbiddenResponse(ApiMessages.EndpointNotAuthorizedMessage);
+				return errorMessageForbiddenResponse(Error.EndpointNotAuthorizedMessage);
 			}
 
 			NameValueCollection data = HttpContext.Current.Request.Form;
@@ -2378,13 +2375,13 @@ select	r.uid as ResourceUid,
 
 			if (!requestModel.Uid.HasValue)
 			{
-				return errorMessageArgumentResponse(DashboardMessages.InvalidDashboardUid);
+				return errorMessageArgumentResponse(Information.InvalidDashboardUid);
 			}
 
 			var existingReport = Company.Reports.FirstOrDefault(x => x.uid == requestModel.Uid);
 			if (existingReport == null)
 			{
-				return errorMessageArgumentResponse(string.Format(DashboardMessages.DashboardNotFound, requestModel.Uid));
+				return errorMessageArgumentResponse(string.Format(Information.DashboardNotFound, requestModel.Uid));
 			}
 			definition = existingReport.DashboardDefinition;
 
@@ -2404,7 +2401,7 @@ select	r.uid as ResourceUid,
 
 				if (!isPowerBiFileValid(memoryStream))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorOnCreate, Error.FailedToLoadPowerBI);
 				}
 
 				memoryStream.Position = 0; // Reset position to read again.
@@ -2413,7 +2410,7 @@ select	r.uid as ResourceUid,
 
 				if (importResult.ImportState == "Failed")
 				{
-					return errorMessageArgumentResponse(FormControllerApiMessage.FailedToLoadPowerBI);
+					return errorMessageArgumentResponse(Error.FailedToLoadPowerBI);
 				}
 
 				definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
@@ -2456,13 +2453,13 @@ select	r.uid as ResourceUid,
 		{
 			if (!IsDashboardingEnabled)
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnDelete, Error.EndpointNotAuthorizedMessage);
 			}
 				
 			var existingReport = Company.Reports.FirstOrDefault(x => x.uid == uid);
 			if (existingReport == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(DashboardMessages.DashboardNotFound, uid));
+				return errorMessageNotFoundResponse(string.Format(Information.DashboardNotFound, uid));
 			}
 			if (existingReport.ReportType == DashboardType.PowerBi)
 			{
@@ -2475,7 +2472,7 @@ select	r.uid as ResourceUid,
 				DashboardRepository.DeleteDashboard(uid);
 			}
 
-			return Ok(new ConfirmResponse { message = DashboardMessages.DashboardRemoved });
+			return Ok(new ConfirmResponse { message = Information.DashboardRemoved });
 		}
 
 
@@ -2500,12 +2497,12 @@ select	r.uid as ResourceUid,
 			{
 				if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
+					return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
 				}
 
 				if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
+					throw new ArgumentNullException(Error.PleaseSpecifyUserNamePassword);
 				}
 
 				var companySettings = await GetCachedSettings();
@@ -2514,7 +2511,7 @@ select	r.uid as ResourceUid,
 
 				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
 				}
 
 				// if the workspace id is null create a new one and update the companysettings
@@ -2522,7 +2519,7 @@ select	r.uid as ResourceUid,
 
 				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
 				}
 
 				//save password in this workspace for all ds's
@@ -2536,7 +2533,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2552,7 +2549,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(groupId))
 			{
-				throw new ArgumentNullException(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
+				throw new ArgumentNullException(Error.PowerBINotSetupOnGovernEnvironment);
 			}
 
 			// Create a user password credentials.
@@ -2564,7 +2561,7 @@ select	r.uid as ResourceUid,
 
 			if (authenticationResult == null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, FormControllerApiMessage.AuthenticationFailed, FormControllerApiMessage.AuthenticationFailed);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AuthenticationFailed, Error.AuthenticationFailed);
 			}
 
 			var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
@@ -2576,7 +2573,7 @@ select	r.uid as ResourceUid,
 
 				if (report == null)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, FormControllerApiMessage.NoSuchReport, FormControllerApiMessage.NoSuchReport);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.NoSuchReport, Error.NoSuchReport);
 				}
 
 				Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
@@ -2585,7 +2582,7 @@ select	r.uid as ResourceUid,
 
 				if (tokenResponse == null)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, FormControllerApiMessage.FailedGenerateToken, FormControllerApiMessage.FailedGenerateToken);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.FailedGenerateToken, Error.FailedGenerateToken);
 				}
 
 				var viewModel = new PowerBIReportViewModel
@@ -2609,42 +2606,42 @@ select	r.uid as ResourceUid,
 				select      *
 				from        (                 
 							select      convert(nvarchar(36), uid) as value,
-										'{CommonNames.AssetTypeClass_Business} : ' + Name as title
+										'{Label.AssetTypeClass_Business} : ' + Name as title
 							from        AssetType where [Class] = 1                       
 							union
 							select      convert(nvarchar(36), uid) as value,
-										'{CommonNames.AssetTypeClass_Technical} : ' + Name as title
+										'{Label.AssetTypeClass_Technical} : ' + Name as title
 							from        AssetType where [Class] = 8                       
 							union 
 							select      convert(nvarchar(36), uid) + '|instance' as value,
-										'{CommonNames.AssetTypeClass_Business} {CommonNames.Instance}: ' + Name as title
+										'{Label.AssetTypeClass_Business} {Label.Instance}: ' + Name as title
 							from       AssetType where [Class] = 1   
 							union 
 							select      convert(nvarchar(36), uid) + '|instance' as value,
-										'{CommonNames.AssetTypeClass_Technical} {CommonNames.Instance}: ' + Name as title
+										'{Label.AssetTypeClass_Technical} {Label.Instance}: ' + Name as title
 							from       AssetType where [Class] = 8  
 							union
 							select      '{constants.CommonIdentifiers.ResourceTypeUid}' as value,
-										'{CommonNames.AssetTypeClass_Resource}' as title
+										'{Label.AssetTypeClass_Resource}' as title
 							union
 							select      convert(nvarchar(36), uid) + '|instance' as value,
-										'{CommonNames.AssetTypeClass_Model} {CommonNames.Instance}: ' + Name as title
+										'{Label.AssetTypeClass_Model} {Label.Instance}: ' + Name as title
 							from         AssetType where [Class] = 2 
 							union
 							select      convert(nvarchar(36), uid) as value,
-										'{CommonNames.AssetTypeClass_ModelType} : ' + Name as title
+										'{Label.AssetTypeClass_ModelType} : ' + Name as title
 							from        AssetType where [Class] = 2 
 							union
 							select      convert(nvarchar(36), uid) + '|instance' as value,
-										'{CommonNames.AssetTypeClass_Policy} {CommonNames.Instance}: ' + Name as title
+										'{Label.AssetTypeClass_Policy} {Label.Instance}: ' + Name as title
 							from         AssetType where [Class] = 6 
 							union
 							select      convert(nvarchar(36), uid) as value,
-										'{CommonNames.AssetTypeClass_PolicyType} : ' + Name as title
+										'{Label.AssetTypeClass_PolicyType} : ' + Name as title
 							from        AssetType where [Class] = 6
 							union
 							select      convert(nvarchar(36), uid) as value,
-										'{CommonNames.AssetTypeClass_RuleType} : ' + Name as title
+										'{Label.AssetTypeClass_RuleType} : ' + Name as title
 							from         AssetType where [Class] = 7 
 							) O
 							order by    title
@@ -2661,12 +2658,12 @@ select	r.uid as ResourceUid,
 
 			if (model == null)
 			{
-				throw new ArgumentException(ApiMessages.InvalidModel);
+				throw new ArgumentException(Error.InvalidModel);
 			}
 
 			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
 			{
-				throw new ArgumentException(String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
+				throw new ArgumentException(String.Format(Error.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
 			}
 
 			if (model.LanguageCode == null)
@@ -2756,7 +2753,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(clientId))
 			{
-				throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+				throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
 			}
 
 			// if the workspace id is null create a new one and update the companysettings
@@ -2783,7 +2780,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(clientId))
 			{
-				throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+				throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
 			}
 
 			// if the workspace id is null create a new one and update the companysettings
@@ -2836,7 +2833,7 @@ select	r.uid as ResourceUid,
 					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
 					{
 						AssetTypeUID = Guid.Empty;
-						throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.Error, OthersError.InvalidAssetTypeUid);
+						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorGeneric, Error.InvalidAssetTypeUid);
 					}
 				}
 
@@ -2850,7 +2847,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2879,7 +2876,7 @@ select	r.uid as ResourceUid,
 				if (string.IsNullOrEmpty(value))
 				{
 					{
-						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+						throw new GenericException(HttpStatusCode.Conflict, Error.UnknownError, Error.UnknownError);
 					}
 				}
 
@@ -2893,7 +2890,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorGeneric, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2921,7 +2918,7 @@ select	r.uid as ResourceUid,
 				if (string.IsNullOrEmpty(value))
 				{
 					{
-						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+						throw new GenericException(HttpStatusCode.Conflict, Error.UnknownError, Error.UnknownError);
 					}
 				}
 
@@ -2935,7 +2932,7 @@ select	r.uid as ResourceUid,
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorGeneric, Error.UnknownErrorInvestigatingMessage);
 			}
 		}
 

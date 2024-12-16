@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
-
-using Resources;
+using d360.core.resources;
 
 namespace d360.web.Services
 {
     [Serializable]
     public class ForbiddenBusinessLayerException : UnrecoverableBusinessLayerException
     {
-        public ForbiddenBusinessLayerException() : this(ApiMessages.ForbiddenUserNotAuthorizedMessage)
+        public ForbiddenBusinessLayerException() : this(Error.ForbiddenUserNotAuthorizedMessage)
         {
         }
 

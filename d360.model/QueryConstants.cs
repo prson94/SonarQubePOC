@@ -12,15 +12,15 @@ namespace d360.model
 			get
 			{
 				return $@"case 
-					when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
-					when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
-					when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
+					when T.Object = 'ArtifactType' and T.[Class] = 1 then '{Label.AssetTypeClass_Business.CleanForSql()}: ' 
+					when T.Object = 'ArtifactType' and T.[Class] = 8 then '{Label.AssetTypeClass_Technical.CleanForSql()}: ' 
+					when T.Object = 'PolicyType' then '{Label.AssetTypeClass_Policy.CleanForSql()}: ' 
 					when T.Object = 'ReferenceItemType' then 'Reference: ' 
-					when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
-					when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
+					when T.Object = 'RuleType' then '{Label.AssetTypeClass_Rule.CleanForSql()}: ' 
+					when T.Object = 'TaxonomyType' then '{Label.AssetTypeClass_Model.CleanForSql()}: '
 					when T.Object = 'AttributeType' then 'Attribute: '
-					when T.Object = 'GroupType' then '{CommonNames.AssetTypeClass_Group.CleanForSql()}: '
-					when T.Object = 'ResourceType' then '{CommonNames.AssetTypeClass_Resource.CleanForSql()}: '
+					when T.Object = 'GroupType' then '{Label.AssetTypeClass_Group.CleanForSql()}: '
+					when T.Object = 'ResourceType' then '{Label.AssetTypeClass_Resource.CleanForSql()}: '
 					else ''
 				end ";
 			}
@@ -354,17 +354,17 @@ namespace d360.model
 					objectId as id,
 					[object] as [type],		
 					case when T.[Class] = 1 then
-						'{CommonNames.AssetTypeClass_Business}'
+						'{Label.AssetTypeClass_Business}'
 					when T.[Class] = 8 then
-						'{CommonNames.AssetTypeClass_Technical}'
+						'{Label.AssetTypeClass_Technical}'
 					when T.[Class] = 7 then
-						'{CommonNames.AssetTypeClass_RuleType}'
+						'{Label.AssetTypeClass_RuleType}'
 					when T.[Class] = 6 then
-						'{CommonNames.AssetTypeClass_PolicyType}'
+						'{Label.AssetTypeClass_PolicyType}'
 					when T.[Class] = 9 then
-						'{CommonNames.AssetTypeClass_ReferenceList}'
+						'{Label.AssetTypeClass_ReferenceList}'
 					when T.[Class] = 2 then
-						'{CommonNames.AssetTypeClass_ModelType}'
+						'{Label.AssetTypeClass_ModelType}'
 					else
 						''
 					end + ' :: ' + coalesce(P.[Path], T.[Name]) as label, 
@@ -380,11 +380,11 @@ namespace d360.model
 				where
 					T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ReferenceItemType')
 				union all
-				select 'IntersectType|' + cast(id as varchar) as value, id, 'IntersectType' as [type], '{CommonNames.AssetTypeClass_Relationship} :: ' + Name as [label], 1 as [count] 
+				select 'IntersectType|' + cast(id as varchar) as value, id, 'IntersectType' as [type], '{Label.AssetTypeClass_Relationship} :: ' + Name as [label], 1 as [count] 
 				from IntersectTypeDetail
 				where PredicateType not in ({(int)PredicateType.Diagram}, {(int)PredicateType.DiagramUse}, {(int)PredicateType.DiagramReference})
 				union all
-				select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], '{CommonNames.AssetTypeClass_ActionType} :: ' + t.Name as [label], count(*) as [count] 
+				select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], '{Label.AssetTypeClass_ActionType} :: ' + t.Name as [label], count(*) as [count] 
 				from issuetype t
 				left join issue a on a.issuetypeid = t.id
 				group by t.id, t.name

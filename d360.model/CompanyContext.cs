@@ -325,12 +325,12 @@ namespace d360.model
 
 			if (subjectDetail == null)
 			{
-				throw new NotFoundException(CompanyContextErrors.Subject);
+				throw new NotFoundException(Error.Subject);
 			}
 
 			if (objectDetail == null)
 			{
-				throw new NotFoundException(CompanyContextErrors.Object);
+				throw new NotFoundException(Error.Object);
 			}
 
 			if (subject == "ReferenceItemType")
@@ -347,7 +347,7 @@ namespace d360.model
 
 			if (intersectType == null)
 			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
+				throw new NotFoundException(Error.IntersectType);
 			}
 
 			if (
@@ -385,7 +385,7 @@ namespace d360.model
 			}
 			else
 			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
+				throw new NotFoundException(Error.IntersectType);
 			}
 		}
 
@@ -602,7 +602,7 @@ from	Field F
 
 			if (item == null)
 			{
-				throw new NotFoundException(CompanyContextErrors.Relationship);
+				throw new NotFoundException(Error.Relationship);
 			}
 
 			var intersectDetail = IntersectDetails.Single(i => i.ID == id);
@@ -1202,15 +1202,15 @@ from	Field F
 											T.ObjectID as ID,
 											T.Uid,
 											case 
-												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
-												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
+												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{Label.AssetTypeClass_Business.CleanForSql()} : '
+												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{Label.AssetTypeClass_Technical.CleanForSql()} : '
 												when T.Object = 'GroupType' then 'Security : '
-												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
+												when T.Object = 'PolicyType' then '{Label.AssetTypeClass_Policy.CleanForSql()} : '
 												when T.Object = 'ReferenceItemType' then 'Reference : '
 												when T.Object = 'ResourceType' then 'Security : '
-												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
-												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} : ' 
-												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
+												when T.Object = 'RuleType' then '{Label.AssetTypeClass_Rule.CleanForSql()} : '
+												when T.Object = 'TaskType' and T.[Class] = 15 then '{Label.AssetTypeClass_Task.CleanForSql()} : ' 
+												when T.Object = 'TaxonomyType' then '{Label.AssetTypeClass_Model.CleanForSql()} : '
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
 											cross apply dbo.GetAssetTypeTextPathById(T.ID, ' > ') P
@@ -1373,7 +1373,7 @@ from	Field F
 					objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
 					if (objectId <= 0)
 					{
-						throw new ArgumentNullException(string.Format(CompanyContextErrors.AssetUidNotFound, objectUid.ToString()));
+						throw new ArgumentNullException(string.Format(Error.AssetUidNotFound, objectUid.ToString()));
 					}
 					break;
 			}
@@ -1454,7 +1454,7 @@ from	IntersectType I
 				AssetType subjectAssetType = Filter<AssetType>(i => i.uid == subjectUid).FirstOrDefault();
 				if (subjectAssetType == null)
 				{
-					throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
+					throw new ArgumentNullException(Error.SubjectAssetTypeNotExists);
 				}
 				allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
 			}
@@ -1506,7 +1506,7 @@ from	IntersectType I
 
 			if (!ft.LookupObjectID.HasValue)
 			{
-				throw new ArgumentNullException(CompanyContextErrors.InvalidRelationShipField);
+				throw new ArgumentNullException(Error.InvalidRelationShipField);
 			}
 
 			if (intersectType == null)
@@ -1851,7 +1851,7 @@ from	IntersectType I
 					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
 					break;
 				default:
-					throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
+					throw new ArgumentNullException(Error.InvalidTypeIdentifierInfoModel);
 			}
 
 			return result.FirstOrDefault();
@@ -2037,7 +2037,7 @@ from	IntersectType I
 
 				if (field == null)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidOrderPassed);
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.InvalidOrderPassed);
 				}
 
 				column = field.SqlExpression;
@@ -2061,7 +2061,7 @@ from	IntersectType I
 				}
 				else
 				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidDirection);
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.InvalidDirection);
 				}
 			}
 
@@ -2265,7 +2265,7 @@ from	IntersectType I
 					{
 						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2276,7 +2276,7 @@ from	IntersectType I
 							int count = Query<int>("select count(1) from FieldType T cross apply openjson(T.[Definition]) with (FieldTypeID int '$.FieldTypeID') D where AssetTypeID = @at and [Type] = 'JsonElement' and D.FieldTypeID = @ft", new { at = o.AssetTypeID, ft = o.ID }).Single();
 							if (count > 0)
 							{
-								throw new ArgumentException(Messages.Error_Item_FieldJsonAttributeReferences);
+								throw new ArgumentException(Error.Error_Item_FieldJsonAttributeReferences);
 							}
 						}
 					}
@@ -2285,7 +2285,7 @@ from	IntersectType I
 					{
 						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name && i.ID != o.ID))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 				}
@@ -2301,7 +2301,7 @@ from	IntersectType I
 					{
 						if (Any<Group>(i => i.Name == o.Name))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2309,7 +2309,7 @@ from	IntersectType I
 					{
 						if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2317,7 +2317,7 @@ from	IntersectType I
 					{
 						if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
 						{
-							throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
+							throw new ConflictException(string.Format(Error.Error_NotRemoved_Tokenized, o.Name), Error.Error_ResponsibilitiesAssignedToGroup);
 						}
 					}
 				}
@@ -2370,7 +2370,7 @@ from	IntersectType I
 
 						if (!string.IsNullOrEmpty(addCheck))
 						{
-							throw new ConflictException(CompanyContextErrors.RelationShipTypeNotCreated, addCheck);
+							throw new ConflictException(Error.RelationShipTypeNotCreated, addCheck);
 						}
 					}
 					else if (entry.State == EntityState.Modified)
@@ -2379,7 +2379,7 @@ from	IntersectType I
 
 						if (!string.IsNullOrEmpty(updateCheck))
 						{
-							throw new ConflictException(CompanyContextErrors.RelationShipTypeNotUpdated, updateCheck);
+							throw new ConflictException(Error.RelationShipTypeNotUpdated, updateCheck);
 						}
 					}
 				}
@@ -2394,7 +2394,7 @@ from	IntersectType I
 
 					if (string.IsNullOrWhiteSpace(o.Name))
 					{
-						throw new ArgumentException(Messages.Error_Name_Required);
+						throw new ArgumentException(Error.Error_Name_Required);
 					}
 				}
 
@@ -2410,7 +2410,7 @@ from	IntersectType I
 					{
 						if (Any<Report>(i => i.Name == o.Name))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2418,7 +2418,7 @@ from	IntersectType I
 					{
 						if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 				}
@@ -2435,7 +2435,7 @@ from	IntersectType I
 					{
 						if (Any<ResponsibilityType>(i => i.Name == o.Name))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2443,7 +2443,7 @@ from	IntersectType I
 					{
 						if (Any<ResponsibilityType>(i => i.Name == o.Name && i.ID != o.ID))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 
 					}
@@ -2452,7 +2452,7 @@ from	IntersectType I
 					{
 						if (Any<ResponsibilityDetail>(i => i.ResponsibilityTypeID == o.ID))
 						{
-							throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
+							throw new ArgumentException(Error.Error_ResponsibilityType_ExistingResponsibilities);
 						}
 					}
 				}
@@ -2469,7 +2469,7 @@ from	IntersectType I
 					{
 						if (Any<Tag>(i => i.Value == o.Value && i.TagTypeID == o.TagTypeID && i.State == State.Active))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 
@@ -2477,7 +2477,7 @@ from	IntersectType I
 					{
 						if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.TagTypeID == o.TagTypeID && i.State == State.Active))
 						{
-							throw new ArgumentException(Messages.Error_NameTaken);
+							throw new ArgumentException(Error.Error_NameTaken);
 						}
 					}
 				}
@@ -2724,17 +2724,17 @@ from	IntersectType I
 
 			if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.AddRelationshipValidation_Predicate);
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, Error.AddRelationshipValidation_Predicate);
 			}
 
 			if ((model.SubjectAssetTypeID != model.ObjectAssetTypeID) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectSameThisPredicate);
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, Error.SubjectObjectSameThisPredicate);
 			}
 
 			if ((model.SubjectAssetTypeID == model.ObjectAssetTypeID) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectNotSameThisPredicate);
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, Error.SubjectObjectNotSameThisPredicate);
 			}
 
 			AssetType subjectAssetType = null;
@@ -2746,12 +2746,12 @@ from	IntersectType I
 
 			if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateSubjectOfClass, predicateInfo.SubjectAssetClassesSupported));
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, string.Format(Error.WhenPredicateSubjectOfClass, predicateInfo.SubjectAssetClassesSupported));
 			}
 
 			if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateObjectOfClass, predicateInfo.ObjectAssetClassesSupported));
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, string.Format(Error.WhenPredicateObjectOfClass, predicateInfo.ObjectAssetClassesSupported));
 			}
 
 			if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
@@ -2760,12 +2760,12 @@ from	IntersectType I
 				{
 					if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationSubjOrObj);
+						throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, Error.ThisPrediateUseTransormationSubjOrObj);
 					}
 
 					if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationNotBoth);
+						throw new GenericException(System.Net.HttpStatusCode.Conflict, Error.PredicateHttpErrorTitle, Error.ThisPrediateUseTransormationNotBoth);
 					}
 				}
 			}

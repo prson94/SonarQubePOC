@@ -1,11 +1,9 @@
-﻿using System.Net.Http;
+﻿using d360.core.resources;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http.Controllers;
-
-using d360.web.Services;
-using Resources;
 
 namespace d360.web.Filters
 {
@@ -17,7 +15,7 @@ namespace d360.web.Filters
 
 			if (owin.Get<bool>("IsAdministrator") == false)
 			{
-				actionContext.Response = actionContext.Request.CreateErrorResponse(System.Net.HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				actionContext.Response = actionContext.Request.CreateErrorResponse(System.Net.HttpStatusCode.Forbidden, Error.ForbiddenUserNotAuthorizedMessage);
 			}
 
 			return base.OnActionExecutingAsync(actionContext, cancellationToken);

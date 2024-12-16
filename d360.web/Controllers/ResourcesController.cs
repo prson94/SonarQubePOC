@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Mvc;
-using System.Xml.Linq;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
@@ -14,15 +6,16 @@ using d360.core.resources;
 using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.web.Models.Attributes;
-
 using Dapper;
-
 using Newtonsoft.Json;
-
 using SmartFormat;
-
-using Resources;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Mvc;
+using System.Xml.Linq;
 
 namespace d360.web.Models
 {
@@ -79,15 +72,15 @@ namespace d360.web.Controllers
 
 			var query = Company.Query<dynamic>(sql, new { r = resourceID, id });
 
-			var document = new ExcelDocument(Smart.Format(ExcelExports.FollowedResources_DocumentName, new { DateTime.Now }))
+			var document = new ExcelDocument(Smart.Format(Label.FollowedResources_DocumentName, new { DateTime.Now }))
 			{
-				new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+				new ExcelSheet(Label.Common_ItemsSheetName)
 				{
 					HeaderRows = {
 						new ExcelRow()
 						{
-							ExcelExports.FollowedResources_AssetID,
-							ExcelExports.FollowedResources_AssetPath
+							Label.FollowedResources_AssetID,
+							Label.FollowedResources_AssetPath
 						}
 					},
 
@@ -149,19 +142,19 @@ namespace d360.web.Controllers
 
 			var query = Company.Query<dynamic>(sql, new { resourceID, type = new DbString { Value = type, IsFixedLength = true, Length = 20, IsAnsi = true }, id, responsibilityTypeId });
 
-			var document = new ExcelDocument(Smart.Format(ExcelExports.OwnedResources_DocumentName, new { DateTime.Now }))
+			var document = new ExcelDocument(Smart.Format(Label.OwnedResources_DocumentName, new { DateTime.Now }))
 			{
-				new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+				new ExcelSheet(Label.Common_ItemsSheetName)
 				{
 					HeaderRows = {
 						new ExcelRow()
 						{
-							ExcelExports.OwnedResources_Role,
-							ExcelExports.OwnedResources_Name,
-							ExcelExports.OwnedResources_Via,
-							ExcelExports.OwnedResources_ViaType,
-							ExcelExports.OwnedResources_AssetUID,
-							ExcelExports.OwnedResources_AssetID
+							Label.OwnedResources_Role,
+							Label.OwnedResources_Name,
+							Label.OwnedResources_Via,
+							Label.OwnedResources_ViaType,
+							Label.OwnedResources_AssetUID,
+							Label.OwnedResources_AssetID
 						}
 					},
 
@@ -360,7 +353,7 @@ namespace d360.web.Controllers
 
 				if (assetTypeUid != Guid.Empty && !Company.Any<AssetType>(x => x.uid == assetTypeUid))
 				{
-					return Json(new { title = "Error!", message = ActionApiMessages.InvalidAssetTypeUid, type = "error" });
+					return Json(new { title = "Error!", message = Error.InvalidAssetTypeUid, type = "error" });
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
@@ -375,7 +368,7 @@ namespace d360.web.Controllers
 
 					if (!Company.Any<Asset>(x => x.uid == assetUid.Value))
 					{
-						return Json(new { title = "Error!", message = ActionApiMessages.InvalidAssetUid, type = "error" });
+						return Json(new { title = "Error!", message = Error.InvalidAssetUid, type = "error" });
 					}
 					else
 					{
@@ -388,7 +381,7 @@ namespace d360.web.Controllers
 
 						if (asset.AssetTypeUid != assetTypeUid && assetTypeUid != Guid.Empty)
 						{
-							return Json(new { title = "Error!", message = ApiMessages.AssetValidateWithAssetType, type = "error" });
+							return Json(new { title = "Error!", message = Error.AssetValidateWithAssetType, type = "error" });
 						}
 
 						f = Company.Filter<FollowDetail>(i => i.AssetID == asset.ID && i.ResourceID == SecurityContext.ResourceID).FirstOrDefault();

@@ -6,7 +6,6 @@ using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -327,7 +327,7 @@ namespace d360.web.Controllers.V2
         {
 			if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
             {
-				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasourceType);
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, Error.RequestMissingDatasourceType);
             }
 			
 			var queryParams = new List<KeyValuePair<string, string>>
@@ -366,7 +366,7 @@ namespace d360.web.Controllers.V2
         {
 			if (string.IsNullOrEmpty(type))
 			{
-				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingType);
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, Error.RequestMissingType);
 			}
 
 			var queryParams = new List<KeyValuePair<string, string>>
@@ -404,7 +404,7 @@ namespace d360.web.Controllers.V2
         {
 			if (string.IsNullOrEmpty(dataSource))
 			{
-				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasource);
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, Error.RequestMissingDatasource);
 			}
 
 			var queryParams = new List<KeyValuePair<string, string>>
@@ -448,7 +448,7 @@ namespace d360.web.Controllers.V2
 
             if (crossReferences == null)
             {
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ErrorInvalidDatasetMessage);
             }
 
             var execution = getApiExecution(crossReferences.Count, action: ApiExecutionAction.PostCrossReferences);

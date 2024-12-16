@@ -37,7 +37,7 @@ namespace d360.model.validators
 
 				if (!isValid)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, string.Format(FieldErrors.InvalidField, validationResults.First().MemberNames.First()), validationResults.First().ErrorMessage);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, string.Format(Error.InvalidField, validationResults.First().MemberNames.First()), validationResults.First().ErrorMessage);
 				}
 
 				#endregion
@@ -46,7 +46,7 @@ namespace d360.model.validators
 
 				if (!IsFieldNameAllowed(field.Name.Trim(), relationshipTypeIdentifierInfoModel != null, assetTypeIdentifierInfoModel))
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFieldName, string.Format(FieldErrors.NameCannotBe, field.Name.Trim().ToUpper()));
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidFieldName, string.Format(Error.NameCannotBe, field.Name.Trim().ToUpper()));
 				}
 
 				#endregion
@@ -55,14 +55,14 @@ namespace d360.model.validators
 
 				if (!IsFieldNameAllowed(field.FriendlyName.Trim(), assetTypeIdentifierInfoModel: assetTypeIdentifierInfoModel))
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFieldFriendlyName, string.Format(FieldErrors.FriendNameCannotBe, field.FriendlyName.Trim().ToUpper()));
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidFieldFriendlyName, string.Format(Error.FriendNameCannotBe, field.FriendlyName.Trim().ToUpper()));
 				}
 
 				#endregion
 
 				if (field.Type == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.TypeObjectMissing);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.TypeObjectMissing);
 				}
 
 				if (!field.Type.IsOnlyOneTypeModelDefined())
@@ -81,27 +81,27 @@ namespace d360.model.validators
 
 				if (!isJsonAttributeFieldTypeEnabled && field.Type.JsonElement != null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.JsonElementFieldTypeNotenabled);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.JsonElementFieldTypeNotenabled);
 				}
 
 				if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
 				{
 					if (field.Type.IsPartOfKey())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ReferenceItemIsPartOfKeyNotAllowedTrue);
 					}
 
 					if (field.Type.Json != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceListNotSupportJson);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ReferenceListNotSupportJson);
 					}
 					else if (field.Type.Tag != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceListNotSupportTag);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ReferenceListNotSupportTag);
 					}
 					else if (field.Type.JsonElement != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ReferenceItemNotSupportJsonElement);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ReferenceItemNotSupportJsonElement);
 					}
 				}
 
@@ -109,14 +109,14 @@ namespace d360.model.validators
 				{
 					if (field.Type.IsPartOfKey())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ReferenceItemIsPartOfKeyNotAllowedTrue);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ReferenceItemIsPartOfKeyNotAllowedTrue);
 					}
 
 					List<string> allowedGroupFieldTypes = new List<string> { "Counter", "DateTime", "Date", "Decimal", "Text", "Boolean", "Lookup", "Number" };
 
 					if (!allowedGroupFieldTypes.Contains(field.Type.GetFieldType()))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.GroupInvalidFieldType, field.Type.GetFieldType()));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.GroupInvalidFieldType, field.Type.GetFieldType()));
 					}
 				}
 
@@ -124,7 +124,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.IsPartOfKey())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationNotAllowedIsPartyOFKeyTrue);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.RelationNotAllowedIsPartyOFKeyTrue);
 					}
 				}
 
@@ -132,7 +132,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.IsPartOfKey())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotAllowedIsPartyOFKeyTrue);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ActionNotAllowedIsPartyOFKeyTrue);
 					}
 				}
 
@@ -140,12 +140,12 @@ namespace d360.model.validators
 				{
 					if (actionTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotSupportPath);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ActionNotSupportPath);
 					}
 
 					if (relationshipTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotSupportPath);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.RelationshipNotSupportPath);
 					}
 
 					if (assetTypeIdentifierInfoModel != null)
@@ -156,7 +156,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ThisAssetTypeNotSupportPath);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ThisAssetTypeNotSupportPath);
 						}
 					}
 				}
@@ -167,7 +167,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueRelationshipLookup, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.IsDisplayAbleTrueRelationshipLookup, field.FriendlyName));
 					}
 				}
 
@@ -175,7 +175,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.ComputedRelationshipReferenceList.IsDisplayable == false)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueReferenceItemListForRelationship, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.IsDisplayAbleTrueReferenceItemListForRelationship, field.FriendlyName));
 					}
 				}
 
@@ -187,7 +187,7 @@ namespace d360.model.validators
 				{
 					if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveKeyField);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.AssetTypeNotHaveKeyField);
 					}
 				}
 
@@ -201,19 +201,19 @@ namespace d360.model.validators
 
 						if (jsonAttribute == null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.MissingJsonAttribute);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.MissingJsonAttribute);
 						}
 
 						if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.JsonFiledNotPartAssetType, jsonAttribute.FieldName));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.JsonFiledNotPartAssetType, jsonAttribute.FieldName));
 						}
 
 						List<string> allowedTypes = new List<string> { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
 
 						if (!allowedTypes.Contains(jsonAttribute.DataType))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.InvalidJsonFieldType, string.Join(", ", allowedTypes)));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.InvalidJsonFieldType, string.Join(", ", allowedTypes)));
 						}
 					}
 				}
@@ -222,12 +222,12 @@ namespace d360.model.validators
 				{
 					if (actionTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotAllowedScoreFieldType);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ActionNotAllowedScoreFieldType);
 					}
 
 					if (relationshipTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotAllowedScoreFieldType);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.RelationshipNotAllowedScoreFieldType);
 					}
 
 					if (assetTypeIdentifierInfoModel != null)
@@ -239,7 +239,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveScoreField);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.AssetTypeNotHaveScoreField);
 						}
 					}
 				}
@@ -248,12 +248,12 @@ namespace d360.model.validators
 				{
 					if (actionTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.ActionNotAllowedTagFieldType);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.ActionNotAllowedTagFieldType);
 					}
 
 					if (relationshipTypeIdentifierInfoModel != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.RelationshipsNotAllowedTagFieldType);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.RelationshipsNotAllowedTagFieldType);
 					}
 
 					if (assetTypeIdentifierInfoModel != null)
@@ -261,7 +261,7 @@ namespace d360.model.validators
 						List<string> allowedTypes = new List<string> { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
 						if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.SpecificHaveTagFieldType);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.SpecificHaveTagFieldType);
 						}
 					}
 
@@ -269,7 +269,7 @@ namespace d360.model.validators
 					{
 						if (existingFieldTypes.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.OnlyOneTagFieldAllowed);
 						}
 					}
 				}
@@ -304,7 +304,7 @@ namespace d360.model.validators
 																).ToList();
 								if (invalidIntersects.Count > 0)
 								{
-									return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.DuplicateRelationship, string.Format(Error.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
 								}
 							}
 						}
@@ -312,7 +312,7 @@ namespace d360.model.validators
 
 					if (field.Type.Relationship.IsEditable == false && field.Type.Relationship?.Description?.Form?.Trim().Length > 0)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.FormDescriptionMustBeEmptyForRelationship, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.FormDescriptionMustBeEmptyForRelationship, field.FriendlyName));
 					}
 				}
 
@@ -320,12 +320,12 @@ namespace d360.model.validators
 				{
 					if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsListable == true)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsListableParameterMustBeFalseForBooleanType, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.IsListableParameterMustBeFalseForBooleanType, field.FriendlyName));
 					}
 
 					if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsPrimaryFilterMustBefalseForBooleanType, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.IsPrimaryFilterMustBefalseForBooleanType, field.FriendlyName));
 					}
 				}
 
@@ -337,7 +337,7 @@ namespace d360.model.validators
 					}
 					catch (Exception)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.NotValidRegex);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.NotValidRegex);
 					}
 				}
 
@@ -345,7 +345,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.Link.IsPartOfKey == true)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(FieldErrors.LinkTypeNotSupportIsPartOfKeyTrue, field.FriendlyName));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(Error.LinkTypeNotSupportIsPartOfKeyTrue, field.FriendlyName));
 					}
 				}
 
@@ -355,7 +355,7 @@ namespace d360.model.validators
 				{
 					if (!FieldLengthValid(field.Type.Text.Validation, out string validationErrorMsg))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, $"{validationErrorMsg}");
 					}
 				}
 
@@ -363,7 +363,7 @@ namespace d360.model.validators
 				{
 					if (!FieldLengthValid(field.Type.Html.Validation, out string validationErrorMsg))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, $"{validationErrorMsg}");
 					}
 				}
 
@@ -371,22 +371,22 @@ namespace d360.model.validators
 				{
 					if (field.Type.Number.Increment != null && (field.Type.Number.Increment % 1 != 0))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantIncrement));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.WholeNumberError, Error.ConstantIncrement));
 					}
 
 					if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumValue));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.WholeNumberError, Error.ConstantMaximumValue));
 					}
 
 					if (field.Type.Number.Validation?.MinimumValue != null && (field.Type.Number.Validation?.MinimumValue % 1) != 0)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumValue));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.WholeNumberError, Error.ConstantMinimumValue));
 					}
 
 					if (!FieldLengthValue(field.Type.Number.Validation, out string validationErrorMsg, field.Type.Number.DefaultValue))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, $"{validationErrorMsg}");
 					}
 				}
 
@@ -394,7 +394,7 @@ namespace d360.model.validators
 				{
 					if (!FieldLengthValue(field.Type.Decimal.Validation, out string validationErrorMsg, field.Type.Decimal.DefaultValue))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, $"{validationErrorMsg}");
 					}
 				}
 
@@ -407,7 +407,7 @@ namespace d360.model.validators
 					{
 						if (field.Type.Json.Validation.IsRequired)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.JSONTypeNotSupportIsRequiredTrue);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.JSONTypeNotSupportIsRequiredTrue);
 						}
 					}
 				}
@@ -437,7 +437,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.Counter.IsEditable == true)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.IsEditableCanotTrue);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.IsEditableCanotTrue);
 					}
 
 					if (!string.IsNullOrEmpty(field.Type.Counter.CounterPrefix))
@@ -447,25 +447,25 @@ namespace d360.model.validators
 
 						if (value.Length > 10)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterPrefixMax10Char);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.CounterPrefixMax10Char);
 						}
 
 						MatchCollection match = Regex.Matches(value, "[a-zA-Z0-9-_]");
 
 						if (match.Count != value.Length)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterPrefixRule);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.CounterPrefixRule);
 						}
 
 						if (!Regex.IsMatch(value[0].ToString(), "[a-zA-Z]"))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterPrefixStartWithAlpha);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.CounterPrefixStartWithAlpha);
 						}
 					}
 
 					if (field.Type.Counter.CounterInitialIndex.HasValue && (field.Type.Counter.CounterInitialIndex.Value <= 0 || field.Type.Counter.CounterInitialIndex.Value > 9999999))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterRange);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.CounterRange);
 					}
 
 					List<string> allowedTypes = new List<string> {
@@ -478,7 +478,7 @@ namespace d360.model.validators
 
 					if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterFieldNotSupportedThisAssetType);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.CounterFieldNotSupportedThisAssetType);
 					}
 				}
 
@@ -486,7 +486,7 @@ namespace d360.model.validators
 				{
 					if (field.Type.ComputedOwnershipLookup.DisplayInColumn == true && field.Type.ComputedOwnershipLookup.Definition.DisplayAsList != true)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.DisplayInColumnMustFlaseOnComputedWonerShipLookup);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.DisplayInColumnMustFlaseOnComputedWonerShipLookup);
 					}
 				}
 
@@ -496,142 +496,142 @@ namespace d360.model.validators
 
 					if (field.Type.ComputedOwnershipLookup != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ComputedOwnershipLookupNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ComputedOwnershipLookupNotSupported);
 					}
 
 					if (field.Type.ComputedRelationshipField != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ComputedRelationshipFieldNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ComputedRelationshipFieldNotSupported);
 					}
 
 					if (field.Type.ComputedRelationshipLookup != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ComputedRelationshipLookupNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ComputedRelationshipLookupNotSupported);
 					}
 
 					if (field.Type.ComputedRelationshipReferenceList != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ComputedRelationshipReferenceListNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ComputedRelationshipReferenceListNotSupported);
 					}
 
 					if (field.Type.Json != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.JsonNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.JsonNotSupported);
 					}
 
 					if (field.Type.JsonElement != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.JsonElementNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.JsonElementNotSupported);
 					}
 
 					if (field.Type.Relationship != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.RelationshipNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.RelationshipNotSupported);
 					}
 
 					if (field.Type.Score != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ScoreNotSupported);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ScoreNotSupported);
 					}
 
 					if (field.Type.Text != null && field.Name == "Name")
 					{
 
-						string message = FieldErrors.TaskTypeNameCustomError;
+						string message = Error.TaskTypeNameCustomError;
 						FieldTypeDataTypeTextApiViewModel ft = field.Type.Text;
 
 						if (ft.IsDisplayable == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsDisplayable, Error.Constantfalse));
 						}
 
 						if (ft.IsEditable == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsEditable, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsEditable, Error.Constantfalse));
 						}
 
 						if (ft.IsListable == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsListable, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsListable, Error.Constantfalse));
 						}
 
 						if (ft.IsPartOfKey == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPartOfKey, Error.Constantfalse));
 						}
 
 						if (ft.Validation.IsRequired == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsRequired, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsRequired, Error.Constantfalse));
 						}
 
 						if (ft.IsPrimaryFilter == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPrimaryFilter, Error.Constanttrue));
 						}
 
 						if (ft.ShowIfEmpty == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.ShowIfEmpty, Error.Constantfalse));
 						}
 					}
 
 					if (field.Type.Lookup != null && field.Name == "GovernanceRole")
 					{
 
-						string message = FieldErrors.TaskTypeGovernanceRoleCustomError;
+						string message = Error.TaskTypeGovernanceRoleCustomError;
 						FieldTypeDataTypeLookupApiViewModel ft = field.Type.Lookup;
 
 						if (ft.IsDisplayable == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsDisplayable, Error.Constantfalse));
 						}
 
 						if (ft.IsPartOfKey == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPartOfKey, Error.Constanttrue));
 						}
 
 						if (ft.IsPrimaryFilter == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPrimaryFilter, Error.Constanttrue));
 						}
 
 						if (ft.ShowIfEmpty == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.ShowIfEmpty, Error.Constantfalse));
 						}
 
 						if (ft.List.AllowMultipleValues == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.AllowMultipleValues, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.AllowMultipleValues, Error.Constanttrue));
 						}
 					}
 
 					if (field.Type.Decimal != null && field.Name == "StepNo")
 					{
 
-						string message = FieldErrors.TaskTypeStepNoCustomError;
+						string message = Error.TaskTypeStepNoCustomError;
 						FieldTypeDataTypeDecimalApiViewModel ft = field.Type.Decimal;
 
 						if (ft.IsDisplayable == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsDisplayable, Error.Constantfalse));
 						}
 
 						if (ft.IsPartOfKey == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPartOfKey, Error.Constanttrue));
 						}
 
 						if (ft.IsPrimaryFilter == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPrimaryFilter, Error.Constanttrue));
 						}
 
 						if (ft.ShowIfEmpty == false)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.ShowIfEmpty, Error.Constantfalse));
 						}
 					}
 
@@ -639,21 +639,21 @@ namespace d360.model.validators
 					{
 						FieldTypeEditableApiViewModel editableViewModel = GetEditableViewModel(field);
 
-						string message = FieldErrors.DiagramATCustomError;
+						string message = Error.DiagramATCustomError;
 
 						if (editableViewModel.IsListable == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsListable, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsListable, Error.Constanttrue));
 						}
 
 						if (editableViewModel.IsPartOfKey == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPartOfKey, Error.Constanttrue));
 						}
 
 						if (editableViewModel.IsPrimaryFilter == true)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, string.Format(message, Error.IsPrimaryFilter, Error.Constanttrue));
 						}
 					}
 				}
@@ -661,19 +661,19 @@ namespace d360.model.validators
 
 			if (fieldsHaveErrors)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldsContainErrors, string.Format(FieldErrors.OneThanOneTypeDefined, string.Join(", ", fieldsHaveErrorsList)));
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldsContainErrors, string.Format(Error.OneThanOneTypeDefined, string.Join(", ", fieldsHaveErrorsList)));
 			}
 
 			if (!actionIsReplaceAndKeySelected)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoPrimaryKeyDefined, FieldErrors.KeyFieldNotDefined);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.NoPrimaryKeyDefined, Error.KeyFieldNotDefined);
 			}
 
 			List<string> duplicateFieldNames = model.Fields.Select(f => f.Name.ToLower()).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
 
 			if (duplicateFieldNames.Count > 0)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateFieldNames, string.Format(FieldErrors.FieldNameMustUnique, string.Join(", ", duplicateFieldNames)));
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.DuplicateFieldNames, string.Format(Error.FieldNameMustUnique, string.Join(", ", duplicateFieldNames)));
 			}
 
 			//development area
@@ -683,7 +683,7 @@ namespace d360.model.validators
 
 				if (duplicateFieldIntersectTypeUid.Count > 0)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipUidMustUniqueWithinAssetType, string.Join(", ", duplicateFieldIntersectTypeUid)));
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.DuplicateRelationship, string.Format(Error.RelationshipUidMustUniqueWithinAssetType, string.Join(", ", duplicateFieldIntersectTypeUid)));
 				}
 			}
 
@@ -754,13 +754,13 @@ namespace d360.model.validators
 
 			if (anyExistingItems && keyFieldsWillBeDeleted)
 			{
-				return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ExistItemInSystem, FieldErrors.InvalidRemoveKeyFields), null);
+				return (new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ExistItemInSystem, Error.InvalidRemoveKeyFields), null);
 			}
 
 			bool anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
 			if (anyInvalidFields)
 			{
-				return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFields, FieldErrors.FailRemoveFieldNotExistsType), null);
+				return (new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidFields, Error.FailRemoveFieldNotExistsType), null);
 			}
 
 			return (new WorkHttpStatus(HttpStatusCode.OK, "", ""),
@@ -771,12 +771,12 @@ namespace d360.model.validators
 		{
 			if (model == null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoModelFound, FieldErrors.InvalidModel);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.NoModelFound, Error.InvalidModel);
 			}
 
 			if (!model.ActionTypeUid.HasValue && !model.AssetTypeUid.HasValue && !model.RelationshipTypeUid.HasValue)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoUidFound, FieldErrors.ProvideOneValueActionAssetRelationship);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.NoUidFound, Error.ProvideOneValueActionAssetRelationship);
 			}
 
 			if (model.ActionTypeUid.HasValue)
@@ -784,7 +784,7 @@ namespace d360.model.validators
 
 				if (actionTypeIdentifierInfoModel == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound, model.ActionTypeUid));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.ActionTypeUidNotFound, model.ActionTypeUid));
 				}
 			}
 
@@ -792,13 +792,13 @@ namespace d360.model.validators
 			{
 				if (model.ActionTypeUid.HasValue)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.AssetTypeUidNotRequiredIfActionTypeUidProvided);
 				}
 				else
 				{
 					if (assetTypeIdentifierInfoModel == null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound, model.ActionTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeUidNotFound, model.ActionTypeUid));
 					}
 				}
 			}
@@ -807,18 +807,18 @@ namespace d360.model.validators
 			{
 				if (model.ActionTypeUid.HasValue)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
 				}
 				else if (model.AssetTypeUid.HasValue)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
 				}
 				else
 				{
 
 					if (relationshipTypeIdentifierInfoModel == null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, model.RelationshipTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.RelationshipTypeUIdNotFound, model.RelationshipTypeUid));
 					}
 				}
 			}
@@ -854,7 +854,7 @@ namespace d360.model.validators
 
 		private static bool FieldLengthValid(FieldTypeDescriptionApiViewModel_ValidationLength validation, out string errMsg)
 		{
-			decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
+			decimal maxDecimalFieldValue = decimal.Parse(Error.MaxDecimalFieldValue);
 			errMsg = "";
 			if (validation != null)
 			{
@@ -862,21 +862,21 @@ namespace d360.model.validators
 				{
 					if ((validation?.MaximumLength % 1) != 0)
 					{
-						errMsg = string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumLength);
+						errMsg = string.Format(Error.WholeNumberError, Error.ConstantMaximumLength);
 
 						return false;
 					}
 
 					if (validation?.MaximumLength < 0)
 					{
-						errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumLength, "0");
+						errMsg = string.Format(Error.GreaterThanError, Error.ConstantMaximumLength, "0");
 
 						return false;
 					}
 
 					if (validation?.MaximumLength > maxDecimalFieldValue)
 					{
-						errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumLength, FieldErrors.MaxDecimalFieldValue);
+						errMsg = string.Format(Error.LessThanError, Error.ConstantMaximumLength, Error.MaxDecimalFieldValue);
 
 						return false;
 					}
@@ -886,21 +886,21 @@ namespace d360.model.validators
 				{
 					if ((validation?.MinimumLength % 1) != 0)
 					{
-						errMsg = string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumLength);
+						errMsg = string.Format(Error.WholeNumberError, Error.ConstantMinimumLength);
 
 						return false;
 					}
 
 					if (validation?.MinimumLength < 0)
 					{
-						errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumLength, "0");
+						errMsg = string.Format(Error.GreaterThanError, Error.ConstantMinimumLength, "0");
 
 						return false;
 					}
 
 					if (validation?.MinimumLength > maxDecimalFieldValue)
 					{
-						errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.MaxDecimalFieldValue);
+						errMsg = string.Format(Error.LessThanError, Error.ConstantMinimumLength, Error.MaxDecimalFieldValue);
 
 						return false;
 					}
@@ -908,7 +908,7 @@ namespace d360.model.validators
 
 				if (validation?.MinimumLength > validation?.MaximumLength)
 				{
-					errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.ConstantMaximumLength);
+					errMsg = string.Format(Error.LessThanError, Error.ConstantMinimumLength, Error.ConstantMaximumLength);
 
 					return false;
 				}
@@ -919,20 +919,20 @@ namespace d360.model.validators
 
 		private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg, decimal? defaultValue)
 		{
-			decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
+			decimal maxDecimalFieldValue = decimal.Parse(Error.MaxDecimalFieldValue);
 			errMsg = "";
 
 			if (validation?.MaximumValue != null)
 			{
 				if (validation?.MaximumValue > maxDecimalFieldValue)
 				{
-					errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumValue, FieldErrors.MaxDecimalFieldValue);
+					errMsg = string.Format(Error.LessThanError, Error.ConstantMaximumValue, Error.MaxDecimalFieldValue);
 
 					return false;
 				}
 				else if (validation?.MaximumValue < -maxDecimalFieldValue)
 				{
-					errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumValue, $"-{FieldErrors.MaxDecimalFieldValue}");
+					errMsg = string.Format(Error.GreaterThanError, Error.ConstantMaximumValue, $"-{Error.MaxDecimalFieldValue}");
 
 					return false;
 				}
@@ -942,13 +942,13 @@ namespace d360.model.validators
 			{
 				if (validation?.MinimumValue > maxDecimalFieldValue)
 				{
-					errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.MaxDecimalFieldValue);
+					errMsg = string.Format(Error.LessThanError, Error.ConstantMinimumValue, Error.MaxDecimalFieldValue);
 
 					return false;
 				}
 				else if (validation?.MinimumValue < -maxDecimalFieldValue)
 				{
-					errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumValue, $" -{FieldErrors.MaxDecimalFieldValue}");
+					errMsg = string.Format(Error.GreaterThanError, Error.ConstantMinimumValue, $" -{Error.MaxDecimalFieldValue}");
 
 					return false;
 				}
@@ -956,7 +956,7 @@ namespace d360.model.validators
 
 			if (validation?.MinimumValue > validation?.MaximumValue)
 			{
-				errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.ConstantMaximumValue);
+				errMsg = string.Format(Error.LessThanError, Error.ConstantMinimumValue, Error.ConstantMaximumValue);
 
 				return false;
 			}
@@ -965,7 +965,7 @@ namespace d360.model.validators
 			{
 				if (defaultValue > validation?.MaximumValue || defaultValue < validation?.MinimumValue)
 				{
-					errMsg = string.Format(FieldErrors.DefaultValueError, validation?.MaximumValue, validation?.MinimumValue);
+					errMsg = string.Format(Error.DefaultValueError, validation?.MaximumValue, validation?.MinimumValue);
 
 					return false;
 				}

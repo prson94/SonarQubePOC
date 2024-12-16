@@ -46,155 +46,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="resources\AssetTypeErrors.Designer.cs">
-      <DependentUpon>AssetTypeErrors.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\CommentErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CommentErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\CommonErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CommonErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\CommonNames.Designer.cs">
-      <DependentUpon>CommonNames.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\CompanyContextApiError.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyContextApiError.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\CompanyContextErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CompanyContextErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\Bulkload.Designer.cs">
-      <DependentUpon>Bulkload.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\DataQualityErrors.Designer.cs">
-      <DependentUpon>DataQualityErrors.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
+    <Compile Update="resources\Label.Designer.cs">
+		<DependentUpon>Label.resx</DependentUpon>
+		<DesignTime>True</DesignTime>
+		<AutoGen>True</AutoGen>
     </Compile>
     <Compile Update="resources\Error.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Error.resx</DependentUpon>
+		<DependentUpon>Error.resx</DependentUpon>
+		<DesignTime>True</DesignTime>
+		<AutoGen>True</AutoGen>
     </Compile>
-    <Compile Update="resources\FieldErrors.Designer.cs">
-      <DependentUpon>FieldErrors.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\Fields.Designer.cs">
-      <DependentUpon>Fields.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\GraphFilterErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>GraphFilterErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\HelpMenuErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>HelpMenuErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\IssueErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>IssueErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\MemberShipErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MemberShipErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\DashboardMessages.Designer.cs">
-      <DependentUpon>DashboardMessages.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\Messages.Designer.cs">
-      <DependentUpon>Messages.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\MetricsErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MetricsErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\Notifications.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Notifications.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\OthersError.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>OthersError.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\PageNames.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PageNames.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\Permissions.Designer.cs">
-      <DependentUpon>Permissions.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\Settings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.resx</DependentUpon>
+    <Compile Update="resources\Information.Designer.cs">
+		<DependentUpon>Information.resx</DependentUpon>
+		<DesignTime>True</DesignTime>
+		<AutoGen>True</AutoGen>
     </Compile>
     <Compile Update="resources\Enums.Designer.cs">
-      <DependentUpon>Enums.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\TagErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TagErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\ThemeErrors.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ThemeErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Update="resources\Types.Designer.cs">
-      <DependentUpon>Types.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\Values.Designer.cs">
-      <DependentUpon>Values.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\ExcelExports.Designer.cs">
-      <DependentUpon>ExcelExports.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Update="resources\Workflows.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Workflows.resx</DependentUpon>
+		<DependentUpon>Enums.resx</DependentUpon>
+		<DesignTime>True</DesignTime>
+		<AutoGen>True</AutoGen>
     </Compile>
     <Compile Update="versioning.cs">
       <DesignTime>True</DesignTime>
@@ -204,150 +74,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="resources\AssetTypeErrors.resx">
-      <LastGenOutput>AssetTypeErrors.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CommentErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CommentErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CommonErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CommonErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CommonNames.resx">
-      <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CompanyContextApiError.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CompanyContextApiError.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CompanyContextErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CompanyContextErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Bulkload.resx">
-      <LastGenOutput>Bulkload.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\DataQualityErrors.resx">
-      <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Error.nl-NL.resx">
-      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Error.it-IT.resx">
-      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Error.fr-FR.resx">
-      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Error.es-ES.resx">
-      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Error.de-DE.resx">
-      <LastGenOutput>Error - Copy.Designer.cs</LastGenOutput>
+    <EmbeddedResource Update="resources\Label.resx">
+      <LastGenOutput>Label.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Error.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Error.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="resources\FieldErrors.resx">
+    <EmbeddedResource Update="resources\Information.resx">
       <SubType>Designer</SubType>
-      <LastGenOutput>FieldErrors.Designer.cs</LastGenOutput>
+      <LastGenOutput>Information.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Fields.resx">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Fields.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\GraphFilterErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>GraphFilterErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\HelpMenuErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>HelpMenuErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\IssueErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>IssueErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\MemberShipErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>MemberShipErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\DashboardMessages.resx">
-      <SubType>Designer</SubType>
-      <LastGenOutput>DashboardMessages.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Messages.resx">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\MetricsErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>MetricsErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Notifications.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Notifications.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\OthersError.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>OthersError.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\PageNames.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>PageNames.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Permissions.resx">
-      <LastGenOutput>Permissions.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Settings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Enums.resx">
       <LastGenOutput>Enums.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\TagErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>TagErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\ThemeErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ThemeErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Types.resx">
-      <SubType>Designer</SubType>
-      <LastGenOutput>Types.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\ExcelExports.resx">
-      <LastGenOutput>ExcelExports.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Values.resx">
-      <LastGenOutput>Values.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\Workflows.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Workflows.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

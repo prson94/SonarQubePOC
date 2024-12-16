@@ -5,12 +5,11 @@ using d360.core.validators;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.web.Services;
+using d360.core.resources;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -127,7 +126,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					return errorMessageArgumentResponse(ApiMessages.InvalidDirection);
+					return errorMessageArgumentResponse(Error.InvalidDirection);
 			}
 
 			if (string.IsNullOrEmpty(_order))
@@ -191,14 +190,14 @@ namespace d360.web.Controllers.V2
 
 					if (issue == null)
 					{
-						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionUidNotFound, actionUid));
+						return errorMessageNotFoundResponse(string.Format(Error.ActionUidNotFound, actionUid));
 					}
 					else
 					{
 						var actionType = Company.Filter<IssueType>(it => it.ID == issue.IssueTypeID).FirstOrDefault();
 						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && !actionType.uid.ToString().Equals(actionTypeUid, StringComparison.InvariantCultureIgnoreCase))
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.UnrelatedActionAndActionType, actionUid, actionTypeUid)));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.UnrelatedActionAndActionType, actionUid, actionTypeUid)));
 						}
 
 						actionTypeUid = actionType.uid.ToString();
@@ -214,7 +213,7 @@ namespace d360.web.Controllers.V2
 
 					if (issueType == null)
 					{
-						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
+						return errorMessageNotFoundResponse(string.Format(Error.ActionTypeUidIsNotValid, actionTypeUid));
 					}
 					else
 					{
@@ -251,13 +250,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageNotFoundResponse(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
+					return errorMessageNotFoundResponse(string.Format(Error.InvalidGuid, actionTypeUid));
 				}
 			}
 
 			if (!isOrderByFieldValid)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
+				return errorMessageNotFoundResponse(string.Format(Error.OrderByFieldNotFoundMessage, _order));
 			}
 
 			if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
@@ -268,7 +267,7 @@ namespace d360.web.Controllers.V2
 
 					if (asset == null)
 					{
-						return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
+						return errorMessageNotFoundResponse(string.Format(Error.AssetUidIsNotValid, assetUid));
 					}
 
 					queries.Add("A.[Uid] = @assetUid");
@@ -276,7 +275,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageNotFoundResponse(string.Format(ApiMessages.InvalidGuid, assetUid));
+					return errorMessageNotFoundResponse(string.Format(Error.InvalidGuid, assetUid));
 				}
 			}
 
@@ -344,7 +343,7 @@ namespace d360.web.Controllers.V2
 
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.EmptyInvalidParameterSet);
+				return errorMessageArgumentResponse(Error.EmptyInvalidParameterSet);
 			}
 
 			if (model.assets.Count == 0)
@@ -399,13 +398,13 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) || actionTypeUid == Guid.Empty)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+					return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 				}
 
 				var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
 				if (!validUid)
 				{
-					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 				}
 			}
 
@@ -415,17 +414,17 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid) || assetTypeUid == Guid.Empty)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 				if (assetType == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 				}
 				else if (assetType.Class == AssetTypeClass.Diagram)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
 				}
 			}
 
@@ -435,17 +434,17 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid) || assetUid == Guid.Empty)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetUid);
+					return errorMessageArgumentResponse(Error.InvalidAssetUid);
 				}
 
 				var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
 				if (asset == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetNotFound, assetUid.ToString()));
 				}
 				else if (asset.AssetType.Class == AssetTypeClass.Diagram)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetUid);
+					return errorMessageArgumentResponse(Error.InvalidAssetUid);
 				}
 
 				if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
@@ -454,7 +453,7 @@ namespace d360.web.Controllers.V2
 
 					if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
 					{
-						return errorMessageArgumentResponse(ApiMessages.AssetValidateWithAssetType);
+						return errorMessageArgumentResponse(Error.AssetValidateWithAssetType);
 					}
 				}
 			}
@@ -465,12 +464,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (string.IsNullOrEmpty(nameParam.Value.Trim()))
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
+					return errorMessageArgumentResponse(Error.NameNotEmptyAndRequired);
 				}
 
 				if (nameParam.Value.Trim().Length > 250)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
+					return errorMessageArgumentResponse(Error.NameMaxLength250Char);
 				}
 			}
 
@@ -480,13 +479,13 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.ResourceUidNotValid);
+					return errorMessageArgumentResponse(Error.ResourceUidNotValid);
 				}
 
 				var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
 				if (!validUid)
 				{
-					return errorMessageNotFoundResponse(ActionApiMessages.ResourceUidNotFound);
+					return errorMessageNotFoundResponse(Error.ResourceUidNotFound);
 				}
 			}
 
@@ -496,7 +495,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidLimitActiveWorkflow);
+					return errorMessageArgumentResponse(Error.InvalidLimitActiveWorkflow);
 				}
 			}
 
@@ -507,7 +506,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(hasAssignments.Value, out _))
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidHasAssignments);
+					return errorMessageArgumentResponse(Error.InvalidHasAssignments);
 				}
 			}
 
@@ -517,7 +516,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(hasAnyAssignments.Value, out _))
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.InvalidHasAnyAssignments);
+					return errorMessageArgumentResponse(Error.InvalidHasAnyAssignments);
 				}
 			}
 
@@ -546,7 +545,7 @@ namespace d360.web.Controllers.V2
 			AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
 
 			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
@@ -578,25 +577,25 @@ namespace d360.web.Controllers.V2
 
 				if (validUid)
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.UniqueUid);
+					return errorMessageArgumentResponse(Error.UniqueUid);
 				}
 			}
 
 			if (string.IsNullOrEmpty(model.Name.Trim()))
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
+				return errorMessageArgumentResponse(Error.NameNotEmptyAndRequired);
 			}
 
 			if (model.Name.Trim().Length > 250)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
+				return errorMessageArgumentResponse(Error.NameMaxLength250Char);
 			}
 
 			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
 			if (validName)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UniqueNameWorkflowAction);
+				return errorMessageArgumentResponse(Error.UniqueNameWorkflowAction);
 			}
 
 			if (model.Uid == null || model.Uid == Guid.Empty)
@@ -649,36 +648,36 @@ namespace d360.web.Controllers.V2
 		{
 			if (model.Uid == null || model.Uid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
+				return errorMessageArgumentResponse(Error.UidNotEmptyAndRequired);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
 
 			if (issueType == null)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UidNotValid);
+				return errorMessageArgumentResponse(Error.UidNotValid);
 			}
 
 			if (model.Name == null)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.NameNotNull);
+				return errorMessageArgumentResponse(Error.NameNotNull);
 			}
 
 			if (string.IsNullOrEmpty(model.Name.Trim()))
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.NameNotEmptyAndRequired);
+				return errorMessageArgumentResponse(Error.NameNotEmptyAndRequired);
 			}
 
 			if (model.Name.Trim().Length > 250)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.NameMaxLength250Char);
+				return errorMessageArgumentResponse(Error.NameMaxLength250Char);
 			}
 
 			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
 
 			if (validName)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UniqueNameWorkflowAction);
+				return errorMessageArgumentResponse(Error.UniqueNameWorkflowAction);
 			}
 
 			if (model.Description == null)
@@ -697,7 +696,7 @@ namespace d360.web.Controllers.V2
 			AddIssueTypeApiModel result = new AddIssueTypeApiModel()
 			{
 				Uid = (Guid)model.Uid,
-				Message = ActionApiMessages.ActionTypeUpdated,
+				Message = Information.ActionTypeUpdated,
 				Success = true
 			};
 
@@ -723,7 +722,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -747,18 +746,18 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.ActionTypeNotFound);
+				return errorMessageNotFoundResponse(Information.ActionTypeNotFound);
 			}
 
 			if (!model.cascade && Company.Issues.Any(x => x.IssueTypeID == issueType.ID))
 			{
 				if (IsFromUI)
 				{
-					return errorMessageArgumentResponse(string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name));
+					return errorMessageArgumentResponse(string.Format(Error.ChildRecordExistsIssueType, issueType.Name));
 				}
 				else
 				{
-					return errorMessageArgumentResponse(ActionApiMessages.CascadeDeleteActionType);
+					return errorMessageArgumentResponse(Error.CascadeDeleteActionType);
 				}
 			}
 
@@ -776,7 +775,7 @@ namespace d360.web.Controllers.V2
 			return Ok(new AddIssueTypeApiModel()
 			{
 				Uid = actionTypeUid,
-				Message = ActionApiMessages.ActionTypeDeleted,
+				Message = Information.ActionTypeDeleted,
 				Success = true
 			});
 		}
@@ -807,14 +806,14 @@ namespace d360.web.Controllers.V2
 
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 			}
 
 			WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
@@ -828,12 +827,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (!SecurityContext.IsAdministrator && issueModel.Issue.AssetTypeID.HasValue && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID.Value, Permission.ReadAsset))
 				{
-					return errorMessageForbiddenResponse(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
+					return errorMessageForbiddenResponse(Error.AssetTypeAddActionPermissionsDenied);
 				}
 
 				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 				{
-					string commentBody = string.IsNullOrEmpty(issueModel.Comment) ? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name) : issueModel.Comment;
+					string commentBody = string.IsNullOrEmpty(issueModel.Comment) ? string.Format(Information.ActionAssetCommentBody, issueType.Name) : issueModel.Comment;
 
 					var comment = new CommentApiPostModel
 					{
@@ -879,7 +878,7 @@ namespace d360.web.Controllers.V2
 					Company.AddOrUpdateFields(issueModel.fields);
 				}
 
-				response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = ActionApiMessages.ActionCreatedMsg, Success = true });
+				response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = Information.ActionCreatedMsg, Success = true });
 			}
 
 			Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
@@ -896,7 +895,7 @@ namespace d360.web.Controllers.V2
 
 			if ((model.AssetTypeUid == null && model.AssetUid == null) || (model.AssetTypeUid != null && model.AssetUid != null))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.AssetTypeOrAssetRequired);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.AssetTypeOrAssetRequired);
 			}
 
 			if (model.AssetUid != null)
@@ -904,24 +903,24 @@ namespace d360.web.Controllers.V2
 
 				if (model.AssetUid.Value == Guid.Empty)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetUid);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetUid);
 				}
 
 				asset = assetRepository.GetAssetByUID(model.AssetUid.Value);
 
 				if (asset == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.Value));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetNotFound, model.AssetUid.Value));
 				}
 
 				if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
 				{
-					return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
+					return new WorkHttpStatus(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, Error.AssetAddActionPermissionsDenied);
 				}
 
 				if (asset.Object == SystemObjects.ReferenceItem.ToString())
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetUidIsNotValid, model.AssetUid.Value));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, model.AssetUid.Value));
 				}
 
 				assetTypeID = asset.AssetTypeID;
@@ -932,19 +931,19 @@ namespace d360.web.Controllers.V2
 			{
 				if (model.AssetTypeUid.Value == Guid.Empty)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetTypeUid);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid);
 				}
 
 				assetType = assetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
 
 				if (assetType == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, model.AssetTypeUid.Value));
 				}
 
 				if (assetType.Class == AssetTypeClass.Reference)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.AssetTypeUid.Value));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeUidIsNotValid, model.AssetTypeUid.Value));
 				}
 
 				assetTypeID = assetType.ID;
@@ -955,7 +954,7 @@ namespace d360.web.Controllers.V2
 
 			if (allocations.Count > 0 && !allocations.Any(a => a.AssetTypeID == assetTypeID))
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetTypeName, issueType.Name));
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.NoMatchingAllocation, assetTypeName, issueType.Name));
 			}
 
 			var fieldTypes = Company.GetAssetTypeFieldTypesCore(SystemObjects.IssueType.ToString(), issueType.ID);
@@ -985,7 +984,7 @@ namespace d360.web.Controllers.V2
 
 			if (!success)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage);
 			}
 
 			if (!lookupFieldsPassedByValue)
@@ -1021,7 +1020,7 @@ namespace d360.web.Controllers.V2
 							}
 							else
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
 							}
 						}
 
@@ -1159,19 +1158,19 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(Error.InvalidActionTypeUid);
 			}
 
 			if (assetTypeUids.Count == 0)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.EmptyAllocationRequest);
+				return errorMessageArgumentResponse(Error.EmptyAllocationRequest);
 			}
 
 			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
@@ -1180,14 +1179,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUid, out Guid uid))
 				{
-					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
 				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 				{
-					return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
 				}
 
 				if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
@@ -1201,9 +1200,9 @@ namespace d360.web.Controllers.V2
 			string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
 			var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
 
-			var resultMessage = allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful;
+			var resultMessage = allocations?.Count == 1 ? Information.AddSingleAllocationSuccessful : Information.AddAllocationsSuccessful;
 
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, resultMessage);
+			return successMessageResponse(HttpStatusCode.OK, Error.Success, resultMessage);
 		}
 
 		/// <summary>
@@ -1223,14 +1222,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(Error.InvalidActionTypeUid);
 			}
 
 			string allocationsSQL = @"
@@ -1283,26 +1282,26 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageNotFoundResponse(Error.InvalidActionTypeUid);
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
 			}
 
 			string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
@@ -1310,10 +1309,10 @@ namespace d360.web.Controllers.V2
 
 			if (res == 0)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name));
+				return errorMessageNotFoundResponse(string.Format(Error.NoMatchingAllocation, assetType.Name, issueType.Name));
 			}
 
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful);
+			return successMessageResponse(HttpStatusCode.OK, Error.Success, Information.DeleteAllocationSuccessful);
 		}
 
 		/// <summary>
@@ -1334,33 +1333,33 @@ namespace d360.web.Controllers.V2
 		{
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.InvalidActionTypeUid);
+				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
 			if (issueType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.ActionTypeNotFound);
+				return errorMessageNotFoundResponse(Information.ActionTypeNotFound);
 			}
 
 			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
 
 			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, model.assetTypeUid));
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
 
 			if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, model.assetTypeUid));
 			}
 
 			if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UniqueAllocation);
+				return errorMessageArgumentResponse(Error.UniqueAllocation);
 			}
 
 			if (model.responsibilityTypeUid.Count() > 0)
@@ -1371,7 +1370,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!responsibilityTypes.Any(rt => rt.uid == uid))
 					{
-						return errorMessageArgumentResponse(string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
+						return errorMessageArgumentResponse(string.Format(Error.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
 					}
 				}
 			}
@@ -1390,7 +1389,7 @@ namespace d360.web.Controllers.V2
 				var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
 			}
 
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddSingleAllocationSuccessful);
+			return successMessageResponse(HttpStatusCode.OK, Error.Success, Information.AddSingleAllocationSuccessful);
 		}
 	}
 }

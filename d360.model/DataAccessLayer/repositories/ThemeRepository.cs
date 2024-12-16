@@ -134,17 +134,17 @@ namespace d360.model.DataAccessLayer
 
             if (theme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ThemeWithUidNotFound);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
             }
 
             if (theme.Locked)
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ThemeIsLockedForRemoval);
+                throw new GenericException(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
             }
 
             if (theme.IsCurrent)
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ThemeInUseForRemoval);
+                throw new GenericException(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
             }
 
             var iconExt = theme.BrowserIconExtension;
@@ -181,7 +181,7 @@ namespace d360.model.DataAccessLayer
                 if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
                 {
                     themeUid = Guid.Empty;
-                    throw new GenericException(HttpStatusCode.BadRequest, ThemeErrors.ErrorOnGet, ThemeErrors.InvalidUidParameter);
+                    throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorOnGet, Error.InvalidUidParameter);
                 }
             }
 
@@ -277,7 +277,7 @@ namespace d360.model.DataAccessLayer
 
             if (dbTheme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoCurrentThemes);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
             }
 
             return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, SecurityContext.CompanyID);
@@ -289,7 +289,7 @@ namespace d360.model.DataAccessLayer
 
             if (theme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ThemeWithUidNotFound);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
             }
 
             return theme;
@@ -300,7 +300,7 @@ namespace d360.model.DataAccessLayer
             var theme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
             if (theme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeWithUidNotFound);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
             }
             var nowPreviousTheme = theme.CloneThis();
             theme.IsCurrent = true;
@@ -322,7 +322,7 @@ namespace d360.model.DataAccessLayer
 
             if (CompanyContext.Any<Theme>(t => t.Name.ToLower() == repoTheme.Name.ToLower()))
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, ThemeErrors.ThemeNameMustBeUnique);
+                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ThemeNameMustBeUnique);
             }
 
             if (validationOnly)
@@ -357,19 +357,19 @@ namespace d360.model.DataAccessLayer
 
             if (existingTheme == null)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeWithUidNotFound);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
             }
 
             if (theme.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
             {
-                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeInUseForIsCurrentEdit);
+                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeInUseForIsCurrentEdit);
             }
 
             var nowPreviousTheme = existingTheme.CloneThis();
 
             if (existingTheme.Locked)
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeIsLocked);
+                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeIsLocked);
             }
 
             existingTheme = theme.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
@@ -377,7 +377,7 @@ namespace d360.model.DataAccessLayer
 
             if (CompanyContext.Any<Theme>(t => t.Uid != existingTheme.Uid && t.Name.ToLower() == existingTheme.Name.ToLower()))
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeNameMustBeUnique);
+                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeNameMustBeUnique);
             }
 
             await Task.Run(() =>

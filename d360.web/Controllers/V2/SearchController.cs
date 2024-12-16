@@ -1,4 +1,22 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using d360.core.search;
+using d360.extensions;
+using d360.extensions.search;
+using d360.featureflags;
+using d360.model;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.ApplicationInsights;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using repositories;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,31 +28,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.queue;
-using d360.core.resources;
-using d360.core.search;
-using d360.extensions;
-using d360.extensions.search;
-using d360.featureflags;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-
-using Microsoft.ApplicationInsights;
-using Microsoft.Web.Http;
-
-using Newtonsoft.Json;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -67,13 +60,13 @@ namespace d360.web.Controllers.V2
 			Telemetry = new TelemetryClient();
 
 			siteNavMap = new Dictionary<string, string> {
-				{ CommonNames.AssetTypeClass_Business, "#Business" },
-				{ CommonNames.AssetTypeClass_Technical, "#Technical" },
-				{ CommonNames.AssetTypeClass_Model, "#Models" },
-				{ CommonNames.AssetTypeClass_Reference, "#Reference" },
-				{ CommonNames.AssetTypeClass_Rule, "#Data Quality" },
-				{ CommonNames.AssetTypeClass_Policy, "#Policy" },
-				{ CommonNames.AssetTypeClass_SemanticType, "#SemanticTypes" }
+				{ Label.AssetTypeClass_Business, "#Business" },
+				{ Label.AssetTypeClass_Technical, "#Technical" },
+				{ Label.AssetTypeClass_Model, "#Models" },
+				{ Label.AssetTypeClass_Reference, "#Reference" },
+				{ Label.AssetTypeClass_Rule, "#Data Quality" },
+				{ Label.AssetTypeClass_Policy, "#Policy" },
+				{ Label.AssetTypeClass_SemanticType, "#SemanticTypes" }
 			};
 		}
 
@@ -144,7 +137,7 @@ namespace d360.web.Controllers.V2
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 				}
 
 				if (!string.IsNullOrEmpty(queryRequest.Term))
@@ -209,11 +202,11 @@ namespace d360.web.Controllers.V2
 			{
 				Telemetry.TrackException(ex);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, SearchApiMessages.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
 			}
 		}
 
@@ -253,8 +246,8 @@ namespace d360.web.Controllers.V2
 					{
 						return await Task.FromResult(errorMessageResponse(
 							HttpStatusCode.BadRequest,
-							ApiMessages.InvalidRequest,
-							string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories))
+							Error.InvalidRequest,
+							string.Format(Error.CategoryNotAvailable, string.Join(", ", invalidCategories))
 						)).ConfigureAwait(false);
 					}
 				}
@@ -273,11 +266,11 @@ namespace d360.web.Controllers.V2
 			{
 				Telemetry.TrackException(ex);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, SearchApiMessages.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
 			}
 		}
 
@@ -373,7 +366,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (!SecurityContext.IsAdministrator)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.InvalidRequest, Error.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
 			List<IndexableCount> dbCounts = await GetDatabaseCounts();
@@ -437,7 +430,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (!SecurityContext.IsAdministrator)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.InvalidRequest, Error.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
 			var response = new ConfirmResponse();
@@ -498,10 +491,10 @@ namespace d360.web.Controllers.V2
 
 		//Icons set based on Category/Class directly
 		private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string> {
-			{ CommonNames.AssetTypeClass_User, "fa-user" },
-			{ CommonNames.AssetTypeClass_Group, "fa-users" },
-			{ CommonNames.AssetTypeClass_GramaticType, "fa-comments" },
-			{ CommonNames.AssetTypeClass_DiagramAsset, "fa-share-alt" }
+			{ Label.AssetTypeClass_User, "fa-user" },
+			{ Label.AssetTypeClass_Group, "fa-users" },
+			{ Label.AssetTypeClass_GramaticType, "fa-comments" },
+			{ Label.AssetTypeClass_DiagramAsset, "fa-share-alt" }
 		};
 
 		private async Task<List<string>> GetVisibleCategories()
@@ -597,7 +590,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (queryRequest.Size > 5000)
 			{
-				return string.Format(SearchApiMessages.SizeTooBig, 5000);
+				return string.Format(Error.SizeTooBig, 5000);
 			}
 
 			if (queryRequest.Aggregations.Any())
@@ -606,7 +599,7 @@ namespace d360.web.Controllers.V2
 
 				if (unsupportedAggregations.Any())
 				{
-					return string.Format(SearchApiMessages.AggregationUnsupported, string.Join(", ", unsupportedAggregations));
+					return string.Format(Error.AggregationUnsupported, string.Join(", ", unsupportedAggregations));
 				}
 			}
 
@@ -617,7 +610,7 @@ namespace d360.web.Controllers.V2
 
 				if (unsupportedAggFilters.Any())
 				{
-					return string.Format(SearchApiMessages.AggregationFilterUnsupported, string.Join(", ", unsupportedAggFilters));
+					return string.Format(Error.AggregationFilterUnsupported, string.Join(", ", unsupportedAggFilters));
 				}
 
 				if (queryRequest.AggregationFilters.Exists(f => f.Field == "Category"))
@@ -627,7 +620,7 @@ namespace d360.web.Controllers.V2
 
 					if (invalidCategories.Any())
 					{
-						return string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories));
+						return string.Format(Error.CategoryNotAvailable, string.Join(", ", invalidCategories));
 					}
 				}
 			}
@@ -640,7 +633,7 @@ namespace d360.web.Controllers.V2
 
 				if (unsupportedFields.Any())
 				{
-					return string.Format(SearchApiMessages.FieldUnsupported, string.Join(", ", unsupportedFields));
+					return string.Format(Error.FieldUnsupported, string.Join(", ", unsupportedFields));
 				}
 
 				queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f =>
@@ -651,7 +644,7 @@ namespace d360.web.Controllers.V2
 
 				if(unsupportedTags.Any())
 				{
-					return string.Format(SearchApiMessages.TagsNotAvailable, string.Join(", ", unsupportedTags));
+					return string.Format(Error.TagsNotAvailable, string.Join(", ", unsupportedTags));
 				}
 			}
 

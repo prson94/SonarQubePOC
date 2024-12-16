@@ -292,10 +292,10 @@ end
 									L.[Object],
 									L.ObjectID,
 									case 
-										when L.[Action] = 'M' and L.ObjectID = 0 then '{Bulkload.Object_GroupMembership.CleanForSql()}'
-										when L.[Action] = 'M' and L.ObjectID = 1 then '{Bulkload.Object_Users.CleanForSql()}'
-										when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[{Bulkload.Object_Deleted.CleanForSql()}]')  
-										else coalesce(C_D.[Name], '{Bulkload.Object_Default.CleanForSql()}') 
+										when L.[Action] = 'M' and L.ObjectID = 0 then '{Label.Object_GroupMembership.CleanForSql()}'
+										when L.[Action] = 'M' and L.ObjectID = 1 then '{Label.Object_Users.CleanForSql()}'
+										when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[{Label.Object_Deleted.CleanForSql()}]')  
+										else coalesce(C_D.[Name], '{Label.Object_Default.CleanForSql()}') 
 									end as ObjectName,
 									L.Notes, 
 									coalesce(GLD.ErrorMessageEA, @LoadErrorMessage,'') + iif(GLD.ErrorMessageEA is null, '', '; ') + coalesce(GLD.ErrorMessageEE, '' ) as ErrorMessage,
@@ -304,15 +304,15 @@ end
 									GLD.StatusMessage,
 									GLD.DateCompleted,
 									case L.[Action]
-										when 'M' then '{Bulkload.UsersGroups.CleanForSql()}'
-										when 'P' then '{Bulkload.Promotion.CleanForSql()}'
-										when 'R' then '{Bulkload.Relation.CleanForSql()}'
-										when 'U' then '{Bulkload.Unrelation.CleanForSql()}'
-										when 'L' then '{Bulkload.Lineage.CleanForSql()}'
-										when 'O' then '{Bulkload.Responsibilities.CleanForSql()}'
-										when 'T' then '{Bulkload.LineageTechnical.CleanForSql()}'
-										when 'S' then '{Bulkload.Synonyms.CleanForSql()}'
-										when 'W' then '{Bulkload.Promotion_ViaWorkflow.CleanForSql()}'
+										when 'M' then '{Label.UsersGroups.CleanForSql()}'
+										when 'P' then '{Label.Promotion.CleanForSql()}'
+										when 'R' then '{Label.Relation.CleanForSql()}'
+										when 'U' then '{Label.Unrelation.CleanForSql()}'
+										when 'L' then '{Label.Lineage.CleanForSql()}'
+										when 'O' then '{Label.Responsibilities.CleanForSql()}'
+										when 'T' then '{Label.LineageTechnical.CleanForSql()}'
+										when 'S' then '{Label.Synonyms.CleanForSql()}'
+										when 'W' then '{Label.Promotion_ViaWorkflow.CleanForSql()}'
 									end as [Action],
 									S.C as Success,
 									E.C as Error,
