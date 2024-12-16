@@ -2286,7 +2286,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								row["ExecutionID"] = execution.ExecutionID;
 								row["ItemNumber"] = i;
 
-								if (model.ExecutionItemUid.HasValue)
+								if (model.ExecutionItemUid.HasValue && model.ExecutionItemUid != Guid.Empty)
 								{
 									row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
 								}
@@ -2330,15 +2330,16 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 						#region Resolve assets based on UIDs
 
-						Connection.Execute(@"
+						Connection.Execute(@$"
 											update	T
 											set		T.Object = S.Object, 
 													T.ObjectID = S.ObjectID, 
-													T.AssetID = S.ID
+													T.AssetID = S.ID,
+													T.[ObjectTypeId] = {at.ID},
+													[ObjectType] = '{at.Object}'
 											from	api.ExecutionDeletedAsset T
 													inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
-											where 
-													exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",
+											where	exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",
 					new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
 
 						addMeasurement(metrics, "Resolve assets based on UIDs", sw.ElapsedMilliseconds, ++step);
