@@ -10,7 +10,6 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
 using DocumentFormat.OpenXml.ExtendedProperties;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -21,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Security;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
