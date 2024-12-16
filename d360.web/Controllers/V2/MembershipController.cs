@@ -75,7 +75,6 @@ namespace d360.web.Controllers.V2
 				u.IsNew = isNew;
 				u.FirstName = u.FirstName.SanitizeHtml();
 				u.LastName = u.LastName.SanitizeHtml();
-				u.State = CompanyResourceState.Active;
 				if (string.IsNullOrWhiteSpace(u.Username))
 				{
 					u.Username = u.Email;

@@ -230,16 +230,36 @@ set     U.ResourceID = R.ID
 from    #Users U
 		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null;
 
-merge	CompanyResource as T
-using	(select * from #Users) as S
-on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
-when	matched then
-update  set
-		T.IsAdministrator = S.IsAdministrator,
-		T.State = S.State
-when	not matched by target then
-insert	(CompanyID, ResourceID, IsAdministrator, State)
-values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);", 
+if exists(select 1 from #Users T group by T.ResourceID having count(1)>1)
+begin
+	update	T
+	set		T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	from CompanyResource T
+	inner join #Users S on T.ResourceID = S.ResourceID 
+	where T.CompanyID = @companyId;
+
+	insert	into CompanyResource(CompanyID, ResourceID, IsAdministrator, State)
+	select distinct @companyId, S.ResourceID, S.IsAdministrator, S.State
+	from #Users S
+	left join CompanyResource T on T.CompanyID = @companyId and T.ResourceID = S.ResourceID 
+	where T.CompanyID is null;
+end
+else
+begin
+	merge	CompanyResource as T
+	using	(select * from #Users) as S
+	on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
+	when	matched then
+	update  set
+			T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	when	not matched by target then
+	insert	(CompanyID, ResourceID, IsAdministrator, State)
+	values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);
+end
+
+", 
 						new { companyId}, transaction: trans);
 
 						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
