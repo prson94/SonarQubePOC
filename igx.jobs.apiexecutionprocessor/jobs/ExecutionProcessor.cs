@@ -10,6 +10,7 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
 using DocumentFormat.OpenXml.ExtendedProperties;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
@@ -287,6 +289,7 @@ namespace igx.jobs.apiexecutionprocessor
 									case ApiExecutionAction.UpsertUsers:
 										var workspace = new Workspaces(dapperProvider);
 										UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
+										var communityResponse = await Community.CreateUsersInTenantAsync(info.CompanyID, model.Users.ToList());
 										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, model.Users.ToList(), model.LookupFieldsPassedByValue);
 										await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, userResponse.Data);
 										resultsSql = "";// @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
