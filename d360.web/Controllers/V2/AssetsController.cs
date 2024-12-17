@@ -7,15 +7,12 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.web.Services;
 using Dapper;
-using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
@@ -3733,7 +3730,7 @@ namespace d360.web.Controllers.V2
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
-			if (asset == null)
+			if (asset == null || assetUid == Guid.Empty)
 			{
 				isValid = "The asset with uid specified does not exist.";
 			}
@@ -3743,19 +3740,8 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid));
 			}
 
-			try
-			{
-				var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
-				HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -3777,9 +3763,9 @@ namespace d360.web.Controllers.V2
 
 			if (resourceUid != null)
 			{
-				if (!Guid.TryParse(resourceUid, out Guid rUid) || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
+				if (!Guid.TryParse(resourceUid, out Guid rUid) || rUid == Guid.Empty || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, AssetsApiMessages.InvalidResourceUID));
+					return errorMessageArgumentResponse(AssetsApiMessages.InvalidResourceUID);
 				}
 				else
 				{
