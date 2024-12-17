@@ -302,14 +302,17 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.ref.markForCheck();
             }).add(() => {
                 //set the nav state for each of the siteMenu elements
+                this.siteMenuService.getCounts().subscribe((res) => {
                     this.siteMenu.forEach((menu) => {
                         this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
+                        this.loadCounts(menu, res);
                     //set the nav state for the admin menu elements
                     if (this.adminMenu)
                         {this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);}
                     else
                         {this.setNavState(navigationState, [], null, null);}
                 });
+            })
             });
     }
 
@@ -367,7 +370,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.activeMenu$.subscribe((menu: SiteMenu) => {
             menu?.NavigationItems?.forEach((item) => {
                if(item.Items?.length > 0){
-                item.count = item.Items.length;
+                item.count = item.count;
                }
             })
         })
