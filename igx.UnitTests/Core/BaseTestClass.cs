@@ -76,19 +76,18 @@ namespace igx.UnitTests
 		public ICommunity GetCommunity()
 		{
 			var mock = new Mock<ICommunity>();
-			mock.Setup(x => x.ReadSettingAsync(-1, Setting.ActionMessage))
+			mock.Setup(x => x.ReadSettingAsync(It.IsAny<int>(), It.IsAny<Setting>()) )
 				.ReturnsAsync(Setting.ActionMessage.AsInfoModel());
 
-			mock.Setup(x => x.ReadSettingValueAsync<bool>(-1, Setting.DisableCommunityPosting))
+			mock.Setup(x => x.ReadSettingValueAsync<bool>(It.IsAny<int>(), It.IsAny<Setting>()))
 				.ReturnsAsync(false);
 
-			mock.Setup(x => x.ReadSettingsAsDictionaryAsync(-1))
+			mock.Setup(x => x.ReadSettingsAsDictionaryAsync(It.IsAny<int>()))
 				.ReturnsAsync(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
-
-			mock.Setup(x => x.ReadSettingsAsync(-1))
+			mock.Setup(x => x.ReadSettingsAsync(It.IsAny<int>()))
 				.ReturnsAsync(Setting.ActionMessage.GetAsList());
 
-			mock.Setup(x => x.ReadSettingValueAsync<int>(-1, Setting.MaxExcelExportRows));
+			mock.Setup(x => x.ReadSettingValueAsync<int>(It.IsAny<int>(), It.IsAny<Setting>()));
 
 			return mock.Object;
 		}
