@@ -5,8 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="procedure.dbo.GetSiteNavigationCounts-v2">
-    <sql dbms="mssql"
+  <changeSet author="tduric,cgupta" id="procedure.dbo.GetSiteNavigationCounts-v3">
+    <comment>GOV-35742 - Assets Counts replaced with EXISTS</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
@@ -17,44 +18,49 @@ CREATE OR ALTER PROCEDURE [dbo].[GetSiteNavigationCounts]
 )
 AS
 BEGIN
-    
+
     declare @cntdata int = 0;
 
     drop table if exists #temtable;
-    	
-    select a.AssetID ,a.assettypeid
+
+    select a.AssetID,
+           a.assettypeid
     into #temtable
     from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID) a
 
-    create index idx_temtable_asset_type on #temtable(AssetID, assettypeid);
+    create index idx_temtable_asset_type on #temtable (AssetID, assettypeid);
 
 
     select @cntdata = count(1)
     from #temtable;
 
-     if (@cntdata = 0)
-		SELECT count(ATT.[Object]) as count, 
-		ATT.Uid,
-		ATT.Name
-		from    AssetType ATT
-		inner join [Asset] A on (a.AssetTypeID = Att.id)
-		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
-		Group by 
-		ATT.Uid,
-		ATT.Name
-		Order By ATT.Name
-	else
-	    SELECT count(ATT.[Object]) as count, 
-		ATT.Uid,
-		ATT.Name
-		from   AssetType ATT
-		inner join [Asset] A on (a.AssetTypeID = Att.id)
-		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
-		and	not exists (SELECT 1 FROM #temtable rd where rd.assetid = a.id and rd.assettypeid = a.assettypeid)   
-		Group by 
-		ATT.Uid,
-		ATT.Name
-		Order By ATT.Name
+    if (@cntdata = 0)
+        SELECT ATT.Uid,
+               ATT.Name,
+			   1 as count
+        FROM AssetType ATT
+        WHERE EXISTS
+        (
+            SELECT 1
+            FROM Asset A
+            WHERE A.AssetTypeID = ATT.id
+                  AND ATT.Class IN ( 1, 2, 6, 7, 8 )
+        )
+        ORDER BY ATT.Name;
+    else
+        SELECT ATT.Uid,
+               ATT.Name,
+			   1 as count
+        FROM AssetType ATT
+        WHERE EXISTS
+        (
+            SELECT 1
+            FROM Asset A
+            WHERE A.AssetTypeID = ATT.id
+                  AND ATT.Class IN ( 1, 2, 6, 7, 8 )
+				  AND not exists (SELECT 1 FROM #temtable rd where rd.assetid = A.id and rd.assettypeid = A.assettypeid)   
+        )
+        ORDER BY ATT.Name;
 
 END
 GO
