@@ -190,7 +190,11 @@ where	g.id = @groupId;
 			response.Data.pageNum = queryParams.CheckForPageNumber();
 			response.Data.pageSize = queryParams.CheckForPageSize();
 
-			queryParams.CheckForQueryParameter<Guid>("uid", "g.Uid", "@uid", ref dbArgs, ref queryFilters);
+			bool isUidValid = queryParams.CheckForQueryParameter<Guid>("uid", "g.Uid", "@uid", ref dbArgs, ref queryFilters);
+			if (!isUidValid)
+			{
+				return new(400, "The Uid provided is invalid.");
+			}
 			queryParams.CheckForQueryParameter<string>("name", "g.Name", "@name", ref dbArgs, ref queryFilters);
 			if (queryParams.Any(q => q.Key.ToLower() == "resourceuid"))
 			{
@@ -201,7 +205,11 @@ where	g.id = @groupId;
 					if (Guid.TryParse(_resourceUid, out resourceUid))
 					{
 						queryFilters.Add(@"exists(select 1 from ResourceGroup rg inner join reporting.Global_Resource r on r.ResourceID = rg.ResourceID and r.Uid = @resourceUid and rg.GroupID = G.ID)");
-						dbArgs.Add("@resourceUid", resourceUid);					
+						dbArgs.Add("@resourceUid", resourceUid);
+					}
+					else
+					{
+						return new(400, "The ResourceUid provided is invalid.");
 					}
 				}
 			}
