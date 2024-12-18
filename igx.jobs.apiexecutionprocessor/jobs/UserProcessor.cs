@@ -37,6 +37,8 @@ namespace igx.jobs.apiexecutionprocessor
 
 					foreach (var c in tenants)
 					{
+						bool IsError = false;
+
 						var logProperties = new Dictionary<string, object> {
 							{ "Function", FUNCTION_NAME},
 							{ "CompanyID", c.CompanyID },
@@ -139,7 +141,8 @@ namespace igx.jobs.apiexecutionprocessor
 														{
 															resources.Close();
 														}
-														log.LogError(ex, "");
+														IsError = true;
+														log.LogError(ex, "When user data into temp table");
 													}
 												}
 											}
@@ -192,40 +195,46 @@ namespace igx.jobs.apiexecutionprocessor
 
 									#region Delete Logic
 
-									try
+									if (!IsError)
 									{
-										var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-										var toDeleteIds = new List<int>(currentResourceIDs.Except(updatedResourceIDs));
-
-										//We need the following code because SQL Server allows us to send only 2100 parameters per query.
-										int total = toDeleteIds.Count;
-										while (toDeleteIds.Count > 0)
+										try
 										{
-											int take = toDeleteIds.Count > 1000 ? 1000 : toDeleteIds.Count;
-											var idsToSend = toDeleteIds.Take(take).ToList();
-											toDeleteIds.RemoveRange(0, take);
-											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+											var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
+											var toDeleteIds = new List<int>(currentResourceIDs.Except(updatedResourceIDs));
+
+											//We need the following code because SQL Server allows us to send only 2100 parameters per query.
+											int total = toDeleteIds.Count;
+											while (toDeleteIds.Count > 0)
+											{
+												int take = toDeleteIds.Count > 1000 ? 1000 : toDeleteIds.Count;
+												var idsToSend = toDeleteIds.Take(take).ToList();
+												toDeleteIds.RemoveRange(0, take);
+												companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+											}
+											if (total > 0)
+											{
+												log.LogInformation("Removed {0} users for company {1}.", total, c.CompanyID);
+											}
 										}
-										if (total > 0)
+										catch (Exception ex)
 										{
-											log.LogInformation("Removed {0} users for company {1}.", total, c.CompanyID);
+											IsError = true;
+											log.LogError(ex, "Delete Logic for user");
 										}
 									}
-									catch (Exception ex)
-									{
-										log.LogError(ex, "");
-									}
 
-									try
+									if (!IsError)
 									{
-										companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
-										companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+										try
+										{
+											companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+											companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+										}
+										catch (Exception ex)
+										{
+											log.LogError(ex, "Delete Logic for Manual/Automatic Responsibility");
+										}
 									}
-									catch (Exception ex)
-									{
-										log.LogError(ex, "");
-									}
-
 									#endregion
 
 								}
