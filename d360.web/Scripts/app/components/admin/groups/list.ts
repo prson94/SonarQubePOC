@@ -183,7 +183,7 @@ export class GroupList extends GroupBasePage implements OnDestroy {
                     this.fields = gridDefinition.Fields;
                 }
 
-				this.totalRecords = groups.Total;
+				this.totalRecords = groups.total;
 				this.groupItems = groups.items;
 
 				if (this.selectedRow) {
