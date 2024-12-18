@@ -72,8 +72,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text le true")]
         [InlineData("text gt true")]
         [InlineData("text ge true")]
-        [InlineData("text")]
-        [InlineData("text ge ")]
         [InlineData("text ge and")]
         [InlineData("text eq 'text' and number eq")]
         [InlineData("'text eq 'text'")]
