@@ -4,8 +4,6 @@ using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
 using repositories.resources;
 using System;
 using System.Collections.Generic;
