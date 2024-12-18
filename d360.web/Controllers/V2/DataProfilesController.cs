@@ -537,6 +537,10 @@ namespace d360.web.Controllers.V2
 						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
 					}
 				}
+				if(assetUid == Guid.Empty)
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+				}
 
 				Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
