@@ -454,7 +454,26 @@ end";
 				bulkCopy.ColumnMappings.Add("Properties", "Properties");
 				await bulkCopy.WriteToServerAsync(table);
 
-				await connection.ExecuteAsync(@"exec api.DeleteUsers @executionId", new { executionId });
+				var result = await connection.QueryFirstOrDefaultAsync<dynamic>(@"exec api.DeleteUsers @executionId", new { executionId });
+				
+				if (result != null)
+				{
+					if ( result.IsError == true)
+					{
+						if (!string.IsNullOrEmpty(result.ErrMessage) )
+						{
+							if ( result.ErrMessage.Contains("not found") || result.ErrMessage.Contains("not found"))
+							{
+								response = new(404, result.ErrMessage);
+							}
+							else
+							{
+								response = new(400, result.ErrMessage);
+							}
+						}
+
+					}
+				}
 			}
 
 			return response;
