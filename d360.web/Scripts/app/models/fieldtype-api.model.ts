@@ -572,9 +572,11 @@ export class Tag implements ICommonOptions {
 	ColumnWidth: number = null;
 	Description: DisplayOnlyDescription = new DisplayOnlyDescription();
 	IsListable: boolean = true;
+	IsRequired: boolean = true;
 	IsPrimaryFilter: boolean = false;
 	TagTypeUID: string = null;
 	Search: Search = new Search();
+	TagTypeID: number = 0;
 }
 
 export class Text implements ICommonOptions {

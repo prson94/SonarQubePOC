@@ -1059,6 +1059,7 @@ where	t.Uid = @uid
 					
 					$@"
 select	t.uid, 
+		t.ID,
 		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -1069,6 +1070,44 @@ from	TagType t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 where	t.State = {(int)State.Active}
 order by	t.[value]");
+			}
+
+			return models;
+		}
+
+		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
+		{
+			IEnumerable<TagTypeApiModel> models = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				string sql = $@"
+DECLARE @assetTypeId INT;
+
+SET @assetTypeId = (SELECT ID FROM AssetType WHERE uid = @assetTypeUid);
+
+SELECT 
+    t.uid, 
+    t.ID,
+    t.[Value],
+    c.Uid AS CreatedByUid,
+    t.CreatedOn,
+    u.Uid AS UpdatedByUid,
+    t.UpdatedOn
+FROM 
+    TagType t
+INNER JOIN 
+    reporting.Global_Resource c ON c.ResourceID = t.CreatedBy
+INNER JOIN 
+    reporting.Global_Resource u ON u.ResourceID = t.UpdatedBy
+LEFT JOIN 
+    FieldType f ON f.TagTypeID = t.ID AND f.AssetTypeID = @assetTypeId AND f.Name != ISNULL(@name, '')
+WHERE 
+    t.State = {(int)State.Active} 
+    AND f.TagTypeID IS NULL 
+ORDER BY 
+    t.[Value]";
+
+				models = await connection.QueryAsync<TagTypeApiModel>(sql, new { assetTypeUid,name });
 			}
 
 			return models;

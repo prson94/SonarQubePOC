@@ -57,6 +57,7 @@ namespace repositories
 		Task<RepositoryResponse<TagTypeApiModel>> ReadTagTypeAsync(Guid uid);
 
 		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync();
+		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid,string name);
 
 		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId);
 

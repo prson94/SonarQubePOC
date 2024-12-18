@@ -19,6 +19,7 @@ using d360.web.Models.Attributes;
 using d360.web.Services;
 
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 using repositories;
 using Resources;
 
@@ -692,6 +693,22 @@ namespace d360.web.Controllers.V2
 		{
 				var models = await Catalog.ReadTagTypesAsync();
 				return Ok(models);
+		}
+
+		/// <summary>
+		/// Retrieves a list of all tag types for an asset type.
+		/// </summary>                
+		[HttpGet]
+		[MapToApiVersion("2.0")]
+		[Route("tagTypesForAssetType/{assetTypeUid:Guid}/{name?}")]
+		[SwaggerProduces("application/json")]
+		[SwaggerResponse(HttpStatusCode.OK, "A full list of tags for an asset type.", typeof(List<TagTypeApiModel>))]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))]
+		public async Task<IHttpActionResult> GetTagTypesForAssetType(Guid assetTypeUid,string name = null)
+		{
+			
+			var models = await Catalog.ReadTagTypesAsync(assetTypeUid,name);
+			return Ok(models);
 		}
 
 		/// <summary>

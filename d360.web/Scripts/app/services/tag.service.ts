@@ -257,6 +257,16 @@ export class TagService extends BaseObservableService {
         return this.http.get(url)
             .pipe(map((response) => <TagPermissionItem[]>response),
                 catchError((err) => this.handleError(err)));
-    }
+	}
 
+	getTagTypes(assetTypeUid: string, name?: string): Observable<any[]> {
+		name = (name === undefined) ? "" : name;
+
+		const url = `api/v2/tags/tagTypesForAssetType/${assetTypeUid}${name.trim() ? `/${name}` : ''}`;
+		return this.http.get(url)
+			.pipe(map((response) => {
+				var data = <any>response;
+				return data;
+			}), catchError((err) => this.handleError(err)));
+	}
 }
