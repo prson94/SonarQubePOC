@@ -949,7 +949,8 @@ select	t.uid,
 		t.UpdatedOn,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
-		tt.Uid as TagTypeUID
+		tt.Uid as TagTypeUID,
+		tt.Value as TagTypeValue
 from	Tag t
 		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy

@@ -1,4 +1,6 @@
-﻿import { NgModule } from '@angular/core';
+﻿/// <reference path="tag-details/tag-detail.module.ts" />
+/// <reference path="tag-details/tag-detail.module.ts" />
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -32,16 +34,26 @@ import { TagsHeaderComponent } from './tags-headers/tags-header.component';
 import { TagTypesPanelComponent } from './tag-types/tag-types.component';
 import { SiteMenuModule } from '../../shared/menu/site-menu.module';
 import { RouterModule } from '@angular/router';
-
+import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component"; 
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AngularSplitModule } from 'angular-split';
+/*import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';*/
+import { TagDetailComponent } from './tag-details/tag-detail.component';
+import { TagDetail } from '../../../models/tag.model';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-assets-detail.module';
 
 @NgModule({
-    imports: [
+	imports: [
+		TaggedAssetDetailModule,
+		PropertyGroupModule,
         CommonModule,
         FormsModule,
         RouterModule,
-        
+		PopupMenuModule,
+		SidePanelModule,
         AdminTagsRoutingModule,
-
+		AngularSplitModule,
         //prime      
         ButtonModule,
         EditorModule,
@@ -70,7 +82,8 @@ import { RouterModule } from '@angular/router';
         AdminTagsComponent,
         AdminTagsConsolidateComponent,
         TagsHeaderComponent,
-        TagTypesPanelComponent
+		TagTypesPanelComponent,
+		TagDetailComponent
     ],
     providers: [
         

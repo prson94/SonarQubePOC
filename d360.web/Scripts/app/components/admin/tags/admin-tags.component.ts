@@ -23,6 +23,12 @@ import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
 import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
+import { PopupMenu } from "../../shared/controls/popup-menu/popup-menu.component";
+import { SidePanelService } from "../../../services/side-panel.service";
+import { IOutputData } from "angular-split";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { TagDetailComponent } from './tag-details/tag-detail.component';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -33,10 +39,9 @@ import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
 export class AdminTagsComponent extends AdminBaseComponent {
     tags: ReadonlyArray<TagType> = []; // This is readonly array, because PrimeNGTable expects immutable data
     readOnlyFullListOfTags: ReadonlyArray<TagType> = [];
-    selected: TagType[] = [];
-
+	selected: TagType[] = [];
+	selectedTagTypeUid: string = ""; 
     error: any;
-
     consolidatePromptHTML: string;
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -47,14 +52,22 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     deletePopupTitle: string = $localize`Delete Tag`;
     editPopupTitle: string = $localize`Edit Tag`;
-    private generalTagTypeUId = '00000001-0000-0000-0000-b00000000011';
+	private generalTagTypeUId = '00000001-0000-0000-0000-b00000000011';
+
+	sidePanelStorageKey: string = '';
+	selectedItem: Record<string, object>;
+
+	sidePanelOpen = false;
+	selectedForInfoPanel: unknown;
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
     @ViewChild('dt', { static: false }) tableEl: Table;
     private lastSelectedElement: TagType;
-
+	menuItems: any = [];
+	menuItemsForDelete: any = [];
+	@ViewChild('tagDetail', { static: false }) tagDetails: TagDetailComponent;
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
@@ -96,14 +109,25 @@ export class AdminTagsComponent extends AdminBaseComponent {
         headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
         titleService: Title,
-        secondaryNavService: SecondaryNavService,
+		secondaryNavService: SecondaryNavService,
+		//private route: ActivatedRoute,
+		public sidePanelService: SidePanelService,
+		private linkClickInterceptor: LinkClickInterceptor,
         protected settingsService: CompanySettingsService) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Tags;
         this.setCommonItems();
         this.tabTitle = StringConstants.Section_Tags;
-        this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
-    }
+		this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
+		this.linkClickInterceptor.getEvents().subscribe((res) => {
+			if (res && res.data) {
+				this.selectedItem = res.data;
+				this.sidePanelService.setSidePanelState({ expanded: true });
+				this.sidePanelOpen = true;
+				this.cdRef.markForCheck();
+			}
+		});
+	}
 
     ngOnInit() {
         this.setCommonSecondaryNavTabs({ hasAudit: true });
@@ -111,7 +135,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/Tag/0`;
         }
-        this.getTags();
+		this.getTags();
+		this.loadMenuItems();
+		this.loadMenuItemsForDelete();
 
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.theConsolidateCallback = this.consolidateTags.bind(this);
@@ -119,7 +145,23 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     ngOnDestroy() {
         this.clearSidebar();
-    }
+	}
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
 
     getFilterValuesForCreatedBy(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         const createdBy: string[] = this.readOnlyFullListOfTags.map((tag: TagType) => {
@@ -236,7 +278,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
     }
 
-    selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+		if (event === null) {
+			this.selected[0] = item;
+			return;
+		}
+
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
@@ -280,14 +327,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.lastSelectedElement = item;
                 return;
             }
-
         }
         this.selected = [];
         this.selected.push(item);
         this.triggerRerenderOfSelection();
         this.lastSelectedElement = item;
     }
-
 
     closeEditor() {
         this.showEditor = false;
@@ -297,14 +342,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.showEditor = true;
     }
 
-    add() {
-        this.selected = [];
-        this.editPopupTitle = $localize`Add Tag`;
+	add() {
+		this.selected = [];
+		this.editPopupTitle = $localize`Add Tag`;
         this.showEditor = true;
+	}
 
-    }
-    saveTag(event) {
-
+	saveTag(event) {
+		event.item.TagTypeUID = this.selectedTagTypeUid;
         if (event.additionalOption && event.additionalOption.code) {
             const arr: string[] = [];
             arr.push(event.item.uid);
@@ -320,7 +365,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 }
                 else {
                     msg = $localize`${result.Value} succesfully updated`;
-                }
+				}
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == null) {
                     this.addCreatedByFieldToTag(result);
@@ -335,9 +380,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.selected = [];
                 event.item.UseCount = 0;
                 this.selected.push(event.item);
-
                 this.showEditor = false;
-
             });
     }
 
@@ -356,12 +399,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }, (err) => this.showMessageForResult(this.messagesService, err));
     }
 
-    openDeleteModal() {
+	openDeleteModal() {
         window.setTimeout(() => {
             this.deletePopupTitle = this.selected.length === 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100);
-
     }
 
     openConsolidateModal() {
@@ -389,7 +431,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.showMessageForResult(this.messagesService, err);
                 this.showConsolidate = false;
                 this.showEditor = false;
-
             });
     }
 
@@ -401,9 +442,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
     }
 
-    openTagDetails(item: TagType) {
-        this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
-    }
+	openTagDetails(item: TagType, openInNewTab: boolean = false) {
+		const url = `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`;
+
+		if (openInNewTab) {
+			window.open(url, '_blank');
+		} else {
+			this.router.navigate([url]);
+		}
+	}
 
     export() {
         this.tagsService.exportTags(this.filters, this.sort, this.advancedFilter);
@@ -415,7 +462,32 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tags = draft;
     }
 
-    loadTagsOnTagTypeSelected(val: string) {
+	loadTagsOnTagTypeSelected(val: string) {
+		this.selectedTagTypeUid = val;
         this.getTags(val);
-    }
+	}
+
+	loadMenuItems() {
+		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = this.selected[0]; this.expandPanel(); } });
+		this.menuItems.push({ "title": $localize`Open`, callback: () => this.openTagDetails(this.selected[0]) });
+		this.menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.openTagDetails(this.selected[0],true) });
+		this.menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditor() });
+		this.menuItems.push({ "title": $localize`Delete`, callback: () => this.openDeleteModal() });
+	}
+
+	loadMenuItemsForDelete() {
+		this.menuItemsForDelete.push({ "title": $localize`Delete`, callback: () => this.openDeleteModal() });
+		this.menuItemsForDelete.push({ "title": $localize`Consolidate`, callback: () => this.openConsolidateModal() });
+	}
+
+	showEmptyOverlay() {
+		var selectedNodeData = this.selected || this.tags;
+		return !selectedNodeData;
+	}
+
+	expandPanel() {
+		this.sidePanelService.setSidePanelState({ expanded: true });
+	}
+
+
 }
