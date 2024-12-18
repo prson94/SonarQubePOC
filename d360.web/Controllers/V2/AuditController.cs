@@ -288,6 +288,7 @@ namespace d360.web.Controllers.V2
 			string whereSql = "";
 			if (whereStatements.Any())
 			{
+				whereStatements.RemoveAll(w => string.IsNullOrEmpty(w));
 				whereSql = $" where {string.Join(" and ", whereStatements)}";
 			}
 
