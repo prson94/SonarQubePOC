@@ -254,7 +254,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (value != "")
+			if (value != null)
 			{
 				DateTime dValue;
 				if (DateTime.TryParse(value, out dValue))
