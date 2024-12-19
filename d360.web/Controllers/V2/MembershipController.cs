@@ -887,28 +887,43 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(uids.Count, action: ApiExecutionAction.DeleteUsers);
 			Company.Add(execution);
 			var tenantResponse = await Workspace.RemoveUsersAsync(execution.Id, uids);
+			
 			var communityResponse = new RepositoryResponse<int>(400, "");
-			if (tenantResponse.IsSuccess)
+			string errormessage = "";
+			bool isSuccess = false;
+			
+			if (tenantResponse.StatusCode == 200)
 			{
-				communityResponse = await Community.RemoveUsersFromTenantAsync(SecurityContext.CompanyID, uids);
-			}
-
-			bool isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
-			if (isSuccess)
-			{
-				Queue.CreateMessage(constants.Queue.Search, new ReindexModel
+				if (tenantResponse.IsSuccess)
 				{
-					CompanyID = SecurityContext.CompanyID,
-					Category = "Resource",
-					To = QueueAction.RemoveFromIndex,
-					BatchOperation = ReindexBatchOperation.Delete,
-					BatchUids = uids
-				});
-			}
+					communityResponse = await Community.RemoveUsersFromTenantAsync(SecurityContext.CompanyID, uids);
+				}
 
+				isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
+				if (isSuccess)
+				{
+					Queue.CreateMessage(constants.Queue.Search, new ReindexModel
+					{
+						CompanyID = SecurityContext.CompanyID,
+						Category = "Resource",
+						To = QueueAction.RemoveFromIndex,
+						BatchOperation = ReindexBatchOperation.Delete,
+						BatchUids = uids
+					});
+				}
+				else
+				{
+					errormessage = tenantResponse.Message;
+				}
+			}
+			else
+			{
+				communityResponse.StatusCode = tenantResponse.StatusCode;
+				errormessage = tenantResponse.Message;
+			}
 			return isSuccess ?
 				successMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Success", "Users removed from environment.") :
-				errorMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Error", communityResponse.Message + "; " + tenantResponse.Message);
+				errorMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Error", errormessage);
 		}
 
 		/// <summary>
