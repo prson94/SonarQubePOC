@@ -1255,9 +1255,17 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment || IsBusTechAssetType))
 					{
+						bool scoringtypeallowed = false;
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
-						if (!isNumber && isNumbericFieldType)
+						if (ft.Type == DataType.Score.ToString() && !isNumber )
+						{
+							var checknum = simpleFilter;
+							checknum = checknum.Replace('%',' ').Replace('[',' ').Replace(']',' ').Trim(' ');
+							scoringtypeallowed = decimal.TryParse(checknum, out _);
+						}
+
+						if (!isNumber && isNumbericFieldType && !scoringtypeallowed)
 						{
 							//if search term is not a number, do not filter over numeric field types
 							continue;
