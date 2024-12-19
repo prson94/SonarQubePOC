@@ -6000,7 +6000,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								}
                                 break;
                             case "DateTime":
-								validationResult = DataType.DateTime.ValidateDateTime(fieldName, fieldValue);
+								validationResult = DataType.DateTime.ValidateDateTime(fieldName, k.Value);
 								if (validationResult.IsValid)
 								{
 									fieldValue = validationResult.CorrectedValue ?? fieldValue;
