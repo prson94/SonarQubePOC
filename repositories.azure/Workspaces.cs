@@ -470,7 +470,7 @@ end";
 					{
 						if (!string.IsNullOrEmpty(result.ErrMessage) )
 						{
-							if ( result.ErrMessage.Contains("not found") || result.ErrMessage.Contains("not found"))
+							if ( result.ErrMessage.Contains("not found"))
 							{
 								response = new(404, result.ErrMessage);
 							}
