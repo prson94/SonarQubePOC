@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.2">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertChangeLog
@@ -80,6 +80,59 @@ begin
 				) pv
 		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FormattedValue,'') != '') 
 					or (coalesce(f.Value,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
+					
+	if (@object = 'Group')
+	begin
+		drop table if exists #fieldata;
+		create table #fieldata (ObjectID int,SeqId int,FieldTypeID int,FieldName nvarchar(250),FieldValue NVARCHAR(4000),LookupValue NVARCHAR(4000))
+		insert into #fieldata
+		select A.ObjectID,1 SeqId,0 as FieldTypeID, 'Name' as FieldName, G.Name as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join [Group] G on A.ObjectID = G.ID 
+		union all
+		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'Description' as FieldName, G.Description as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join [Group] G on A.ObjectID = G.ID 
+		union all
+		select A.ObjectID,3 SeqId,0 as FieldTypeID, 'IsActiveDirectoryGroup' as FieldName, iif(g.IsActiveDirectoryGroup = 1, 'true', 'false') as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join [Group] G on A.ObjectID = G.ID 
+		union all
+		select A.ObjectID,4 SeqId,0 as FieldTypeID, 'PrimaryOwnerResourceID' as FieldName, cast(g.PrimaryOwnerResourceID as nvarchar(4000)) as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join [Group] G on A.ObjectID = G.ID 
+		union all
+		select A.ObjectID,5 SeqId,0 as FieldTypeID, 'SecondaryOwnerResourceID' as FieldName, cast(g.SecondaryOwnerResourceID as nvarchar(4000)) as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join [Group] G on A.ObjectID = G.ID ;
+		
+		
+		insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+			select	tt.ID as AuditID,
+					coalesce(f.FieldTypeID, 0),
+					f.FieldName,
+					f.[FieldValue],
+					pv.[Value] as PreviousValue
+			from	#Assets l
+					inner join @tbl tt on tt.Object = @object and tt.ObjectID = l.ObjectID
+					inner join #fieldata f on f.ObjectID = l.ObjectID
+					outer apply (
+						select	top 1
+								ROW_NUMBER() OVER (PARTITION BY 
+									i_a.Object, 
+									i_a.ObjectID, 
+									i_p.FieldName 
+									ORDER BY i_p.[AuditId] DESC) as RowNum,
+								[Value]
+						from	reporting.Global_FieldAudit i_p
+								inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = @object and i_a.ObjectID = l.ObjectID and i_p.fieldName = f.fieldName and i_p.FieldTypeId = 0
+						order by RowNum asc
+					) pv
+			where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+						or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS))
+			order by tt.ID,F.SeqId;
+
+	end
 end
 ]]>
     </sql>
