@@ -90,7 +90,7 @@ begin
 		from #Assets A
 		inner join [Group] G on A.ObjectID = G.ID 
 		union all
-		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'Description' as FieldName, G.Description as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'Description' as FieldName, cast(G.Description as nvarchar(4000)) as FieldValue, cast(null as nvarchar(max)) as LookupValue
 		from #Assets A
 		inner join [Group] G on A.ObjectID = G.ID 
 		union all
