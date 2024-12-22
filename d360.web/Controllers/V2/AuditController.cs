@@ -263,7 +263,19 @@ namespace d360.web.Controllers.V2
 				modifiedQueryParams.Add(new KeyValuePair<string, string>(kp.Key, currentValue));
 			}
 
-			Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+			DynamicParameters advFilterArgs;
+			List<string> advFilterStatements;
+
+			try
+			{
+				Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out advFilterArgs, out advFilterStatements);
+			}
+			catch (FilterExpressionParserException ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage);
+			}
 
 			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
 
