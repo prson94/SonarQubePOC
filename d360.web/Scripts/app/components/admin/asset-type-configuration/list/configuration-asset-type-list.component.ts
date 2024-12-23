@@ -73,6 +73,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
     // ignore complexity codacy issue
 	// eslint-disable-next-line
 	onArrowKeysDownHandler($event: KeyboardEvent) {
+		if (this.isModalVisible || ($event.target as HTMLElement).tagName === 'INPUT' || !['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes($event.key)) {
+			return;
+		}
 		const rowsAsArr = this.tableRows.toArray();
 		const selectedRowIndex = rowsAsArr.findIndex((elRef) => {
 			return elRef.nativeElement.classList.contains('p-highlight');
