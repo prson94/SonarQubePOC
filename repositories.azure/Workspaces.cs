@@ -246,11 +246,11 @@ where	g.id = @groupId;
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
 						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
 					}
-					else 
+					else
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");					
+						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as datetime) as [{ft.Name}]");
+						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
 					{
