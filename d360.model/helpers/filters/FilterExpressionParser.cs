@@ -298,27 +298,19 @@ namespace d360.model.helpers
                 if (!expectingCondition)
                 {
                     paramCount++;
-					if (tokens.Length >= 3)
+
+					if (parseType == FilterExpressionParseType.Relationships)
 					{
-						if (parseType == FilterExpressionParseType.Relationships)
-						{
-							ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
-						}
-						else
-						{
-							ret.Add(GetFilterForTokens(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
-						}
-
-						expectingCondition = true;
-						i += 3;
-
-
+						ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
 					}
-					else 
+					else
 					{
-						i++;
+						ret.Add(GetFilterForTokens(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
 					}
-					
+
+					expectingCondition = true;
+					i += 3;
+
 					continue;
                 }
 
