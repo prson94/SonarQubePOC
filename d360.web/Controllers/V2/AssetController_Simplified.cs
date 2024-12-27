@@ -29,6 +29,7 @@ namespace d360.web.Controllers.V2
 		{
 			public int Id { get; set; }
 			public string Name { get; set; }
+			public bool? ISITExists { get; set; }
 		}
 
 		public class PropertyDefinition
@@ -191,7 +192,11 @@ namespace d360.web.Controllers.V2
 			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
-			sql = $"select p.Id, p.Name from [Predicate] p where p.[Type] = {(int)PredicateType.CatalogBrowse}";
+			sql = $@"select p.Id, p.Name,cast(case when count(IT.ID) > 0 then 1 else 0 end as bit) ISITExists
+					from [Predicate] p 
+					left join [intersecttype] IT on IT.PredicateID = P.ID
+					where p.[Type] = {(int)PredicateType.CatalogBrowse}
+					group by p.Id, p.Name";
 			var predicates = Company.Query<PredValue>(sql).ToList();
 
 			#region Add columns
@@ -207,7 +212,7 @@ namespace d360.web.Controllers.V2
 				{
 					ApiName = p.Name,
 					Column = $@"P{p.Id}.val as [{p.Name}]",
-					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
+					DataStatement = (bool)p.ISITExists ? $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)" : $"outer apply (select Null val )P{p.Id}(val)",
 					Position = columns.Max(c => c.Position) + 1,
 					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} WITH (NOEXPAND) on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
 					CatalogColumnType = CatalogColumnType.Predicate,
