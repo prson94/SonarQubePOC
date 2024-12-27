@@ -139,6 +139,19 @@ namespace d360.model.validators
 					}
 				}
 
+				if (field.Type.Json != null)
+				{
+					if (assetTypeIdentifierInfoModel != null)
+					{
+						List<string> restrictedTypes = new List<string> {SystemObjects.ResourceType.ToString()};
+
+						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+						{
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.JsonNotSupported);
+						}
+					}
+				}
+
 				if (field.Type.Path != null)
 				{
 					if (actionTypeIdentifierInfoModel != null)
@@ -172,6 +185,17 @@ namespace d360.model.validators
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueRelationshipLookup, field.FriendlyName));
 					}
+					if (assetTypeIdentifierInfoModel != null)
+					{
+						List<string> restrictedTypes = new List<string> {
+							SystemObjects.ResourceType.ToString()
+						};
+
+						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+						{
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedRelationshipLookupNotSupported);
+						}
+					}
 				}
 
 				if (field.Type.ComputedRelationshipReferenceList != null)
@@ -179,6 +203,18 @@ namespace d360.model.validators
 					if (field.Type.ComputedRelationshipReferenceList.IsDisplayable == false)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueReferenceItemListForRelationship, field.FriendlyName));
+					}
+
+					if (assetTypeIdentifierInfoModel != null)
+					{
+						List<string> restrictedTypes = new List<string> {
+							SystemObjects.ResourceType.ToString()
+						};
+
+						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+						{
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedRelationshipReferenceListNotSupported);
+						}
 					}
 				}
 
@@ -217,6 +253,18 @@ namespace d360.model.validators
 						if (!allowedTypes.Contains(jsonAttribute.DataType))
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.InvalidJsonFieldType, string.Join(", ", allowedTypes)));
+						}
+
+						if (assetTypeIdentifierInfoModel != null)
+						{
+							List<string> restrictedTypes = new List<string> {
+							SystemObjects.ResourceType.ToString()
+						};
+
+							if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+							{
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.JsonElementNotSupported);
+							}
 						}
 					}
 				}
@@ -483,12 +531,22 @@ namespace d360.model.validators
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.DisplayInColumnMustFlaseOnComputedWonerShipLookup);
 					}
+					if (assetTypeIdentifierInfoModel != null)
+					{
+						List<string> restrictedTypes = new List<string> {
+							SystemObjects.ResourceType.ToString()
+						};
+
+						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+						{
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedOwnershipLookupNotSupported);
+						}
+					}
 				}
 
 				//Diagram asset type validators
 				if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
 				{
-
 					if (field.Type.ComputedOwnershipLookup != null)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.ComputedOwnershipLookupNotSupported);
