@@ -54,7 +54,7 @@ namespace d360.web.Controllers.V2
                 nodes = reader.Read<AssetBrowserNode>().ToList(),
                 links = reader.Read<AssetBrowserLink>().ToList(),
                 hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : null,
+                reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : new List<AssetBrowserRevealNode>(),
 				dataLimitReached = checkDataLimit ? reader.Read<bool>().First() : false
 			};
 
