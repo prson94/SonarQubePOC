@@ -1231,33 +1231,35 @@ namespace d360.web.Controllers.V2
 			};
 			string sql = "";
 
-			switch (Uid.ToLower())
+			if (!string.IsNullOrWhiteSpace(Uid))
 			{
-				case "referenceitemtype":
-					sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Reference} and objectid <> 0 order by name";
-					break;
-				//case CommonIdentifiers.GroupTypeUid: //GroupType
-				case CommonIdentifiers.ResourceTypeUid: // ResourceType
-					string HideD3SUsers = await GetHideData3SixtyUsers() ? "" : "where Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com'";
-					sql = $"select Uid as value, (FirstName + ' ' + LastName)  as title from reporting.Global_Resource {HideD3SUsers} order by title";
-					break;
-				case "taxonomytype":
-					sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Model} order by name";
-					break;
-				default:
-					sql = "select a.Uid as value, d.DisplayValue as title " +
-						"from asset a " +
-						"inner join assettype t on (a.assettypeid = t.id) " +
-						"inner join AssetDisplayValue d on d.AssetID = a.ID " +
-						"where t.Uid = @Uid " +
-						"order by d.DisplayValue";
-					break;
+				switch (Uid.ToLower())
+				{
+					case "referenceitemtype":
+						sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Reference} and objectid <> 0 order by name";
+						break;
+					//case CommonIdentifiers.GroupTypeUid: //GroupType
+					case CommonIdentifiers.ResourceTypeUid: // ResourceType
+						string HideD3SUsers = await GetHideData3SixtyUsers() ? "" : "where Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com'";
+						sql = $"select Uid as value, (FirstName + ' ' + LastName)  as title from reporting.Global_Resource {HideD3SUsers} order by title";
+						break;
+					case "taxonomytype":
+						sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Model} order by name";
+						break;
+					default:
+						sql = "select a.Uid as value, d.DisplayValue as title " +
+							"from asset a " +
+							"inner join assettype t on (a.assettypeid = t.id) " +
+							"inner join AssetDisplayValue d on d.AssetID = a.ID " +
+							"where t.Uid = @Uid " +
+							"order by d.DisplayValue";
+						break;
+				}
+
+				list.AddRange(
+					await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid }, ApiTimeout)
+				);
 			}
-
-			list.AddRange(
-				await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid }, ApiTimeout)
-			);
-
 			return Ok(list);
 		}
 
