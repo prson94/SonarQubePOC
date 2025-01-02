@@ -240,7 +240,8 @@ where	g.id = @groupId;
 				fieldTypes.ForEach(ft =>
 				{
 					var prefix = $"f_{ft.ID}";
-					if (ft.Type == "Lookup")
+					DataType dt = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+					if (dt == DataType.Lookup)
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
@@ -248,8 +249,9 @@ where	g.id = @groupId;
 					}
 					else
 					{
+						string sqlDataType = dt.AsSqlDataType();
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as datetime) as [{ft.Name}]");
+						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
 						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)

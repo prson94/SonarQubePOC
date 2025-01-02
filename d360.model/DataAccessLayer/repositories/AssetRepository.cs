@@ -57,6 +57,10 @@ namespace d360.model.DataAccessLayer
 
 		public Asset GetAssetByUID(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				return null;
+			}
 			return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
 		}
 
