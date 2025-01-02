@@ -1,7 +1,7 @@
 <d3s-page-header [icon]="icon" [iconPath]="iconPath" [header]="header"></d3s-page-header>
 
 
-<div class="tabs-container">
+<div class="tabs-container" #tabsContainer>
    <d3s-tabs [items]="tabs"></d3s-tabs>
    <button class="p-element tab btn-tags-types-toggler" *ngIf="isTagTypesFeatureEnabled">
       {{ btnTagsText }}

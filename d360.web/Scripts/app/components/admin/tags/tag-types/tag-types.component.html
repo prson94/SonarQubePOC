@@ -1,4 +1,4 @@
-<div class="main-container">
+<div class="main-container" (click)="onClick($event)">
     <div class="header">
         <ig-search-field #searchinput [ngModel]="searchText$ | async" i18n-placeholder placeholder="Search "
             mode="Keypress"
