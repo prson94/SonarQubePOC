@@ -21,10 +21,10 @@ namespace d360.core
         [Description("True/False")]
         Boolean = 1 << 0,
 
-        [Description("Date")]
+        [Description("Date"), SqlDataType("date")]
         Date = 1 << 1,
 
-        [Description("Date With Time")]
+        [Description("Date With Time"), SqlDataType("datetime")]
         DateTime = 1 << 2,
 
         [Description("Hidden"), ReadOnly(true)]
@@ -33,10 +33,10 @@ namespace d360.core
         [Description("Html/Richtext")]
         Html = 1 << 5,
 
-        [Description("Number")]
+        [Description("Number"), SqlDataType("bigint")]
         Number = 1 << 6,
 
-        [Description("Decimal Number")]
+        [Description("Decimal Number"), SqlDataType("float")]
         Decimal = 1 << 7,
 
         [Description("List")]
@@ -108,7 +108,25 @@ namespace d360.core
 
     public static class DataTypeExtensions
     {
-        public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type)
+		public static string AsSqlDataType(this DataType type)
+		{
+			SqlDataTypeAttribute dt = type.GetType()
+				.GetMember(type.ToString())
+				.Where(m => m.MemberType == MemberTypes.Field)
+				.Single().GetCustomAttributes(typeof(SqlDataTypeAttribute))
+				.Cast<SqlDataTypeAttribute>()
+				.SingleOrDefault();
+			if (dt == null)
+			{
+				return "nvarchar(max)";
+			}
+			else
+			{
+				return dt.Datatype;
+			}
+		}
+
+		public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type)
         {
             var list = new List<DataTypeInfo>();
 
