@@ -60,6 +60,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerParameter("Value", "The value of the tag that's to be searched.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("TagTypeUid", "The UID for the type of the tags that's to be searched. Defaults to searching 'General'.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("TagTypeId", "The Id for the type of the tags that's to be searched. Defaults to searching 'General'.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "Search for tags completed.", typeof(List<dynamic>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Error while fetching tags.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))

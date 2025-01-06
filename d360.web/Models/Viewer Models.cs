@@ -260,7 +260,10 @@ namespace d360.web.Models
         [DataMember]
         public bool HasReadAccess { get; set; } = true;
 
-    }
+		[DataMember]
+		public int TagTypeID { get; set; }
+
+	}
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
     {

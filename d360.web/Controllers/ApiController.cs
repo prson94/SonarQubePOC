@@ -753,11 +753,12 @@ namespace d360.web.Controllers
 			return complexRelationFieldHasAnyModels;
 		}
 
-		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id,FieldType ft)
 		{
 			List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
 			var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
-			var tags = tagRepository.GetTagsForAsset(asset.ID);
+			int tagTypeId = 0;
+			var tags = tagRepository.GetTagsForAsset(asset.ID,  ft.TagTypeID);
 			tags.ToList().ForEach(x =>
 			{
 				var roField = new ReadOnlyFieldValue
@@ -768,7 +769,9 @@ namespace d360.web.Controllers
 					CreatedBy = x.CreatedBy,
 					TooltipContext = "Preview",
 					TooltipUrl = "",
-					uid = x.uid
+					uid = x.uid,
+					TagTypeID = x.TagTypeID
+					
 				};
 				tagsFields.Add(roField);
 			});
@@ -1707,7 +1710,7 @@ namespace d360.web.Controllers
 						FieldName = ft.Name,
 						ShowIfEmpty = true,
 						DataType = "tag",
-						Values = GetTagsValues(type, id),
+						Values = GetTagsValues(type, id,ft),
 						IsPartOfKey = ft.IsPartOfKey
 					}
 				},

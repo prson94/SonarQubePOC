@@ -17,7 +17,7 @@ namespace repositories
         
         bool DoesTagExists(Guid tagUid);
 
-        Tag GetTagByUid(Guid uid);
+		Tag GetTagByUid(Guid uid);
         
         Tag GetTagByName(string name);
         
@@ -37,7 +37,7 @@ namespace repositories
 
         IEnumerable<dynamic> GetTooltip(Guid tagUid, Guid? assetUid);
         
-        IEnumerable<Tag> GetTagsForAsset(long assetId);
+        IEnumerable<Tag> GetTagsForAsset(long assetId, int? tagTypeId);
 
 		Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId);
 

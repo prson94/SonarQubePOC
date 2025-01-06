@@ -3248,7 +3248,7 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				var response = await Catalog.CreateAssetTagAsync(asset.ID, currentTag.ID);
+				var response = await Catalog.CreateAssetTagAsync(asset.ID, currentTag.ID, currentTag.TagTypeID);
 
 				if (response.IsSuccess)
 				{
@@ -3353,7 +3353,7 @@ namespace d360.web.Controllers.V2
 
 				if (assetTag != null)
 				{
-					await Catalog.RemoveAssetTagAsync(asset.ID, currentTag.ID);
+					await Catalog.RemoveAssetTagAsync(asset.ID, currentTag.ID, currentTag.TagTypeID);
 					result = new AssetTagSuccessApiModel
 					{
 						Message = $"Asset / Tag Association  Deleted",
