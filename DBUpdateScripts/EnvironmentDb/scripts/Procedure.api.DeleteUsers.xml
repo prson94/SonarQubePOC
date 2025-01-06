@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.DeleteUsers-v1.1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.DeleteUsers-v1.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.DeleteUsers
@@ -63,8 +63,8 @@ begin
 	set		t.IsSuccess = 0,
 			t.Message = replace('User for uid <uid> is a system user and cannot be deleted.','<uid>',t.Uid)
 	from	#Items  t
-			left join reporting.Global_Resource s on s.Uid = t.Uid and s.ResourceID < 1
-	where	s.ResourceID is null and t.IsSuccess is null;
+			inner join reporting.Global_Resource s on s.Uid = t.Uid
+	where	t.IsSuccess is null and s.ResourceID < 1;
 
 	-- Populate internal IDs for group based on the incoming Uid.
 	update	t
