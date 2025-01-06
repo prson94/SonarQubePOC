@@ -1,7 +1,6 @@
 ﻿namespace repositories
 {
-	public interface IWorkflow
+	public interface ISocial
 	{
-
 	}
 }
