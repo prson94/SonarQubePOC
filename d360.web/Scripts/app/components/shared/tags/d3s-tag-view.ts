@@ -173,7 +173,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.selectedtag.Value = tag.name;
 		this.selectedtag.uid = tag.code;
 		this.tagInput.nativeElement.value = tag.name;
-		this.search(event, tag.name, this.selectedtag.TagTypeUID);
+		this.search(event, tag.name);
 		this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid});
     }
 
@@ -191,11 +191,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }, 150);
     }
 
-    search(event, searchValue,z) {
+	search(event, searchValue) {
+		if (this.tagTypeId === undefined)
+			this.tagTypeId = 1;
+
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);
 		this.timeouthandle = window.setTimeout(() => {
-			var a = z;
             this.tagService.searchTagsTypeAhead(searchValue, 10, this.tagTypeId)
                 .subscribe((res) => {
                     if (res && res.length > 0) {
