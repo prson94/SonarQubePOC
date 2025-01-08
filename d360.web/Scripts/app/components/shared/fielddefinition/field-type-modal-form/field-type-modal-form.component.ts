@@ -16,7 +16,8 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 import * as DOMPurify from "isomorphic-dompurify";
-import { debug } from "util";
+import { FeatureFlags } from '../../../../services/feature-flags.enum';
+import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -61,6 +62,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	savingInProgress = false;
 	formState: FormState = FormState.FieldTypeSelection;
 	areFieldTypesLoaded: boolean = false;
+
 
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -126,12 +128,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
+
+	get isTagTypesFeatureEnabled(): boolean {
+		return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
+	}
+
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
 		private cdRef: ChangeDetectorRef,
-		private tagService : TagService
+		private tagService: TagService,
+		private featureFlagService: LaunchDarklyService
 	) {
 
 		this.relationshipDisplayFormatValueOptions = [
@@ -1486,6 +1494,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		if (item.value === 'Score' && (!this.scoreTypeOptions || this.scoreTypeOptions.length === 0)) {
 			return $localize`No scores are currently defined for this asset type`;
+		}
+
+		if(!this.isTagTypesFeatureEnabled)
+		{ 
+		if (item.value === 'Tag' && this.typeFieldTypes.filter((x) => x.Type.Tag).length > 0) {
+			return $localize`Asset type can have only one Tag field type`;
+			}
 		}
 
 		return '';
