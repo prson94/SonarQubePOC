@@ -5,12 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertUsers
 	@executionId int,
-	@lookupFieldsPassedByValue bit = 0
+	@lookupFieldsPassedByValue bit = 0,
+	@syncwithcommunity bit = 0
 as
 begin
 	set nocount on;
@@ -33,7 +34,7 @@ begin
 		[Uid] uniqueidentifier, 
 		IsValid bit, IsSuccess bit, 
 		ObjectID int, AssetID bigint, 
-		Username nvarchar(500), Email nvarchar(500), FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit, 
+		Username nvarchar(500), Email nvarchar(500), FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit, LastLoggedInOn datetime, UpdatedOn datetime,
 		[Message] nvarchar(max)
 	);
 	
@@ -43,7 +44,7 @@ begin
 	create table #Fields (ItemNumber int, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max));	
 
 	-- Get data from JSON columns in api.ExecutionItem
-	insert into #Items (ItemNumber, Uid, ObjectID, Username, Email, FirstName, LastName, State, IsAdministrator)
+	insert into #Items (ItemNumber, Uid, ObjectID, Username, Email, FirstName, LastName, State, IsAdministrator, LastLoggedInOn, UpdatedOn)
 		select	ItemNumber,
 				JSON_VALUE(Properties, '$.Uid'),
 				cast(JSON_VALUE(Properties, '$.ObjectID') as int),
@@ -52,9 +53,34 @@ begin
 				JSON_VALUE(Properties, '$.FirstName'),
 				JSON_VALUE(Properties, '$.LastName'),
 				cast(coalesce(JSON_VALUE(Properties, '$.State'), 1) as int),
-				cast(coalesce(JSON_VALUE(Properties, '$.IsAdministrator'), 'false') as bit)
+				cast(coalesce(JSON_VALUE(Properties, '$.IsAdministrator'), 'false') as bit),
+				cast(coalesce(JSON_VALUE(Properties, '$.LastLoggedInOn'), '1/1/1900') as datetime),
+				cast(coalesce(JSON_VALUE(Properties, '$.UpdatedOn'), '1/1/1900') as datetime)
 		from	api.ExecutionItem
 		where	ExecutionId = @executionId;
+
+
+	if (@syncwithcommunity = 1)
+	begin
+		drop table if exists #itemsnotchange;
+
+		select distinct S.ItemNumber
+		into #itemsnotchange
+		from #Items S
+		inner join reporting.Global_Resource as T on T.ResourceID = S.ObjectID
+		where ((coalesce(T.UpdatedOn, '1/1/1900') >= S.UpdatedOn) and (coalesce(T.LastLoggedInOn, '1/1/1900') >= S.LastLoggedInOn));		
+
+		create clustered index cx_itemsnotchange on #itemsnotchange(ItemNumber);
+		
+		delete S
+		from #Items S
+		inner join #itemsnotchange sc on sc.ItemNumber = S.ItemNumber;
+		
+		delete E 
+		from api.ExecutionItem E
+		inner join #itemsnotchange sc on sc.ItemNumber = E.ItemNumber
+		where E.ExecutionId = @executionId;
+	end
 
 	insert into #Fields (ItemNumber, FieldName, FieldTypeID, FieldValue, LookupValue)
 		select	i.ItemNumber,
@@ -65,6 +91,7 @@ begin
 		from	api.ExecutionItem i
 				cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)) f
 		where	ExecutionId = @executionId;
+		
 		
 	--Validate Request
 	drop table if exists #tempdupusername;
