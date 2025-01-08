@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -10,8 +9,6 @@ using d360.core;
 using d360.core.entities;
 using d360.core.resources;
 using d360.core.validators;
-using DocumentFormat.OpenXml.Office.CustomUI;
-using DocumentFormat.OpenXml.Office2013.Word;
 
 namespace d360.model.validators
 {
@@ -193,7 +190,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedRelationshipLookupNotSupported);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, "User", field.Name));
 						}
 					}
 				}
