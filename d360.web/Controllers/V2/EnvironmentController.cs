@@ -95,6 +95,7 @@ namespace d360.web.Controllers.V2
 		{
 			var currentStatusList = (await Workspace.ReadRebuildStatusesAsync()).ToList();
 			var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
+			currentStatusList.RemoveAll(j => !listToReturn.Select(i => i.JobToken).Contains(j.JobToken));
 			currentStatusList.ForEach(i =>
 			{
 				listToReturn.Single(j => j.JobToken == i.JobToken).SetCurrentJobStatusProperties(i);
