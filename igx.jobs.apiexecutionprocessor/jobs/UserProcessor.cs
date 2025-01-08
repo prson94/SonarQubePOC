@@ -48,11 +48,6 @@ namespace igx.jobs.apiexecutionprocessor
 							{ "UrlPrefix", c.UrlPrefix }
 						};
 
-						if (c.CompanyID != 8)
-						{
-							continue;
-						}
-
 						using (log.BeginScope(logProperties))
 						{
 							try
