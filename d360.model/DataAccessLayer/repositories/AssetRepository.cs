@@ -1262,6 +1262,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						bool scoringtypeallowed = false;
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
+						bool usePathSegDtlTbl = false;
+						if (ft.Type == DataType.Path.ToString() && IsBusTechAssetType)
+						{
+							var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(ft.Definition);
+							if (pathDefinition?.AssetTypeUid != null)
+							{
+								usePathSegDtlTbl = true;
+							}
+						}
 						if (ft.Type == DataType.Score.ToString() && !isNumber )
 						{
 							var checknum = simpleFilter;
@@ -1280,7 +1289,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && !IsBusTechAssetType && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && !usePathSegDtlTbl && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
