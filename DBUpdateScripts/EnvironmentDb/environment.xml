@@ -321,6 +321,7 @@
 	<include file="scripts/Procedure.api.PostLookAssetPathPK.xml"/>
 	<include file="scripts/Procedure.api.PostAuditLogAssetUpsert.xml"/>
 	<include file="scripts/Procedure.api.PostAuditLogData.xml"/>
+	<include file="scripts/Procedure.api.ValidateUser.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>

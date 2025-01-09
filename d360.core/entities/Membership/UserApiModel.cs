@@ -32,7 +32,16 @@ namespace d360.core.entities.Membership
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
-    public class UserApiModel
+	public class UserUpsertValidateModel
+	{
+		public UserApiModel users { get; set; }
+
+		public string Message { get; set; }
+
+		public bool? Success { get; set; }
+	}
+
+	public class UserApiModel
     {
         [DataMember]
         public Guid? uid { get; set; }

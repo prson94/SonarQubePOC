@@ -964,12 +964,18 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
+
+			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, true);
-			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
-			
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, usersvalidate);
+
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
@@ -1084,13 +1090,15 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
+			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, false);
-
-			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 

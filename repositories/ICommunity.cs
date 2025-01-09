@@ -19,7 +19,9 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
 
-		Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users);
+		Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users);
+
+		Task<List<UserUpsertValidateModel>> CreateUsersInTenantAsync(int companyId, List<UserUpsertValidateModel> users);
 
 		/// <summary>
 		/// Used to generate a state or nonce value.

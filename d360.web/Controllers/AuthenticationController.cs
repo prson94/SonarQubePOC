@@ -564,9 +564,7 @@ namespace d360.web.Controllers
 					Processed = 0,
 					ApplicationId = "AllowNewUserLogin"
 				};
-				var users = new List<UserApiModel>
-								{
-									new UserApiModel
+				var users = new UserApiModel
 									{
 										FirstName = resource.FirstName,
 										LastName = resource.LastName,
@@ -575,10 +573,19 @@ namespace d360.web.Controllers
 										Username = resource.Username,
 										Email = resource.Email,
 										IsNew = true
+								};
+				
+				var usersvalid = new List<UserUpsertValidateModel>
+								{
+									new UserUpsertValidateModel
+									{
+										users = users,
+										Success = true,
+										Message = ""
 									}
 								};
 
-				await Workspace.UpsertUsersAsync(execution.Id, users, true);
+				await Workspace.UpsertUsersAsync(execution.Id, usersvalid, true);
 			}
 		}
 
