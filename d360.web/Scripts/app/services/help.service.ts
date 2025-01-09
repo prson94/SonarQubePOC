@@ -17,19 +17,19 @@ export class HelpService {
 	//No translated "Preview" help pages, so for non-English, use Latest
 	private _fluidVersionLanguage = {
 		"Preview": {
-			"nl-NL": "Nieuwste", //"Preview",
-			"de-DE": "Neuheiten", //"Vorschau",
-			"fr-FR": "Dernière", //"Préliminaire",
-			"es-ES": "Más reciente", //"Previsualizar",
-			"it-IT": "Più recente", //"Anteprima",
+			"nl-NL": "Latest", //"Preview",
+			"de-DE": "Latest", //"Vorschau",
+			"fr-FR": "Latest", //"Préliminaire",
+			"es-ES": "Latest", //"Previsualizar",
+			"it-IT": "Latest", //"Anteprima",
 			"en-US": "Preview"
 		},
 		"Latest": {
-			"nl-NL": "Nieuwste",
-			"de-DE": "Neuheiten",
-			"fr-FR": "Dernière",
-			"es-ES": "Más reciente",
-			"it-IT": "Più recente",
+			"nl-NL": "Latest", //"Nieuwste",
+			"de-DE": "Latest", //"Neuheiten",
+			"fr-FR": "Latest", //"Dernière",
+			"es-ES": "Latest", //"Más reciente",
+			"it-IT": "Latest", //"Più recente",
 			"en-US": "Latest"
 		}
 	};
@@ -50,10 +50,9 @@ export class HelpService {
 
 	private getFluidVersion(lang: string, version: string) {
 		let vers = this._fluidVersionLanguage[version]["en-US"];
-		/* GOV-35677 Preview/latest is no longer translated
 		if (this._fluidVersionLanguage[version][lang]) {
 			vers = this._fluidVersionLanguage[version][lang];
-		} */
+		}
 		return encodeURI(vers);
 	}
 
