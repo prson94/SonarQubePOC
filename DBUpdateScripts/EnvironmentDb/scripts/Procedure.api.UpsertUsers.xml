@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.3">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.4">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertUsers
@@ -15,6 +15,7 @@ create or alter procedure api.UpsertUsers
 as
 begin
 	set nocount on;
+	declare @errormessage nvarchar(4000)='';
 	declare @userId int,
 			@date datetime,
 			@object varchar(50) = 'Resource',
@@ -57,7 +58,8 @@ begin
 				cast(coalesce(JSON_VALUE(Properties, '$.LastLoggedInOn'), '1/1/1900') as datetime),
 				cast(coalesce(JSON_VALUE(Properties, '$.UpdatedOn'), '1/1/1900') as datetime)
 		from	api.ExecutionItem
-		where	ExecutionId = @executionId;
+		where	ExecutionId = @executionId
+		and coalesce(Success,1) = 1;
 
 
 	if (@syncwithcommunity = 1)
@@ -90,7 +92,7 @@ begin
 				f.LookupValue
 		from	api.ExecutionItem i
 				cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)) f
-		where	ExecutionId = @executionId;
+		where	ExecutionId = @executionId and coalesce(Success,1) = 1;
 		
 		
 	--Validate Request
@@ -206,6 +208,7 @@ begin
 	end try
 	begin catch
 		rollback transaction;
+		set @errormessage = substring(ERROR_MESSAGE(),1,4000);
 	end catch
 
 	if @transactionCompleted = 1
@@ -222,7 +225,7 @@ begin
 				t.Message = s.Message
 		from	api.ExecutionItem t
 				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId
-		where t.Success is null and t.Message is null;
+		where t.Success is null and coalesce(t.Message,'')  = '';
 
 		update	t
 		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
@@ -243,7 +246,14 @@ begin
 	end
 	else
 	begin 
+		if (@errormessage = null)
+			begin
+				exec api.CompleteExecution @executionId, @date, @errormessage;
+			end
+		else
+			begin
 		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+			end
 	end
 end
 ]]>
