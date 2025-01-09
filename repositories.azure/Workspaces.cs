@@ -894,7 +894,6 @@ end";
 
 			var userTable = new DataTable();
 			var fieldTable = new DataTable();
-			DateTime dtnow = DateTime.Now;
 
 			userTable.Columns.Add("uid", typeof(Guid));
 			userTable.Columns.Add("ResourceID", typeof(int));
