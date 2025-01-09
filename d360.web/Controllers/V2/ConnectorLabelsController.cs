@@ -36,11 +36,11 @@ namespace d360.web.Controllers.V2
     ]
     public class ConnectorLabelsController : BaseV2ApiController
     {
-        private readonly IConnectorLabelRepository ConnectorLabelRepository;
+        private readonly ICatalog _connectorLabelRepository;
 
-        public ConnectorLabelsController(ICoreComponentSet set, IConnectorLabelRepository connectorLabelRepository) : base(set)
+        public ConnectorLabelsController(ICoreComponentSet set, ICatalog connectorLabelRepository) : base(set)
         {
-            ConnectorLabelRepository = connectorLabelRepository;
+            _connectorLabelRepository = connectorLabelRepository;
         }
 
         /// <summary>
@@ -125,11 +125,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                IEnumerable<dynamic> response = ConnectorLabelRepository.GetConnectorLabelUsage(labelUid, Request.GetQueryNameValuePairs());
+                IEnumerable<dynamic> response = await _connectorLabelRepository.GetConnectorLabelUsage(labelUid, Request.GetQueryNameValuePairs());
 
                 if (isStreamResponse)
                 {
-                    (byte[] bytes, string filename) = ConnectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
+                    (byte[] bytes, string filename) = await _connectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
                     var fileResponse = createFileResponseMessage(HttpStatusCode.OK, $"{filename}.xlsx", bytes);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(fileResponse)).ConfigureAwait(false);
 
@@ -174,7 +174,7 @@ namespace d360.web.Controllers.V2
             }
 
             var labelValue = label.Value.Trim();
-            var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == labelValue.ToLower());
+            var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => string.Equals(x.Value, labelValue, StringComparison.OrdinalIgnoreCase));
             if (dbRecord != null)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
@@ -223,7 +223,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
-                var res = await ConnectorLabelRepository.GetLabels(queryParams);
+                var res = await _connectorLabelRepository.GetLabels(queryParams);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
             }
@@ -246,7 +246,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult PostTag(ConnectorLabelPostModel model)
+        public async Task<IHttpActionResult> PostTag(ConnectorLabelPostModel model)
         {
             if (model == null)
             {
@@ -259,12 +259,12 @@ namespace d360.web.Controllers.V2
                 ConnectorLabelValidator.ValidateForPost(model);
 
                 //make sure no tag with the same name exists
-                if (ConnectorLabelRepository.DoesLabelExists(model.Value))
+                if (await _connectorLabelRepository.DoesLabelExists(model.Value))
                 {
                     throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
                 }
 
-                result = ConnectorLabelRepository.CreateConnectorLabel(model);
+                result = await _connectorLabelRepository.CreateConnectorLabel(model);
             }
             catch (Exception e)
             {
@@ -290,9 +290,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid labelUid, ConnectorLabelPostModel model)
+        public async Task<IHttpActionResult> Put(Guid labelUid, ConnectorLabelPostModel model)
         {
-            if (!ConnectorLabelRepository.DoesLabelExists(labelUid))
+            if (!(await _connectorLabelRepository.DoesLabelExists(labelUid)))
             {
                 return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorUpdateLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
             }
@@ -310,12 +310,12 @@ namespace d360.web.Controllers.V2
                     throw new ArgumentNullException(string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
                 }
 
-                if (ConnectorLabelRepository.DoesLabelExists(labelUid, model))
+                if (await _connectorLabelRepository.DoesLabelExists(labelUid, model))
                 {
                     throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
                 }
 
-                result = ConnectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
+                result = await _connectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
             }
             catch (Exception e)
             {
@@ -341,12 +341,12 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-        public IHttpActionResult DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
+        public async Task<IHttpActionResult> DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
         {
 
             foreach (var label in labels)
             {
-                if (!ConnectorLabelRepository.DoesLabelExists(label.uid))
+                if (! (await _connectorLabelRepository.DoesLabelExists(label.uid)))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorDeleteLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, label.uid.ToString()));
                 }
@@ -354,7 +354,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (!ConnectorLabelRepository.DeleteConnectorLabels(labels))
+                if (!(await _connectorLabelRepository.DeleteConnectorLabels(labels)))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorDeleteLabel, ConnectorLabelAPIMessage.LabelNotFound);
                 }
@@ -387,7 +387,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> ExportToExcel()
         {
             var queryParams = Request.GetQueryNameValuePairs();
-            var labels = await ConnectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
+            var labels = await _connectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
             var document = new SLDocument();
 
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");

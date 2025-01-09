@@ -244,7 +244,7 @@ namespace d360.web
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
-				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+				//builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
 
 				builder.RegisterType<History>().As<IHistory>()
 					.InstancePerRequest().OnActivating(i => {

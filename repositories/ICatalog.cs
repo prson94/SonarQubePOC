@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace repositories
 {
-	public interface ICatalog
+	public interface ICatalog : IConnectorLabelRepository
 	{
 		Platform Platform { get; }
 

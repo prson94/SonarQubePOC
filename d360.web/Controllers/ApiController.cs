@@ -4891,7 +4891,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
 
 		[Route("{type}/{uid}/permissions")]
-		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
+		public async Task<List<PermissionInfo>> GetPermissionsByObject(SystemObjects type, Guid uid)
 		{
 			if (type == SystemObjects.Tag)
 			{
@@ -4909,7 +4909,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			{
 				List<PermissionInfo> ret = new List<PermissionInfo>();
 
-				if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
+				if (await connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
 				{
 					ret.AddRange(Permission.DeleteAsset.GetList());
 				}

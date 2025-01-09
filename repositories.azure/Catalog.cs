@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.extensions;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using repositories.resources;
@@ -16,8 +17,10 @@ using System.Threading.Tasks;
 
 namespace repositories.azure
 {
-	public class Catalog : Repository, ICatalog
+	public partial class Catalog : Repository, ICatalog
 	{
+		readonly ISecurityContextProvider SecurityContext;
+
 		readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
 
 		readonly string TAG_API_MODEL_SQL_WITHOUT_WHERE = @"

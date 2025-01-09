@@ -45,7 +45,7 @@ builder.Services.AddScoped(c =>
 });
 
 builder.Services.AddScoped<ICatalog, Catalog>();
-builder.Services.AddScoped<ICatalog, repositories.dis.Catalog>();
+//builder.Services.AddScoped<ICatalog, repositories.dis.Catalog>();
 builder.Services.ConfigureHttpJsonOptions(j =>
 {
 	j.SerializerOptions.Converters.Add(
