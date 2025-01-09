@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model;
 using d360.model.validators;
 using d360.web.Filters;
@@ -248,6 +249,21 @@ namespace d360.web.Controllers.V2
 				foreach (var field in model.Fields.Where(f => f.Type.Relationship != null))
 				{
 					existingIntersectTypes.AddRange(Company.IntersectTypes.Where(i => field.Type.Relationship.IntersectTypeUid == i.uid));
+				}
+			}
+
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_TAG_TYPES_ENABLED, await GetFeatureFlagUser()))
+			{
+
+				foreach (FieldTypeApiEditModel field in model.Fields)
+				{
+					if (existingFields != null)
+					{
+						if (existingFields.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
+						{
+							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
+						}
+					}
 				}
 			}
 
