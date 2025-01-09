@@ -4,6 +4,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using repositories;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,8 @@ namespace igx.jobs.apiexecutionprocessor
 
 					foreach (var c in tenants)
 					{
+						Guid executionUid = Guid.NewGuid();
+
 						bool IsError = false;
 
 						var logProperties = new Dictionary<string, object> {
@@ -60,28 +63,22 @@ namespace igx.jobs.apiexecutionprocessor
 									using (var transaction = companyConnection.BeginTransaction())
 									{
 
-										await companyConnection.ExecuteAsync(
-											sql: @"IF OBJECT_ID('tempdb..#users') IS NOT NULL
-												DROP TABLE #users;
+									 int executionid = await companyConnection.ExecuteScalarAsync<int>(
+											sql: @"
+													declare @d datetime = getutcdate();
+													insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [Action])
+													values (@executionUid, 0, 0, 0, 0, @d, @d, null,16);
 
-											create table #users (                                            			                                
-												ResourceID int not null primary key ,
-												FirstName nvarchar(250) not null,
-												LastName nvarchar(250) not null,
-												LastLoggedInOn datetime null,
-												Email nvarchar(500) not null,
-												[State] int not null,
-												IsAdministrator bit not null,
-												[uid] uniqueidentifier not null,
-												UpdatedOn datetime null
-											);",
-											transaction: transaction);
+													select Id from api.Execution where ExecutionID = @executionUid;",
+											transaction: transaction,param: new { executionUid});
 
 										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
 										{
 											bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
-											bulkCopy.DestinationTableName = "#users";
+											bulkCopy.DestinationTableName = "api.ExecutionItem";
 											bulkCopy.BulkCopyTimeout = 300;
+
+											int itemNumber = 0;
 
 											using (DataTable table = PrepareSourceTable(bulkCopy))
 											{
@@ -107,16 +104,31 @@ namespace igx.jobs.apiexecutionprocessor
 															updatedResourceIDs.Add(resourceId);
 
 															var row = table.NewRow();
+															var jsonObject = JObject.Parse("{}");
+															var state = (int)(resources["State"] ?? resources["State"]);
 
-															row["ResourceID"] = resourceId;
-															row["FirstName"] = resources["FirstName"];
-															row["LastName"] = resources["LastName"];
-															row["LastLoggedInOn"] = resources["LastLoggedInOn"];
-															row["Email"] = resources["Email"];
-															row["State"] = resources["State"];
-															row["IsAdministrator"] = resources["IsAdministrator"];
-															row["uid"] = resources["uid"];
-															row["UpdatedOn"] = resources["UpdatedOn"];
+															itemNumber++;
+															row["ExecutionId"] = executionid;
+															row["ItemNumber"] = itemNumber;
+
+															jsonObject.Add("Uid", (Guid)resources["uid"]);
+															jsonObject.Add("ObjectID", resourceId);
+															jsonObject.Add("Email",(string)resources["Email"]);
+															jsonObject.Add("FirstName", (string)resources["FirstName"]);
+															jsonObject.Add("LastName", (string)resources["LastName"]);
+															jsonObject.Add("State", state);
+															jsonObject.Add("IsAdministrator", (bool)resources["IsAdministrator"]);
+															if (resources["LastLoggedInOn"] != DBNull.Value)
+															{
+																jsonObject.Add("LastLoggedInOn", (DateTime)resources["LastLoggedInOn"]);
+															}
+
+															if (resources["UpdatedOn"] != DBNull.Value)
+															{
+																jsonObject.Add("UpdatedOn", (DateTime)resources["UpdatedOn"]);
+															}
+
+															row["Properties"] = jsonObject.ToString();
 
 															table.Rows.Add(row);
 
@@ -149,39 +161,9 @@ namespace igx.jobs.apiexecutionprocessor
 										}
 
 										int rowsAffected = await companyConnection.ExecuteScalarAsync<int>(
-											sql: @"declare @mergeResults table ([action] varchar(50));
-												merge	reporting.Global_Resource as T
-												using	(
-														select	ResourceID,
-																FirstName,
-																LastName,
-																LastLoggedInOn,
-																Email,
-																[State],
-																IsAdministrator,
-																[uid],
-																UpdatedOn
-														from	#users
-														) as S
-												on		(T.ResourceID = S.ResourceID)
-												when	matched and ((coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) or (coalesce(T.LastLoggedInOn, '1/1/1900') < S.LastLoggedInOn)) then
-														update	
-														set		T.FirstName = S.FirstName,
-																T.LastName = S.LastName,
-																T.LastLoggedInOn = S.LastLoggedInOn,
-																T.Email = S.Email,
-																T.[State] = S.[State],
-																T.IsAdministrator = S.IsAdministrator,
-																T.[uid] = S.[uid],
-																T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end,
-																T.UpdatedOn = S.UpdatedOn
-												when	not matched by target then
-														insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn, UpdatedOn)
-														values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate(), getutcdate())
-												output
-														$action into @mergeResults;
-
-												select count(1) from @mergeResults;",
+											sql: @"exec api.UpsertUsers @executionId, 1, 1
+												   select Processed from api.Execution E where E.Id = @executionid;",
+										param: new {executionid},
 										transaction: transaction,
 										commandTimeout: 300
 										);
@@ -264,40 +246,16 @@ namespace igx.jobs.apiexecutionprocessor
 		{
 			var table = new DataTable();
 
-			var columnName = "ResourceID";
+			var columnName = "ExecutionId";
 			table.Columns.Add(columnName, typeof(int));
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-			columnName = "FirstName";
-			table.Columns.Add(columnName, typeof(string));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "LastName";
-			table.Columns.Add(columnName, typeof(string));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "LastLoggedInOn";
-			table.Columns.Add(columnName, typeof(DateTime));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "Email";
-			table.Columns.Add(columnName, typeof(string));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "State";
+			columnName = "ItemNumber";
 			table.Columns.Add(columnName, typeof(int));
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-			columnName = "IsAdministrator";
-			table.Columns.Add(columnName, typeof(bool));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "uid";
-			table.Columns.Add(columnName, typeof(Guid));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "UpdatedOn";
-			table.Columns.Add(columnName, typeof(DateTime));
+			columnName = "Properties";
+			table.Columns.Add(columnName, typeof(string));
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 
 			return table;
