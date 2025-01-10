@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { IOutputData } from 'angular-split';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
@@ -21,13 +21,6 @@ export class SidePanelService {
 	readonly sidePanelOpenMinWidth = 400;
 	readonly draggableAreaWidth: number = 6;
 	readonly panelWidthStorageKeyPrefix: string = 'side_panel_width_';
-
-	// Signal for which tabs are avialable on the page the user is viewing.
-	private sidePanelItemSignal = signal<unknown>(null);
-	readonly sidePanelItem = this.sidePanelItemSignal.asReadonly();
-	setSidePanelItem(value: unknown) {
-		this.sidePanelItemSignal.set(value);
-	}
 
 	private sidePanelStateSource = new Subject<SidePanelState>();
 	sidePanelStateChange$ = this.sidePanelStateSource.asObservable();

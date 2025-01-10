@@ -1,110 +1,126 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <page-splitter [storageKey]="sidePanelStorageKey">
-		<content-section>
-			<d3s-object-definition-tile [synonymPermission]="synonymPermission"
-										[objectPermissions]="objectPermission"
-										[objectID]="artifact?.ID"
-										[useV2Api]="true"
-										[objectType]="'Artifact'"
-										[nymTypes]="artifact?.NymTypes"
-										[interceptLinkClick]="true"
-										(onEditComplete)="editArtifact($event)">
-			</d3s-object-definition-tile>
-			@if (showSidePanel && secondarySidePanelOpen) {
-			    <div #semanticTile class="secondary-side-panel">
-				    <div class="panel-header">
-					    <span class="header-label"
-						      i18n>Information</span>
-					    <div class="button-container">
-						    <button igButton
-								    [attr.data-cy]="'Semantic_Secondary_Close'"
-								    icon="fa-times"
-								    (click)="secondarySidePanelOpen=false;"
-								    [tooltip]="Close"
-								    class="close-button"></button>
-					    </div>
-				    </div>
-				    <div class="details-container">
-					    <ng-container *ngIf="semanticType && secondarySidePanel=='detail'">
-						    <semantic-detail [qualifier]="semanticType.qualifier"
-										     [isSidePanel]="true"
-										     [showHeader]="true"
-										     [semanticType]="semanticType"
-										     (close)="secondarySidePanelOpen=false;"
-										     (linkClicked)="secondaryPanelOpen($event)"></semantic-detail>
-					    </ng-container>
-					    <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
-						    <ig-asset-detail [objectUID]="resourceUid"
-										     [objectType]="'Resource'"
-										     [useAccordion]="true"
-										     [shouldBePadded]="true"
-										     [showHeader]="true"
-										     [showHeaderLine]="false"
-										     [spacerHeight]="'16px'"
-										     [tooltipAlign]="'left'"
-										     [isSidePanel]="true"
-										     [interceptLinkClick]="true"
-										     (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
-					    </ng-container>
-					    <ng-container *ngIf="secondarySidePanel=='status'">
-						    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
-					    </ng-container>
-				    </div>
-			    </div>
-			}
-		</content-section>
-		<side-section>
-			@if (sidePanelOpen && sidePanelTab === 'dataprofile') {
-			<data-profile [dataProfile]="dataProfile"
-						  [dataProfileList]="dataProfileList"
-						  (showTimeSeries)="showTimeSeriesPanel($event)"
-						  (secondaryPanelLinkClicked)="secondaryPanelOpen($event)">
-			</data-profile>
-			}
-
-			@if (sidePanelOpen && sidePanelTab === 'detail') {
-
-			@if (!selectedAsset && !selectedReferenceItem && !selectedTag) {
-			<div class="empty-overlay">
-				<div class="content">
-					<div class="icon-holder">
-						<i class="fa fa-info-circle"></i>
-					</div>
-					<span i18n>Click a link or a tag to display the properties of a referenced item</span>
-				</div>
-			</div>
-			}
-
-			@if (selectedAsset) {
-			<ig-asset-detail [objectUID]="selectedAsset.uid"
-							 [objectType]="selectedAsset.type"
-							 [useAccordion]="true"
-							 [shouldBePadded]="false"
-							 [showHeader]="true"
-							 [showHeaderLine]="false"
-							 [spacerHeight]="'16px'"
-							 [tooltipAlign]="'left'"
-							 [isSidePanel]="true"
-							 [interceptLinkClick]="true"
-							 [hasAddRelationshipsPermissions]="false"
-							 [hasModifyRelationshipsPermissions]="false"
-							 [hasDeleteRelationshipsPermissions]="false">
-			</ig-asset-detail>
-			}
-
-			@if (selectedReferenceItem) {
-			<ig-asset-type-detail [uid]="selectedReferenceItem.uid"
-								  [highlightUid]="selectedReferenceItem.assetUid"
-								  [baseUrl]="selectedReferenceItem.url">
-			</ig-asset-type-detail>
-			}
-
-			@if (selectedTag) {
-			<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
-			}
-
-			}
-		</side-section>
-    </page-splitter>
+    <div class="row">
+        <div>
+            <as-split unit="pixel"
+                      direction="horizontal"
+                      [gutterSize]="sidePanelService.draggableAreaWidth"
+                      class="col s12 split"
+                      style="display: flex"
+                      [class.side-panel-close]="!sidePanelOpen"
+                      (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+                <as-split-area class="tile tile-detail main-panel">
+                    <d3s-object-definition-tile [synonymPermission]="synonymPermission"
+                                                [objectPermissions]="objectPermission"
+                                                [objectID]="artifact?.ID"
+                                                [useV2Api]="true"
+                                                [objectType]="'Artifact'"
+                                                [nymTypes]="artifact?.NymTypes"
+                                                [interceptLinkClick]="true"
+                                                (onEditComplete)="editArtifact($event)">
+                    </d3s-object-definition-tile>
+                    <ng-container *ngIf="showSidePanel && secondarySidePanelOpen">
+                        <div #semanticTile
+                             class="secondary-side-panel">
+                            <div class="panel-header">
+                                <span class="header-label"
+                                      i18n>Information</span>
+                                <div class="button-container">
+                                    <button igButton
+                                            [attr.data-cy]="'Semantic_Secondary_Close'"
+                                            icon="fa-times"
+                                            (click)="secondarySidePanelOpen=false;"
+                                            [tooltip]="Close"
+                                            class="close-button"></button>
+                                </div>
+                            </div>
+                            <div class="details-container">
+                                <ng-container *ngIf="semanticType && secondarySidePanel=='detail'">
+                                    <semantic-detail [qualifier]="semanticType.qualifier"
+                                                     [isSidePanel]="true"
+                                                     [showHeader]="true"
+                                                     [semanticType]="semanticType"
+                                                     (close)="secondarySidePanelOpen=false;"
+                                                     (linkClicked)="secondaryPanelOpen($event)"></semantic-detail>
+                                </ng-container>
+                                <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                                    <ig-asset-detail [objectUID]="resourceUid"
+                                                     [objectType]="'Resource'"
+                                                     [useAccordion]="true"
+                                                     [shouldBePadded]="true"
+                                                     [showHeader]="true"
+                                                     [showHeaderLine]="false"
+                                                     [spacerHeight]="'16px'"
+                                                     [tooltipAlign]="'left'"
+                                                     [isSidePanel]="true"
+                                                     [interceptLinkClick]="true"
+                                                     (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                                </ng-container>
+                                <ng-container *ngIf="secondarySidePanel=='status'">
+                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </as-split-area>
+                <as-split-area [size]="getSidePanelWidth()"
+                               [minSize]="getSidePanelMinWidth()"
+                               [maxSize]="getSidePanelMaxWidth()"
+                               class="tile tile-detail side-panel"
+                               *ngIf="showSidePanel">
+                    <side-panel (expandedChange)="sidePanelOpen=$event"
+                                [expanded]="sidePanelOpen"
+                                [hasProfiling]="showDataProfile"
+                                [storageKey]="sidePanelStorageKey"
+                                (selectedPanelChange)="sidePanelTab=$event"
+                                [selectedPanel]="sidePanelTab"
+                                [setMinMaxWidth]="false"
+                                hasDetail="true">
+                        <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'dataprofile'">
+                            <data-profile [dataProfile]="dataProfile"
+                                          [dataProfileList]="dataProfileList"
+                                          (showTimeSeries)="showTimeSeriesPanel($event)"
+                                          (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+                        </ng-container>
+            
+                        <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
+                            <div class="empty-overlay"
+                                 *ngIf="!selectedAsset && !selectedReferenceItem && !selectedTag">
+                                <div class="content">
+                                    <div class="icon-holder">
+                                        <i class="fa fa-info-circle"></i>
+                                    </div>
+                                    <span i18n>Click a link or a tag to display the properties of a referenced item</span>
+                                </div>
+                            </div>
+                            <ng-container *ngIf="selectedAsset">
+                                <ig-asset-detail [objectUID]="selectedAsset.uid"
+                                                 [objectType]="selectedAsset.type"
+                                                 [useAccordion]="true"
+                                                 [shouldBePadded]="false"
+                                                 [showHeader]="true"
+                                                 [showHeaderLine]="false"
+                                                 [spacerHeight]="'16px'"
+                                                 [tooltipAlign]="'left'"
+                                                 [isSidePanel]="true"
+                                                 [interceptLinkClick]="true"
+                                                 [hasAddRelationshipsPermissions]="false"
+                                                 [hasModifyRelationshipsPermissions]="false"
+                                                 [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                            </ng-container>
+                            <ng-container *ngIf="selectedReferenceItem">
+                                <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                      [highlightUid]="selectedReferenceItem.assetUid"
+                                                      [baseUrl]="selectedReferenceItem.url">
+                                </ig-asset-type-detail>
+                            </ng-container>
+                            <ng-container *ngIf="selectedTag">
+                                <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                            </ng-container>
+                        </ng-container>                        
+                    </side-panel>
+                </as-split-area>
+            </as-split>
+        </div>
+    </div>
 </div> 
