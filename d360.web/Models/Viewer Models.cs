@@ -376,7 +376,13 @@ namespace d360.web.Models
         /// </summary>
         [DataMember]
         public bool? IsPartOfKey { get; set; }
-    }
+
+		[DataMember]
+		public int? TagTypeID { get; set; }
+
+		[DataMember]
+		public Guid? TagTypeUID { get; set; }
+	}
 
     [DataContract]
     public class ResponsibilityTypeRelationViewModel

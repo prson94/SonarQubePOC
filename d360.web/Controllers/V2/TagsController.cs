@@ -584,10 +584,10 @@ namespace d360.web.Controllers.V2
 		[HttpGet, Route("exists"), SwaggerProduces("application/json"),
 		SwaggerResponse(HttpStatusCode.OK, "Tag does exist.", typeof(HttpStatusCode)),
 		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse))]
-		public IHttpActionResult CheckIfTagExist(string value)
+		public IHttpActionResult CheckIfTagExist(string value, Guid? tagTypeUid = null)
 		{
-			var result = tagRepository.GetTagByName(value);
-			return (result == null) ? errorMessageNotFoundResponse("") : Ok();
+			var result = tagRepository.DoesTagExists(value, tagTypeUid);
+			return (result == false) ? errorMessageNotFoundResponse("") : Ok();
 		}
 
 		[HttpGet, Route("AssetTagDetails"), ApiExplorerSettings(IgnoreApi = true)]

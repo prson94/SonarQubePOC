@@ -14,6 +14,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -1697,6 +1698,9 @@ namespace d360.web.Controllers
 
 		private List<DetailReadOnlyRowModel> RenderTagField(FieldType ft, SystemObjects type, int id)
 		{
+			var sql = $@"Select uid from TagType where ID = {ft.TagTypeID}";
+			var result = Company.Connection.QuerySingle<dynamic>(sql, new {ft.TagTypeID}).uid;
+
 			var list = new List<DetailReadOnlyRowModel>
 			{
 				new DetailReadOnlyRowModel
@@ -1710,6 +1714,8 @@ namespace d360.web.Controllers
 						FieldName = ft.Name,
 						ShowIfEmpty = true,
 						DataType = "tag",
+						TagTypeID = ft.TagTypeID,
+						TagTypeUID = result,
 						Values = GetTagsValues(type, id,ft),
 						IsPartOfKey = ft.IsPartOfKey
 					}

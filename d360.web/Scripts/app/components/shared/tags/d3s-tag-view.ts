@@ -37,7 +37,9 @@ import { escape } from "lodash-es";
 export class TagView extends BaseComponent implements OnInit, OnDestroy {
     public theDeleteCallback: Function;
     @ViewChild('tagInput', { static: false }) tagInput: ElementRef;
-    @Input() data: any;
+	@Input() data: any;
+	@Input() TagTypeID: any;
+	@Input() TagTypeUID: any;
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
@@ -58,7 +60,6 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     private targetPanel: any;
     private tagsLoading = false;
 	private tagID: any;
-	private tagTypeId: any;
     existingTag: boolean = false;
     selected: TagType[] = [];
     private selectedtag: TagType = new TagType();
@@ -192,13 +193,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     }
 
 	search(event, searchValue) {
-		if (this.tagTypeId === undefined)
-			this.tagTypeId = 1;
+		if (this.TagTypeID === undefined)
+			this.TagTypeID = 1;
 
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);
 		this.timeouthandle = window.setTimeout(() => {
-            this.tagService.searchTagsTypeAhead(searchValue, 10, this.tagTypeId)
+			this.tagService.searchTagsTypeAhead(searchValue, 10, this.TagTypeID)
                 .subscribe((res) => {
                     if (res && res.length > 0) {
                         this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
@@ -235,24 +236,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     }
 
 	checkKey(event, value) {
-		this.tagService.getTagTooltip(this.data[0].uid, this.assetUID, this.data[0].Value)
-			.subscribe((t) => {
-				if (t.length > 0) {
-					this.tagTooltip = t[0];
-					this.tagTypeId = this.tagTooltip.TagTypeId;
-				} else {
-					this.tagTooltip = new TagType();
-				}
-			});
-
-		event.TagTypeId = this.tagTooltip.TagTypeId;
-		event.TagTypeUID = this.tagTooltip.TagTypeUID;
         if (event.key === "Enter" && !this.savingTag) {
             // mostly value is string as it supposed to be
             // but in some cases when you pick existing tag from dropdown
             // then primeng/autocomplete some fome reason saves select-event into inputValue field
             if (typeof value === 'string') {
-                event.Value = value;
+				event.Value = value;
+				event.tagTypeUid = this.TagTypeUID;
                 this.saveTag(event);
             } else {
                 this.saveTag(value);
@@ -271,16 +261,16 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 const tag = new TagApiModel();
                 tag.AssetUID = uid;
 				tag.TagName = event.Value;
-				tag.TagTypeId = event.TagTypeId;
-				tag.TagTypeUID = event.TagTypeUID;
+				tag.TagTypeId = this.TagTypeID;
+				tag.TagTypeUID = this.TagTypeUID;
                 tags = tags.concat([tag]);
             });
         } else {
             const tag = new TagApiModel();
             tag.AssetUID = this.assetUID;
 			tag.TagName = event.Value;
-			tag.TagTypeId = event.TagTypeId;
-			tag.TagTypeUID = event.TagTypeUID;
+			tag.TagTypeId = this.TagTypeID;
+			tag.TagTypeUID = this.TagTypeUID;
             tags = tags.concat([tag]);
         }
         this.tags.forEach((x) => {
@@ -311,7 +301,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         if (!this.existingTag) {
             this.tagNameBeingAdded = tags[0].TagName;
             this.inputValue = "";
-            this.searchResults = [];
+			this.searchResults = [];
+			debugger;
+			event.TagTypeUID = this.TagTypeUID;
             this.tagService.doesTagExist(event)
                 .subscribe((result) => {
 					if (result === 200) {
@@ -347,8 +339,8 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                         if (error.status === 404) {
                             const tagType = new TagType();
                             tagType.Value = event.Value;
-							tagType.uid = event.uid;
-							tagType.TagTypeUID = event.TagTypeUID;
+							tagType.TagTypeId = this.TagTypeID;
+							tagType.TagTypeUID = this.TagTypeUID;
                             
                             this.tagService.saveTag(tagType)
                                 .subscribe((result) => {
@@ -584,7 +576,6 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 			.subscribe((t) => {
                 if (t.length > 0) {
 					this.tagTooltip = t[0];
-					this.tagTypeId = this.tagTooltip.TagTypeId;
                 } else {
                     this.tagTooltip = new TagType();
                 }
@@ -593,7 +584,6 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     if (x.Value === tag.Value) {
                         if (!x.uid) {
 							x.uid = t[0].TagUid;
-							this.tagTypeId = t[0].TagTypeId;
                         }
                     }
                 });
