@@ -72,7 +72,7 @@ namespace igx.jobs.apiexecutionprocessor
 													select Id from api.Execution where ExecutionID = @executionUid;",
 											transaction: transaction,param: new { executionUid});
 
-										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
+										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, transaction))
 										{
 											bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
 											bulkCopy.DestinationTableName = "api.ExecutionItem";

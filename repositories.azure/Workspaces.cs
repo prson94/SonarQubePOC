@@ -733,7 +733,6 @@ end";
 		public async Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue)
 		{
 			List<UserUpsertValidateModel> usersvalidate = new List<UserUpsertValidateModel>();
-			UserUpsertValidateModel usersvalidaterow = new UserUpsertValidateModel();
 
 			int itemNumber = 0;
 			List<FieldTypeValidation> fieldTypes = new();
@@ -876,6 +875,7 @@ end";
 				}
 
 				#endregion
+				UserUpsertValidateModel usersvalidaterow = new UserUpsertValidateModel();
 				usersvalidaterow.users = userrow;
 				if (!success)
 				{

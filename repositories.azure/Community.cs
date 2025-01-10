@@ -148,7 +148,7 @@ namespace repositories.azure
 			foreach (var user in users)
 			{
 				var row = tbl.NewRow();
-
+				itemNumber++;
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
 				row["Email"] = user.Email;
