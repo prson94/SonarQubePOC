@@ -36,6 +36,7 @@ import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-de
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 import { SemanticsModule } from '../semantic/semantics.module';
 import { AngularSplitModule } from 'angular-split';
+import { PageSplitterModule } from '../../_shared/components/page-splitter/_module';
 
 @NgModule({
     imports: [
@@ -77,7 +78,9 @@ import { AngularSplitModule } from 'angular-split';
         AssetDetailModule,
         DataProfileModule,
         TaggedAssetDetailModule,
-        SemanticsModule
+		SemanticsModule,
+
+		PageSplitterModule
     ],
     declarations: [        
         ArtifactItemComponent,

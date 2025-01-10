@@ -114,6 +114,10 @@ namespace repositories.azure
 					if (int.TryParse(rawValue, out parsedValue))
 					{
 						value = parsedValue;
+						if (value <= 0) 
+						{
+							value = 1;
+						}
 					}
 				}
 			}

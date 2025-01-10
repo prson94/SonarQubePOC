@@ -1790,6 +1790,7 @@
     <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.html" />
     <Content Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\_shared\components\page-splitter\control.html" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\**\*.js" />
@@ -2012,6 +2013,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\page-splitter\control.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\page-splitter\_module.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
