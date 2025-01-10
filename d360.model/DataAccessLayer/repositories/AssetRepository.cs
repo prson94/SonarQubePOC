@@ -3149,9 +3149,10 @@ drop table if exists #tempAssetsIds;
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
-			SqlMapper.GridReader gridReader = await CompanyContext.QueryMultipleAsync(allQuery, dbArgs, ApiTimeout);
-			var total = gridReader.Read<int>().FirstOrDefault();
-			var results = gridReader.Read<AssetsByPathItemApiViewModel>().ToList();
+			var multiresult = await CompanyContext.ExecuteGetAssetsByPathQuery(allQuery, dbArgs);
+
+			var total = multiresult.total;
+			var results = multiresult.results.ToList();
 
 			returnModel.items = results;
 			returnModel.pageNum = model.pageNum;

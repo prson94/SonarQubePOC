@@ -48,6 +48,8 @@ namespace d360.model
 
 		Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
+		Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs);
+
 		AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
 
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
@@ -879,6 +881,23 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			{
 				model.ownershipData = gridReader.Read<dynamic>().ToList();
 			}
+
+			return model;
+		}
+
+		public async Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs)
+		{
+			AssetsByPathQueryResults model = new AssetsByPathQueryResults();
+
+			SqlMapper.GridReader gridReader = await Database.Connection.QueryMultipleAsync(
+			  new CommandDefinition(getAllQuery,
+			  parameters: dbArgs,
+			  commandTimeout: ApiTimeout
+			));
+
+			model.total = gridReader.Read<int>().FirstOrDefault();
+
+			model.results = gridReader.Read<AssetsByPathItemApiViewModel>().ToList();
 
 			return model;
 		}
