@@ -3094,39 +3094,45 @@ where an.Uid = fam.uid)
 				prefilterSql = $"and AT.Id in ({prefilterSql})";
 			}
 
-			var countSql = $@"
-select	count(1)
+			var premissionfilter = SecurityContext.IsAdministrator ? "" : $@"
+		and (
+			[AT].DefaultPermissions = 1 or 
+			( exists(select 1 from ResponsibilitySummary RSA where RSA.AssetID = A.ID and RSA.ResourceID = @userId and [AT].DefaultPermissions = 0)) or
+			( exists(select 1 from ResponsibilitySummary RSAT where RSAT.ApplyToType = 1 and RSAT.AssetTypeID = [AT].ID and RSAT.ResourceID = @userId and [AT].DefaultPermissions = 0) )
+		)";
+
+			var allQuery = $@"
+drop table if exists #tempAssetsIds;
+create table #tempAssetsIds(id bigint);
+create clustered index cx_tempAssetsIds on #tempAssetsIds(id);
+
+insert into #tempAssetsIds(id)
+select	N.ID 
 from	AssetPath N
 		inner join Asset A on A.Id = N.Id
 		inner join AssetType [AT] on AT.Id = A.AssetTypeId
 where	N.DisplayPath like @phrase {prefilterSql}
-		and (
-			[AT].DefaultPermissions = 1 or 
-			@isAdmin = 1 or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-		)";
+		{premissionfilter};
 
-			var sql = $@"
-							select	A.Uid,
-									AT.Uid as AssetTypeUid,
-									AT.Name as AssetTypeName,
-									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
-									N.Segments as SegmentsXml
-							from	AssetPath N
-									inner join Asset A on A.Id = N.Id
-									inner join AssetType [AT] on AT.ID = A.AssetTypeID
-									left join AssetTypeStyle S on S.ID = AT.ID
-							where	N.DisplayPath like @phrase {prefilterSql}
-									and (
-										[AT].DefaultPermissions = 1 or 
-										@isAdmin = 1 or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-									)
-							order by N.DisplayPath asc
-							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
-							";
+
+select count(1) from #tempAssetsIds
+
+select	A.Uid,
+		AT.Uid as AssetTypeUid,
+		AT.Name as AssetTypeName,
+		coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
+		N.Segments as SegmentsXml
+from	#tempAssetsIds t
+		inner join AssetPath N on t.id = N.id
+		inner join Asset A on A.Id = N.Id
+		inner join AssetType [AT] on AT.ID = A.AssetTypeID
+		left join AssetTypeStyle S on S.ID = AT.ID
+order by N.DisplayPath asc
+OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY;
+
+drop table if exists #tempAssetsIds;
+
+";
 
 			if (model.pageNum <= 1)
 			{
@@ -3143,9 +3149,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
-			var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
-			var total = count.First();
-			var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs, ApiTimeout);
+			SqlMapper.GridReader gridReader = await CompanyContext.QueryMultipleAsync(allQuery, dbArgs, ApiTimeout);
+			var total = gridReader.Read<int>().FirstOrDefault();
+			var results = gridReader.Read<AssetsByPathItemApiViewModel>().ToList();
 
 			returnModel.items = results;
 			returnModel.pageNum = model.pageNum;
