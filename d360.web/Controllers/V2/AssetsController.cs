@@ -3765,7 +3765,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(resourceUid, out Guid rUid) || rUid == Guid.Empty || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
 				{
-					return errorMessageArgumentResponse(AssetsApiMessages.InvalidResourceUID);
+					return errorMessageArgumentResponse(Error.InvalidResourceUID);
 				}
 				else
 				{

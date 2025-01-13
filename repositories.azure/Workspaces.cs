@@ -788,31 +788,31 @@ end";
 						|| !user.Password.Any(char.IsDigit))
 					{
 						success = false;
-						messages.Add(MemberShipErrors.PasswordRule);
+						messages.Add(Error.PasswordRule);
 					}
 				}
 				if (string.IsNullOrEmpty(user.FirstName))
 				{
 					success = false;
-					messages.Add(MemberShipErrors.FirstNameMissing);
+					messages.Add(Error.FirstNameMissing);
 				}
 
 				if (string.IsNullOrEmpty(user.LastName))
 				{
 					success = false;
-					messages.Add(MemberShipErrors.LastNameMissing);
+					messages.Add(Error.LastNameMissing);
 				}
 
 				if (user.FirstName != null && user.FirstName.Length > 250)
 				{
 					success = false;
-					messages.Add(MemberShipErrors.FirstNameTooLong);
+					messages.Add(Error.FirstNameTooLong);
 				}
 
 				if (user.LastName != null && user.LastName.Length > 250)
 				{
 					success = false;
-					messages.Add(MemberShipErrors.LastNameTooLong);
+					messages.Add(Error.LastNameTooLong);
 				}
 
 				if (user.IsAdministrator && !IsAdministrator)
@@ -824,23 +824,23 @@ end";
 				if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
 				{
 					success = false;
-					messages.Add(MemberShipErrors.InvalidEmail);
+					messages.Add(Error.InvalidEmail);
 				}
 				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
 				{
 					success = false;
-					messages.Add(MemberShipErrors.UsernameDuplicate);
+					messages.Add(Error.UsernameDuplicate);
 				}
 
 				if (user.Username != user.Email && (string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b")))
 				{
 					success = false;
-					messages.Add(MemberShipErrors.InvalidEmail);
+					messages.Add(Error.InvalidEmail);
 				}
 				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
 				{
 					success = false;
-					messages.Add(MemberShipErrors.UsernameDuplicate);
+					messages.Add(Error.UsernameDuplicate);
 				}
 
 				if (user.Fields != null)
@@ -848,7 +848,7 @@ end";
 					if (fieldTypes.Count == 0)
 					{
 						success = false;
-						messages.Add(string.Format(MemberShipErrors.FieldTypeKeyNotFound, "No Custom Field Defined, But passed in payload"));
+						messages.Add(string.Format(Error.FieldTypeKeyNotFound, "No Custom Field Defined, But passed in payload"));
 					}
 					else
 					{
@@ -859,7 +859,7 @@ end";
 							if (fieldType == null)
 							{
 								success = false;
-								messages.Add(string.Format(MemberShipErrors.FieldTypeKeyNotFound, field));
+								messages.Add(string.Format(Error.FieldTypeKeyNotFound, field));
 							}
 							else
 							{

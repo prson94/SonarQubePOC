@@ -78,7 +78,7 @@ namespace repositories.azure
 						{
 							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
-							valid = true;
+							isValidParameter = true;
 						}
 						else
 						{
@@ -89,20 +89,20 @@ namespace repositories.azure
 					{
 						dbArgs.Add(sqlparameternameArgs, rawValue);
 						queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
-						valid = true;
+						isValidParameter = true;
 					}
 				}
 			}
 			else
 			{
 				// If no filter provided, then we are good here.
-				valid = true;
+				isValidParameter = true;
 			}
 
 			if (defaultValue is not null && !dbArgs.ParameterNames.Contains(sqlparameternameArgs))
 			{
 				dbArgs.Add(sqlparameternameArgs, defaultValue);
-				valid = true;
+				isValidParameter = true;
 			}
       
 			return isValidParameter;

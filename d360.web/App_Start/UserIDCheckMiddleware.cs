@@ -9,6 +9,7 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

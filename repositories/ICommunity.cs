@@ -45,6 +45,16 @@ namespace repositories
 		Task<RepositoryResponse<IEnumerable<CompanyDomainSetting>>> ReadDomainSettingsByTenantAsync(int companyId);
 
 		Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null);
+		
+		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
+
+		Task<SettingInfo> ReadSettingAsync(int companyId, Setting setting);
+
+		Task<List<SettingInfo>> ReadSettingsAsync(int companyId);
+
+		Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting);
+
+		Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId);
 
 		Task<bool> ReadShouldUserBeAutoAdminByGroupMembershipAsync(int companyId, int domainSettingId, List<string> groups);
 
@@ -86,15 +96,7 @@ namespace repositories
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
 
-		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
 
-		Task<SettingInfo> ReadSettingAsync(int companyId, Setting setting);
-
-		Task<List<SettingInfo>> ReadSettingsAsync(int companyId);
-
-		Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting);
-
-		Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId);
 
 		Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting);
 

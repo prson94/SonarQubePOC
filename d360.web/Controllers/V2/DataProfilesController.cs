@@ -537,7 +537,7 @@ namespace d360.web.Controllers.V2
 				}
 				if(assetUid == Guid.Empty)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
 				}
 
 				Asset asset = AssetRepository.GetAssetByUID(assetUid);

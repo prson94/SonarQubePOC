@@ -144,7 +144,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.JsonNotSupported);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.JsonNotSupported);
 						}
 					}
 				}
@@ -190,7 +190,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseComputedRelationshipLookuptypeField, "User", field.Name));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseComputedRelationshipLookuptypeField, "User", field.Name));
 						}
 					}
 				}
@@ -210,7 +210,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedRelationshipReferenceListNotSupported);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ComputedRelationshipReferenceListNotSupported);
 						}
 					}
 				}
@@ -260,7 +260,7 @@ namespace d360.model.validators
 
 							if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.JsonElementNotSupported);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.JsonElementNotSupported);
 							}
 						}
 					}
@@ -536,7 +536,7 @@ namespace d360.model.validators
 
 						if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ComputedOwnershipLookupNotSupported);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.ComputedOwnershipLookupNotSupported);
 						}
 					}
 				}

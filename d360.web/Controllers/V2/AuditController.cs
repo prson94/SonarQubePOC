@@ -274,7 +274,7 @@ namespace d360.web.Controllers.V2
 			{
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage);
 			}
 
 			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);

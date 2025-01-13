@@ -258,7 +258,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (existingFields.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
 						{
-							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
+							throw new RestApiException(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.OnlyOneTagFieldAllowed);
 						}
 					}
 				}
