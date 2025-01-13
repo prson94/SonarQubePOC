@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -2735,27 +2736,37 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var sortFields = Fields.Where(x => x.sortOrder > 0).OrderBy(x => x.sortOrder).ToList();
+			var rgx = new Regex(".+\\[H\\d+_Uid\\]", RegexOptions.IgnoreCase);
+			var uidFields = Enumerable.Range(0, selects.Count)
+				 .Where(i => rgx.IsMatch(selects[i]))
+				 .Select(i => i + 1)
+				 .ToList();
+			
 
 			if (string.IsNullOrEmpty(orderBy) && sortFields.Count > 0)
 			{
 				List<string> idxs = new List<string>();
+				List<int> ids = new List<int>();
 
 				foreach (var item in sortFields)
 				{
 					int fieldIdx = selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1;
 					string sortDirection = item.isAscending ? "asc" : "desc";
 					idxs.Add(fieldIdx + " " + sortDirection);
+					ids.Add(fieldIdx);
 				}
+				idxs.AddRange(uidFields.Except(ids).Select(u => u.ToString()));
 
 				orderByClause = "order by " + string.Join(",", idxs);
 			}
 			else
 			{
 				var el = selects.Where(x => x != null && x.ToLowerInvariant().Contains(orderBy.ToLowerInvariant())).FirstOrDefault();
-				var index = selects.IndexOf(el);
-				if (index != -1)
+				var index = selects.IndexOf(el) + 1;
+				uidFields.Remove(uidFields.SingleOrDefault(i => i == index));
+				if (index != 0)
 				{
-					orderByClause = $"order by {(index + 1)} {direction}";
+					orderByClause = $"order by {index} {direction}, " + string.Join(",", uidFields);
 				}
 			}
 
