@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -736,7 +737,6 @@ end";
 						"where	Id = @executionId", new { executionId, total, success, error });
 				}
 			}
-
 			return response;
 		}
 		
@@ -855,12 +855,7 @@ end";
 
 				if (user.Fields != null)
 				{
-					if (fieldTypes.Count == 0)
-					{
-						success = false;
-						messages.Add(string.Format(Error.FieldTypeKeyNotFound, "No Custom Field Defined, But passed in payload"));
-					}
-					else
+					if (fieldTypes.Count > 0)
 					{
 						foreach (var field in user.Fields.Keys)
 						{

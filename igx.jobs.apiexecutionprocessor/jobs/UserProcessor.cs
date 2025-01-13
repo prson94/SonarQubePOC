@@ -66,8 +66,8 @@ namespace igx.jobs.apiexecutionprocessor
 									 int executionid = await companyConnection.ExecuteScalarAsync<int>(
 											sql: @"
 													declare @d datetime = getutcdate();
-													insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [Action])
-													values (@executionUid, 0, 0, 0, 0, @d, @d, null,16);
+													insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [Action],ApplicationID)
+													values (@executionUid, 0, 0, 0, 0, @d, @d, null,16,'User_Synchronization_Process');
 
 													select Id from api.Execution where ExecutionID = @executionUid;",
 											transaction: transaction,param: new { executionUid});
