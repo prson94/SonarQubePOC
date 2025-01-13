@@ -265,7 +265,7 @@ namespace d360.model
 						BEGIN
 							update	EDP
 							set		Success = 0,
-									[Message] = coalesce([Message] + '; ', '') + '{CompanyContextApiError.DataProfilingNoPermission}'
+									[Message] = coalesce([Message] + '; ', '') + '{Error.DataProfilingNoPermission}'
 							from	api.ExecutionDeleteAssetDataProfile EDP
 							where   EDP.ExecutionID = @ExecutionID 
 									and EDP.[AssetUid] != CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)
@@ -1339,7 +1339,7 @@ namespace d360.model
 						BEGIN
 							update	EDP
 							set		Success = 0,
-									[Message] = coalesce([Message] + '; ', '') + '{CompanyContextApiError.DataProfilingNoPermission}'
+									[Message] = coalesce([Message] + '; ', '') + '{Error.DataProfilingNoPermission}'
 							from	
 									api.ExecutionAssetDataProfile EDP
 							where 

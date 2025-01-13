@@ -56,7 +56,7 @@ namespace d360.core.entities
 		[DataMember]
 		public Guid Uid { get; set; }
 
-		[DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		[DataMember, MaxLength(250, ErrorMessageResourceType = typeof(Error), ErrorMessageResourceName = "MaxLengthExceeded")]
 		public string Name { get; set; }
 
 		[DataMember, JsonConverter(typeof(EnumConverter))]
@@ -65,14 +65,14 @@ namespace d360.core.entities
 		[DataMember]
 		public string Description { get; set; }
 
-		[DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		[DataMember, MaxLength(250, ErrorMessageResourceType = typeof(Error), ErrorMessageResourceName = "MaxLengthExceeded")]
 		public string DisplayFormat { get; set; }
 
 		public HierarchyInsert Hierarchy { get; set; }
 
 		public IconStyleInsert IconStyle { get; set; }
 
-		[DataMember, MaxLength(500, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		[DataMember, MaxLength(500, ErrorMessageResourceType = typeof(Error), ErrorMessageResourceName = "MaxLengthExceeded")]
 		public string SourceID { get; set; }
 
 		[DataMember]
@@ -117,7 +117,7 @@ namespace d360.core.entities
 		[DataMember]
 		public bool? IsDefaultReadAccessEnabled { get; set; }
 
-		[DataMember, MaxLength(50, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		[DataMember, MaxLength(50, ErrorMessageResourceType = typeof(Error), ErrorMessageResourceName = "MaxLengthExceeded")]
 		public string DescriptionButtonName { get; set; }
 
 		[DataMember]

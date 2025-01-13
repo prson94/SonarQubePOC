@@ -79,12 +79,12 @@ namespace d360.web.Controllers.V2
 
 				if (asset == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(Permissions.UID_not_Found, "Asset"));
+					return errorMessageNotFoundResponse(string.Format(Error.UID_not_Found, "Asset"));
 				}
 
 				if (!SupportsPermissions(asset.AssetType.Class))
 				{
-					return errorMessageArgumentResponse(string.Format(Permissions.Permissions_Not_Supported));
+					return errorMessageArgumentResponse(string.Format(Error.Permissions_Not_Supported));
 				}
 
 				List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
@@ -125,12 +125,12 @@ namespace d360.web.Controllers.V2
 
 				if (assetType == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(Permissions.UID_not_Found, "AssetType"));
+					return errorMessageNotFoundResponse(string.Format(Error.UID_not_Found, "AssetType"));
 				}
 
 				if (!SupportsPermissions(assetType.Class))
 				{
-					return errorMessageArgumentResponse(string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name));
+					return errorMessageArgumentResponse(string.Format(Error.AssetType_Permissions_Not_Supported, assetType.Name));
 				}
 
 				List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);

@@ -1,0 +1,1809 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Lineage" xml:space="preserve">
+    <value>Lineage</value>
+  </data>
+  <data name="LineageTechnical" xml:space="preserve">
+    <value>Lineage: tecnico</value>
+  </data>
+  <data name="Object_Default" xml:space="preserve">
+    <value>Valore predefinito</value>
+  </data>
+  <data name="Object_Deleted" xml:space="preserve">
+    <value>Eliminato</value>
+  </data>
+  <data name="Object_GroupMembership" xml:space="preserve">
+    <value>Appartenenza al gruppo</value>
+  </data>
+  <data name="Object_Users" xml:space="preserve">
+    <value>Utenti</value>
+  </data>
+  <data name="Promotion" xml:space="preserve">
+    <value>Promozione</value>
+  </data>
+  <data name="Promotion_ViaWorkflow" xml:space="preserve">
+    <value>Promozione (tramite Proponi workflow)</value>
+  </data>
+  <data name="Relation" xml:space="preserve">
+    <value>Relazione</value>
+  </data>
+  <data name="Responsibilities" xml:space="preserve">
+    <value>Responsabilità</value>
+  </data>
+  <data name="Synonyms" xml:space="preserve">
+    <value>Sinonimi</value>
+  </data>
+  <data name="Unrelation" xml:space="preserve">
+    <value>Senza correlazione</value>
+  </data>
+  <data name="UsersGroups" xml:space="preserve">
+    <value>Utenti/Gruppi</value>
+  </data>
+	<data name="AssetTypeClass_ActionType" xml:space="preserve">
+    <value>Tipo di azione</value>
+  </data>
+	<data name="AssetTypeClass_Business" xml:space="preserve">
+    <value>Business Asset</value>
+  </data>
+	<data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Risorsa diagramma</value>
+  </data>
+	<data name="AssetTypeClass_GenericType" xml:space="preserve">
+    <value>Tipo generico</value>
+  </data>
+	<data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Tipo grammaticale</value>
+  </data>
+	<data name="AssetTypeClass_Group" xml:space="preserve">
+    <value>Gruppo</value>
+  </data>
+	<data name="AssetTypeClass_Model" xml:space="preserve">
+    <value>Modello</value>
+  </data>
+	<data name="AssetTypeClass_ModelType" xml:space="preserve">
+    <value>Tipo di modello</value>
+  </data>
+	<data name="AssetTypeClass_Policy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+	<data name="AssetTypeClass_PolicyType" xml:space="preserve">
+    <value>Tipo di policy</value>
+  </data>
+	<data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Riferimento</value>
+  </data>
+	<data name="AssetTypeClass_ReferenceList" xml:space="preserve">
+    <value>Elenco di riferimento</value>
+  </data>
+	<data name="AssetTypeClass_Relationship" xml:space="preserve">
+    <value>Relazione</value>
+  </data>
+	<data name="AssetTypeClass_Resource" xml:space="preserve">
+    <value>Risorsa</value>
+  </data>
+	<data name="AssetTypeClass_Rule" xml:space="preserve">
+    <value>Regola</value>
+  </data>
+	<data name="AssetTypeClass_RuleType" xml:space="preserve">
+    <value>Tipo di regola</value>
+  </data>
+	<data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>Tipo semantico</value>
+  </data>
+	<data name="AssetTypeClass_Task" xml:space="preserve">
+    <value>Diagramma</value>
+  </data>
+	<data name="AssetTypeClass_Technical" xml:space="preserve">
+    <value>Risorsa tecnica</value>
+  </data>
+	<data name="AssetTypeClass_User" xml:space="preserve">
+    <value>Utente</value>
+  </data>
+	<data name="CommonName_AssetType" xml:space="preserve">
+    <value>Tipo di risorsa</value>
+  </data>
+	<data name="Instance" xml:space="preserve">
+    <value>Istanza</value>
+  </data>
+	<data name="ReferenceItem" xml:space="preserve">
+    <value>Elemento di riferimento</value>
+  </data>
+	<data name="Text_DataCatalog" xml:space="preserve">
+    <value>Catalogo dati</value>
+  </data>
+	<data name="Text_Folder" xml:space="preserve">
+    <value>Cartella</value>
+  </data>
+	<data name="Text_GroupMembership" xml:space="preserve">
+    <value>Appartenenza al gruppo</value>
+  </data>
+	<data name="Text_Users" xml:space="preserve">
+    <value>Utenti</value>
+  </data>
+	<data name="Common_ApiInfoSheetName" xml:space="preserve">
+    <value>Informazioni API</value>
+  </data>
+	<data name="Common_ExcelDateFormat" xml:space="preserve">
+    <value>gg/mm/aaaa</value>
+  </data>
+	<data name="Common_ExportName" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+	<data name="Common_ItemsSheetName" xml:space="preserve">
+    <value>Elementi</value>
+  </data>
+	<data name="Common_PageNum" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+	<data name="Common_PageSize" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+	<data name="Common_Total" xml:space="preserve">
+    <value>totale</value>
+  </data>
+	<data name="FollowedResources_AssetID" xml:space="preserve">
+    <value>ID risorsa</value>
+  </data>
+	<data name="FollowedResources_AssetPath" xml:space="preserve">
+    <value>Percorso risorsa</value>
+  </data>
+	<data name="FollowedResources_DocumentName" xml:space="preserve">
+    <value>Elementi seguiti a partire da {Now:d}</value>
+  </data>
+	<data name="OwnedResources_AssetID" xml:space="preserve">
+    <value>ID risorsa</value>
+  </data>
+	<data name="OwnedResources_AssetUID" xml:space="preserve">
+    <value>UID risorsa</value>
+  </data>
+	<data name="OwnedResources_DocumentName" xml:space="preserve">
+    <value>Elementi posseduti a partire da {Now:d}</value>
+  </data>
+	<data name="OwnedResources_Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+	<data name="OwnedResources_Role" xml:space="preserve">
+    <value>Ruolo</value>
+  </data>
+	<data name="OwnedResources_Via" xml:space="preserve">
+    <value>Tramite</value>
+  </data>
+	<data name="OwnedResources_ViaType" xml:space="preserve">
+    <value>Tramite tipo</value>
+  </data>
+	<data name="Relationships_DocumentName" xml:space="preserve">
+    <value>Relazioni  {0}</value>
+  </data>
+	<data name="Relationships_Object_Asset_Path" xml:space="preserve">
+    <value>Percorso risorsa oggetto</value>
+  </data>
+	<data name="Relationships_Object_Asset_Type_Path" xml:space="preserve">
+    <value>Percorso tipo risorsa oggetto</value>
+  </data>
+	<data name="Relationships_Object_Asset_Type_UID" xml:space="preserve">
+    <value>UID tipo risorsa oggetto</value>
+  </data>
+	<data name="Relationships_Object_Display_Name" xml:space="preserve">
+    <value>Nome visualizzato oggetto</value>
+  </data>
+	<data name="Relationships_Object_UID" xml:space="preserve">
+    <value>UID oggetto</value>
+  </data>
+	<data name="Relationships_Predicate_Inverse" xml:space="preserve">
+    <value>Predicato inverso</value>
+  </data>
+	<data name="Relationships_Predicate_Name" xml:space="preserve">
+    <value>Nome predicato</value>
+  </data>
+	<data name="Relationships_Predicate_Type" xml:space="preserve">
+    <value>Tipo predicato</value>
+  </data>
+	<data name="Relationships_Predicate_UID" xml:space="preserve">
+    <value>UID predicato</value>
+  </data>
+	<data name="Relationships_Relationship_Type_UID" xml:space="preserve">
+    <value>UID tipo di relazione</value>
+  </data>
+	<data name="Relationships_Relationship_UID" xml:space="preserve">
+    <value>UID relazione</value>
+  </data>
+	<data name="Relationships_SheetName" xml:space="preserve">
+    <value>Relazioni</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Path" xml:space="preserve">
+    <value>Percorso risorsa soggetto</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Type_Path" xml:space="preserve">
+    <value>Percorso tipo risorsa soggetto</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Type_UID" xml:space="preserve">
+    <value>UID tipo risorsa soggetto</value>
+  </data>
+	<data name="Relationships_Subject_Display_Name" xml:space="preserve">
+    <value>Nome visualizzato soggetto</value>
+  </data>
+	<data name="Relationships_Subject_UID" xml:space="preserve">
+    <value>UID soggetto</value>
+  </data>
+	<data name="WorkflowAssignments_ActionTypeName" xml:space="preserve">
+    <value>Nome del tipo di azione</value>
+  </data>
+	<data name="WorkflowAssignments_ActionTypeUID" xml:space="preserve">
+    <value>UID del tipo di azione</value>
+  </data>
+	<data name="WorkflowAssignments_Assignees" xml:space="preserve">
+    <value>Assegnatario</value>
+  </data>
+	<data name="WorkflowAssignments_Assignments" xml:space="preserve">
+    <value>Assegnazioni</value>
+  </data>
+	<data name="WorkflowAssignments_AssociatedWith" xml:space="preserve">
+    <value>Associato con</value>
+  </data>
+	<data name="WorkflowAssignments_ExportDate" xml:space="preserve">
+    <value>Data di esportazione</value>
+  </data>
+	<data name="WorkflowAssignments_ExportInfoTab" xml:space="preserve">
+    <value>Informazioni di esportazione</value>
+  </data>
+	<data name="WorkflowAssignments_Initiated" xml:space="preserve">
+    <value>Iniziato</value>
+  </data>
+	<data name="WorkflowAssignments_InitiatorUid" xml:space="preserve">
+    <value>UID iniziatore</value>
+  </data>
+	<data name="WorkflowAssignments_Requests" xml:space="preserve">
+    <value>Richieste</value>
+  </data>
+	<data name="WorkflowMonitor_Asset" xml:space="preserve">
+    <value>Risorsa</value>
+  </data>
+	<data name="WorkflowMonitor_Completed" xml:space="preserve">
+    <value>Completato</value>
+  </data>
+	<data name="WorkflowMonitor_DocumentName" xml:space="preserve">
+    <value>Elementi del workflow a partire da {Now:d}</value>
+  </data>
+	<data name="WorkflowMonitor_Initiator" xml:space="preserve">
+    <value>Iniziatore</value>
+  </data>
+	<data name="WorkflowMonitor_Started" xml:space="preserve">
+    <value>Avviato</value>
+  </data>
+	<data name="WorkflowMonitor_Status" xml:space="preserve">
+    <value>Stato</value>
+  </data>
+	<data name="WorkflowMonitor_Type" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+	<data name="WorkflowMonitor_TypeName" xml:space="preserve">
+    <value>Nome tipo</value>
+  </data>
+	<data name="WorkflowMonitor_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+	<data name="WorkflowMonitor_WorkflowInstanceUID" xml:space="preserve">
+    <value>UID istanza workflow</value>
+  </data>
+	<data name="WorkflowMonitor_WorkflowName" xml:space="preserve">
+    <value>Nome workflow</value>
+  </data>
+	<data name="Code_Name" xml:space="preserve">
+    <value>Codice</value>
+  </data>
+	<data name="LastLoggedInOn_Description" xml:space="preserve">
+    <value>La data dell'ultimo accesso di questa risorsa.</value>
+  </data>
+	<data name="LastLoggedInOn_Name" xml:space="preserve">
+    <value>Ultimo accesso:</value>
+  </data>
+	<data name="Description_Description" xml:space="preserve">
+    <value>La descrizione di questo elemento.</value>
+  </data>
+	<data name="Description_ErrorRequired" xml:space="preserve">
+    <value>La descrizione è un campo obbligatorio.</value>
+  </data>
+	<data name="Description_Name" xml:space="preserve">
+    <value>Descrizione</value>
+  </data>
+	<data name="Email_Description" xml:space="preserve">
+    <value>L'e-mail di questa risorsa.</value>
+  </data>
+	<data name="Email_ErrorRegex" xml:space="preserve">
+    <value>L'e-mail contiene caratteri non consentiti.</value>
+  </data>
+	<data name="Email_ErrorRequired" xml:space="preserve">
+    <value>L'e-mail è un campo obbligatorio.</value>
+  </data>
+	<data name="Email_Name" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+	<data name="FirstName_Description" xml:space="preserve">
+    <value>Il nome di questa risorsa.</value>
+  </data>
+	<data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>Il nome contiene caratteri non consentiti.</value>
+  </data>
+	<data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>Il nome è un campo obbligatorio.</value>
+  </data>
+	<data name="FirstName_Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+	<data name="FriendlyName_Description" xml:space="preserve">
+    <value>Il nome utilizzato durante la visualizzazione di questo valore di campo per il pubblico.</value>
+  </data>
+	<data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>Il nome descrittivo è obbligatorio.</value>
+  </data>
+	<data name="FriendlyName_Name" xml:space="preserve">
+    <value>Nome descrittivo</value>
+  </data>
+	<data name="ID_Description" xml:space="preserve">
+    <value>L'identificatore univoco di questo elemento.</value>
+  </data>
+	<data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+    <comment>u</comment>
+  </data>
+	<data name="LastName_Description" xml:space="preserve">
+    <value>Il cognome di questa risorsa.</value>
+  </data>
+	<data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>Il cognome contiene caratteri non consentiti.</value>
+  </data>
+	<data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>Il cognome è un campo obbligatorio.</value>
+  </data>
+	<data name="LastName_Name" xml:space="preserve">
+    <value>Cognome</value>
+  </data>
+	<data name="Length_Description" xml:space="preserve">
+    <value>La lunghezza esatta richiesta da questo campo per un valore.</value>
+  </data>
+	<data name="Length_Name" xml:space="preserve">
+    <value>Lunghezza</value>
+  </data>
+	<data name="LookupObjectID_Description" xml:space="preserve">
+    <value/>
+  </data>
+	<data name="LookupObjectID_Name" xml:space="preserve">
+    <value>ID oggetto ricerca</value>
+  </data>
+	<data name="LookupObjectType_Description" xml:space="preserve">
+    <value>Il tipo di ricerca utilizzato da questo campo.</value>
+  </data>
+	<data name="LookupObjectType_Name" xml:space="preserve">
+    <value>Tipo oggetto ricerca</value>
+  </data>
+	<data name="MaximumLength_Description" xml:space="preserve">
+    <value>La lunghezza massima consentita per il valore di questo campo.</value>
+  </data>
+	<data name="MaximumLength_Name" xml:space="preserve">
+    <value>Lunghezza massima</value>
+  </data>
+	<data name="MinimumLength_Description" xml:space="preserve">
+    <value>La lunghezza minima consentita per il valore di questo campo.</value>
+  </data>
+	<data name="MinimumLength_Name" xml:space="preserve">
+    <value>Lunghezza minima</value>
+  </data>
+	<data name="Name_Description" xml:space="preserve">
+    <value>Il nome di questo elemento.</value>
+  </data>
+	<data name="Name_ErrorRegex" xml:space="preserve">
+    <value>Il nome contiene caratteri non consentiti.</value>
+  </data>
+	<data name="Name_ErrorRequired" xml:space="preserve">
+    <value>Il nome è un campo obbligatorio.</value>
+  </data>
+	<data name="Name_Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+	<data name="Path_Description" xml:space="preserve">
+    <value>Il percorso all'interno della gerarchia.</value>
+  </data>
+	<data name="Path_Name" xml:space="preserve">
+    <value>Percorso</value>
+  </data>
+	<data name="Pattern_Description" xml:space="preserve">
+    <value>Il modello di convalida utilizzato quando si fornisce un valore per questo campo.</value>
+  </data>
+	<data name="Pattern_Name" xml:space="preserve">
+    <value>Modello di convalida</value>
+  </data>
+	<data name="Status_Name" xml:space="preserve">
+    <value>Stato</value>
+  </data>
+	<data name="Type_Description" xml:space="preserve">
+    <value>Il tipo di questo elemento.</value>
+  </data>
+	<data name="Type_ErrorRequired" xml:space="preserve">
+    <value>Il tipo è un campo obbligatorio.</value>
+  </data>
+	<data name="Type_Name" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+	<data name="Username_Description" xml:space="preserve">
+    <value>Il nome utente di questa risorsa.</value>
+  </data>
+	<data name="Username_ErrorRegex" xml:space="preserve">
+    <value>Il nome utente contiene caratteri non consentiti.</value>
+  </data>
+	<data name="Username_ErrorRequired" xml:space="preserve">
+    <value>Il nome utente è un campo obbligatorio.</value>
+  </data>
+	<data name="Username_Name" xml:space="preserve">
+    <value>Nome utente</value>
+  </data>
+	<data name="Level_Description" xml:space="preserve">
+    <value>Il livello di questo modello di informazioni all'interno dell'albero del catalogo generale.</value>
+  </data>
+	<data name="Level_Name" xml:space="preserve">
+    <value>Livello</value>
+  </data>
+	<data name="DisplayDescription_Description" xml:space="preserve">
+    <value>La descrizione visibile quando un utente legge le informazioni in questo campo.</value>
+  </data>
+	<data name="DisplayDescription_Name" xml:space="preserve">
+    <value>Visualizza descrizione</value>
+  </data>
+	<data name="FormDescription_Description" xml:space="preserve">
+    <value>La descrizione visibile quando un utente aggiorna le informazioni in questo campo.</value>
+  </data>
+	<data name="FormDescription_Name" xml:space="preserve">
+    <value>Descrizione modulo</value>
+  </data>
+	<data name="MaximumDepth_Description" xml:space="preserve">
+    <value>La profondità massima del modello di informazioni.</value>
+  </data>
+	<data name="MaximumDepth_Name" xml:space="preserve">
+    <value>Profondità massima</value>
+  </data>
+	<data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>Il proprietario principale del gruppo.  Questa persona è responsabile della gestione quotidiana del gruppo, inclusa l'assegnazione di eventuali attività ai membri.</value>
+  </data>
+	<data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>Proprietario principale</value>
+  </data>
+	<data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>Il proprietario secondario del gruppo.  Questa persona è il proprietario di riserva del gruppo se il proprietario principale non è disponibile.</value>
+  </data>
+	<data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>Proprietario secondario</value>
+  </data>
+	<data name="ReportDescription_Description" xml:space="preserve">
+    <value>Una descrizione del significato di questo report; cosa cerca di spiegare questo report.</value>
+  </data>
+	<data name="ValidationDescription_Description" xml:space="preserve">
+    <value>L'utente visualizzerà questo messaggio se fornisce informazioni non valide o mancanti in questo campo.  È necessario abilitare una qualche forma di convalida del modello di espressione regolare su questo campo affinché il messaggio venga visualizzato.</value>
+  </data>
+	<data name="ValidationDescription_Name" xml:space="preserve">
+    <value>Messaggio di convalida</value>
+  </data>
+	<data name="DisplayFormat_Description" xml:space="preserve">
+    <value>Il formato del valore visualizzato.</value>
+  </data>
+	<data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Formato di visualizzazione</value>
+  </data>
+	<data name="ReportName_Description" xml:space="preserve">
+    <value>Il nome di questo report.  Questo nome verrà utilizzato ovunque il report sia disponibile per la visualizzazione.</value>
+  </data>
+	<data name="ReportObjectType_Description" xml:space="preserve">
+    <value>Il tipo di oggetto in cui sarà disponibile questo report.</value>
+  </data>
+	<data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Tipo di destinazione</value>
+  </data>
+	<data name="SourceNotes_Description" xml:space="preserve">
+    <value>Definisce le informazioni relative all'origine o all'iniziatore di questo elenco di riferimento.</value>
+  </data>
+	<data name="SourceNotes_Name" xml:space="preserve">
+    <value>Note sull'origine</value>
+  </data>
+	<data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>Se il gruppo deve essere gestito automaticamente o meno tramite le attestazioni del gruppo SAML</value>
+  </data>
+	<data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>È Active Directory</value>
+  </data>
+	<data name="Parent_Name" xml:space="preserve">
+    <value>Proprietario/Entità principale</value>
+  </data>
+	<data name="RegexPatternChoose" xml:space="preserve">
+    <value>Scegli campione...</value>
+  </data>
+	<data name="RegexPatternEmail" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+	<data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>URL interno</value>
+  </data>
+	<data name="RegexPatternIP" xml:space="preserve">
+    <value>Indirizzo IP</value>
+  </data>
+	<data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>Telefono nordamericano</value>
+  </data>
+	<data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>URL pubblico</value>
+  </data>
+	<data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>Codice postale degli Stati Uniti</value>
+  </data>
+	<data name="Administrator_Name" xml:space="preserve">
+    <value>Amministratore?</value>
+  </data>
+	<data name="AssetPath_Name" xml:space="preserve">
+    <value>Percorso risorsa</value>
+  </data>
+	<data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>Utente/Gruppo assegnato</value>
+  </data>
+	<data name="Color_Name" xml:space="preserve">
+    <value>Colore</value>
+  </data>
+	<data name="Context_Name" xml:space="preserve">
+    <value>Contesto</value>
+  </data>
+	<data name="OwnedItems_Name" xml:space="preserve">
+    <value>Elementi posseduti</value>
+  </data>
+	<data name="Responsibility_Name" xml:space="preserve">
+    <value>Responsabilità</value>
+  </data>
+	<data name="Via_Name" xml:space="preserve">
+    <value>Tramite</value>
+  </data>
+	<data name="LastSeen_Name" xml:space="preserve">
+    <value>Ultima visualizzazione</value>
+  </data>
+	<data name="FieldsRemoved" xml:space="preserve">
+    <value>Campi rimossi correttamente.</value>
+  </data>
+	<data name="FieldsUpdated" xml:space="preserve">
+    <value>Campi aggiornati correttamente.</value>
+  </data>
+	<data name="ActionsTab" xml:space="preserve">
+    <value>Azioni</value>
+  </data>
+	<data name="AssetsTab" xml:space="preserve">
+    <value>Risorse</value>
+  </data>
+	<data name="BusinessAssetsPage" xml:space="preserve">
+    <value>Business Asset</value>
+  </data>
+	<data name="BusinessAssetsPageTabTitle" xml:space="preserve">
+    <value>Tipi di Business Asset</value>
+  </data>
+	<data name="ChangeLogTab" xml:space="preserve">
+    <value>Registro delle modifiche</value>
+  </data>
+	<data name="ChildrenTab" xml:space="preserve">
+    <value>Figli</value>
+  </data>
+	<data name="CommentsTab" xml:space="preserve">
+    <value>Commenti</value>
+  </data>
+	<data name="CommunityPage" xml:space="preserve">
+    <value>Community</value>
+  </data>
+	<data name="DashboardsPage" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+	<data name="DashboardsTab" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+	<data name="DefinitionTab" xml:space="preserve">
+    <value>Definizione</value>
+  </data>
+	<data name="DetailsTab" xml:space="preserve">
+    <value>Dettagli</value>
+  </data>
+	<data name="DiagramAssetsPage" xml:space="preserve">
+    <value>Risorse diagramma</value>
+  </data>
+	<data name="DiagramAssetsPageTabTitle" xml:space="preserve">
+    <value>Tipi di risorse diagramma</value>
+  </data>
+	<data name="FieldDefinitionsTab" xml:space="preserve">
+    <value>Campi</value>
+  </data>
+	<data name="FollowersTab" xml:space="preserve">
+    <value>Follower</value>
+  </data>
+	<data name="FollowingTab" xml:space="preserve">
+    <value>Seguiti</value>
+  </data>
+	<data name="GroupsTab" xml:space="preserve">
+    <value>Gruppi</value>
+  </data>
+	<data name="HomePage" xml:space="preserve">
+    <value>Home</value>
+  </data>
+	<data name="ImpactDiagramTab" xml:space="preserve">
+    <value>Diagramma dell'impatto</value>
+  </data>
+	<data name="LineageDiagramTab" xml:space="preserve">
+    <value>Diagramma di lineage</value>
+  </data>
+	<data name="ModelsPage" xml:space="preserve">
+    <value>Modelli</value>
+  </data>
+	<data name="ModelsPageTabTitle" xml:space="preserve">
+    <value>Tipi di modello</value>
+  </data>
+	<data name="ModelTab" xml:space="preserve">
+    <value>Modello</value>
+  </data>
+	<data name="PoliciesPage" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+	<data name="PoliciesPageTabTitle" xml:space="preserve">
+    <value>Tipi di policy</value>
+  </data>
+	<data name="PolicyTab" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+	<data name="PredicatesPage" xml:space="preserve">
+    <value>Predicati</value>
+  </data>
+	<data name="ProcessDiagramTab" xml:space="preserve">
+    <value>Diagramma di processo</value>
+  </data>
+	<data name="ProfilePage" xml:space="preserve">
+    <value>Profilo</value>
+  </data>
+	<data name="ProfileTab" xml:space="preserve">
+    <value>Profilo</value>
+  </data>
+	<data name="ReferenceListsPage" xml:space="preserve">
+    <value>Elenchi di riferimento</value>
+  </data>
+	<data name="ReferenceTypesPage" xml:space="preserve">
+    <value>Tipi di riferimento</value>
+  </data>
+	<data name="ReferenceTypesTab" xml:space="preserve">
+    <value>Tipi di riferimento</value>
+  </data>
+	<data name="RelationshipsTab" xml:space="preserve">
+    <value>Relazioni</value>
+  </data>
+	<data name="RelationshipsTabTitle" xml:space="preserve">
+    <value>Tipi di relazione</value>
+  </data>
+	<data name="ResponsibilitiesTab" xml:space="preserve">
+    <value>Responsabilità</value>
+  </data>
+	<data name="ResponsibilitiesTabTitle" xml:space="preserve">
+    <value>Tipi di responsabilità</value>
+  </data>
+	<data name="RuleResultsTab" xml:space="preserve">
+    <value>Risultati regola</value>
+  </data>
+	<data name="RulesPage" xml:space="preserve">
+    <value>Regole</value>
+  </data>
+	<data name="ScoringDefinitionsTab" xml:space="preserve">
+    <value>Definizioni di punteggio</value>
+  </data>
+	<data name="ScoringTab" xml:space="preserve">
+    <value>Punteggio</value>
+  </data>
+	<data name="SemanticTypePage" xml:space="preserve">
+    <value>Tipi semantici</value>
+  </data>
+	<data name="TaggedAssetsPage" xml:space="preserve">
+    <value>Risorse taggate</value>
+  </data>
+	<data name="TagsPage" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+	<data name="TechnicalAssetsPage" xml:space="preserve">
+    <value>Risorse tecniche</value>
+  </data>
+	<data name="TechnicalAssetsPageTabTitle" xml:space="preserve">
+    <value>Tipi di risorse tecniche</value>
+  </data>
+	<data name="UsersPage" xml:space="preserve">
+    <value>Utenti</value>
+  </data>
+	<data name="WorkflowActionsTab" xml:space="preserve">
+    <value>Azioni workflow</value>
+  </data>
+	<data name="WorkflowActionsTabTitle" xml:space="preserve">
+    <value>Tipi di azione</value>
+  </data>
+	<data name="WorkflowPage" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+	<data name="WorkflowTab" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+	<data name="ActionMessage_Desc" xml:space="preserve">
+    <value>Questo è il messaggio da mostrare agli utenti nella pagina Intervieni.</value>
+  </data>
+	<data name="ActionMessage_Name" xml:space="preserve">
+    <value>Messaggio Intervieni</value>
+  </data>
+	<data name="AllowedOrigins_Desc" xml:space="preserve">
+    <value>Elenco separato da virgole delle origini CORS consentite.</value>
+  </data>
+	<data name="AllowedOrigins_Name" xml:space="preserve">
+    <value>Origini consentite</value>
+  </data>
+	<data name="ApiTimeout_Desc" xml:space="preserve">
+    <value>Questa impostazione modifica il timeout di tutte le chiamate GET API v2 in base al valore in secondi.</value>
+  </data>
+	<data name="ApiTimeout_Name" xml:space="preserve">
+    <value>Timeout API</value>
+  </data>
+	<data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
+    <value>Numero di giorni per i quali i dati del profilo dei dati della risorsa devono essere conservati.</value>
+  </data>
+	<data name="AssetDataProfileLifespan_Name" xml:space="preserve">
+    <value>Durata del profilo dei dati delle risorse</value>
+  </data>
+	<data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>Larghezza delle colonne (in pixel) utilizzata per disporre i campi nel riquadro Definizione della risorsa.</value>
+  </data>
+	<data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>Larghezza colonna definizione risorsa</value>
+  </data>
+	<data name="AzureADTenant_Desc" xml:space="preserve">
+    <value>Il nome del tenant di Azure Active Directory.</value>
+  </data>
+	<data name="AzureADTenant_Name" xml:space="preserve">
+    <value>Nome del tenant di Azure AD</value>
+  </data>
+	<data name="AzureApplicationId_Desc" xml:space="preserve">
+    <value>L'ID applicazione del sito Web Data3Sixty dal portale di Azure AD</value>
+  </data>
+	<data name="AzureApplicationId_Name" xml:space="preserve">
+    <value>ID applicazione Azure AD</value>
+  </data>
+	<data name="AzureGraphAPIKey_Desc" xml:space="preserve">
+    <value>La chiave per l'API del grafico di Azure Active Directory.</value>
+  </data>
+	<data name="AzureGraphAPIKey_Name" xml:space="preserve">
+    <value>Chiave API Azure Graph</value>
+  </data>
+	<data name="BrowserTitlePrefix_Desc" xml:space="preserve">
+    <value>Prefisso da utilizzare per la barra del titolo del browser.</value>
+  </data>
+	<data name="BrowserTitlePrefix_Name" xml:space="preserve">
+    <value>Prefisso del titolo del browser</value>
+  </data>
+	<data name="CompanyIcon_Desc" xml:space="preserve">
+    <value>Caricare l'icona della società.</value>
+  </data>
+	<data name="CompanyIcon_Name" xml:space="preserve">
+    <value>Icona società</value>
+  </data>
+	<data name="CompanyLogo_Desc" xml:space="preserve">
+    <value>Caricare il logo della società.</value>
+  </data>
+	<data name="CompanyLogo_Name" xml:space="preserve">
+    <value>Logo società</value>
+  </data>
+	<data name="CustomCSSLocation_Desc" xml:space="preserve">
+    <value>La posizione di qualsiasi foglio di stile personalizzato.</value>
+  </data>
+	<data name="CustomCSSLocation_Name" xml:space="preserve">
+    <value>Posizione del foglio di stile personalizzato</value>
+  </data>
+	<data name="DefaultRoute_Desc" xml:space="preserve">
+    <value>La pagina predefinita che sarà visualizzata dopo aver effettuato l'accesso a Data3Sixty.</value>
+  </data>
+	<data name="DefaultRoute_Name" xml:space="preserve">
+    <value>Percorso predefinito</value>
+  </data>
+	<data name="DefaultSearchTypes_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla i tipi predefiniti da utilizzare per la funzionalità di ricerca.</value>
+  </data>
+	<data name="DefaultSearchTypes_Name" xml:space="preserve">
+    <value>Tipi predefiniti da utilizzare per la ricerca</value>
+  </data>
+	<data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>Numero massimo di link al diagramma Lineage che utilizzerà l'impostazione di rendering 'AvoidNodes'. Se è maggiore, i link verranno visualizzati senza angoli e come una linea retta tra 2 nodi. Ciò migliora le prestazioni di rendering sui diagrammi con più dati.</value>
+  </data>
+	<data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>Numero massimo di link al diagramma per utilizzare il modello di rendering 'AvoidNodes'</value>
+  </data>
+	<data name="DisableCommunityPosting_Desc" xml:space="preserve">
+    <value>Ciò consente di disabilitare la pubblicazione di commenti e risposte su tutte le bacheche della community nell'intero sistema.  Gli utenti potranno comunque vedere le bacheche della community e tutti i commenti a livello di sistema.</value>
+  </data>
+	<data name="DisableCommunityPosting_Name" xml:space="preserve">
+    <value>Disabilita i post della community</value>
+  </data>
+	<data name="DisableIssueManagement_Desc" xml:space="preserve">
+    <value>Ciò consente di nascondere il pulsante Intervieni e la pagina Monitora dall'interfaccia utente.</value>
+  </data>
+	<data name="DisableIssueManagement_Name" xml:space="preserve">
+    <value>Disabilita Intervieni</value>
+  </data>
+	<data name="EmailDomainWhitelist_Desc" xml:space="preserve">
+    <value>Ciò contiene un elenco di domini consentiti separati da virgole. Se presente, solo gli utenti con e-mail provenienti dai domini specificati potranno accedere a Govern.</value>
+  </data>
+	<data name="EmailDomainWhitelist_Name" xml:space="preserve">
+    <value>Domini e-mail consentiti</value>
+  </data>
+	<data name="EnableJsonAttribute_Desc" xml:space="preserve">
+    <value>Abilitare il supporto del tipo di campo JSON Attribute.  L'abilitazione di questa operazione consente di archiviare tutte le proprietà per tutti i campi JSON nell'ambiente Govern e di abilitare questo tipo di campo. Valore predefinito false.  La modifica di questo valore richiede il ricaricamento dei dati interessati per analizzare le proprietà JSON.</value>
+  </data>
+	<data name="EnableJsonAttribute_Name" xml:space="preserve">
+    <value>Abilita attributo JSON</value>
+  </data>
+	<data name="EnableSagacity_Desc" xml:space="preserve">
+    <value>Consente l'uso di dashboard DQ+</value>
+  </data>
+	<data name="EnableSagacity_Name" xml:space="preserve">
+    <value>Abilita dashboard DQ+</value>
+  </data>
+	<data name="FramingDomains_Desc" xml:space="preserve">
+    <value>Specificare un elenco di domini consentiti separati da virgole</value>
+  </data>
+	<data name="FramingDomains_Name" xml:space="preserve">
+    <value>Frame</value>
+  </data>
+	<data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
+    <value>L'UID dell'elenco di riferimento che contiene i ruoli di governance da cui dipende Diagram Designer.</value>
+  </data>
+	<data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
+    <value>UID elenco di riferimento ruolo di governance</value>
+  </data>
+	<data name="HideData3SixtyUsers_Desc" xml:space="preserve">
+    <value>Questa impostazione nasconde gli utenti di Data3Sixty da un ambiente, in modo da non rendere modificabili questi account.</value>
+  </data>
+	<data name="HideData3SixtyUsers_Name" xml:space="preserve">
+    <value>Nascondi utenti Data3Sixty</value>
+  </data>
+	<data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>Questa impostazione nasconde i comandi a destra della barra dell'intestazione</value>
+  </data>
+	<data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>Nascondi i comandi della barra di intestazione</value>
+  </data>
+	<data name="HomePageBackgroundImage_Desc" xml:space="preserve">
+    <value>Quando impostata, questa opzione viene utilizzata per visualizzare un'immagine personalizzata nella home page.</value>
+  </data>
+	<data name="HomePageBackgroundImage_Name" xml:space="preserve">
+    <value>Immagine di sfondo della home page</value>
+  </data>
+	<data name="HomePageTitleColor_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per impostare il colore del titolo della home page.</value>
+  </data>
+	<data name="HomePageTitleColor_Name" xml:space="preserve">
+    <value>Colore del titolo della home page</value>
+  </data>
+	<data name="HomePageTitleSize_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per impostare le dimensioni del titolo della home page.</value>
+  </data>
+	<data name="HomePageTitleSize_Name" xml:space="preserve">
+    <value>Dimensioni del titolo della home page</value>
+  </data>
+	<data name="IpRestriction_Desc" xml:space="preserve">
+    <value>Facoltativamente, è possibile scegliere di limitare l'accesso a questo ambiente in base all'intervallo IP.</value>
+  </data>
+	<data name="IpRestriction_Name" xml:space="preserve">
+    <value>Restrizioni dell'intervallo IP</value>
+  </data>
+	<data name="JwtAuthority_Desc" xml:space="preserve">
+    <value>URI autorità per token JWT.</value>
+  </data>
+	<data name="JwtAuthority_Name" xml:space="preserve">
+    <value>URI autorità per JWT</value>
+  </data>
+	<data name="MaxDropdownItems_Desc" xml:space="preserve">
+    <value>Questo è il numero massimo di elementi da mostrare in un elenco a discesa prima di passare al completamento automatico.</value>
+  </data>
+	<data name="MaxDropdownItems_Name" xml:space="preserve">
+    <value>Numero massimo di elementi in un elenco a discesa</value>
+  </data>
+	<data name="MaxExcelExportRows_Desc" xml:space="preserve">
+    <value>Questo è il numero massimo di elementi che è possibile esportare in un foglio di calcolo Excel.</value>
+  </data>
+	<data name="MaxExcelExportRows_Name" xml:space="preserve">
+    <value>Numero massimo di righe da esportare in Excel</value>
+  </data>
+	<data name="PowerBIClientId_Desc" xml:space="preserve">
+    <value>L'ID client per i client Power BI incorporati.</value>
+  </data>
+	<data name="PowerBIClientId_Name" xml:space="preserve">
+    <value>ID client Power BI incorporato</value>
+  </data>
+	<data name="PowerBIGroupId_Desc" xml:space="preserve">
+    <value>L'ID area di lavoro per questi client in Power BI.</value>
+  </data>
+	<data name="PowerBIGroupId_Name" xml:space="preserve">
+    <value>ID area di lavoro/gruppo Power BI incorporato</value>
+  </data>
+	<data name="RequestCertificationDraft_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per controllare quando il pulsante Richiedi certificazione è disponibile in Govern e cosa viene considerato stato della bozza.</value>
+  </data>
+	<data name="RequestCertificationDraft_Name" xml:space="preserve">
+    <value>Valori di stato che determinano se il pulsante Richiedi certificazione è disponibile</value>
+  </data>
+	<data name="SessionTimeout_Desc" xml:space="preserve">
+    <value>Numero di minuti prima del timeout della sessione degli utenti.</value>
+  </data>
+	<data name="SessionTimeout_Name" xml:space="preserve">
+    <value>Timeout sessione (minuti)</value>
+  </data>
+	<data name="ShowAllUsersAPIKey_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere la chiave API utente sull'interfaccia utente.</value>
+  </data>
+	<data name="ShowAllUsersAPIKey_Name" xml:space="preserve">
+    <value>Mostra chiave API utente</value>
+  </data>
+	<data name="ShowChangeLogTab_Desc" xml:space="preserve">
+    <value>Se impostata su false, la scheda Registro delle modifiche sarà nascosta nell'interfaccia utente.</value>
+  </data>
+	<data name="ShowChangeLogTab_Name" xml:space="preserve">
+    <value>Mostra scheda Registro delle modifiche</value>
+  </data>
+	<data name="ShowCommentsTab_Desc" xml:space="preserve">
+    <value>Se impostata su false, la scheda Commenti sarà nascosta nell'interfaccia utente.</value>
+  </data>
+	<data name="ShowCommentsTab_Name" xml:space="preserve">
+    <value>Mostra scheda Commenti</value>
+  </data>
+	<data name="ShowCustomAPIAdmin_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla se la pagina Amministrazione API personalizzata è visibile o meno.</value>
+  </data>
+	<data name="ShowCustomAPIAdmin_Name" xml:space="preserve">
+    <value>Mostra pagina Amministrazione API personalizzata</value>
+  </data>
+	<data name="ShowFavorites_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la funzionalità dei preferiti.</value>
+  </data>
+	<data name="ShowFavorites_Name" xml:space="preserve">
+    <value>Mostra preferiti</value>
+  </data>
+	<data name="ShowFollowersSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale dei follower.</value>
+  </data>
+	<data name="ShowFollowersSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale dei follower</value>
+  </data>
+	<data name="ShowHomeActivityTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro delle attività nella home page.</value>
+  </data>
+	<data name="ShowHomeActivityTile_Name" xml:space="preserve">
+    <value>Mostra riquadro attività nella home page</value>
+  </data>
+	<data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro delle assegnazioni nella home page.</value>
+  </data>
+	<data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
+    <value>Mostra riquadro assegnazioni nella home page</value>
+  </data>
+	<data name="ShowHomeBoardTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro della bacheca nella home page.</value>
+  </data>
+	<data name="ShowHomeBoardTile_Name" xml:space="preserve">
+    <value>Mostra riquadro bacheca nella home page</value>
+  </data>
+	<data name="ShowHomePageTitle_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il titolo nella home page.</value>
+  </data>
+	<data name="ShowHomePageTitle_Name" xml:space="preserve">
+    <value>Mostra titolo nella home page</value>
+  </data>
+	<data name="ShowImpactSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale dell'impatto.</value>
+  </data>
+	<data name="ShowImpactSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale dell'impatto</value>
+  </data>
+	<data name="ShowLineageSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale di lineage.</value>
+  </data>
+	<data name="ShowLineageSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale di lineage</value>
+  </data>
+	<data name="ShowNavigationChildren_Desc" xml:space="preserve">
+    <value>Consente di mostrare le voci del menu di navigazione figlio.</value>
+  </data>
+	<data name="ShowNavigationChildren_Name" xml:space="preserve">
+    <value>Mostra menu di navigazione figlio</value>
+  </data>
+	<data name="ShowOwnersSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale delle proprietà.</value>
+  </data>
+	<data name="ShowOwnersSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale delle proprietà</value>
+  </data>
+	<data name="ShowResources_Desc" xml:space="preserve">
+    <value>Consente di mostrare altri utenti agli amministratori None</value>
+  </data>
+	<data name="ShowResources_Name" xml:space="preserve">
+    <value>Mostra risorse</value>
+  </data>
+	<data name="ShowSocialScoreBar_Desc" xml:space="preserve">
+    <value>Questa impostazione consente agli amministratori di disattivare la barra social visualizzata nella parte superiore delle pagine dei dettagli. Questa impostazione è attiva per impostazione predefinita.</value>
+  </data>
+	<data name="ShowSocialScoreBar_Name" xml:space="preserve">
+    <value>Mostra barra social/punteggio</value>
+  </data>
+	<data name="UseAsTransformationLimit_Desc" xml:space="preserve">
+    <value>Il numero massimo di tipi di risorse che è possibile contrassegnare come tipo di risorsa di trasformazione.</value>
+  </data>
+	<data name="UseAsTransformationLimit_Name" xml:space="preserve">
+    <value>Usa come limite di trasformazione</value>
+  </data>
+	<data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla quale gruppo di utenti deve ricevere e-mail se le responsabilità in un workflow comportano che nessun utente riceva l'assegnazione del workflow. Se 0 o non definito, tutti gli amministratori di un'area geografica riceveranno le assegnazioni.</value>
+  </data>
+	<data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
+    <value>Gruppo utenti predefinito workflow</value>
+  </data>
+	<data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla i giorni in cui vengono inviate le e-mail di riepilogo del workflow.</value>
+  </data>
+	<data name="WorkflowDigestEmailDays_Name" xml:space="preserve">
+    <value>Giorni in cui vengono inviate le e-mail di riepilogo del workflow</value>
+  </data>
+	<data name="WorkflowFromEmail_Desc" xml:space="preserve">
+    <value>Questo è l'indirizzo e-mail che le e-mail dal workflow avranno come indirizzo e-mail di provenienza.</value>
+  </data>
+	<data name="WorkflowFromEmail_Name" xml:space="preserve">
+    <value>Indirizzo e-mail di provenienza del workflow</value>
+  </data>
+	<data name="WorkflowFromName_Desc" xml:space="preserve">
+    <value>Questo è il nome che viene visualizzato quando un'e-mail viene inviata dal workflow.</value>
+  </data>
+	<data name="WorkflowFromName_Name" xml:space="preserve">
+    <value>Nome dell'e-mail di provenienza del workflow</value>
+  </data>
+	<data name="WriteActionDescription_Desc" xml:space="preserve">
+    <value>Scrivere la descrizione dell'azione come commento.</value>
+  </data>
+	<data name="WriteActionDescription_Name" xml:space="preserve">
+    <value>Scrivi descrizione azione</value>
+  </data>
+	<data name="Taxonomy" xml:space="preserve">
+    <value>Modello di informazioni</value>
+  </data>
+	<data name="TaxonomyType" xml:space="preserve">
+    <value>Modello di informazioni</value>
+  </data>
+	<data name="Group" xml:space="preserve">
+    <value>Gruppo</value>
+  </data>
+	<data name="Resource" xml:space="preserve">
+    <value>Utente</value>
+  </data>
+	<data name="ResourceType" xml:space="preserve">
+    <value>Tipo di utente</value>
+  </data>
+	<data name="Role" xml:space="preserve">
+    <value>Ruolo</value>
+  </data>
+	<data name="Ownership" xml:space="preserve">
+    <value>Proprietà</value>
+  </data>
+	<data name="Company" xml:space="preserve">
+    <value>Società</value>
+  </data>
+	<data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Livello del modello di informazioni</value>
+  </data>
+	<data name="Artifact" xml:space="preserve">
+    <value>Artefatto</value>
+  </data>
+	<data name="ReferenceList" xml:space="preserve">
+    <value>Elenco di riferimento</value>
+  </data>
+	<data name="BooleanFalse" xml:space="preserve">
+    <value>No</value>
+  </data>
+	<data name="BooleanTrue" xml:space="preserve">
+    <value>Sì</value>
+  </data>
+	<data name="Default" xml:space="preserve">
+    <value>Valore predefinito</value>
+  </data>
+  <data name="State_Closed" xml:space="preserve">
+    <value>Chiuso</value>
+  </data>
+  <data name="State_Pending" xml:space="preserve">
+    <value>In sospeso</value>
+  </data>
+  <data name="State_Waiting" xml:space="preserve">
+    <value>In attesa degli utenti</value>
+  </data>
+	<data name="PageNumString" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+	<data name="PageSizeString" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+	<data name="EndpointMethod" xml:space="preserve">
+    <value>Metodo dell'endpoint</value>
+  </data>
+	<data name="UidConstant" xml:space="preserve">
+    <value>UID</value>
+  </data>
+	<data name="TargetAssetType" xml:space="preserve">
+    <value>tipo di risorsa di destinazione</value>
+  </data>
+	<data name="add" xml:space="preserve">
+    <value>aggiungi</value>
+  </data>
+	<data name="confirm" xml:space="preserve">
+    <value>conferma</value>
+  </data>
+	<data name="_assettypeuid" xml:space="preserve">
+    <value>_assettypeuid</value>
+  </data>
+	<data name="_assetuid" xml:space="preserve">
+    <value>_assetuid</value>
+  </data>
+	<data name="_assigneeuid" xml:space="preserve">
+    <value>_assigneeuid</value>
+  </data>
+	<data name="_responsibilitytypeuid" xml:space="preserve">
+    <value>_responsibilitytypeuid</value>
+  </data>
+	<data name="CommentType_Action" xml:space="preserve">
+    <value>Apri azioni</value>
+  </data>
+	<data name="CommentType_Social" xml:space="preserve">
+    <value>Commento</value>
+  </data>
+	<data name="AssetId_Description" xml:space="preserve">
+    <value>L'ID della risorsa è l'identificatore univoco di questa risorsa in tutte le risorse Data360.</value>
+  </data>
+	<data name="AssetId_Name" xml:space="preserve">
+    <value>ID risorsa</value>
+  </data>
+	<data name="CreatedOn_Description" xml:space="preserve">
+    <value>La data in cui questo elemento è stato creato in Data360.</value>
+  </data>
+	<data name="CreatedOn_Name" xml:space="preserve">
+    <value>Data di creazione</value>
+  </data>
+	<data name="Description_Name" xml:space="preserve">
+    <value>Descrizione</value>
+  </data>
+	<data name="DisplayFormat_Description" xml:space="preserve">
+    <value>Il formato di visualizzazione deve essere fornito per eseguire correttamente il rendering del valore di visualizzazione basato sul testo dell'elemento.</value>
+  </data>
+	<data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Formato di visualizzazione</value>
+  </data>
+	<data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+  </data>
+	<data name="Name_Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+	<data name="Parent_Description" xml:space="preserve">
+    <value>Il proprietario di questo elemento.</value>
+  </data>
+	<data name="Parent_Name" xml:space="preserve">
+    <value>Proprietario/Entità principale</value>
+  </data>
+	<data name="RuleType_Description" xml:space="preserve">
+    <value>Il tipo di regola classifica la regola in base al suo scopo.</value>
+  </data>
+	<data name="RuleType_Name" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+	<data name="SystemFieldCategory" xml:space="preserve">
+    <value>Campi di sistema</value>
+  </data>
+	<data name="SystemNoCategory" xml:space="preserve">
+    <value>Nessuno</value>
+  </data>
+	<data name="UID_Description" xml:space="preserve">
+    <value>L'UID è l'identificatore univoco di questo elemento in tutto Data360.</value>
+  </data>
+	<data name="Asset_UID_Description" xml:space="preserve">
+    <value>L'UID della risorsa è l'identificatore univoco per questo elemento in tutto Data360.</value>
+  </data>
+	<data name="AssetType_UID_Description" xml:space="preserve">
+    <value>L'UID del tipo di risorsa è l'identificatore univoco del tipo di risorsa in tutto Data360.</value>
+  </data>
+	<data name="UID_Name" xml:space="preserve">
+    <value>UID</value>
+  </data>
+	<data name="Asset_UID_Name" xml:space="preserve">
+    <value>UID risorsa</value>
+  </data>
+	<data name="AssetType_UID_Name" xml:space="preserve">
+    <value>UID tipo di risorsa</value>
+  </data>
+	<data name="UpdatedOn_Description" xml:space="preserve">
+    <value>La data dell'ultima modifica di questo elemento in Data360.</value>
+  </data>
+	<data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Data dell'ultima modifica</value>
+  </data>
+	<data name="RuleID_Name" xml:space="preserve">
+    <value>ID regola</value>
+  </data>
+	<data name="CreatedBy_Name" xml:space="preserve">
+    <value>Autore</value>
+  </data>
+	<data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
+    <value>Gruppo È Active Directory</value>
+  </data>
+	<data name="PrimaryOwner_Name" xml:space="preserve">
+    <value>Proprietario principale</value>
+  </data>
+	<data name="SecondaryOwner_Name" xml:space="preserve">
+    <value>Proprietario secondario</value>
+  </data>
+	<data name="UpdatedBy_Name" xml:space="preserve">
+    <value>Ultima modifica effettuata da</value>
+  </data>
+	<data name="Relationship_Type_Name" xml:space="preserve">
+    <value>Tipo di relazione</value>
+  </data>
+	<data name="Relationship_UID_Name" xml:space="preserve">
+    <value>UID relazione</value>
+  </data>
+	<data name="Load_Action" xml:space="preserve">
+    <value>Azione</value>
+  </data>
+	<data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Messaggi di errore</value>
+  </data>
+	<data name="Load_Errors" xml:space="preserve">
+    <value>Errori</value>
+  </data>
+	<data name="Load_Incompletes" xml:space="preserve">
+    <value>Operazioni non completate</value>
+  </data>
+	<data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>meno di un minuto</value>
+  </data>
+	<data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>minuto/i</value>
+  </data>
+	<data name="Load_Notes" xml:space="preserve">
+    <value>Note</value>
+  </data>
+	<data name="Load_Status" xml:space="preserve">
+    <value>Stato</value>
+  </data>
+	<data name="Load_Successes" xml:space="preserve">
+    <value>Operazioni riuscite</value>
+  </data>
+	<data name="Load_Target" xml:space="preserve">
+    <value>Destinazione</value>
+  </data>
+	<data name="Load_TookMinutes" xml:space="preserve">
+    <value>Ha richiesto (minuti)</value>
+  </data>
+	<data name="Load_Total" xml:space="preserve">
+    <value>Totale</value>
+  </data>
+	<data name="Load_UploadedBy" xml:space="preserve">
+    <value>Caricamento effettuato da</value>
+  </data>
+	<data name="Add_Asset_Type_Directions" xml:space="preserve">
+    <value>Modificare questo tipo di {0} usando il modulo sottostante.</value>
+  </data>
+	<data name="Add_Asset_Type_Title" xml:space="preserve">
+    <value>Aggiungi tipo di {0}</value>
+  </data>
+	<data name="ArtifactType" xml:space="preserve">
+    <value>Business</value>
+  </data>
+	<data name="Edit_Asset_Type_Title" xml:space="preserve">
+    <value>Modifica tipo di {0}</value>
+  </data>
+	<data name="InUse_Error_Delete" xml:space="preserve">
+    <value>Il tipo di relazione che si sta tentando di eliminare ha stabilito delle relazioni.  Eliminarle prima di eliminare il tipo di relazione.</value>
+  </data>
+	<data name="InUse_RelationShipType_Error_Delete" xml:space="preserve">
+    <value>Il tipo di relazione è referenziato da una o più definizioni del tipo di campo. Aggiornarle o eliminarle prima di eliminare il tipo di relazione.</value>
+  </data>
+	<data name="NoFormData_FieldType" xml:space="preserve">
+    <value>tipo di campo</value>
+  </data>
+	<data name="Permisions_Error_Add" xml:space="preserve">
+    <value>Non si dispone delle autorizzazioni per aggiungere questo elemento.</value>
+  </data>
+	<data name="Permisions_Error_Delete" xml:space="preserve">
+    <value>Non si dispone delle autorizzazioni per rimuovere questo elemento.</value>
+  </data>
+	<data name="Permisions_Error_Edit" xml:space="preserve">
+    <value>Non si dispone delle autorizzazioni per aggiornare questo elemento.</value>
+  </data>
+	<data name="PolicyType" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+	<data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
+    <value>Allora è obbligatorio.</value>
+  </data>
+	<data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
+    <value>Quando contiene un FieldTypeId non valido per questo tipo di risorsa.</value>
+  </data>
+	<data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
+    <value>Quando è obbligatorio se ApplyToType è impostato su false.</value>
+  </data>
+	<data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
+    <value>Quando è obbligatorio.</value>
+  </data>
+	<data name="RuleType" xml:space="preserve">
+    <value>Regola</value>
+  </data>
+	<data name="TaxonomyType" xml:space="preserve">
+    <value>Modello</value>
+  </data>
+	<data name="Taxonomy_ChangeParent_Warning" xml:space="preserve">
+    <value>La modifica dell'entità principale di un modello potrebbe potenzialmente avere un impatto significativo sulla proprietà in tutto il sistema.</value>
+  </data>
+  <data name="Execution_ApplicationId" xml:space="preserve">
+    <value>Un parametro di query facoltativo che specifica un identificatore per l'applicazione che chiama l'API. Ciò consente agli amministratori di vedere quali applicazioni si connettono al server e quali risorse utilizzano.</value>
+  </data>
+	<data name="AssetCount" xml:space="preserve">
+    <value>AssetCount</value>
+  </data>
+	<data name="AssetTypeUid" xml:space="preserve">
+    <value>AssetTypeUid</value>
+  </data>
+	<data name="AutoDisplayParent" xml:space="preserve">
+    <value>Visualizza automaticamente l'entità principale</value>
+  </data>
+	<data name="CanEditParent" xml:space="preserve">
+    <value>È possibile modificare l'entità principale</value>
+  </data>
+	<data name="ExecutionID" xml:space="preserve">
+    <value>ExecutionID</value>
+  </data>
+	<data name="ExecutionUid" xml:space="preserve">
+    <value>ExecutionUid</value>
+  </data>
+	<data name="model" xml:space="preserve">
+    <value>modello</value>
+  </data>
+	<data name="UseAsTransformation" xml:space="preserve">
+    <value>Usa come trasformazione</value>
+  </data>
+	<data name="ApiSheetName" xml:space="preserve">
+    <value>Informazioni API</value>
+  </data>
+	<data name="AssetIdColumn" xml:space="preserve">
+    <value>ID risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetPathColumn" xml:space="preserve">
+    <value>Percorso risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetSheetName" xml:space="preserve">
+    <value>Risorse</value>
+  </data>
+	<data name="AssetTypePathColumn" xml:space="preserve">
+    <value>Percorso tipo di risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetTypeUidColumn" xml:space="preserve">
+    <value>UID tipo di risorsa</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+	<data name="AssetUidColumn" xml:space="preserve">
+    <value>UID risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="UrlColumn" xml:space="preserve">
+    <value>URL</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="BaseTypeColumn" xml:space="preserve">
+    <value>Tipo di base</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="DescriptionColumn" xml:space="preserve">
+    <value>Descrizione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="DisabledColumn" xml:space="preserve">
+    <value>Disabilitato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="Duplicate" xml:space="preserve">
+    <value>Duplica</value>
+  </data>
+	<data name="EffectiveFromColumn" xml:space="preserve">
+    <value>Inizio validità:</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="EffectiveThroughColumn" xml:space="preserve">
+    <value>Fine validità:</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="HeaderFilterColumn" xml:space="preserve">
+    <value>Filtro intestazione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="HeaderFilterConfidenceColumn" xml:space="preserve">
+    <value>Confidenza filtro intestazione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="InvalidValuesColumn" xml:space="preserve">
+    <value>Valori non validi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="JsonColumn" xml:space="preserve">
+    <value>JSON</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MatchedAssetExportFileName" xml:space="preserve">
+    <value>Elenco campi filtrati {0} {1} _{2}_.xlsx</value>
+  </data>
+	<data name="MatchedAssetIdColumn" xml:space="preserve">
+    <value>ID risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetNameColumn" xml:space="preserve">
+    <value>Nome campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetPathColumn" xml:space="preserve">
+    <value>Percorso risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetTagsColumn" xml:space="preserve">
+    <value>Tag campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetTypePathColumn" xml:space="preserve">
+    <value>Percorso tipo risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetUidColumn" xml:space="preserve">
+    <value>UID risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetUrlColumn" xml:space="preserve">
+    <value>URL campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchTypeColumn" xml:space="preserve">
+    <value>Tipo di corrispondenza</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MaximumColumn" xml:space="preserve">
+    <value>Massimo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumColumn" xml:space="preserve">
+    <value>Minimo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumMaximumPresentColumn" xml:space="preserve">
+    <value>Massimo e minimo presenti</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumSamplesColumn" xml:space="preserve">
+    <value>Campioni minimi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="NameColumn" xml:space="preserve">
+    <value>Nome</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="PriorityColumn" xml:space="preserve">
+    <value>Priorità</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="QualifierColumn" xml:space="preserve">
+    <value>Qualificatore</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="RegularExpressionColumn" xml:space="preserve">
+    <value>Espressione regolare</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="RequiredSimilarType" xml:space="preserve">
+    <value>similarType è un campo obbligatorio.</value>
+  </data>
+	<data name="SemanticBaseTypeBoolean" xml:space="preserve">
+    <value>True/False (boleano)</value>
+  </data>
+	<data name="SemanticBaseTypeNumber" xml:space="preserve">
+    <value>Numero ({0})</value>
+  </data>
+	<data name="SemanticMatchTypeAdvanced" xml:space="preserve">
+    <value>Avanzato (JSON)</value>
+  </data>
+	<data name="SemanticMatchTypeList" xml:space="preserve">
+    <value>Elenco di valori</value>
+  </data>
+	<data name="SemanticMatchTypePattern" xml:space="preserve">
+    <value>Modello nei dati</value>
+  </data>
+	<data name="SemanticSourceBuiltIn" xml:space="preserve">
+    <value>Integrato</value>
+  </data>
+	<data name="SemanticSourceUserDefined" xml:space="preserve">
+    <value>Definito dall'utente</value>
+  </data>
+	<data name="SemanticStatusUnderReview" xml:space="preserve">
+    <value>In revisione</value>
+  </data>
+	<data name="SemanticTypeExportFilename" xml:space="preserve">
+    <value>Elenco dei tipi semantici filtrati {0}.xlsx</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeUidColumn" xml:space="preserve">
+    <value>UID di tipo semantico</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeURLColumn" xml:space="preserve">
+    <value>URL di tipo semantico</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeAssetExportFilename" xml:space="preserve">
+    <value>Elenco delle risorse filtrate per {0} {1}.xlsx</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+	<data name="Similar" xml:space="preserve">
+    <value>Simile</value>
+  </data>
+	<data name="SourceColumn" xml:space="preserve">
+    <value>Origine semantica</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="StatusColumn" xml:space="preserve">
+    <value>Stato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="TagsColumn" xml:space="preserve">
+    <value>Tag</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="ThresholdColumn" xml:space="preserve">
+    <value>Soglia</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ValidLocalesColumn" xml:space="preserve">
+    <value>Impostazioni locali valide</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="ValidValuesColumn" xml:space="preserve">
+    <value>Valori validi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeStatusExportFilename" xml:space="preserve">
+    <value>Elenco stato tipo semantico {0}.xlsx</value>
+  </data>
+	<data name="ColorColumn" xml:space="preserve">
+    <value>Colore</value>
+    <comment>User for Semantic Type Status export</comment>
+  </data>
+	<data name="AssetUrlColumn" xml:space="preserve">
+    <value>URL risorsa</value>
+    <comment>Used for Semantic Types Assets Export</comment>
+  </data>
+	<data name="SemanticTypeDisabledColumn" xml:space="preserve">
+    <value>Disabilitato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeEffectiveRangeColumn" xml:space="preserve">
+    <value>Intervallo effettivo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ApiField" xml:space="preserve">
+    <value>Campo API</value>
+  </data>
+  <data name="ApiService" xml:space="preserve">
+    <value>Servizio API</value>
+  </data>
+  <data name="ApiServiceEndpoint" xml:space="preserve">
+    <value>Endpoint del servizio API</value>
+  </data>
+  <data name="apiserviceversion" xml:space="preserve">
+    <value>Versione del servizio API</value>
+  </data>
+  <data name="ApiServiceVersionEntity" xml:space="preserve">
+    <value>Entità della versione del servizio API</value>
+  </data>
+  <data name="ApiServiceVersionUri" xml:space="preserve">
+    <value>URI della versione del servizio API</value>
+  </data>
+  <data name="AssetType" xml:space="preserve">
+    <value>Tipo di risorsa</value>
+  </data>
+  <data name="Contract" xml:space="preserve">
+    <value>Contratto</value>
+  </data>
+  <data name="CustomSynonym" xml:space="preserve">
+    <value>Sinonimo personalizzato</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="field" xml:space="preserve">
+    <value>Campo</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Il file è obbligatorio</value>
+  </data>
+  <data name="IssueType" xml:space="preserve">
+    <value>Tipo di problema</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>Elemento</value>
+  </data>
+  <data name="ItemDate" xml:space="preserve">
+    <value>Data elemento</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>LoadAction</value>
+  </data>
+  <data name="PolicyType" xml:space="preserve">
+    <value>Tipo di policy</value>
+  </data>
+  <data name="PolicyTypeLevel" xml:space="preserve">
+    <value>Livello del tipo di policy</value>
+  </data>
+  <data name="PowerBICredentials" xml:space="preserve">
+    <value>Credenziali Power BI</value>
+  </data>
+  <data name="Relationship" xml:space="preserve">
+    <value>Relazione</value>
+  </data>
+  <data name="RelationshipType" xml:space="preserve">
+    <value>Tipo di relazione</value>
+  </data>
+  <data name="Report" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="Resource" xml:space="preserve">
+    <value>Risorsa</value>
+  </data>
+  <data name="Responsibility" xml:space="preserve">
+    <value>Responsabilità</value>
+  </data>
+  <data name="ResponsibilityType" xml:space="preserve">
+    <value>ResponsibilityType</value>
+  </data>
+  <data name="serviceConstant" xml:space="preserve">
+    <value>Servizio</value>
+  </data>
+  <data name="Synonym" xml:space="preserve">
+    <value>Sinonimo</value>
+  </data>
+  <data name="TaxonomyType" xml:space="preserve">
+    <value>Tipo di tassonomia</value>
+  </data>
+  <data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Livello del tipo di tassonomia</value>
+  </data>
+  <data name="TypeConstant" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="uriConstant" xml:space="preserve">
+    <value>URI</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>Versione</value>
+  </data>
+
+</root>

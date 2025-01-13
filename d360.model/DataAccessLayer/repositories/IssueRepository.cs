@@ -85,7 +85,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (hasAnyAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAnyAssignmentsParam.Value) && !bool.TryParse(hasAnyAssignmentsParam.Value, out hasAnyAssignments))
 				{
-					throw new ArgumentException(IssueErrors.InvalidHasAnyAssignments);
+					throw new ArgumentException(Error.InvalidHasAnyAssignments);
 				}
 			}
 
@@ -93,7 +93,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (hasAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAssignmentsParam.Value) && !bool.TryParse(hasAssignmentsParam.Value, out hasAssignments))
 				{
-					throw new ArgumentException(IssueErrors.InvalidHasAssignments);
+					throw new ArgumentException(Error.InvalidHasAssignments);
 				}
 			}
 
@@ -119,7 +119,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					throw new ArgumentException(IssueErrors.InvalidActionUid);
+					throw new ArgumentException(Error.InvalidActionUid);
 				}
 			}
 
@@ -131,7 +131,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) && (!Guid.TryParse(assetTypeUidParam.Value, out assetTypeUid) || assetTypeUid == Guid.Empty))
 				{
-					throw new ArgumentException(IssueErrors.InvalidAssetTypeUid);
+					throw new ArgumentException(Error.InvalidAssetTypeUid);
 				}
 			}
 
@@ -143,7 +143,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (assetUidParam.Value != null && !string.IsNullOrWhiteSpace(assetUidParam.Value) && (!Guid.TryParse(assetUidParam.Value, out assetUid) || assetUid == Guid.Empty))
 				{
-					throw new ArgumentException(IssueErrors.InvalidAssetUid);
+					throw new ArgumentException(Error.InvalidAssetUid);
 				}
 			}
 
@@ -180,7 +180,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					throw new ArgumentException(IssueErrors.InvalidLimitProvided);
+					throw new ArgumentException(Error.InvalidLimitProvided);
 				}
 			}
 #endregion
@@ -259,7 +259,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(IssueErrors.InvalidResourceUid);
+						throw new ArgumentException(Error.InvalidResourceUID);
 					}
 				}
 

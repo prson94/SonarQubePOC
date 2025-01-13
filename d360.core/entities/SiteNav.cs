@@ -50,7 +50,7 @@ namespace d360.core.entities
         public string IconPayload { get; set; }
 
         [NotMapped, DataMember]
-        public string Type { get { return this.Name == "#ASSET_TYPE" ? CommonNames.CommonName_AssetType :CommonNames.Text_Folder; } }
+        public string Type { get { return this.Name == "#ASSET_TYPE" ? Label.CommonName_AssetType : Label.Text_Folder; } }
 
         //[NotMapped, DataMember]
         //public string FullURL { get; set; }

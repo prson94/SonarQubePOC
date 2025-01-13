@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
-using Resources;
 using SmartFormat;
 using System;
 using System.Collections.Generic;
@@ -1075,7 +1074,7 @@ namespace d360.web.Controllers
 		{
 			if (!Guid.TryParse(uid, out var guid))
 			{
-				return Request.CreateResponse(HttpStatusCode.BadRequest, ApiMessages.CustomUidNotValid);
+				return Request.CreateResponse(HttpStatusCode.BadRequest, Error.CustomUidNotValid);
 			}
 
 			int objectId = Company.GetObjectId(guid, type);
@@ -1161,7 +1160,7 @@ namespace d360.web.Controllers
 					{
 						columns.Insert(1, new GridColumn
 						{
-							text = Fields.Parent_Name,
+							text = Label.Parent_Name,
 							datafield = "Parent",
 							columntype = GridColumn.COLUMN_TYPE_DROPDOWN,
 							filtertype = GridColumn.FILTER_TYPE_LIST,
@@ -1227,7 +1226,7 @@ namespace d360.web.Controllers
 					var targetTypeID = Request.GetQueryString("targetID");
 
 					columns.Add(
-							new GridColumn { text = Fields.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+							new GridColumn { text = Label.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
 					);
 
 					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
@@ -1289,7 +1288,7 @@ namespace d360.web.Controllers
 					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth, true);
 
 					//Add the colour column after code
-					columns.Insert(columns.IndexOf(columns.First(x => x.apiName != null && x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Fields.Color_Name, datafield = "Color", });
+					columns.Insert(columns.IndexOf(columns.First(x => x.apiName != null && x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Label.Color_Name, datafield = "Color", });
 
 					fields.Add(new GridField { name = "AssetID", type = "number" });
 					fields.Add(new GridField { name = "ID", type = "number" });
@@ -1360,15 +1359,15 @@ namespace d360.web.Controllers
 					{
 						remainingWidth = 27;
 						dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-						columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
-						columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = DataType.Text.ToString() });
-						columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = DataType.Text.ToString() });
+						columns.Add(new GridColumn { text = Label.FirstName_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
+						columns.Add(new GridColumn { text = Label.LastName_Name, datafield = "LastName", fieldType = DataType.Text.ToString() });
+						columns.Add(new GridColumn { text = Label.Email_Name, datafield = "Email", fieldType = DataType.Text.ToString() });
 						parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth);
-						columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = DataType.DateTime.ToString() });
-						columns.Add(new GridColumn { text = Fields.Administrator_Name, datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
+						columns.Add(new GridColumn { text = Label.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = DataType.DateTime.ToString() });
+						columns.Add(new GridColumn { text = Label.Administrator_Name, datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
 						columns.Add(new GridColumn
 						{
-							text = Fields.Status_Name,
+							text = Label.Status_Name,
 							datafield = "State",
 							filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
 							fieldType = DataType.Text.ToString(),
@@ -1389,8 +1388,8 @@ namespace d360.web.Controllers
 					{
 						remainingWidth = 27;
 						dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-						columns.Add(new GridColumn { text = Fields.Name_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
-						columns.Add(new GridColumn { text = Fields.OwnedItems_Name, datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
+						columns.Add(new GridColumn { text = Label.Name_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
+						columns.Add(new GridColumn { text = Label.OwnedItems_Name, datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
 						parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth);
 
 						fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
@@ -1516,7 +1515,7 @@ namespace d360.web.Controllers
 
 			if (json == null)
 			{
-				return Request.CreateResponse(HttpStatusCode.NotFound, ApiMessages.ArtifactNotFound);
+				return Request.CreateResponse(HttpStatusCode.NotFound, Error.ArtifactNotFound);
 			}
 
 			json.Add("SynonymPermission", permission);
@@ -2075,7 +2074,7 @@ namespace d360.web.Controllers
 
 			if (selected.ContainsKey("RelationshipError"))
 			{
-				var errorMessage = Smart.Format(AssetTypeErrors.InvalidRelationshipFieldType, new
+				var errorMessage = Smart.Format(Error.InvalidRelationshipFieldType, new
 				{
 					FriendlyName = (string)selected["RelationshipError"]
 				});
@@ -2450,7 +2449,7 @@ namespace d360.web.Controllers
 			dynamic gridDefinition = JsonConvert.DeserializeObject<dynamic>(gridDefinitionString);
 			string wherecondition = string.Empty;
 
-			for (int i = 0; i < gridDefinition.Fields.Count; i++)
+			for (int i = 0; i < gridDefinition.Label.Count; i++)
 			{
 				var field = gridDefinition.Fields[i];
 				var fieldName = field["name"].Value;
@@ -2546,11 +2545,11 @@ namespace d360.web.Controllers
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor,
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'ReferenceItem' then '{CommonNames.AssetTypeClass_Reference}'
-										when c.[Object] = 'Taxonomy' then '{CommonNames.AssetTypeClass_Model}'
-										when c.[Object] = 'Policy' then '{CommonNames.AssetTypeClass_Policy}'
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '{Label.AssetTypeClass_Business}'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '{Label.AssetTypeClass_Business}'
+										when c.[Object] = 'ReferenceItem' then '{Label.AssetTypeClass_Reference}'
+										when c.[Object] = 'Taxonomy' then '{Label.AssetTypeClass_Model}'
+										when c.[Object] = 'Policy' then '{Label.AssetTypeClass_Policy}'
 										else	c.[Object] end [Displayobject],
 										Uid as AssetUid
 										from [dbo].AssetWithType c   
@@ -2975,9 +2974,9 @@ namespace d360.web.Controllers
 										columns = 1,
 										FirstColumnFields = new List<ReadOnlyField> {
 										new ReadOnlyField {
-											Name = FieldInfo.Parent_Name ,
+											Name = Label.Parent_Name ,
 											FieldName = "ArtifactParentName",
-											FieldDescription = FieldInfo.Parent_Description,
+											FieldDescription = Label.Parent_Description,
 											Value = parentAsset.DisplayValue,
 											TooltipUrl = HasAssetReadAccess ? parentUrl : "",
 											TooltipType="Artifact",
@@ -2998,7 +2997,7 @@ namespace d360.web.Controllers
 											}
 										}
 									},
-										Category = FieldInfo.SystemNoCategory
+										Category = Label.SystemNoCategory
 									});
 								}
 							}
@@ -3008,13 +3007,13 @@ namespace d360.web.Controllers
 								columns = 2,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
 							},
 								SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Label.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
 							},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 
 							if (asset.UpdatedOn.HasValue)
@@ -3023,12 +3022,12 @@ namespace d360.web.Controllers
 								{
 									columns = 2,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
 									SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Label.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 							else
@@ -3037,9 +3036,9 @@ namespace d360.web.Controllers
 								{
 									columns = 1,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 
@@ -3049,14 +3048,14 @@ namespace d360.web.Controllers
 								if (asset.CreatedBy.HasValue)
 								{
 									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
-										FieldInfo.CreatedBy_Name,
+										Label.CreatedBy_Name,
 										users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
 								}
 
 								if (asset.UpdatedBy.HasValue)
 								{
 									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
-										FieldInfo.UpdatedBy_Name,
+										Label.UpdatedBy_Name,
 										users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
 								}
 							}
@@ -3079,9 +3078,9 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetId_Name, FieldName = "AssetId", FieldDescription = Label.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
 							},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 
 							model.rows.Add(new DetailReadOnlyRowModel
@@ -3089,13 +3088,13 @@ namespace d360.web.Controllers
 								columns = 2,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
 							},
 								SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Label.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
 							},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 
 							if (asset.UpdatedOn.HasValue)
@@ -3104,12 +3103,12 @@ namespace d360.web.Controllers
 								{
 									columns = 2,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
 									SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Label.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 							else
@@ -3118,9 +3117,9 @@ namespace d360.web.Controllers
 								{
 									columns = 1,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 						}
@@ -3138,10 +3137,10 @@ namespace d360.web.Controllers
 						{
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField> {
-								new ReadOnlyField { Name = Fields.Name_Name, FieldDescription = Fields.Name_Description, Value = artifactType.Name }
+								new ReadOnlyField { Name = Label.Name_Name, FieldDescription = Label.Name_Description, Value = artifactType.Name }
 							},
 							SecondColumnFields = new List<ReadOnlyField> {
-								new ReadOnlyField { Name = Fields.ID_Name, FieldName = "ArtifactTypeID", FieldDescription = Fields.ID_Description, Value = artifactType.ID.ToString() }
+								new ReadOnlyField { Name = Label.ID_Name, FieldName = "ArtifactTypeID", FieldDescription = Label.ID_Description, Value = artifactType.ID.ToString() }
 							}
 						});
 
@@ -3149,7 +3148,7 @@ namespace d360.web.Controllers
 						{
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField> {
-								new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
+								new ReadOnlyField { Name =Label.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Label.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
 							}
 						});
 
@@ -3269,7 +3268,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 								{
-									new ReadOnlyField { Name = FieldInfo.IsActiveDirectoryGroup_Name, FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
+									new ReadOnlyField { Name = Label.IsActiveDirectoryGroup_Name, FieldName = "IsActiveDirectoryGroup", FieldDescription = group.GetDescription(i => i.IsActiveDirectoryGroup), DataType = "Bool", Value = group.IsActiveDirectoryGroup.ToString() }
 								}
 							});
 						}
@@ -3281,7 +3280,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 								{
-									new ReadOnlyField { Name = FieldInfo.Description_Name, FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
+									new ReadOnlyField { Name = Label.Description_Name, FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
 								}
 							});
 						}
@@ -3295,9 +3294,9 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
 							},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 
 						if (asset.UpdatedOn.HasValue)
@@ -3306,12 +3305,12 @@ namespace d360.web.Controllers
 							{
 								columns = 2,
 								FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
 								SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Label.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 						else
@@ -3320,9 +3319,9 @@ namespace d360.web.Controllers
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 
@@ -3333,8 +3332,8 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.CreatedBy_Name,
-										FieldName = FieldInfo.CreatedBy_Name,
+										Name = Label.CreatedBy_Name,
+										FieldName = Label.CreatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -3348,7 +3347,7 @@ namespace d360.web.Controllers
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 
@@ -3359,8 +3358,8 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.UpdatedBy_Name,
-										FieldName = FieldInfo.UpdatedBy_Name,
+										Name = Label.UpdatedBy_Name,
+										FieldName = Label.UpdatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -3374,7 +3373,7 @@ namespace d360.web.Controllers
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 					}
@@ -3606,7 +3605,7 @@ namespace d360.web.Controllers
 							FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField {
-									Name = FieldInfo.Relationship_Type_Name,
+									Name = Label.Relationship_Type_Name,
 									FieldName = "RelationshipType",
 									Value = relationshipTypeName,
 									DataType = "string" }
@@ -3626,9 +3625,9 @@ namespace d360.web.Controllers
 						columns = 1,
 						FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Relationship_UID_Name, FieldName = "Uid", Value = intersect.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Relationship_UID_Name, FieldName = "Uid", Value = intersect.uid.ToString(), DataType = "string" }
 							},
-						Category = FieldInfo.SystemFieldCategory
+						Category = Label.SystemFieldCategory
 					});
 
 
@@ -3639,12 +3638,12 @@ namespace d360.web.Controllers
 						{
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
 							SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = intersect.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Label.UpdatedOn_Description, Value = intersect.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 					}
 					else
@@ -3653,9 +3652,9 @@ namespace d360.web.Controllers
 						{
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 					}
 
@@ -3679,8 +3678,8 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.CreatedBy_Name,
-										FieldName = FieldInfo.CreatedBy_Name,
+										Name = Label.CreatedBy_Name,
+										FieldName = Label.CreatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -3694,7 +3693,7 @@ namespace d360.web.Controllers
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 
@@ -3705,8 +3704,8 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.UpdatedBy_Name,
-										FieldName = FieldInfo.UpdatedBy_Name,
+										Name = Label.UpdatedBy_Name,
+										FieldName = Label.UpdatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -3720,7 +3719,7 @@ namespace d360.web.Controllers
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 					}
@@ -3758,11 +3757,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_Action, FieldName = "LoadAction", FieldDescription = "", Value = load.Action }
+								new ReadOnlyField { Name = Label.Load_Action, FieldName = "LoadAction", FieldDescription = "", Value = load.Action }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_Target, FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName }
+								new ReadOnlyField { Name = Label.Load_Target, FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName }
 							}
 						});
 
@@ -3771,7 +3770,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_UploadedBy, FieldName = "Requestor", FieldDescription = "", Value = load.Requestor }
+								new ReadOnlyField { Name = Label.Load_UploadedBy, FieldName = "Requestor", FieldDescription = "", Value = load.Requestor }
 							}
 						});
 
@@ -3780,7 +3779,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_Notes, FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" }
+								new ReadOnlyField { Name = Label.Load_Notes, FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" }
 							}
 						});
 
@@ -3789,7 +3788,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_ErrorMessages, FieldName = "ErrorMessage", FieldDescription = "", Value = load.ErrorMessage + "" }
+								new ReadOnlyField { Name = Label.Load_ErrorMessages, FieldName = "ErrorMessage", FieldDescription = "", Value = load.ErrorMessage + "" }
 							}
 						});
 
@@ -3798,11 +3797,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_Total, FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() }
+								new ReadOnlyField { Name = Label.Load_Total, FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# "+FieldInfo.Load_Incompletes, FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() }
+								new ReadOnlyField { Name = "# "+Label.Load_Incompletes, FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() }
 							}
 						});
 
@@ -3811,11 +3810,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# "+ FieldInfo.Load_Successes, FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() }
+								new ReadOnlyField { Name = "# "+ Label.Load_Successes, FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# "+ FieldInfo.Load_Errors, FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
+								new ReadOnlyField { Name = "# "+ Label.Load_Errors, FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
 							}
 						});
 
@@ -3823,14 +3822,14 @@ namespace d360.web.Controllers
 						{
 							var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
 
-							var minutesMessage = minutes == 0 ? FieldInfo.Load_MessageLessThanMin : minutes + " " + FieldInfo.Load_MessageMoreThanMin;
+							var minutesMessage = minutes == 0 ? Label.Load_MessageLessThanMin : minutes + " " + Label.Load_MessageMoreThanMin;
 
 							model.rows.Add(new DetailReadOnlyRowModel
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_TookMinutes, FieldName = "EllapsedTime", FieldDescription = "", Value = minutesMessage  }
+								new ReadOnlyField { Name = Label.Load_TookMinutes, FieldName = "EllapsedTime", FieldDescription = "", Value = minutesMessage  }
 							}
 							});
 						}
@@ -3843,7 +3842,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Load_Status, FieldName = "Status", FieldDescription = "", Value = currentStatus  }
+								new ReadOnlyField { Name = Label.Load_Status, FieldName = "Status", FieldDescription = "", Value = currentStatus  }
 							}
 							});
 						}
@@ -3879,7 +3878,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 						{
 							new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
 						},
-							Category = FieldInfo.SystemNoCategory
+							Category = Label.SystemNoCategory
 						});
 
 						model.rows.Add(new DetailReadOnlyRowModel
@@ -3887,9 +3886,9 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name =Fields.Path_Name, FieldName = "PolicyTextPath", FieldDescription =Fields.Path_Description, Value = policy.TextPath }
+								new ReadOnlyField { Name =Label.Path_Name, FieldName = "PolicyTextPath", FieldDescription =Label.Path_Description, Value = policy.TextPath }
 							},
-							Category = FieldInfo.SystemNoCategory
+							Category = Label.SystemNoCategory
 						});
 
 						var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
@@ -3911,13 +3910,13 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								columns = 2,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
 							},
 								SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Label.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
 							},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 
 							if (asset.UpdatedOn.HasValue)
@@ -3926,15 +3925,15 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								{
 									columns = 2,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
-										FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn",
+										FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
 										DataType = "date" }
 								},
 									SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn",
-										FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn",
+										FieldDescription = Label.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 							else
@@ -3943,11 +3942,11 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								{
 									columns = 1,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
-										FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn",
+										FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
 										DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 						}
@@ -3958,14 +3957,14 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							if (asset.CreatedBy.HasValue)
 							{
 								model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
-									FieldInfo.CreatedBy_Name,
+									Label.CreatedBy_Name,
 									users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
 							}
 
 							if (asset.UpdatedBy.HasValue)
 							{
 								model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
-									FieldInfo.UpdatedBy_Name,
+									Label.UpdatedBy_Name,
 									users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
 							}
 						}
@@ -3983,11 +3982,11 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Name_Name, FieldName = "RuleTypeName", Value = ruleType.Name }
+								new ReadOnlyField { Name = Label.Name_Name, FieldName = "RuleTypeName", Value = ruleType.Name }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ObjectID.ToString() }
+								new ReadOnlyField { Name = Label.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ObjectID.ToString() }
 							}
 						});
 						model.rows.Add(new DetailReadOnlyRowModel
@@ -3995,7 +3994,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField{ Name = FieldInfo.UID_Name, FieldName = "uid", FieldDescription = FieldInfo.UID_Description, Value = ruleType.uid.ToString()  }
+								new ReadOnlyField{ Name = Label.UID_Name, FieldName = "uid", FieldDescription = Label.UID_Description, Value = ruleType.uid.ToString()  }
 							}
 						});
 						model.rows.Add(new DetailReadOnlyRowModel
@@ -4003,7 +4002,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Description_Name, FieldName = "RuleTypeDescription", DataType = "Html", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
+								new ReadOnlyField { Name = Label.Description_Name, FieldName = "RuleTypeDescription", DataType = "Html", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
 							}
 						});
 					}
@@ -4032,7 +4031,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField{ Name = FieldInfo.UID_Name, FieldName = "uid", FieldDescription = FieldInfo.UID_Description, Value = responsibilityType.UID.ToString()  }
+								new ReadOnlyField{ Name = Label.UID_Name, FieldName = "uid", FieldDescription = Label.UID_Description, Value = responsibilityType.UID.ToString()  }
 							}
 						});
 						if (!string.IsNullOrEmpty(responsibilityType.Description))
@@ -4061,11 +4060,11 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Name_Name, FieldName = "PolicyTypeName", FieldDescription = Fields.Name_Description, Value = policyType.Name }
+								new ReadOnlyField { Name = Label.Name_Name, FieldName = "PolicyTypeName", FieldDescription = Label.Name_Description, Value = policyType.Name }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Fields.ID_Description, Value = policyType.ObjectID.ToString() }
+								new ReadOnlyField { Name = Label.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Label.ID_Description, Value = policyType.ObjectID.ToString() }
 							}
 						});
 						model.rows.Add(new DetailReadOnlyRowModel
@@ -4073,7 +4072,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField{ Name = FieldInfo.UID_Name, FieldName = "uid", FieldDescription = FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
+								new ReadOnlyField{ Name = Label.UID_Name, FieldName = "uid", FieldDescription = Label.UID_Description, Value = objectDetail.UID.ToString()  }
 							}
 						});
 						model.rows.Add(new DetailReadOnlyRowModel
@@ -4081,7 +4080,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+								new ReadOnlyField { Name = Label.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Label.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
 							}
 						});
 					}
@@ -4098,13 +4097,13 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Name_Name, FieldName = "Name", FieldDescription = Fields.Name_Description, Value = refType.Name }
+								new ReadOnlyField { Name = Label.Name_Name, FieldName = "Name", FieldDescription = Label.Name_Description, Value = refType.Name }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.DisplayFormat_Name, FieldName = "DisplayFormat", FieldDescription = Fields.DisplayFormat_Description, Value = refType.DisplayFormat }
+								new ReadOnlyField { Name = Label.DisplayFormat_Name, FieldName = "DisplayFormat", FieldDescription = Label.DisplayFormat_Description, Value = refType.DisplayFormat }
 							},
-							Category = FieldInfo.SystemNoCategory
+							Category = Label.SystemNoCategory
 						});
 
 						if (!string.IsNullOrEmpty(refType.Description))
@@ -4113,7 +4112,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = Fields.Description_Name, FieldName = "Description", FieldDescription = Fields.Description_Description, DataType = "Html", Value = refType.Description }
+									new ReadOnlyField { Name = Label.Description_Name, FieldName = "Description", FieldDescription = Label.Description_Description, DataType = "Html", Value = refType.Description }
 								}
 							});
 						}
@@ -4124,7 +4123,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, DataType = "Html", Value = refType.Notes }
+									new ReadOnlyField { Name = Label.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Label.SourceNotes_Description, DataType = "Html", Value = refType.Notes }
 								}
 							});
 						}
@@ -4135,13 +4134,13 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 								{
-									new ReadOnlyField{ Name = FieldInfo.UID_Name, FieldName = "uid", FieldDescription = FieldInfo.UID_Description, Value = refType.uid.ToString()  }
+									new ReadOnlyField{ Name = Label.UID_Name, FieldName = "uid", FieldDescription = Label.UID_Description, Value = refType.uid.ToString()  }
 								},
 							SecondColumnFields = new List<ReadOnlyField>
 								{
-									new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = FieldInfo.AssetId_Description, Value = refType.ID.ToString(), DataType = "string" }
+									new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Label.AssetId_Description, Value = refType.ID.ToString(), DataType = "string" }
 								},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 
 						var parentRefType = Company.GetParentType(refType.ID);
@@ -4170,23 +4169,23 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField> {
 								new ReadOnlyField {
-									Name = FieldInfo.CreatedOn_Name,
+									Name = Label.CreatedOn_Name,
 									FieldName = "ArtifactCreatedOn",
-									FieldDescription = FieldInfo.CreatedOn_Description,
+									FieldDescription = Label.CreatedOn_Description,
 									Value = refType.CreatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"),
 									DataType = "date"
 								}
 							},
 							SecondColumnFields = new List<ReadOnlyField> {
 								new ReadOnlyField {
-									Name = FieldInfo.UpdatedOn_Name,
+									Name = Label.UpdatedOn_Name,
 									FieldName = "ArtifactUpdatedOn",
-									FieldDescription = FieldInfo.UpdatedOn_Description,
+									FieldDescription = Label.UpdatedOn_Description,
 									Value = refType.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"),
 									DataType = "date"
 								}
 							},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 
 						var users = await Company.QueryFirstOrDefaultAsync<dynamic>(@"
@@ -4210,8 +4209,8 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.CreatedBy_Name,
-										FieldName = FieldInfo.CreatedBy_Name,
+										Name = Label.CreatedBy_Name,
+										FieldName = Label.CreatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -4225,7 +4224,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 
@@ -4236,8 +4235,8 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField> {
 									new ReadOnlyField {
-										Name = FieldInfo.UpdatedBy_Name,
-										FieldName = FieldInfo.UpdatedBy_Name,
+										Name = Label.UpdatedBy_Name,
+										FieldName = Label.UpdatedBy_Name,
 										Value = "values",
 										Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
@@ -4251,7 +4250,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 										DataType = DataType.Lookup.ToString()
 									}
 								},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 						}
 					}
@@ -4287,13 +4286,13 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								columns = 2,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
 							},
 								SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Label.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
 							},
-								Category = FieldInfo.SystemFieldCategory
+								Category = Label.SystemFieldCategory
 							});
 
 							if (asset.UpdatedOn.HasValue)
@@ -4302,12 +4301,12 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								{
 									columns = 2,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
 									SecondColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+									new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Label.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 							else
@@ -4316,9 +4315,9 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								{
 									columns = 1,
 									FirstColumnFields = new List<ReadOnlyField> {
-									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+									new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Label.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
 								},
-									Category = FieldInfo.SystemFieldCategory
+									Category = Label.SystemFieldCategory
 								});
 							}
 
@@ -4328,14 +4327,14 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								if (asset.CreatedBy.HasValue)
 								{
 									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
-										FieldInfo.CreatedBy_Name,
+										Label.CreatedBy_Name,
 										users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
 								}
 
 								if (asset.UpdatedBy.HasValue)
 								{
 									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
-										FieldInfo.UpdatedBy_Name,
+										Label.UpdatedBy_Name,
 										users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
 								}
 							}
@@ -4487,7 +4486,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Name_Name, Value = resource.FullName },
+								new ReadOnlyField { Name = Label.Name_Name, Value = resource.FullName },
 							},
 						});
 
@@ -4496,7 +4495,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Email_Name, FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+								new ReadOnlyField { Name = Label.Email_Name, FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
 							},
 						});
 
@@ -4509,7 +4508,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.LastSeen_Name , FieldName = "LastSeen", Value = lastSeen }
+								new ReadOnlyField { Name = Label.LastSeen_Name , FieldName = "LastSeen", Value = lastSeen }
 							}
 							});
 						}
@@ -4531,7 +4530,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name =Fields.Name_Name, FieldName = "ResourceTypeName", FieldDescription = Fields.Name_Description, Value = resourceType.Name }
+								new ReadOnlyField { Name =Label.Name_Name, FieldName = "ResourceTypeName", FieldDescription = Label.Name_Description, Value = resourceType.Name }
 							}
 						});
 					}
@@ -4595,9 +4594,9 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Path_Name, FieldName = "TaxonomyTextPath", FieldDescription = Fields.Path_Description, Value = taxonomy.TextPath }
+								new ReadOnlyField { Name = Label.Path_Name, FieldName = "TaxonomyTextPath", FieldDescription = Label.Path_Description, Value = taxonomy.TextPath }
 							},
-							Category = FieldInfo.SystemNoCategory
+							Category = Label.SystemNoCategory
 						});
 
 						if ((int)taxonomy.HierarchyMaximumDepth > 1)
@@ -4613,7 +4612,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							{
 								new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
 							},
-								Category = FieldInfo.SystemNoCategory
+								Category = Label.SystemNoCategory
 							});
 						}
 
@@ -4633,13 +4632,13 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Label.Asset_UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = taxonomy.AssetTypeUid.ToString(), DataType = "string" }
+								new ReadOnlyField { Name = Label.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Label.AssetType_UID_Description, Value = taxonomy.AssetTypeUid.ToString(), DataType = "string" }
 							},
-							Category = FieldInfo.SystemFieldCategory
+							Category = Label.SystemFieldCategory
 						});
 
 						model.rows.Add(SystemFieldsHelper.DetailRowInSystemFieldsForCreatedOnAndUpdatedOn(taxonomy));
@@ -4650,14 +4649,14 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							if (taxonomy.CreatedBy != null)
 							{
 								model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.CreatedBy,
-									FieldInfo.CreatedBy_Name,
+									Label.CreatedBy_Name,
 									users.FirstOrDefault(x => x.ResourceID == taxonomy.CreatedBy)));
 							}
 
 							if (taxonomy.UpdatedBy != null)
 							{
 								model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.UpdatedBy,
-									FieldInfo.UpdatedBy_Name,
+									Label.UpdatedBy_Name,
 									users.FirstOrDefault(x => x.ResourceID == taxonomy.UpdatedBy)));
 							}
 						}
@@ -4668,7 +4667,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							FirstColumnFields = new List<ReadOnlyField> {
 								new ReadOnlyField { Name = "ID", FieldName = "TaxonomyID", Value = $"{taxonomy.ID}" }
 							},
-							Category = FieldInfo.SystemNoCategory
+							Category = Label.SystemNoCategory
 						});
 					}
 					taxonomy = null;
@@ -4685,11 +4684,11 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Name_Name, FieldName = "TaxonomyTypeName", FieldDescription = Fields.Name_Description, Value = taxonomyType.Name }
+								new ReadOnlyField { Name = Label.Name_Name, FieldName = "TaxonomyTypeName", FieldDescription = Label.Name_Description, Value = taxonomyType.Name }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name =Fields.ID_Name, FieldName = "TaxonomyTypeID", FieldDescription = Fields.ID_Description, Value = taxonomyType.ObjectID.ToString() }
+								new ReadOnlyField { Name =Label.ID_Name, FieldName = "TaxonomyTypeID", FieldDescription = Label.ID_Description, Value = taxonomyType.ObjectID.ToString() }
 							}
 						});
 
@@ -4698,11 +4697,11 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.MaximumDepth_Name, FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = Fields.MaximumDepth_Description, Value = taxonomyType.HierarchyMaximumDepth.ToString() }
+								new ReadOnlyField { Name = Label.MaximumDepth_Name, FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = Label.MaximumDepth_Description, Value = taxonomyType.HierarchyMaximumDepth.ToString() }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField{ Name = FieldInfo.UID_Name, FieldName = "uid", FieldDescription = FieldInfo.UID_Description, Value = taxonomyObjectDetail.UID.ToString()  }
+								new ReadOnlyField{ Name = Label.UID_Name, FieldName = "uid", FieldDescription = Label.UID_Description, Value = taxonomyObjectDetail.UID.ToString()  }
 							}
 						});
 
@@ -4711,7 +4710,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
+								new ReadOnlyField { Name = Label.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Label.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
 							}
 						});
 					}
@@ -4942,7 +4941,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
 					if (asset == null)
 					{
-						throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ApiMessages.AssetNotfound });
+						throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = Error.AssetNotFound });
 					}
 
 					return GetPermissionsByObject(asset, isAdmin);
@@ -4996,7 +4995,7 @@ where v.id = {0}", id)).FirstOrDefault();
 				i.IsListable
 			).OrderBy(i => i.SortOrder).ToList();
 
-			columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
+			columns.Add(new GridColumn { text = d360.core.resources.Label.Name_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
 
 			fieldTypes.ForEach(f =>
 			{
@@ -5114,7 +5113,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			var details = Company.Query<dynamic>(sql, new { uid }).SingleOrDefault();
 			if (details == null)
 			{
-				return Request.CreateResponse(HttpStatusCode.NotFound, AssetTypeErrors.NotFoundBasedOnUid);
+				return Request.CreateResponse(HttpStatusCode.NotFound, Error.NotFoundBasedOnUid);
 			}
 
 			return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
@@ -5242,8 +5241,8 @@ where v.id = {0}", id)).FirstOrDefault();
 
 			List<CountModel> items = new List<CountModel>
 			{
-				new CountModel { Name = Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) },
-				new CountModel { Name = Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) }
+				new CountModel { Name = Label.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) },
+				new CountModel { Name = Label.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) }
 			};
 
 			return items.OrderBy(x => x.Name);

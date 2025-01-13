@@ -1864,54 +1864,54 @@ where	Id = @Id
 
 			var apiInfo = results.Children().ToList();
 
-			var excelDocument = new ExcelDocument(string.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
+			var excelDocument = new ExcelDocument(string.Format(Label.Relationships_DocumentName, DateTime.Now));
 
 			var fields = new List<FieldType>();
 
 			var headerRow = new ExcelRow();
-			var itemsSheet = new ExcelSheet(ExcelExports.Relationships_SheetName);
+			var itemsSheet = new ExcelSheet(Label.Relationships_SheetName);
 
 			//add default fields
-			fields.Add(new FieldType { Type = "string", Name = "Uid", FriendlyName = ExcelExports.Relationships_Relationship_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Subject|Uid", FriendlyName = ExcelExports.Relationships_Subject_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Subject|DisplayName", FriendlyName = ExcelExports.Relationships_Subject_Display_Name });
+			fields.Add(new FieldType { Type = "string", Name = "Uid", FriendlyName = Label.Relationships_Relationship_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Subject|Uid", FriendlyName = Label.Relationships_Subject_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Subject|DisplayName", FriendlyName = Label.Relationships_Subject_Display_Name });
 			
 			if (includeAssetPath)
 			{
-				fields.Add(new FieldType { Type = "string", Name = "Subject|[Path]", FriendlyName = ExcelExports.Relationships_Subject_Asset_Path });
+				fields.Add(new FieldType { Type = "string", Name = "Subject|[Path]", FriendlyName = Label.Relationships_Subject_Asset_Path });
 			}
 			
-			fields.Add(new FieldType { Type = "string", Name = "Subject|AssetTypePath", FriendlyName = ExcelExports.Relationships_Subject_Asset_Type_Path });
-			fields.Add(new FieldType { Type = "string", Name = "Predicate|Name", FriendlyName = ExcelExports.Relationships_Predicate_Name });
-			fields.Add(new FieldType { Type = "string", Name = "Object|Uid", FriendlyName = ExcelExports.Relationships_Object_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Object|DisplayName", FriendlyName = ExcelExports.Relationships_Object_Display_Name });
+			fields.Add(new FieldType { Type = "string", Name = "Subject|AssetTypePath", FriendlyName = Label.Relationships_Subject_Asset_Type_Path });
+			fields.Add(new FieldType { Type = "string", Name = "Predicate|Name", FriendlyName = Label.Relationships_Predicate_Name });
+			fields.Add(new FieldType { Type = "string", Name = "Object|Uid", FriendlyName = Label.Relationships_Object_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Object|DisplayName", FriendlyName = Label.Relationships_Object_Display_Name });
 			
 			if (includeAssetPath)
 			{
-				fields.Add(new FieldType { Type = "string", Name = "Object|[Path]", FriendlyName = ExcelExports.Relationships_Object_Asset_Path });
+				fields.Add(new FieldType { Type = "string", Name = "Object|[Path]", FriendlyName = Label.Relationships_Object_Asset_Path });
 			}
 			
-			fields.Add(new FieldType { Type = "string", Name = "Object|AssetTypePath", FriendlyName = ExcelExports.Relationships_Object_Asset_Type_Path });
-			fields.Add(new FieldType { Type = "string", Name = "RelationshipTypeUid", FriendlyName = ExcelExports.Relationships_Relationship_Type_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Subject|AssetTypeUid", FriendlyName = ExcelExports.Relationships_Subject_Asset_Type_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Object|AssetTypeUid", FriendlyName = ExcelExports.Relationships_Object_Asset_Type_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Predicate|Uid", FriendlyName = ExcelExports.Relationships_Predicate_UID });
-			fields.Add(new FieldType { Type = "string", Name = "Predicate|Type", FriendlyName = ExcelExports.Relationships_Predicate_Type });
-			fields.Add(new FieldType { Type = "string", Name = "Predicate|Inverse", FriendlyName = ExcelExports.Relationships_Predicate_Inverse });
+			fields.Add(new FieldType { Type = "string", Name = "Object|AssetTypePath", FriendlyName = Label.Relationships_Object_Asset_Type_Path });
+			fields.Add(new FieldType { Type = "string", Name = "RelationshipTypeUid", FriendlyName = Label.Relationships_Relationship_Type_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Subject|AssetTypeUid", FriendlyName = Label.Relationships_Subject_Asset_Type_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Object|AssetTypeUid", FriendlyName = Label.Relationships_Object_Asset_Type_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Predicate|Uid", FriendlyName = Label.Relationships_Predicate_UID });
+			fields.Add(new FieldType { Type = "string", Name = "Predicate|Type", FriendlyName = Label.Relationships_Predicate_Type });
+			fields.Add(new FieldType { Type = "string", Name = "Predicate|Inverse", FriendlyName = Label.Relationships_Predicate_Inverse });
 
 			#region Populate Excel Document            
 
 			#region API Info Sheet
-			var apiInfoSheet = new ExcelSheet(ExcelExports.Common_ApiInfoSheetName);
+			var apiInfoSheet = new ExcelSheet(Label.Common_ApiInfoSheetName);
 
-			var pageSizeRow = new ExcelRow { ExcelExports.Common_PageSize, results.GetValue("pageSize").ToString() };
-			var pageNumRow = new ExcelRow { ExcelExports.Common_PageNum, results.GetValue("pageNum").ToString() };
+			var pageSizeRow = new ExcelRow { Label.Common_PageSize, results.GetValue("pageSize").ToString() };
+			var pageNumRow = new ExcelRow { Label.Common_PageNum, results.GetValue("pageNum").ToString() };
 			apiInfoSheet.ValueRows.Add(pageSizeRow);
 			apiInfoSheet.ValueRows.Add(pageNumRow);
 
 			if (includeTotal)
 			{
-				var totalRow = new ExcelRow { ExcelExports.Common_Total, results.GetValue("total").ToString() };
+				var totalRow = new ExcelRow { Label.Common_Total, results.GetValue("total").ToString() };
 				apiInfoSheet.ValueRows.Add(totalRow);
 			}
 			#endregion    
@@ -1988,7 +1988,7 @@ where	Id = @Id
 			excelDocument.Add(apiInfoSheet);
 
 			SLDocument document = excelDocument.ToSLDocument();
-			document.SelectWorksheet(ExcelExports.Relationships_SheetName);
+			document.SelectWorksheet(Label.Relationships_SheetName);
 			return document;
 		}
 

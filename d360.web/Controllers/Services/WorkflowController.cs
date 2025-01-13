@@ -1,4 +1,25 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.entities.Workflow;
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.helpers;
+using d360.core.Models;
+using d360.core.queue;
+using d360.core.resources;
+using d360.model;
+using d360.model.workflow;
+using d360.web.Controllers.V2;
+using d360.web.Filters;
+using d360.web.Models;
+using Dapper;
+using Microsoft.Extensions.Logging;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Dynamic;
@@ -12,34 +33,6 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.core.entities.Workflow;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.helpers;
-using d360.core.Models;
-using d360.core.queue;
-using d360.core.resources;
-using d360.featureflags;
-using d360.model;
-using d360.model.workflow;
-using d360.web.Controllers.V2;
-using d360.web.Filters;
-using d360.web.Models;
-
-using Dapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.Web.Http;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
 
 namespace d360.web.Controllers.Services
 {
@@ -243,12 +236,12 @@ namespace d360.web.Controllers.Services
 									,I.ID as IssueID
 									,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 									,case 
-										when wi.CompletedOn is not null then '{Workflows.State_Closed.CleanForSql()}'
+										when wi.CompletedOn is not null then '{Label.State_Closed.CleanForSql()}'
 										else
 											case cast(coalesce(IA.ResourceObjectID, 0) as bit)
 
-												when 1 then '{Workflows.State_Pending.CleanForSql()}'
-												else '{Workflows.State_Waiting.CleanForSql()}'
+												when 1 then '{Label.State_Pending.CleanForSql()}'
+												else '{Label.State_Waiting.CleanForSql()}'
 
 											end
 
@@ -348,14 +341,14 @@ namespace d360.web.Controllers.Services
 
 			if (itemStep == null)
 			{
-				throw new ArgumentNullException(nameof(itemStep), WorkflowApiMessages.InvalidWorkflowStepID);
+				throw new ArgumentNullException(nameof(itemStep), Error.InvalidWorkflowStepID);
 			}
 
 			var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid).FirstOrDefault();
 
 			if (resource == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidResourceID);
 			}
 
 			var response = await ReassignWorkflowResource(itemStep.ID, resource.ResourceID, clearAssignments, sendFormEmails: sendFormEmails);
@@ -372,7 +365,7 @@ namespace d360.web.Controllers.Services
 
 				if (itemStep == null)
 				{
-					throw new ArgumentNullException(nameof(itemStep), WorkflowApiMessages.InvalidWorkflowStepID);
+					throw new ArgumentNullException(nameof(itemStep), Error.InvalidWorkflowStepID);
 				}
 				else
 				{
@@ -396,28 +389,28 @@ namespace d360.web.Controllers.Services
 
 			if (type == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, workflowTypeUID, "workflowTypeUID"));
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidGuid, workflowTypeUID, "workflowTypeUID"));
 			}
 
 			var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == type.ID).FirstOrDefault();
 
 			if (reg == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowRegistration);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowRegistration);
 			}
 
 			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();
 
 			if (item == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowID);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowID);
 			}
 
 			var itemStep = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).FirstOrDefault();
 
 			if (itemStep == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowStepID);
 			}
 
 			int? resourceId = null;
@@ -428,7 +421,7 @@ namespace d360.web.Controllers.Services
 
 				if (resource == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidResourceID);
 				}
 
 				resourceId = resource.ResourceID;
@@ -447,7 +440,7 @@ namespace d360.web.Controllers.Services
 
 				if (reg == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowRegistration);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowRegistration);
 				}
 
 				//add new event for the requested object and change type                
@@ -459,7 +452,7 @@ namespace d360.web.Controllers.Services
 
 				if (workflowItem == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowID);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowID);
 				}
 
 				workflowItem.CompletedBy = SecurityContext.ResourceID;
@@ -470,7 +463,7 @@ namespace d360.web.Controllers.Services
 
 				if (workflowItemStep == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidWorkflowStepID);
 				}
 
 				var isResourceReassignment = objectType.ToLowerInvariant() == "resource";
@@ -518,14 +511,14 @@ namespace d360.web.Controllers.Services
 
 			if (item == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemNotFound);
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.ItemNotFound);
 			}
 
 			var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).FirstOrDefault();
 
 			if (itemStepsModel == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.ItemStepNotFound);
 			}
 
 			var response = await SubmitWorkflowForm(item.ID, itemStepsModel.ID, model);
@@ -547,12 +540,12 @@ namespace d360.web.Controllers.Services
 
 				if (itemStepsModel == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
+					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.ItemStepNotFound);
 				}
 
 				if (string.IsNullOrEmpty(itemStepsModel.Settings))
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidFormSetting);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidFormSetting);
 				}
 
 				var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
@@ -644,7 +637,7 @@ namespace d360.web.Controllers.Services
 
 				if (itemStepsModel == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.ItemStepUnableFound);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.ItemStepUnableFound);
 				}
 
 				// check the settings for the form.  If the form is set to first response then we mark the step as complete and fire off its transitions
@@ -731,7 +724,7 @@ namespace d360.web.Controllers.Services
 
 			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
@@ -747,33 +740,33 @@ namespace d360.web.Controllers.Services
 			//model validation
 			if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
 
 			if (itemSteps == null || itemSteps.Count < 1)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.NoValidItemStep);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.NoValidItemStep);
 			}
 
 			var stepID = itemSteps.First().StepID;
 
 			if (itemSteps.Any(i => i.StepID != stepID))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.MultiVersionFound);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.MultiVersionFound);
 			}
 
 			var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == stepID).Include(x => x.Version).FirstOrDefault();
 
 			if (versionStep == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.InvalidSpecificID);
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.InvalidSpecificID);
 			}
 
 			if (model.Fields == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidModelNoFieldPassed);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidModelNoFieldPassed);
 			}
 
 			try
@@ -853,7 +846,7 @@ namespace d360.web.Controllers.Services
 
 			if (itemStep == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.WorkflowItemDeleted);
 			}
 
 			var typeId = Company.Query<int?>(@"select wv.TypeID from workflow.Item wi
@@ -872,7 +865,7 @@ namespace d360.web.Controllers.Services
 
 			if (itemStep == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.WorkflowItemDeleted);
 			}
 
 			string sql = @"
@@ -897,7 +890,7 @@ namespace d360.web.Controllers.Services
 
 			if (string.IsNullOrEmpty(xml))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.VersionStepIDNotFound);
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.VersionStepIDNotFound);
 			}
 
 			List<WorkflowFormModelField> properties = (
@@ -926,7 +919,7 @@ namespace d360.web.Controllers.Services
 				{
 					if (item.IntersectTypeID <= 0)
 					{
-						throw new ArgumentException(WorkflowApiMessages.RelatioshipInvalid);
+						throw new ArgumentException(Error.RelatioshipInvalid);
 					}
 					//load the possible options for this relationship type into values array
 					var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
@@ -941,7 +934,7 @@ namespace d360.web.Controllers.Services
 
 					if (reg == null)
 					{
-						throw new ArgumentNullException(nameof(reg), WorkflowApiMessages.RelationNotFoundRegistration);
+						throw new ArgumentNullException(nameof(reg), Error.RelationNotFoundRegistration);
 					}
 
 					var obj = reg.Object;
@@ -1178,7 +1171,7 @@ namespace d360.web.Controllers.Services
 		{
 			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
@@ -1196,7 +1189,7 @@ namespace d360.web.Controllers.Services
 				//model validation
 				if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage);
 				}
 
 				var itemStepID = model.ItemStepIDs.First();
@@ -1204,7 +1197,7 @@ namespace d360.web.Controllers.Services
 
 				if (itemStep == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.NoValidItemStep);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.NoValidItemStep);
 				}
 
 				var stepID = itemStep.StepID;
@@ -1212,7 +1205,7 @@ namespace d360.web.Controllers.Services
 
 				if (versionStep == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.InvalidSpecificID);
+					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.InvalidSpecificID);
 				}
 
 				var typeID = versionStep.Version.TypeID;
@@ -1229,7 +1222,7 @@ namespace d360.web.Controllers.Services
 
 				if (string.IsNullOrEmpty(xml))
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.WofkFlowXMLNull);
+					return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Error.WofkFlowXMLNull);
 				}
 
 				var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
@@ -1237,7 +1230,7 @@ namespace d360.web.Controllers.Services
 
 				if (string.IsNullOrEmpty(xml))
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.VersionStepIDNotFound);
+					return Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.VersionStepIDNotFound);
 				}
 
 				List<WorkflowFormModelField> properties = (
@@ -1264,7 +1257,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (item.IntersectTypeID <= 0)
 						{
-							throw new ArgumentException(WorkflowApiMessages.RelatioshipInvalid);
+							throw new ArgumentException(Error.RelatioshipInvalid);
 						}
 
 						//load the possible options for this relationship type into values array
@@ -1272,14 +1265,14 @@ namespace d360.web.Controllers.Services
 
 						if (intersectType == null)
 						{
-							throw new ArgumentNullException(nameof(intersectType), WorkflowApiMessages.RelationNotFoundIntersectType);
+							throw new ArgumentNullException(nameof(intersectType), Error.RelationNotFoundIntersectType);
 						}
 
 						var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
 
 						if (reg == null)
 						{
-							throw new ArgumentNullException(nameof(reg), WorkflowApiMessages.RelationNotFoundRegistration);
+							throw new ArgumentNullException(nameof(reg), Error.RelationNotFoundRegistration);
 						}
 
 						var obj = reg.Object;
@@ -1291,7 +1284,7 @@ namespace d360.web.Controllers.Services
 
 							if (issue == null)
 							{
-								throw new ArgumentNullException(nameof(issue), WorkflowApiMessages.RelationNotFoundIssueObject);
+								throw new ArgumentNullException(nameof(issue), Error.RelationNotFoundIssueObject);
 							}
 
 							var assetType = Company.Filter<AssetType>(a => a.ID == issue.AssetTypeID).SingleOrDefault();
@@ -1539,7 +1532,7 @@ namespace d360.web.Controllers.Services
 
 			if (item == default)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(Error.WorkflowInstanceNotFound);
 			}
 
 			return GetItemDetail(item);
@@ -1552,7 +1545,7 @@ namespace d360.web.Controllers.Services
 
 			if (item == null)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(Error.WorkflowInstanceNotFound);
 			}
 
 			// get the itemsteps for this workflow instance
@@ -1710,7 +1703,7 @@ namespace d360.web.Controllers.Services
 
 			if (type == null || (type.State != State.Active && type.State != State.InActive))
 			{
-				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.WorkflowtypeidNotFound, id.ToString()));
 			}
 
 			var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
@@ -1807,7 +1800,7 @@ namespace d360.web.Controllers.Services
 
 			if (otype == null || (otype.State != State.Active && otype.State != State.InActive))
 			{
-				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, workflowType.UID.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.WorkflowtypeUIDNotFound, workflowType.UID.ToString()));
 			}
 
 			//Workflow type creation
@@ -2604,12 +2597,12 @@ namespace d360.web.Controllers.Services
 
 			if (type == null)
 			{
-				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.WorkflowtypeidNotFound, id.ToString()));
 			}
 
 			if (type.State == State.Deleted)
 			{
-				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowIDAlreadyDeleted, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.WorkflowIDAlreadyDeleted, id.ToString()));
 			}
 
 			type.State = State.Deleted;
@@ -2632,7 +2625,7 @@ namespace d360.web.Controllers.Services
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
 			if (type == null)
 			{
-				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidGuid, typeUID, "typeUID"));
 			}
 
 			var resourceId = 0;
@@ -2642,7 +2635,7 @@ namespace d360.web.Controllers.Services
 				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid.Value).FirstOrDefault();
 				if (resource == null)
 				{
-					return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
+					return errorMessageArgumentResponse(Error.InvalidResourceID);
 				}
 				resourceId = resource.ResourceID;
 			}
@@ -2732,7 +2725,7 @@ namespace d360.web.Controllers.Services
 
 			if (type == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+				return errorMessageNotFoundResponse(string.Format(Error.InvalidGuid, typeUID, "typeUID"));
 			}
 
 			var resourceId = 0;
@@ -2743,7 +2736,7 @@ namespace d360.web.Controllers.Services
 
 				if (resource == null)
 				{
-					return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
+					return errorMessageArgumentResponse(Error.InvalidResourceID);
 				}
 
 				resourceId = resource.ResourceID;
@@ -3077,7 +3070,7 @@ namespace d360.web.Controllers.Services
 
 			if (!Company.WorkflowEventRegistrations.Any(x => x.TypeID == id))
 			{
-				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id));
+				return errorMessageNotFoundResponse(string.Format(Error.WorkflowtypeidNotFound, id));
 			}
 
 			var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
@@ -3095,7 +3088,7 @@ namespace d360.web.Controllers.Services
 
 			if (item == null)
 			{
-				return errorMessageNotFoundResponse(WorkflowApiMessages.ItemNotFound);
+				return errorMessageNotFoundResponse(Error.ItemNotFound);
 			}
 
 			var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
@@ -3549,13 +3542,13 @@ namespace d360.web.Controllers.Services
 		{
 			if (itemStepUid == null || itemStepUid == Guid.Empty)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));				
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidGuid, itemStepUid));				
 			}
 
 			var itemStepId = Company.WorkflowItemSteps.Where(wis => wis.UID == itemStepUid).Select(s => s.ID).FirstOrDefault();
 			if (itemStepId <= 0)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.StepNotFound);
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.StepNotFound);
 			}
 			return await GetWorkflowVersionStepDetail(itemStepId);
 		}
@@ -3626,7 +3619,7 @@ namespace d360.web.Controllers.Services
 
 			if (detail == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.StepNotFound));
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(Error.StepNotFound));
 			}
 
 			//TODO: refactor to convert to directly to a model instead of xml to json to dynamic
@@ -4122,7 +4115,7 @@ namespace d360.web.Controllers.Services
 
 			if (item == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.ItemNotFound));
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(Error.ItemNotFound));
 			}
 
 			var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
@@ -4220,7 +4213,7 @@ namespace d360.web.Controllers.Services
 		{
 			if (model == null || ((model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1) && (model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)))
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
 			if (model.ItemStepUIDs.Count >= 1)
@@ -4238,14 +4231,14 @@ namespace d360.web.Controllers.Services
 		{
 			if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
 			var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == model.NewAssigneeResourceID);
 
 			if (model.NewAssigneeResourceID < 0 || resource == null)
 			{
-				return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
+				return errorMessageArgumentResponse(Error.InvalidResourceID);
 			}
 
 			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).Include(x => x.Step.Version).Include(x => x.Step.Version.Type).ToList();
@@ -4255,9 +4248,9 @@ namespace d360.web.Controllers.Services
 			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID,wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail, model.SendFormEmails, model.ClearOtherAssignments);
 
 			return Ok(new { 
-				type = ApiMessages.Success, 
-				message = WorkflowApiMessages.WorkflowReassignSuccess, 
-				title = ApiMessages.Success 
+				type = Error.Success, 
+				message = Error.WorkflowReassignSuccess, 
+				title = Error.Success 
 			});
 		}
 

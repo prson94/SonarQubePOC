@@ -9,7 +9,7 @@ namespace d360.core.entities
     public class DomainCertificate : BaseIntObject, IIntObject
     {
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
+        [Display(ResourceType = typeof(resources.Label), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
 
         public byte[] File { get; set; }

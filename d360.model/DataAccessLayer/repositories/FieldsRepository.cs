@@ -88,7 +88,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.ActionTypeUidNotFound, actionTypeUid.ToString()));
+						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.ActionTypeUidNotFound, actionTypeUid.ToString()));
 					}
 				}
 			}
@@ -97,7 +97,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (actionTypeUid.HasValue)
 				{
-					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.AssetTypeUidNotRequiredIfActionTypeUidProvided);
+					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.AssetTypeUidNotRequiredIfActionTypeUidProvided);
 				}
 				else
 				{
@@ -115,12 +115,12 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.AssetTypeUidNotFound, assetTypeUid.ToString()));
+							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeUidNotFound, assetTypeUid.ToString()));
 						}
 					}
 					else
 					{
-						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.InvalidAssetTypeUid, assetTypeUidString));
+						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.InvalidAssetTypeUid, assetTypeUidString));
 					}
 				}
 			}
@@ -129,11 +129,11 @@ namespace d360.model.DataAccessLayer
 			{
 				if (actionTypeUid.HasValue)
 				{
-					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
+					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.RelationShipTypeUidNotRequiredIfActionTypeUidProvided);
 				}
 				else if (assetTypeUid.HasValue)
 				{
-					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ParameterError, FieldErrors.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
+					workHttpStatus = new WorkHttpStatus(HttpStatusCode.BadRequest, Error.ParameterError, Error.RelationShipTypeUidNotRequiredIfAssetTypeUidProvided);
 				}
 				else
 				{
@@ -150,7 +150,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.TypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
+							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.RelationshipTypeUIdNotFound, relationshipTypeUid.ToString()));
 						}
 					}
 				}
@@ -840,7 +840,7 @@ namespace d360.model.DataAccessLayer
 
 				if (reservedWords.Contains(f.Name.ToLower()))
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NameReservedword, f.Name));
 				}
 
 				if (f.Name.ToLower() == "code" && f.Type.System == null)
@@ -848,7 +848,7 @@ namespace d360.model.DataAccessLayer
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NameReservedword, f.Name));
 					}
 				}
 
@@ -922,7 +922,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
 					}
 
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
@@ -934,7 +934,7 @@ namespace d360.model.DataAccessLayer
 
 					if (disallowedClasses.Contains(assetType.Class))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
 					}
 
 					var types = CompanyContext.Query<int>(
@@ -943,7 +943,7 @@ namespace d360.model.DataAccessLayer
 
 					if (!types.Contains((int)f.Type.Score.ScoreType))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.ScoreTypeCannotAllocateAssetType, f.Type.Score.ScoreType.ToString(), f.Name));
 					}
 
 					newFieldType.Type = DataType.Score.ToString();
@@ -970,7 +970,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUserOwnershipLookup, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUserOwnershipLookup, f.Name));
 					}
 
 					newFieldType.Type = DataType.OwnershipLookup.ToString();
@@ -1040,7 +1040,7 @@ namespace d360.model.DataAccessLayer
 
 					if (relationshipsFieldType == null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.RelationshipTypeFieldNotFound, string.Format(Error.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
 					}
 
 					newFieldType.LookupObjectType = "IntersectType";
@@ -1069,7 +1069,7 @@ namespace d360.model.DataAccessLayer
 
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseRelationshipLookupField, f.Name));
 					}
 
 					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
@@ -1078,7 +1078,7 @@ namespace d360.model.DataAccessLayer
 						|| !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
 						|| !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.ProvideComputedRealtionshipLookupField, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.ProvideComputedRealtionshipLookupField, f.Name));
 					}
 
 					newFieldType.Type = DataType.ComplexRelationLookup.ToString();
@@ -1272,7 +1272,7 @@ namespace d360.model.DataAccessLayer
 
 					if (hasDefinitionError)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, definitionErrorMessage);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, definitionErrorMessage);
 					}
 
 					#endregion
@@ -1296,7 +1296,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseReferenceListItemList, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseReferenceListItemList, f.Name));
 					}
 
 					newFieldType.Type = DataType.RefListRelationship.ToString();
@@ -1313,7 +1313,7 @@ namespace d360.model.DataAccessLayer
 
 					if (relationshipsFieldType <= 0)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeNotFoundBasedOnUid, f.Type.ComputedRelationshipReferenceList.IntersectTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.RelationshipTypeNotFound, string.Format(Error.RelationshipTypeNotFoundBasedOnUid, f.Type.ComputedRelationshipReferenceList.IntersectTypeUid));
 					}
 
 					newFieldType.LookupObjectType = "IntersectType";
@@ -1509,7 +1509,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseJSONonActionType, f.Name));
 					}
 
 					newFieldType.Type = DataType.JSON.ToString();
@@ -1532,7 +1532,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseJSONonActionType, f.Name));
 					}
 
 					newFieldType.Type = DataType.JsonElement.ToString();
@@ -1567,12 +1567,12 @@ namespace d360.model.DataAccessLayer
 					{
 						if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.MustProvideLinkTextValue, f.Name));
 						}
 
 						if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.MustProvideLinkUrlValue, f.Name));
 						}
 						newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
 					}
@@ -1631,7 +1631,7 @@ namespace d360.model.DataAccessLayer
 
 						if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
 						{
-							return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
+							return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidparentField, string.Format(Error.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
 						}
 						newFieldType.ParentFieldTypeID = parentField.ID;
 					}
@@ -1665,7 +1665,7 @@ namespace d360.model.DataAccessLayer
 							}
 							else
 							{
-								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
+								return new WorkHttpStatus(HttpStatusCode.NotFound, Error.ListAssetTypeNotFound, string.Format(Error.AssetTypeNotFoundField, f.Name));
 							}
 						}
 						else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
@@ -1682,7 +1682,7 @@ namespace d360.model.DataAccessLayer
 							}
 							else
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupFieldTypeIsIncomplete);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeListNotSpecified, Error.LookupFieldTypeIsIncomplete);
 							}
 						}
 						else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
@@ -1703,17 +1703,17 @@ namespace d360.model.DataAccessLayer
 							}
 							else
 							{
-								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.ListAssetTypeNotFound, string.Format(FieldErrors.AssetTypeNotFoundField, f.Name));
+								return new WorkHttpStatus(HttpStatusCode.NotFound, Error.ListAssetTypeNotFound, string.Format(Error.AssetTypeNotFoundField, f.Name));
 							}
 						}
 						else
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeListNotSpecified, Error.LookupNotSpecifiedList);
 						}
 					}
 					else
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeListNotSpecified, Error.LookupNotSpecifiedList);
 					}
 
 					if (f.Type.Lookup.Filter != null)
@@ -1743,7 +1743,7 @@ namespace d360.model.DataAccessLayer
 
 							if (filterFieldType <= 0)
 							{
-								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
+								return new WorkHttpStatus(HttpStatusCode.NotFound, Error.FieldTypeNotFound, string.Format(Error.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
 							}
 						}
 						else if (string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName) && typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
@@ -1758,7 +1758,7 @@ namespace d360.model.DataAccessLayer
 
 							if (filterPredicate <= 0)
 							{
-								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
+								return new WorkHttpStatus(HttpStatusCode.NotFound, Error.FieldTypeNotFound, string.Format(Error.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
 							}
 							filterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
 						}
@@ -1774,7 +1774,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidLookupDisplayFormat, Error.MissingListDisplayFormat);
 					}
 
 					newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
@@ -1893,7 +1893,7 @@ namespace d360.model.DataAccessLayer
 
 					if (relationshipType <= 0)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, f.Type.Relationship.IntersectTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.RelationshipTypeNotFound, string.Format(Error.RelationshipTypeUIdNotFound, f.Type.Relationship.IntersectTypeUid));
 					}
 
 					newFieldType.LookupObjectType = "IntersectType";
@@ -2073,7 +2073,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.NoValidTypeDefined, string.Format(Error.NotIncludedValidTypeFieldType, f.Name));
 				}
 
 				var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
@@ -2085,7 +2085,7 @@ namespace d360.model.DataAccessLayer
 				{
 					if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldConversionError, string.Format(FieldErrors.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldConversionError, string.Format(Error.FieldTypeConversionError, newFieldType.Name, currentFieldType.Type, newFieldType.Type));
 					}
 
 					currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
@@ -3045,17 +3045,17 @@ namespace d360.model.DataAccessLayer
 			List<GridColumn> Columns = new List<GridColumn>();
 			List<GridField> Fields = new List<GridField>();
 
-			Columns.Add(new GridColumn { text = core.resources.Fields.Responsibility_Name, datafield = "ResponsibilityTypeName", columntype = "textbox" });
-			Columns.Add(new GridColumn { text = core.resources.Fields.AssignedUserGroup_Name, datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
+			Columns.Add(new GridColumn { text = Label.Responsibility_Name, datafield = "ResponsibilityTypeName", columntype = "textbox" });
+			Columns.Add(new GridColumn { text = Label.AssignedUserGroup_Name, datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
 
 			if (definition.DisplayAssignmentSource)
 			{
-				Columns.Add(new GridColumn { text = core.resources.Fields.Via_Name, datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
+				Columns.Add(new GridColumn { text = Label.Via_Name, datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
 				Fields.Add(new GridField { apiName = "SecurityAssetName", name = "SecurityAssetName", type = "preview" });
 
 			}
 
-			Columns.Add(new GridColumn { text = core.resources.Fields.Context_Name, datafield = "Context", columntype = "textbox" });
+			Columns.Add(new GridColumn { text = Label.Context_Name, datafield = "Context", columntype = "textbox" });
 
 
 			Fields.Add(new GridField { apiName = "ResponsibilityTypeName", name = "ResponsibilityTypeName", type = "string" });

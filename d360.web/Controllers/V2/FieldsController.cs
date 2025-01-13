@@ -14,12 +14,9 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Dapper;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -103,7 +100,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
 			var results = await FieldsRepository.GetFieldTypes(queryParams);
 
@@ -188,7 +185,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage);
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
 			}
 
 			#region GetData
@@ -205,7 +202,7 @@ namespace d360.web.Controllers.V2
 				actionTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
 				if (typeIdentifierInfoModel == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, model.ActionTypeUid.Value.ToString()));
+					throw new NotFoundBusinessLayerException(string.Format(Error.ActionTypeUidIsNotValid, model.ActionTypeUid.Value.ToString()));
 				}
 			}
 
@@ -216,7 +213,7 @@ namespace d360.web.Controllers.V2
 
 				if (typeIdentifierInfoModel == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
+					throw new NotFoundBusinessLayerException(string.Format(Error.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
 				}
 			}
 
@@ -225,7 +222,7 @@ namespace d360.web.Controllers.V2
 				relationshipTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
 				if (typeIdentifierInfoModel == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, model.RelationshipTypeUid.Value.ToString()));
+					throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipTypeUIdNotFound, model.RelationshipTypeUid.Value.ToString()));
 				}
 			}
 
@@ -261,7 +258,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (existingFields.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
 						{
-							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
+							throw new RestApiException(HttpStatusCode.BadRequest, Error.AssetTypeError, Error.OnlyOneTagFieldAllowed);
 						}
 					}
 				}
@@ -279,7 +276,7 @@ namespace d360.web.Controllers.V2
 				if (model.Fields.Any(f => f.Type.System != null && !existingFields.Any(e => f.Name == e.Name && e.Type == DataType.System.ToString())))
 				{
 					// can't add new system fields 
-					throw new ForbiddenBusinessLayerException(ApiMessages.AddSystemFieldTypeNotAllowed);
+					throw new ForbiddenBusinessLayerException(Error.AddSystemFieldTypeNotAllowed);
 				}
 
 				model.Fields.FindAll(x => x.Type.System != null).ForEach(f =>
@@ -296,7 +293,7 @@ namespace d360.web.Controllers.V2
 					|| f.Type.System.IsDisplayable != existing.IsDisplayable
 					)
 					{
-						throw new ForbiddenBusinessLayerException(ApiMessages.EditSystemFieldTypePropertyNotAllowed);
+						throw new ForbiddenBusinessLayerException(Error.EditSystemFieldTypePropertyNotAllowed);
 					}
 
 				});
@@ -328,7 +325,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (!definition.Fields.Any(x => x.FieldTypeName.ToLowerInvariant() == ft.ToLowerInvariant()))
 						{
-							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipLookupMissingFieldFromFilter);
+							throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, Error.RelationshipLookupMissingFieldFromFilter);
 						}
 					}
 				}
@@ -345,7 +342,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
 						{
-							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
+							throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
 						}
 					}
 				});
@@ -363,15 +360,15 @@ namespace d360.web.Controllers.V2
 							case AssetTypeClass.BusinessAsset:
 								break;
 							default:
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+								throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError,
 									$"Path field could not change selected segment if asset type is not technical or business class.");
 						}
 						var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
 						var ancestryCollection = await Catalog.ReadAncestryAsync(model.AssetTypeUid.Value);
 						if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
 						{
-							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
-								$"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
+							throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError,
+								$"{Error.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
 						}
 					}
 				}
@@ -395,7 +392,7 @@ namespace d360.web.Controllers.V2
 						var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
 							.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-						var restApiException = new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+						var restApiException = new RestApiException(HttpStatusCode.BadRequest, Error.ChangeFieldNotAllowed, string.Format(Error.LookupFieldTypeInUse, exFt.FriendlyName));
 
 						if (exFt.LookupObjectType != "TaxonomyType" && ft.Type.Lookup.List.Class == AssetTypeClass.Model)
 						{
@@ -417,7 +414,7 @@ namespace d360.web.Controllers.V2
 
 				if (anyExistingItems)
 				{
-					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ExistItemInSystem, ApiMessages.ItemExistsNotReplaceMessage);
+					throw new RestApiException(HttpStatusCode.BadRequest, Error.ExistItemInSystem, Error.ItemExistsNotReplaceMessage);
 				}
 			}
 
@@ -476,7 +473,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			return Ok(new ApiStatusResponse { Message = Fields.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid });
+			return Ok(new ApiStatusResponse { Message = Label.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid });
 		}
 
 		/// <summary>
@@ -504,7 +501,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 				{
-					return errorMessageArgumentResponse(ApiMessages.DiagramAssetTypeSystemFieldValidation);
+					return errorMessageArgumentResponse(Error.DiagramAssetTypeSystemFieldValidation);
 				}
 			}
 
@@ -512,7 +509,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (model.Fields.Any(x => x.Name.ToLower() == "code"))
 				{
-					return errorMessageArgumentResponse(string.Format(ApiMessages.DeleteSystemFieldsError, "Code"));
+					return errorMessageArgumentResponse(string.Format(Error.DeleteSystemFieldsError, "Code"));
 				}
 			}
 
@@ -530,7 +527,7 @@ namespace d360.web.Controllers.V2
 
 			if (anyResponsibilitiesUsingField)
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.UsedinResponsibilityRules, Error.FieldUseInResponsibilityRule);
 			}
 
 			(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
@@ -561,7 +558,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			return Ok(new ApiStatusResponse { Message = Fields.FieldsRemoved, Success = true, Uid = typeIdentifierInfoModel?.Uid ?? Guid.Empty });
+			return Ok(new ApiStatusResponse { Message = Label.FieldsRemoved, Success = true, Uid = typeIdentifierInfoModel?.Uid ?? Guid.Empty });
 		}
 
 		/// <summary>
@@ -590,7 +587,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 				{
-					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
+					throw new RestApiException(HttpStatusCode.BadRequest, Error.BadRequest, Error.DiagramAssetTypeSystemFieldValidation);
 				}
 			}
 
@@ -606,7 +603,7 @@ namespace d360.web.Controllers.V2
 
 			if (anyResponsibilitiesUsingField)
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.UsedinResponsibilityRules, Error.FieldUseInResponsibilityRule);
 			}
 
 			(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
@@ -694,7 +691,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageArgumentResponse(ApiMessages.NotValidAssetActionRelationTypeProvided);
+				return errorMessageArgumentResponse(Error.NotValidAssetActionRelationTypeProvided);
 			}
 
 			var lists = new List<dynamic>();
@@ -800,12 +797,12 @@ namespace d360.web.Controllers.V2
 
 			var patterns = new Dictionary<string, string>
 			{
-				{ Fields.RegexPatternEmail, @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
-				{ Fields.RegexPatternIP, @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
-				{ Fields.RegexPatternNorthAmericanPhone, @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
-				{ Fields.RegexPatternInternalUrl, @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
-				{ Fields.RegexPatternPublicUrl, @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
-				{ Fields.RegexPatternUSZipCode, @"^(\d{5}(?:\-\d{4})?)$" }
+				{ Label.RegexPatternEmail, @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+				{ Label.RegexPatternIP, @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
+				{ Label.RegexPatternNorthAmericanPhone, @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
+				{ Label.RegexPatternInternalUrl, @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
+				{ Label.RegexPatternPublicUrl, @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
+				{ Label.RegexPatternUSZipCode, @"^(\d{5}(?:\-\d{4})?)$" }
 			};
 
 			var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
@@ -981,7 +978,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageArgumentResponse(ApiMessages.NotValidAssetActionRelationTypeProvided);
+					return errorMessageArgumentResponse(Error.NotValidAssetActionRelationTypeProvided);
 				}
 
 				List<dynamic> filteredLookupItems = null;
@@ -1140,7 +1137,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidValueMessage, identifier));
+				throw new RestApiException(HttpStatusCode.BadRequest, string.Format(Error.InvalidValueMessage, identifier));
 			}
 
 			switch (type)
@@ -1198,7 +1195,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (AssetTypeUid == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.NotValidAssetActionRelationTypeProvided);
+				return errorMessageArgumentResponse(Error.NotValidAssetActionRelationTypeProvided);
 			}
 
 			var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
@@ -1206,11 +1203,11 @@ namespace d360.web.Controllers.V2
 
 			if (intersectType == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 			if (assetType == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
 
 			var isSubject = intersectType.SubjectAssetTypeID == assetType.ID;
@@ -1316,7 +1313,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageArgumentResponse(ApiMessages.NotValidAssetActionRelationTypeProvided);
+				return errorMessageArgumentResponse(Error.NotValidAssetActionRelationTypeProvided);
 			}
 
 			AssetType refitem = null;
@@ -1405,7 +1402,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageArgumentResponse(ApiMessages.NotValidAssetActionRelationTypeProvided);
+				return errorMessageArgumentResponse(Error.NotValidAssetActionRelationTypeProvided);
 			}
 
 			//AssetTypes that can have filtered Lookups
@@ -1547,7 +1544,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageNotFoundResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
 
 			var intersectTypes = await Company.QueryAsync<dynamic>(
@@ -1582,7 +1579,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageNotFoundResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
 
 			var intersectTypes = await Company.QueryAsync<dynamic>(
@@ -1645,7 +1642,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageNotFoundResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
 
 			var restrictedTypes = DataType.Text.GetNotAllowedInRelationshipLookup();
@@ -1787,16 +1784,16 @@ namespace d360.web.Controllers.V2
 
 			if (intersectType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 			if (assetTypeUid == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
 			var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
 			if (at == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
 
 			bool isListable = false;
@@ -1875,7 +1872,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageNotFoundResponse(string.Format(ApiMessages.AssetNotFoundForAssetType, model.TypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFoundForAssetType, model.TypeUid.ToString()));
 			}
 
 			string message = "";
@@ -1982,7 +1979,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				return errorMessageNotFoundResponse(ApiMessages.FieldTypeNotFound);
+				return errorMessageNotFoundResponse(Error.FieldTypeNotFound);
 			}
 		}
 
@@ -2005,7 +2002,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(ActionApiMessages.InvalidAssetTypeUid);
+				return errorMessageNotFoundResponse(Error.InvalidAssetTypeUid);
 			}
 
 			var types = Company.Query<int>(
@@ -2022,7 +2019,7 @@ namespace d360.web.Controllers.V2
 				}
 				catch
 				{
-					return errorMessageResponse(HttpStatusCode.InternalServerError, string.Format(ApiMessages.ErrorScoreCasting, type.ToString()));
+					return errorMessageResponse(HttpStatusCode.InternalServerError, string.Format(Error.ErrorScoreCasting, type.ToString()));
 				}
 			}
 

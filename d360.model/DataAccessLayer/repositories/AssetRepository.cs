@@ -102,7 +102,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueForuseastransformation, useAsTransformationString);
+						throw new ArgumentException(Error.InvalidValueForuseastransformation, useAsTransformationString);
 					}
 				}
 
@@ -123,7 +123,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueHierachical, hierarchicalString);
+						throw new ArgumentException(Error.InvalidValueHierachical, hierarchicalString);
 					}
 				}
 
@@ -137,7 +137,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueAutoDisplayParent, autoDisplayParentString);
+						throw new ArgumentException(Error.InvalidValueAutoDisplayParent, autoDisplayParentString);
 					}
 				}
 
@@ -152,7 +152,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueObj, obj);
+						throw new ArgumentException(Error.InvalidValueObj, obj);
 					}
 					if (int.TryParse(objId, out int otid))
 					{
@@ -161,7 +161,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueObjID, objId);
+						throw new ArgumentException(Error.InvalidValueObjID, objId);
 					}
 				}
 
@@ -175,7 +175,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -198,7 +198,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -215,7 +215,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -233,7 +233,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -246,7 +246,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -259,7 +259,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
+						throw new ArgumentException(Error.InvalidValueincludeLevels, includeLevelsString);
 					}
 				}
 
@@ -421,12 +421,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			if (assetType == null)
 			{
-				throw new Exception(AssetTypeErrors.InvalidAssetType);
+				throw new Exception(Error.InvalidAssetType);
 			}
 
 			if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
 			{
-				throw new ArgumentException(AssetTypeErrors.UseAsAdminUseWithAssetUid);
+				throw new ArgumentException(Error.UseAsAdminUseWithAssetUid);
 			}
 
 			assetTypeID = assetType.ID;
@@ -1069,7 +1069,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (assetUids.Any(x => x == Guid.Empty))
 				{
-					throw new ArgumentException(AssetTypeErrors.InvalidAssetUid);
+					throw new ArgumentException(Error.InvalidAssetUid);
 				}
 
 				if (assetUids.Count > 0)
@@ -1500,7 +1500,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (ownerUids.Any(x => x == Guid.Empty))
 				{
-					throw new Exception(AssetTypeErrors.InvalidOwnerUid);
+					throw new Exception(Error.InvalidOwnerUid);
 				}
 
 				if (ownerUids.Count > 0)
@@ -1546,7 +1546,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (notOwnerUids.Any(x => x == Guid.Empty))
 				{
-					throw new Exception(AssetTypeErrors.InvalidOwnerUid);
+					throw new Exception(Error.InvalidOwnerUid);
 				}
 
 				if (notOwnerUids.Count > 0)
@@ -1592,12 +1592,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						parentUid = pUid;
 						if (!CompanyContext.Any<Asset>(i => i.uid == pUid))
 						{
-							throw new ArgumentException(string.Format(AssetTypeErrors._parentuidNotValidAsset, pUid.ToString()));
+							throw new ArgumentException(string.Format(Error._parentuidNotValidAsset, pUid.ToString()));
 						}
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors._parentUidNotValidUid);
+						throw new ArgumentException(Error._parentUidNotValidUid);
 					}
 				}
 			}
@@ -3256,7 +3256,7 @@ drop table if exists #tempAssetsIds;
 					#region
 
 					var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
-					var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
+					var errorMessage = model.Class == AssetTypeClass.Model ? Error.InvalidModelDepth : Error.InvalidPolicyDepth;
 
 					at = new AssetType
 					{
@@ -3285,7 +3285,7 @@ drop table if exists #tempAssetsIds;
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
 					{
-						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, errorMessage);
+						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, Error.InvalidMaximumDepthTitle, errorMessage);
 					}
 
 					CompanyContext.Add(at);
@@ -3452,8 +3452,8 @@ drop table if exists #tempAssetsIds;
 					{
 						return new Tuple<HttpStatusCode, string, string>(
 							HttpStatusCode.BadRequest,
-							string.Format(AssetTypeErrors.WrongClass, model.Class.ToString()),
-							$"{string.Format(AssetTypeErrors.InvalidClass, model.Class.ToString())} {AssetTypeErrors.CheckRequest}"
+							string.Format(Error.WrongClass, model.Class.ToString()),
+							$"{string.Format(Error.InvalidClass, model.Class.ToString())} {Error.CheckRequest}"
 						);
 					}
 
@@ -3492,7 +3492,7 @@ drop table if exists #tempAssetsIds;
 					{
 						if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
 						{
-							return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, AssetTypeErrors.InvalidModelDepth);
+							return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, Error.InvalidMaximumDepthTitle, Error.InvalidModelDepth);
 						}
 
 						for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
@@ -3553,8 +3553,8 @@ drop table if exists #tempAssetsIds;
 						{
 							return new Tuple<HttpStatusCode, string, string>(
 								HttpStatusCode.Conflict,
-								AssetTypeErrors.InvalidParentSelected,
-								$"{AssetTypeErrors.ParentChildRelationExists} {AssetTypeErrors.CheckRequest}"
+								Error.InvalidParentSelected,
+								$"{Error.ParentChildRelationExists} {Error.CheckRequest}"
 							);
 						}
 
@@ -3948,7 +3948,7 @@ drop table if exists #tempAssetsIds;
 				{
 					return new APIExecutionExternalAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidDirection,
+						Message = Error.InvalidDirection,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -3968,7 +3968,7 @@ drop table if exists #tempAssetsIds;
 				{
 					return new APIExecutionExternalAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidDirection,
+						Message = Error.InvalidDirection,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -4332,7 +4332,7 @@ drop table if exists #tempAssetsIds;
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueReturnCount, returncountString);
+						throw new ArgumentException(Error.InvalidValueReturnCount, returncountString);
 					}
 				}
 			}
@@ -5220,11 +5220,11 @@ drop table if exists #tempAssetsIds;
 			{
 				switch (res.Class)
 				{
-					case AssetTypeClass.BusinessAsset: res.title = CommonNames.AssetTypeClass_Business + ": " + res.title; break;
-					case AssetTypeClass.TechnicalAsset: res.title = CommonNames.AssetTypeClass_Technical + ": " + res.title; break;
-					case AssetTypeClass.Model: res.title = CommonNames.AssetTypeClass_Model + ": " + res.title; break;
-					case AssetTypeClass.Policy: res.title = CommonNames.AssetTypeClass_Policy + ": " + res.title; break;
-					case AssetTypeClass.Rule: res.title = CommonNames.AssetTypeClass_Rule + ": " + res.title; break;
+					case AssetTypeClass.BusinessAsset: res.title = Label.AssetTypeClass_Business + ": " + res.title; break;
+					case AssetTypeClass.TechnicalAsset: res.title = Label.AssetTypeClass_Technical + ": " + res.title; break;
+					case AssetTypeClass.Model: res.title = Label.AssetTypeClass_Model + ": " + res.title; break;
+					case AssetTypeClass.Policy: res.title = Label.AssetTypeClass_Policy + ": " + res.title; break;
+					case AssetTypeClass.Rule: res.title = Label.AssetTypeClass_Rule + ": " + res.title; break;
 					default: break;
 				}
 			});

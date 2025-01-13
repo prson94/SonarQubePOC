@@ -7,7 +7,7 @@ namespace d360.core.exceptions
     public class DuplicateNameException : BaseException
     {
         public DuplicateNameException(string objectName)
-            : base(HttpStatusCode.Conflict, AssetTypeErrors.DuplicateNameFound, string.Format(AssetTypeErrors.NameConflicit, objectName))
+            : base(HttpStatusCode.Conflict, Error.DuplicateNameFound, string.Format(Error.NameConflicit, objectName))
         {
         }
     }
@@ -15,7 +15,7 @@ namespace d360.core.exceptions
     public class DuplicateObjectException : BaseException
     {
         public DuplicateObjectException(string objectName)
-            : base(HttpStatusCode.Conflict, AssetTypeErrors.DuplicateFound, string.Format(AssetTypeErrors.ItemConflicit, objectName))
+            : base(HttpStatusCode.Conflict, Error.DuplicateFound, string.Format(Error.ItemConflicit, objectName))
         {
         }
     }

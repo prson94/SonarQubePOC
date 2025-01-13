@@ -7,7 +7,7 @@ namespace d360.core.exceptions
     public class NoFormDataException : BaseException
     {
         public NoFormDataException(string objectName)
-            : base(HttpStatusCode.BadRequest, AssetTypeErrors.NoFormDataTitle, string.Format(AssetTypeErrors.NoFormDataMessage, objectName))
+            : base(HttpStatusCode.BadRequest, Error.NoFormDataTitle, string.Format(Error.NoFormDataMessage, objectName))
         {
         }
     }
