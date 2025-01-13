@@ -388,8 +388,8 @@ where	ExecutionID = @executionID
 				if (tagTypeId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and lower([Value]) = @value and state = @state",
-						new { tagTypeId, value = value.ToLower(), state = State.Active}
+						"select cast(iif(count(1) > 0, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and [Value] = @value and state = @state",
+						new { tagTypeId, value , state = State.Active}
 					);
 
 					if (tagExists)
@@ -453,8 +453,8 @@ values (@auditID,0,'Name',@Value,Null)
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var exists = await connection.QuerySingleOrDefaultAsync<bool>(
-					"select cast(iif(count(1) > 1, 1, 0) as bit) from TagType where lower([Value]) = @value and State = @state",
-					new { value = value.ToLower(), state = State.Active }
+					"select cast(iif(count(1) > 0, 1, 0) as bit) from TagType where [Value] = @value and State = @state",
+					new { value, state = State.Active }
 				);
 
 				if (exists)
@@ -949,7 +949,8 @@ select	t.uid,
 		t.UpdatedOn,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
-		tt.Uid as TagTypeUID
+		tt.Uid as TagTypeUID,
+		tt.Value as TagTypeValue
 from	Tag t
 		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
@@ -1059,6 +1060,7 @@ where	t.Uid = @uid
 					
 					$@"
 select	t.uid, 
+		t.ID,
 		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -1069,6 +1071,44 @@ from	TagType t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 where	t.State = {(int)State.Active}
 order by	t.[value]");
+			}
+
+			return models;
+		}
+
+		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
+		{
+			IEnumerable<TagTypeApiModel> models = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				string sql = $@"
+DECLARE @assetTypeId INT;
+
+SET @assetTypeId = (SELECT ID FROM AssetType WHERE uid = @assetTypeUid);
+
+SELECT 
+    t.uid, 
+    t.ID,
+    t.[Value],
+    c.Uid AS CreatedByUid,
+    t.CreatedOn,
+    u.Uid AS UpdatedByUid,
+    t.UpdatedOn
+FROM 
+    TagType t
+INNER JOIN 
+    reporting.Global_Resource c ON c.ResourceID = t.CreatedBy
+INNER JOIN 
+    reporting.Global_Resource u ON u.ResourceID = t.UpdatedBy
+LEFT JOIN 
+    FieldType f ON f.TagTypeID = t.ID AND f.AssetTypeID = @assetTypeId AND f.Name != ISNULL(@name, '')
+WHERE 
+    t.State = {(int)State.Active} 
+    AND f.TagTypeID IS NULL 
+ORDER BY 
+    t.[Value]";
+
+				models = await connection.QueryAsync<TagTypeApiModel>(sql, new { assetTypeUid,name });
 			}
 
 			return models;
@@ -1349,10 +1389,10 @@ drop table if exists #tbl;
 				if (tagId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"select cast(iif(count(1) > 0, 1, 0) as bit) " +
 						"from Tag " +
-						"where TagTypeID = @tagTypeId and ID <> @tagId and lower([Value]) = @value",
-						new { tagId, tagTypeId, value = value.ToLower() }
+						"where TagTypeID = @tagTypeId and ID <> @tagId and [Value] = @value",
+						new { tagId, tagTypeId, value }
 					);
 
 					if (tagExists)
@@ -1471,10 +1511,10 @@ drop table if exists #TempTagValues;
 				if (id > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"select cast(iif(count(1) > 0, 1, 0) as bit) " +
 						"from TagType " +
-						"where ID <> @id and lower([Value]) = @value and State = @state",
-						new { id, value = value.ToLower(), state = State.Active }
+						"where ID <> @id and [Value] = @value and State = @state",
+						new { id, value, state = State.Active }
 					);
 
 					if (tagExists)

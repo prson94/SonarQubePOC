@@ -8,6 +8,7 @@ using d360.core;
 using d360.core.enums;
 using d360.model;
 using Microsoft.Owin;
+using repositories;
 
 namespace d360.web
 {
@@ -52,8 +53,8 @@ namespace d360.web
 			var directives = Policies.ToDictionary(d => d.Key, d => d.Value.ToList());
 
 			string ancestor = "";
-			var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
-			ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
+			var cmy = DependencyResolver.Current.GetService<ICommunity>();
+			ancestor = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.FramingDomains);
 
 			//If company has a frame setting, a CSP header should be added to allow the frame ancestors
 			if (!string.IsNullOrEmpty(ancestor))
@@ -78,6 +79,7 @@ namespace d360.web
 			int? resourceId = request.Get<int?>("ResourceID");
 			if (resourceId.HasValue)
 			{
+				var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
 				var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
 				context.Set("ApplicationLanguageSetting", lang?.Value);
 			}

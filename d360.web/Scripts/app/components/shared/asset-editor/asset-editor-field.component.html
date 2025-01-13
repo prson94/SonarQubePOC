@@ -239,7 +239,7 @@
                                             (click)="selectSingleItem($event,item);" style="display: flex">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
                                                 <p-tableCheckbox [value]="item"
-                                                                 [pSelectableRow]="item">
+                                                                 [index]="rowIndex">
                                                 </p-tableCheckbox>
                                             </td>
                                             <td style="flex-basis: auto; flex-grow: 1">

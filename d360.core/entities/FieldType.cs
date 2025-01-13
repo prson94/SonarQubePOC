@@ -927,6 +927,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Guid? TagTypeUID { get; set; }
+
+		[DataMember]
+		public int TagTypeID { get; set; }
 	}
 
 	public class FieldTypeCounterApiViewModel : FieldTypeEditableApiViewModel

@@ -3,19 +3,22 @@ import { HttpClient} from '@angular/common/http';
 import { catchError, map,  } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { TagTypesViewModel } from "./tag-types.model";
+import { BaseObservableService } from "../../../../services/baseObservable.service";
+import { MessagesObservableService } from "../../../../services/messages-observable.service";
 
 
 @Injectable({
     providedIn: 'root'
 })
-export class TagTypesService {
+export class TagTypesService extends BaseObservableService {
 
     private _connectionError: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
     constructor(
         private http: HttpClient,
+        messagesService: MessagesObservableService
     ) {
-
+        super(messagesService);
     }
 
     getAllTagTypes(): Observable<TagTypesViewModel[]> {
@@ -24,19 +27,20 @@ export class TagTypesService {
             .get(`api/v2/tags/tagTypes`)
             .pipe(
                 map((response) => <TagTypesViewModel[]>response),
-                catchError((err) => {
-                    if (err === "ConnectionError") {
-                        this._connectionError.next(true);
-                    }
-                    return ([]);
-                }))
-            ;
+                catchError((err) => this.handleError(err)));
     }
 
     addNewTagType(tagType: string): Observable<TagTypesViewModel> {
         return this
                 .http
-                .post<TagTypesViewModel>('/api/v2/tags/tagTypes', { 'Value': tagType });
+                .post<TagTypesViewModel>('/api/v2/tags/tagTypes', { 'Value': tagType })
+                .pipe(
+                            map((response) => {
+                                return response;
+                            }),
+                            map((item) => { return <TagTypesViewModel>item; }),
+                            catchError((err) => this.handleError(err)));
+                ;
     }
 
     updateTagType(tagType: string, tagId: string): Observable<TagTypesViewModel> {

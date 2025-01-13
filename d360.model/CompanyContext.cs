@@ -8,6 +8,7 @@ using d360.core.enums.Workflow;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
+using System.Configuration;
 using d360.extensions;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -52,7 +53,16 @@ namespace d360.model
 		private bool IsEventingEnabled;
 		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
 
-		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
+		public int ApiTimeout { 
+			get {
+				int apitimeout = 90;
+				if (!int.TryParse(ConfigurationManager.AppSettings["ApiTimeout"], out apitimeout))
+				{
+					apitimeout = 90;
+				}
+				return apitimeout;
+				}
+		}
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
 		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
@@ -655,13 +665,6 @@ from	Field F
 			});
 
 			return true;
-		}
-
-		public void DeleteSetting(Setting setting)
-		{
-			// In essence, this would set back to the default, if any.
-			Connection.Execute("delete Setting where ID = @id", new { id = (int)setting });
-			Caching.RemoveItem(SettingsCacheKey);
 		}
 
 		public void Enqueue(string queueName, QueueObject item)
@@ -1751,84 +1754,7 @@ from	IntersectType I
 
 			return dict;
 		}
-
-		public SettingInfo GetSetting(Setting setting)
-		{
-			return GetSettings().SingleOrDefault(s => s.ID == setting);
-		}
-
-		public T GetSettingValue<T>(Setting setting)
-		{
-			SettingInfo info = GetSetting(setting);
-
-			T checkType = default(T);
-
-			if (checkType is Guid)
-			{
-				Guid guid = Guid.Parse(info.Value);
-
-				return (T)Convert.ChangeType(guid, typeof(T));
-			}
-
-			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public List<SettingInfo> GetSettings()
-		{
-			// Get the list of settings from the D3S_###.dbo.Setting table.
-			// Get the full list of settings from the Setting enum.
-			// Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
-
-			List<EnvironmentSetting> overrides = Caching.GetItem<List<EnvironmentSetting>>(SettingsCacheKey);
-
-			if (overrides == null)
-			{
-				overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
-				Caching.SetItem(SettingsCacheKey, overrides, true, 1);
-			}
-
-			List<SettingInfo> settings = Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID).ToList();
-
-			settings.ForEach(s =>
-			{
-				string defaultValue = s.DefaultValue;
-
-				if (defaultValue.In("True", "False"))
-				{
-					defaultValue = defaultValue.ToLowerInvariant();
-				}
-
-				if (overrides.Any(o => o.ID == s.ID))
-				{
-					s.Value = overrides.First(o => o.ID == s.ID).Value;
-
-					if (s.Value.In("True", "False"))
-					{
-						s.Value = s.Value.ToLowerInvariant();
-					}
-					else if (s.ID == Setting.GovernanceRoleReferenceListUid)
-					{
-						AssetType IsUidExists = Filter<AssetType>(i => i.uid.ToString().ToLower() == s.Value.ToLower()).FirstOrDefault();
-						if (IsUidExists == null)
-						{
-							s.Value = Guid.Empty.ToString();
-						}
-					}
-				}
-				else
-				{
-					s.Value = defaultValue;
-				}
-			});
-
-			return settings;
-		}
-
-		public Dictionary<string, string> GetSettingsAsDictionary()
-		{
-			return GetSettings().ToDictionary(k => k.ID.ToString(), v => v.Value);
-		}
-
+		
 		public string GetUserHomePage()
 		{
 			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID ==  SecurityContext.ResourceID && f.IsHomePage);
@@ -2780,20 +2706,6 @@ from	IntersectType I
 			}
 
 			return model;
-		}
-
-		public void UpsertSetting(Setting setting, string value)
-		{
-			Connection.Execute(@"
-								if exists(select 1 from [Setting] where ID = @ID) 
-								begin 
-									update [Setting] set [Value] = @value where ID = @ID 
-								end 
-								else 
-								begin 
-									insert [Setting] values (@ID, @value) 
-								end", new { ID = (int)setting, value });
-			Caching.RemoveItem(SettingsCacheKey);
 		}
 
 		#endregion

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,Puneet" id="Procedure.api.MergeAssetPaths-v12">
+  <changeSet author="TDuric,Puneet" id="Procedure.api.MergeAssetPaths-v13">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -84,15 +84,6 @@ begin
 			where ExecutionID = @executionId
 	end
 	
-	if @class = 11
-	begin
-		insert into #incoming 
-			select	AssetID
-			from	api.ExecutionUser
-			where	ExecutionID = @executionId
-					and ItemNumber between @begin and @end
-	end
-
 	if @assetTypeUid is not null
 	begin
 		insert into #incoming
@@ -240,7 +231,7 @@ begin
 				from	#hierarchy H
 						inner join Asset A on A.ID = H.ID 
 						inner join assettype att on att.id = a.AssetTypeID and att.Class = 11
-						inner join reporting.Global_Resource F on F.ResourceID = A.SourceID
+						inner join reporting.Global_Resource F on F.ResourceID = A.ObjectID
 		end
 		else if @class = 12
 		begin

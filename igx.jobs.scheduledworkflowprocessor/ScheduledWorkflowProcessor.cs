@@ -1,6 +1,6 @@
-﻿using d360.core;
-using d360.core.enums;
+﻿using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.entities.Membership;
 using d360.extensions;
 using d360.extensions.info;
 using d360.model;
@@ -59,6 +59,8 @@ namespace igx.jobs.scheduledworkflowprocessor
 						{ "UrlPrefix", c.UrlPrefix }
 					};
 
+					SettingValuesForWorkflow wfsv = Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(c.CompanyID).GetAwaiter().GetResult();
+
 					using (log.BeginScope(logProperties))
 					{
 						try
@@ -72,13 +74,14 @@ namespace igx.jobs.scheduledworkflowprocessor
 							};
 							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
 							{
-								// Load all workflows of type schedule.
+
+							// Load all workflows of type schedule.
 								var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
 
 								foreach (var registration in scheduledWorkflows)
 								{
 									// If the registration applies fire of the workflow and break if not go to the next one.
-									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
+									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId, wfsv.fromName, wfsv.fromEmail).Result)
 									{
 										break;
 									}

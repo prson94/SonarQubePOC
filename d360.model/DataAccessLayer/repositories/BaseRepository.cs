@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.featureflags;
+using System.Configuration;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,7 +36,12 @@ namespace d360.model.DataAccessLayer.repositories
 		{
 			get
 			{
-				return CompanyContext.ApiTimeout;
+				int intapitimeout;
+				if (!int.TryParse(ConfigurationManager.AppSettings["ApiTimeout"],out intapitimeout))
+				{
+					intapitimeout = 90;
+				}
+				return intapitimeout;
 			}
 		}
 

@@ -36,6 +36,8 @@ namespace igx.jobs.databasecleaner
 						{ "UrlPrefix", c.UrlPrefix }
 					};
 
+					string overrideValue = await Community.ReadSettingValueAsync<string>(c.CompanyID, Setting.AssetDataProfileLifespan);
+
 					using (log.BeginScope(logProperties))
 					{
 						try
@@ -43,7 +45,6 @@ namespace igx.jobs.databasecleaner
 							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
 							{
 								company.Open();
-								string overrideValue = company.Query<string>("select Value from Setting where ID = @ID", new { ID = (int)Setting.AssetDataProfileLifespan }).SingleOrDefault();
 								var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
 								settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
 

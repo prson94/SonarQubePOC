@@ -74,7 +74,6 @@ namespace d360.web.Controllers.V2
 				u.IsNew = isNew;
 				u.FirstName = u.FirstName.SanitizeHtml();
 				u.LastName = u.LastName.SanitizeHtml();
-				u.State = CompanyResourceState.Active;
 				if (string.IsNullOrWhiteSpace(u.Username))
 				{
 					u.Username = u.Email;
@@ -887,28 +886,43 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(uids.Count, action: ApiExecutionAction.DeleteUsers);
 			Company.Add(execution);
 			var tenantResponse = await Workspace.RemoveUsersAsync(execution.Id, uids);
+			
 			var communityResponse = new RepositoryResponse<int>(400, "");
-			if (tenantResponse.IsSuccess)
+			string errormessage = "";
+			bool isSuccess = false;
+			
+			if (tenantResponse.StatusCode == 200)
 			{
-				communityResponse = await Community.RemoveUsersFromTenantAsync(SecurityContext.CompanyID, uids);
-			}
-
-			bool isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
-			if (isSuccess)
-			{
-				Queue.CreateMessage(constants.Queue.Search, new ReindexModel
+				if (tenantResponse.IsSuccess)
 				{
-					CompanyID = SecurityContext.CompanyID,
-					Category = "Resource",
-					To = QueueAction.RemoveFromIndex,
-					BatchOperation = ReindexBatchOperation.Delete,
-					BatchUids = uids
-				});
-			}
+					communityResponse = await Community.RemoveUsersFromTenantAsync(SecurityContext.CompanyID, uids);
+				}
 
+				isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
+				if (isSuccess)
+				{
+					Queue.CreateMessage(constants.Queue.Search, new ReindexModel
+					{
+						CompanyID = SecurityContext.CompanyID,
+						Category = "Resource",
+						To = QueueAction.RemoveFromIndex,
+						BatchOperation = ReindexBatchOperation.Delete,
+						BatchUids = uids
+					});
+				}
+				else
+				{
+					errormessage = tenantResponse.Message;
+				}
+			}
+			else
+			{
+				communityResponse.StatusCode = tenantResponse.StatusCode;
+				errormessage = tenantResponse.Message;
+			}
 			return isSuccess ?
 				successMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Success", "Users removed from environment.") :
-				errorMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Error", communityResponse.Message + "; " + tenantResponse.Message);
+				errorMessageResponse((HttpStatusCode)communityResponse.StatusCode, "Error", errormessage);
 		}
 
 		/// <summary>
@@ -949,12 +963,18 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
+
+			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, true);
-			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
-			
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, usersvalidate);
+
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
@@ -1003,6 +1023,7 @@ namespace d360.web.Controllers.V2
 				Users = users.Select(u => new UserApiModel
 				{
 					Username = u.Username,
+					Email = u.Email,
 					FirstName = u.FirstName,
 					LastName = u.LastName,
 					Password = u.Password,
@@ -1068,13 +1089,15 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
+			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, false);
-
-			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 

@@ -140,6 +140,11 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
 		{
 			throw new NotImplementedException();

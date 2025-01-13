@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -369,7 +370,8 @@ namespace d360.web.Controllers.Services
 				else
 				{
 					var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, SecurityContext.ResourceID, sendFormEmails, clearAssignments);
+					SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(SecurityContext.CompanyID);
+					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, SecurityContext.ResourceID, wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail, sendFormEmails, clearAssignments);
 				}
 
 				return Request.CreateResponse(HttpStatusCode.Accepted, -1);
@@ -1127,7 +1129,8 @@ namespace d360.web.Controllers.Services
 				&& (formSettings.ResponseType == FormResponseType.FirstResponse);
 
 			//replace any tokens in the description            
-			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), SecurityContext.CompanyPrefix, itemStep, true, false, false);
+			string defaultGroup = await Community.ReadSettingValueAsync<string>(SecurityContext.CompanyID, Setting.WorkflowCatchAllGroup);
+			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), SecurityContext.CompanyPrefix, itemStep, defaultGroup, true, false, false);
 			Guid? ObjectUid = null;
 
 			if (itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
@@ -3555,6 +3558,8 @@ namespace d360.web.Controllers.Services
 		{
 			var itemStep = Company.WorkflowItemSteps.FirstOrDefault(i => i.ID == itemStepId);
 
+			string defaultGroup = await Community.ReadSettingValueAsync<string>(SecurityContext.CompanyID, Setting.WorkflowCatchAllGroup);
+
 			var sql = @"
 			select
 				vs.ID,
@@ -3727,7 +3732,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (detail.Settings.MessageSubjectTemplate != null)
 						{
-							detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
+							detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep, defaultGroup);
 						}
 						else
 						{
@@ -3736,7 +3741,7 @@ namespace d360.web.Controllers.Services
 
 						if (detail.Settings.MessageBodyTemplate != null)
 						{
-							detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
+							detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, SecurityContext.CompanyPrefix, itemStep,defaultGroup);
 						}
 
 						if (detail.Settings.IncludePreviousFormResponses != null && detail.Settings.IncludePreviousFormResponses == "true")
@@ -3778,7 +3783,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (detail.Fields.form["@description"] != null)
 						{
-							detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, SecurityContext.CompanyPrefix, itemStep);
+							detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, SecurityContext.CompanyPrefix, itemStep,defaultGroup);
 						}
 					}
 
@@ -4087,10 +4092,10 @@ namespace d360.web.Controllers.Services
 
 					if (request.Body != null)
 					{
-						request.Body = await Company.ProcessMessageTokens(request.Body.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep);
+						request.Body = await Company.ProcessMessageTokens(request.Body.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep,defaultGroup);
 					}
 
-					request.Url = await Company.ProcessMessageTokens(request.Url.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep, false, false, false);
+					request.Url = await Company.ProcessMessageTokens(request.Url.ToString(), eventInfo, SecurityContext.CompanyPrefix, itemStep,defaultGroup, false, false, false);
 
 					detail.Settings.HTTPRequest = request;
 				}
@@ -4238,7 +4243,9 @@ namespace d360.web.Controllers.Services
 
 			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).Include(x => x.Step.Version).Include(x => x.Step.Version.Type).ToList();
 
-			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
+			SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(SecurityContext.CompanyID);
+
+			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID,wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail, model.SendFormEmails, model.ClearOtherAssignments);
 
 			return Ok(new { 
 				type = Error.Success, 

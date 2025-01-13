@@ -78,6 +78,14 @@ namespace d360.core.entities
 		public IEnumerable<dynamic> ownershipData { get; set; }
 	}
 
+	public class AssetsByPathQueryResults
+	{
+		public int? total { get; set; }
+
+		public IEnumerable<AssetsByPathItemApiViewModel> results { get; set; }
+
+	}
+
 	public class AssetAuditApiItemModel
 	{
 		public Guid uid { get; set; }

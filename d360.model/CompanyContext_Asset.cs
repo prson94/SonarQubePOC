@@ -48,11 +48,13 @@ namespace d360.model
 
 		Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
+		Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs);
+
 		AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
 
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
 
-		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
+		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool enableJsonAttributes = false);
 
 		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
 
@@ -883,12 +885,29 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			return model;
 		}
 
+		public async Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs)
+		{
+			AssetsByPathQueryResults model = new AssetsByPathQueryResults();
+
+			SqlMapper.GridReader gridReader = await Database.Connection.QueryMultipleAsync(
+			  new CommandDefinition(getAllQuery,
+			  parameters: dbArgs,
+			  commandTimeout: ApiTimeout
+			));
+
+			model.total = gridReader.Read<int>().FirstOrDefault();
+
+			model.results = gridReader.Read<AssetsByPathItemApiViewModel>().ToList();
+
+			return model;
+		}
+
 		public string GetEscapedFilterString(string filter, bool isContains = false)
 		{
 			return wildcardValue(escapeForSQLLike(filter), isContains);
 		}
 
-		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
+		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool enableJsonAttributes = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportAssets";
@@ -898,18 +917,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			int step = 0;
 			bool hasDuplicateUids = false;
-			bool enableJsonAttributes = false;
 			bool hasCounterField = false;
 			bool sendAssetGraphPostExecutionEvent = false;
-
-			try
-			{
-				enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
-			}
-			catch
-			{
-				// Safely ignore. Just assume it is false.
-			}
 
 			FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
@@ -2286,7 +2295,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								row["ExecutionID"] = execution.ExecutionID;
 								row["ItemNumber"] = i;
 
-								if (model.ExecutionItemUid.HasValue)
+								if (model.ExecutionItemUid.HasValue && model.ExecutionItemUid != Guid.Empty)
 								{
 									row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
 								}
@@ -2330,15 +2339,16 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 						#region Resolve assets based on UIDs
 
-						Connection.Execute(@"
+						Connection.Execute(@$"
 											update	T
 											set		T.Object = S.Object, 
 													T.ObjectID = S.ObjectID, 
-													T.AssetID = S.ID
+													T.AssetID = S.ID,
+													T.[ObjectTypeId] = {at.ID},
+													[ObjectType] = '{at.Object}'
 											from	api.ExecutionDeletedAsset T
 													inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
-											where 
-													exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",
+											where	exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",
 					new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
 
 						addMeasurement(metrics, "Resolve assets based on UIDs", sw.ElapsedMilliseconds, ++step);

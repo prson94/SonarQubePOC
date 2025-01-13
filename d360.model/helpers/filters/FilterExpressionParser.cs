@@ -228,7 +228,7 @@ namespace d360.model.helpers
                 }
 
 				var query = $"({sb.ToString()})";
-
+				query = (query == "()") ? "" : query;
 				return query;
             }
             catch (IndexOutOfRangeException)
@@ -298,19 +298,20 @@ namespace d360.model.helpers
                 if (!expectingCondition)
                 {
                     paramCount++;
-                    if (parseType == FilterExpressionParseType.Relationships)
-                    {
-                        ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
-                    }
-                    else
-                    {
-                        ret.Add(GetFilterForTokens(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
-                    }
 
-                    expectingCondition = true;
-                    i += 3;
+					if (parseType == FilterExpressionParseType.Relationships)
+					{
+						ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+					}
+					else
+					{
+						ret.Add(GetFilterForTokens(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+					}
 
-                    continue;
+					expectingCondition = true;
+					i += 3;
+
+					continue;
                 }
 
                 if (expectingCondition)

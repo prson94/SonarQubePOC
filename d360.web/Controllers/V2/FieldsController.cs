@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model;
 using d360.model.validators;
 using d360.web.Filters;
@@ -245,6 +246,21 @@ namespace d360.web.Controllers.V2
 				foreach (var field in model.Fields.Where(f => f.Type.Relationship != null))
 				{
 					existingIntersectTypes.AddRange(Company.IntersectTypes.Where(i => field.Type.Relationship.IntersectTypeUid == i.uid));
+				}
+			}
+
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_TAG_TYPES_ENABLED, await GetFeatureFlagUser()))
+			{
+
+				foreach (FieldTypeApiEditModel field in model.Fields)
+				{
+					if (existingFields != null && field?.Type.Tag != null)
+					{
+						if (existingFields.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
+						{
+							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
+						}
+					}
 				}
 			}
 
@@ -1228,33 +1244,35 @@ namespace d360.web.Controllers.V2
 			};
 			string sql = "";
 
-			switch (Uid.ToLower())
+			if (!string.IsNullOrWhiteSpace(Uid))
 			{
-				case "referenceitemtype":
-					sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Reference} and objectid <> 0 order by name";
-					break;
-				//case CommonIdentifiers.GroupTypeUid: //GroupType
-				case CommonIdentifiers.ResourceTypeUid: // ResourceType
-					string HideD3SUsers = await GetHideData3SixtyUsers() ? "" : "where Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com'";
-					sql = $"select Uid as value, (FirstName + ' ' + LastName)  as title from reporting.Global_Resource {HideD3SUsers} order by title";
-					break;
-				case "taxonomytype":
-					sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Model} order by name";
-					break;
-				default:
-					sql = "select a.Uid as value, d.DisplayValue as title " +
-						"from asset a " +
-						"inner join assettype t on (a.assettypeid = t.id) " +
-						"inner join AssetDisplayValue d on d.AssetID = a.ID " +
-						"where t.Uid = @Uid " +
-						"order by d.DisplayValue";
-					break;
+				switch (Uid.ToLower())
+				{
+					case "referenceitemtype":
+						sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Reference} and objectid <> 0 order by name";
+						break;
+					//case CommonIdentifiers.GroupTypeUid: //GroupType
+					case CommonIdentifiers.ResourceTypeUid: // ResourceType
+						string HideD3SUsers = await GetHideData3SixtyUsers() ? "" : "where Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com'";
+						sql = $"select Uid as value, (FirstName + ' ' + LastName)  as title from reporting.Global_Resource {HideD3SUsers} order by title";
+						break;
+					case "taxonomytype":
+						sql = $"select Uid as value, Name as title from AssetType where class = {(int)AssetTypeClass.Model} order by name";
+						break;
+					default:
+						sql = "select a.Uid as value, d.DisplayValue as title " +
+							"from asset a " +
+							"inner join assettype t on (a.assettypeid = t.id) " +
+							"inner join AssetDisplayValue d on d.AssetID = a.ID " +
+							"where t.Uid = @Uid " +
+							"order by d.DisplayValue";
+						break;
+				}
+
+				list.AddRange(
+					await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid }, ApiTimeout)
+				);
 			}
-
-			list.AddRange(
-				await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid }, ApiTimeout)
-			);
-
 			return Ok(list);
 		}
 

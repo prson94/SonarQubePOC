@@ -1282,17 +1282,15 @@ namespace d360.model
 							api.ExecutionAssetDataProfile EDP
 							left Join
 							Asset A on EDP.AssetUid = A.Uid
-						where	ExecutionID = @ExecutionID and A.Uid is null;
+						where	ExecutionID = @ExecutionID and (A.Uid is null or a.Uid = '00000000-0000-0000-0000-000000000000');
 
 						update	EDP
 						set		Success = 0,
 								[Message] = coalesce([Message] + '; ', '') + 'Profiling data can only be associated with Business or Technical Asset types'
 						from
 							api.ExecutionAssetDataProfile EDP
-							inner Join
-							Asset A on EDP.AssetUid = A.Uid
-							inner join 
-							AssetType AST on A.AssetTypeId = AST.ID
+							inner Join Asset A on EDP.AssetUid = A.Uid and A.Uid != '00000000-0000-0000-0000-000000000000'
+							inner join AssetType AST on A.AssetTypeId = AST.ID
 						where	ExecutionID = @ExecutionID and AST.Class not in (1, 8);
 
 						update	EDP

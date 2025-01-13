@@ -8,6 +8,9 @@ namespace d360.core.entities
 	public class TagTypeApiModel
 	{
 		[DataMember]
+		public int ID { get; set; }
+
+		[DataMember]
 		public Guid uid { get; set; }
 
 		[DataMember, StringLength(250)]

@@ -12,10 +12,12 @@
 		public static readonly string PERM_SEMANTIC_TYPES_API = "GovernSemanticTypesApiPerm";
 		public static readonly string PERM_SEMANTIC_TYPES_UI = "GovernSemanticTypesUiPerm";
 
+		public static readonly string PERM_TAG_TYPES_ENABLED = "govern-tag-types";
+
 		#endregion
 
 		#region Temporary Feature Flags
-		
+
 		public static readonly string TEMP_CUSTOM_SYNONYMS = "govern-custom-synonyms-temp";
 		public static readonly string TEMP_TAGS_LIMITED_VALUES = "govern-tagging-new-administration-ui-temp";
 		public static readonly string TEMP_TAGS_ADMIN_UI_V2 = "govern-tagging-value-limitation-temp";

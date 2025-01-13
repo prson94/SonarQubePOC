@@ -773,7 +773,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
-			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemStepUid));
+			string defaultGroup = await Community.ReadSettingValueAsync<string>(SecurityContext.CompanyID, Setting.WorkflowCatchAllGroup);
+			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemStepUid, defaultGroup));
 		}
 
 		/// <summary>

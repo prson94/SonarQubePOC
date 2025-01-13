@@ -58,6 +58,7 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
+		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
 
 		private bool IsCustomCssEnabled {
 			get {
@@ -91,6 +92,7 @@ namespace d360.web.Controllers.V2
 		{
 			var currentStatusList = (await Workspace.ReadRebuildStatusesAsync()).ToList();
 			var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
+			currentStatusList.RemoveAll(j => !listToReturn.Select(i => i.JobToken).Contains(j.JobToken));
 			currentStatusList.ForEach(i =>
 			{
 				listToReturn.Single(j => j.JobToken == i.JobToken).SetCurrentJobStatusProperties(i);
@@ -403,11 +405,13 @@ namespace d360.web.Controllers.V2
 
 			if (clearSetting)
 			{
-				await Workspace.RemoveSettingAsync(setting.ID);
+				await Community.RemoveSettingAsync(SecurityContext.CompanyID, setting.ID);
+				Cache.RemoveItem(SettingsCacheKey);
 			}
 			else
 			{
-				await Workspace.UpsertSettingAsync(setting.ID, value);
+				await Community.UpsertSettingAsync(SecurityContext.CompanyID, setting.ID, value);
+				Cache.RemoveItem(SettingsCacheKey);
 			}
 		}
 
@@ -2717,7 +2721,7 @@ select	r.uid as ResourceUid,
 			{
 				var groupName = Guid.NewGuid().ToString();
 				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
-				await Workspace.UpsertSettingAsync(Setting.PowerBIGroupId, res.Id.ToString());
+				await Community.UpsertSettingAsync(SecurityContext.CompanyID, Setting.PowerBIGroupId, res.Id.ToString());
 
 				return res.Id.ToString();
 			}

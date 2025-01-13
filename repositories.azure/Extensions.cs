@@ -46,7 +46,7 @@ namespace repositories.azure
 			string filterPropertyName, string sqlColumn, string sqlParameterName,
 			ref DynamicParameters dbArgs, ref List<string> queryFilters, T defaultValue = default)
 		{
-			bool valid = false;
+			bool isValidParameter = true;
 
 			var sqlparameternameArgs = sqlParameterName.Replace("@", "");
 			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
@@ -61,7 +61,14 @@ namespace repositories.azure
 						{
 							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
-							valid = true;
+							if (parsedValue == Guid.Empty)
+							{
+								isValidParameter = false;
+							}
+						}
+						else
+						{
+							isValidParameter = false;
 						}
 					}
 					else if (typeof(T).Name == "int")
@@ -72,6 +79,10 @@ namespace repositories.azure
 							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
 							valid = true;
+						}
+						else
+						{
+							isValidParameter = false;
 						}
 					}
 					else
@@ -93,8 +104,8 @@ namespace repositories.azure
 				dbArgs.Add(sqlparameternameArgs, defaultValue);
 				valid = true;
 			}
-
-			return valid;
+      
+			return isValidParameter;
 		}
 
 		public static int CheckForPageSize(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagesize", int defaultPageSize = 250)
@@ -110,6 +121,10 @@ namespace repositories.azure
 					if (int.TryParse(rawValue, out parsedValue))
 					{
 						value = parsedValue;
+						if (value <= 0)
+						{
+							value = 1;
+						}
 					}
 				}
 			}

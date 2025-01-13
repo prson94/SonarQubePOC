@@ -453,7 +453,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				return errorMessageArgumentResponse(Error.InvalidAssetUid);
 			}
 
-			var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
+			var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid and uid != '00000000-0000-0000-0000-000000000000'", new { uid })).FirstOrDefault();
 
 			if (asset == null)
 			{

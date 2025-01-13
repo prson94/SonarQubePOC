@@ -5,7 +5,6 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -53,7 +52,29 @@ namespace repositories.azure
 
 			using (var connection = Connect())
 			{
-				int id = await connection.InsertAsync(claim);
+				string sql = $@"
+								declare @id int;
+
+								declare @id_tbl table
+								(id int);
+
+								insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) 
+								OUTPUT INSERTED.ID into @id_tbl
+								values (@ClientID, @CompanyID, @DomainSettingID, @AuthenticationType, @ClaimType, @Path, @IsArray, @Action);
+								select top 1 id from @id_tbl;
+								";
+				int id = await connection.QueryFirstOrDefaultAsync<int>(sql, 
+				new
+				{
+					claim.ClientId,
+					claim.CompanyId,
+					claim.DomainSettingId,
+					AuthenticationType = (int)claim.AuthenticationType,
+					ClaimType = (int)claim.ClaimType,
+					claim.Path,
+					claim.IsArray,
+					Action = (int)claim.Action
+				});
 				response.Data = id;
 				response.IsSuccess = id > 0;
 			}
@@ -114,41 +135,27 @@ namespace repositories.azure
 			return response;
 		}
 
-		public async Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users)
+		public async Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users)
 		{
 			var tbl = new DataTable();
 			tbl.Columns.Add("ItemNumber", typeof(int));
 			tbl.Columns.Add("ResourceID", typeof(int));
 			tbl.Columns.Add("Username", typeof(string));
 			tbl.Columns.Add("Email", typeof(string));
-			tbl.Columns.Add("FirstName", typeof(string));
-			tbl.Columns.Add("LastName", typeof(string));
 			tbl.Columns.Add("uid", typeof(Guid));
-			tbl.Columns.Add("State", typeof(int));
-			tbl.Columns.Add("IsAdministrator", typeof(bool));
 
 			int itemNumber = 0;
 			foreach (var user in users)
 			{
-				itemNumber++;
-				user.ItemNumber = itemNumber;
-
 				var row = tbl.NewRow();
-
+				itemNumber++;
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
 				row["Email"] = user.Email;
-				row["FirstName"] = user.FirstName;
-				row["LastName"] = user.LastName;
-				row["IsAdministrator"] = user.IsAdministrator;
-				row["State"] = user.State ?? CompanyResourceState.Active;
-
-				if (!user.uid.HasValue || (user.uid.HasValue && user.uid == Guid.Empty))
+				if (user.uid != null)
 				{
-					user.uid = Guid.NewGuid();
+					row["uid"] = user.uid;
 				}
-
-				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
 			}
@@ -166,13 +173,8 @@ namespace repositories.azure
 							ItemNumber int,
 							Username nvarchar(500),
 							Email nvarchar(500),
-							FirstName nvarchar(250),
-							LastName nvarchar(250),
-
 							ResourceID int,
-							[uid] uniqueidentifier,
-							IsAdministrator bit,
-							[State] int
+							[uid] uniqueidentifier
 						)", transaction: trans);
 
 						SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)connection, SqlBulkCopyOptions.Default, trans)
@@ -183,10 +185,6 @@ namespace repositories.azure
 						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 						bulkCopy.ColumnMappings.Add("Username", "Username");
 						bulkCopy.ColumnMappings.Add("Email", "Email");
-						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
-						bulkCopy.ColumnMappings.Add("LastName", "LastName");
-						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
-						bulkCopy.ColumnMappings.Add("State", "State");
 						bulkCopy.ColumnMappings.Add("uid", "uid");
 
 						await bulkCopy.WriteToServerAsync(tbl);
@@ -212,35 +210,8 @@ update  U
 set     U.[uid] = newid()
 from    #Users U
 where U.[uid] = '00000000-0000-0000-0000-000000000000';
-
-update	T
-set		T.FirstName = S.FirstName,
-		T.LastName = S.LastName,
-		T.Email = S.Email
-from	[Resource] T
-		inner join #Users S on S.ResourceID = T.ID;
-
-insert into [Resource] (Username, [Password], LastName, FirstName, Email, Uid)
-	select	Username, '{None}', LastName, FirstName, Email, Uid
-	from	#Users
-	where	ResourceID is null;
-
-update  U
-set     U.ResourceID = R.ID
-from    #Users U
-		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null;
-
-merge	CompanyResource as T
-using	(select * from #Users) as S
-on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
-when	matched then
-update  set
-		T.IsAdministrator = S.IsAdministrator,
-		T.State = S.State
-when	not matched by target then
-insert	(CompanyID, ResourceID, IsAdministrator, State)
-values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);", 
-						new { companyId}, transaction: trans);
+",
+						new { companyId }, transaction: trans);
 
 						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
 
@@ -259,6 +230,183 @@ values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);",
 									user.uid = user.uid == Guid.Empty ? result.uid : user.uid;
 								}
 								user.CompanyResourceState = CompanyResourceState.Active;
+							}
+						}
+
+						trans.Commit();
+					}
+					catch
+					{
+						try
+						{
+							if (trans != null)
+							{
+								trans.Rollback();
+							}
+						}
+						catch
+						{
+						}
+
+						throw;
+					}
+				}
+			}
+
+			return users;
+		}
+
+		public async Task<List<UserUpsertValidateModel>> CreateUsersInTenantAsync(int companyId, List<UserUpsertValidateModel> users)
+		{
+			var tbl = new DataTable();
+			tbl.Columns.Add("ItemNumber", typeof(int));
+			tbl.Columns.Add("ResourceID", typeof(int));
+			tbl.Columns.Add("Username", typeof(string));
+			tbl.Columns.Add("Email", typeof(string));
+			tbl.Columns.Add("FirstName", typeof(string));
+			tbl.Columns.Add("LastName", typeof(string));
+			tbl.Columns.Add("Password", typeof(string));
+			tbl.Columns.Add("uid", typeof(Guid));
+			tbl.Columns.Add("State", typeof(int));
+			tbl.Columns.Add("IsAdministrator", typeof(bool));
+			tbl.Columns.Add("Success", typeof(bool));
+			tbl.Columns.Add("Message", typeof(string));
+
+			foreach (var user in users)
+			{
+				var row = tbl.NewRow();
+				row["ItemNumber"] = user.users.ItemNumber;
+				row["Username"] = user.users.Username ?? (object)DBNull.Value;
+				row["Email"] = user.users.Email ?? (object)DBNull.Value;
+				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+				row["Password"] = user.users.Password ?? (object)DBNull.Value;
+				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+				row["IsAdministrator"] = user.users.IsAdministrator;
+				row["State"] = user.users.State ?? CompanyResourceState.Active;
+				row["uid"] = user.users.uid ?? (object)DBNull.Value;
+				row["Success"] = user.Success ?? (object)DBNull.Value;
+				row["Message"] = user.Message;
+
+				tbl.Rows.Add(row);
+			}
+
+			using (var connection = Connect())
+			{
+				connection.Open();
+				using (SqlTransaction trans = ((SqlConnection)connection).BeginTransaction())
+				{
+					try
+					{
+						await connection.ExecuteAsync(@"
+						create table #Users
+						(
+							ItemNumber int,
+							Username nvarchar(500),
+							Email nvarchar(500),
+							FirstName nvarchar(250),
+							LastName nvarchar(250),
+							Password nvarchar(250),
+							ResourceID int,
+							[uid] uniqueidentifier,
+							IsAdministrator bit,
+							[State] int,
+							[Success] bit,
+							[Message] varchar(4000)
+						)", transaction: trans);
+
+						SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)connection, SqlBulkCopyOptions.Default, trans)
+						{
+							DestinationTableName = "#Users"
+						};
+
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("Username", "Username");
+						bulkCopy.ColumnMappings.Add("Email", "Email");
+						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+						bulkCopy.ColumnMappings.Add("LastName", "LastName");
+						bulkCopy.ColumnMappings.Add("Password", "Password");
+						bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+						bulkCopy.ColumnMappings.Add("State", "State");
+						bulkCopy.ColumnMappings.Add("uid", "uid");
+						bulkCopy.ColumnMappings.Add("Success", "Success");
+						bulkCopy.ColumnMappings.Add("Message", "Message");
+
+						await bulkCopy.WriteToServerAsync(tbl);
+
+						// NOTE: We need to ensure we are not auto-joining any users we should not be, and resetting their data. Make sure to check if user is already part of client we are on.
+						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
+
+						await connection.ExecuteAsync(@"
+update	T
+set		T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Email = S.Email
+from	[Resource] T
+		inner join #Users S on S.ResourceID = T.ID
+where coalesce(S.Success,1) = 1;
+
+insert into [Resource] (Username, [Password], LastName, FirstName, Email, Uid)
+	select	Username, [Password], LastName, FirstName, Email, Uid
+	from	#Users
+	where	ResourceID is null and coalesce(Success,1) = 1;
+
+update  U
+set     U.ResourceID = R.ID
+from    #Users U
+		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null
+where  coalesce(U.Success,1) = 1;
+
+if exists(select 1 from #Users T group by T.ResourceID having count(1)>1)
+begin
+	update	T
+	set		T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	from CompanyResource T
+	inner join #Users S on T.ResourceID = S.ResourceID 
+	where T.CompanyID = @companyId and coalesce(S.Success,1) = 1;
+
+	insert	into CompanyResource(CompanyID, ResourceID, IsAdministrator, State)
+	select distinct @companyId, S.ResourceID, S.IsAdministrator, S.State
+	from #Users S
+	left join CompanyResource T on T.CompanyID = @companyId and T.ResourceID = S.ResourceID 
+	where T.CompanyID is null and coalesce(S.Success,1) = 1;
+end
+else
+begin
+	merge	CompanyResource as T
+	using	(select * from #Users where coalesce(Success,1) = 1) as S
+	on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
+	when	matched then
+	update  set
+			T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	when	not matched by target then
+	insert	(CompanyID, ResourceID, IsAdministrator, State)
+	values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);
+end
+
+",
+						new { companyId }, transaction: trans);
+
+						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
+
+						foreach (var result in results)
+						{
+							var user = users.SingleOrDefault(u => u.users.ItemNumber == result.ItemNumber);
+							if (user != null)
+							{
+								user.users.ResourceID = result.ResourceID;
+								if (user.users.IsNew)
+								{
+									user.users.uid = result.uid;
+								}
+								else
+								{
+									user.users.uid = user.users.uid == Guid.Empty ? result.uid : user.users.uid;
+								}
+								user.users.CompanyResourceState = CompanyResourceState.Active;
 							}
 						}
 
@@ -956,5 +1104,176 @@ select * from [Resource] where ID = @userId";
 
 			return model;
 		}
+
+		#region "Company Setting"
+		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId)
+		{
+			return (await ReadSettingsAsync(companyId)).ToDictionary(k => k.ID.ToString(), v => v.Value);
+		}
+
+		public async Task<SettingInfo> ReadSettingAsync(int companyId, Setting setting)
+		{
+			string sql = "select ID, Value from CompanySetting where CompanyId = @companyId and ID = @id";
+			var model = setting.AsInfoModel();
+			dynamic @override;
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				@override = await connection.QueryFirstOrDefaultAsync<dynamic>(sql, new { companyId, id = (int)setting });
+			}
+
+			if (@override != null)
+			{
+				if (@override.Value == "True" || @override.Value == "False")
+				{
+					@override.Value = @override.Value.ToLowerInvariant();
+				}
+				model.Value = @override.Value;
+			}
+			else
+			{
+				model.Value = model.DefaultValue;
+			}
+
+			return model;
+		}
+
+		public async Task<List<SettingInfo>> ReadSettingsAsync(int companyId)
+		{
+			// Get the list of settings from the D3S_###.dbo.Setting table.
+			// Get the full list of settings from the Setting enum.
+			// Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
+
+			List<dynamic> overrides;
+			string sql = "select ID, Value from CompanySetting where CompanyId = @companyId";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				overrides = (await connection.QueryAsync<dynamic>(sql, new {companyId})).ToList();
+			}
+
+			List<SettingInfo> settings = [.. Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID)];
+
+			settings.ForEach(s =>
+			{
+				string defaultValue = s.DefaultValue;
+
+				if (defaultValue == "True" || defaultValue == "False")
+				{
+					defaultValue = defaultValue.ToLowerInvariant();
+				}
+
+				if (overrides.Any(o => o.ID == (int)s.ID))
+				{
+					s.Value = overrides.First(o => o.ID == (int)s.ID).Value;
+
+					if (s.Value == "True" || s.Value == "False")
+					{
+						s.Value = s.Value.ToLowerInvariant();
+					}
+				}
+				else
+				{
+					s.Value = defaultValue;
+				}
+			});
+
+			return settings;
+		}
+
+		public async Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting)
+		{
+			SettingInfo info = await ReadSettingAsync(companyId,setting);
+
+			var checkType = default(T);
+
+			if (checkType is Guid)
+			{
+				Guid guid = Guid.Parse(info.Value);
+
+				return (T)Convert.ChangeType(guid, typeof(T));
+			}
+
+			return (T)Convert.ChangeType(info.Value, typeof(T));
+		}
+
+		public async Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId)
+		{
+			SettingValuesForWorkflow wfsv;
+
+			string sql = $@"declare @defaultGroup nvarchar(10),
+							@fromName nvarchar(4000),
+							@fromEmail nvarchar(4000);
+							select @defaultGroup = [Value] from CompanySetting where CompanyId = @companyId and ID = @defaultid;
+							select @fromName = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromNameid;
+							select @fromEmail = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromEmailid;
+							select cast(COALESCE(try_cast(@defaultGroup as int),0) as nvarchar(10)) defaultGroup,
+								   @fromName fromName,
+								   @fromEmail fromEmail;";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				wfsv = await connection.QueryFirstOrDefaultAsync<SettingValuesForWorkflow>(sql, 
+						new { companyId, defaultid = (int)Setting.WorkflowCatchAllGroup, fromNameid = (int)Setting.WorkflowFromName,
+							fromEmailid = (int)Setting.WorkflowFromEmail
+						});
+			}
+
+			return wfsv;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting)
+		{
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("id", (int)setting);
+			dbArgs.Add("companyId", companyId);
+
+
+			string sql = "delete CompanySetting where CompanyID = @companyId and ID = @id";
+
+			var response = new RepositoryResponse<bool>(false, 0, false, "");
+			using (var connection = Connect())
+			{
+				await connection.ExecuteAsync(sql, dbArgs);
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+			return response;
+		}
+
+
+		public async Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value)
+		{
+			var userErrorMessages = new List<string>();
+
+			var response = new RepositoryResponse<bool>(false, 0, false, "");
+
+			if (userErrorMessages.Count > 0)
+			{
+				response.Message = string.Join("; ", userErrorMessages);
+				response.StatusCode = 400;
+
+				return response;
+			}
+
+			var sql = @"
+if exists(select 1 from [CompanySetting] where CompanyID = @companyId and ID = @id) 
+begin 
+	update [CompanySetting] set [Value] = @value where CompanyID = @companyId and ID = @id 
+end 
+else 
+begin 
+	insert [CompanySetting](CompanyID,ID,[Value]) values (@companyId, @id, @value) 
+end";
+
+			using (var connection = (SqlConnection)Connect())
+			{
+				await connection.ExecuteAsync(sql, new { companyId, id = (int)setting, value });
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+
+			return response;
+		}
+		#endregion
 	}
 }

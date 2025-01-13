@@ -1265,7 +1265,9 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.CanEditParent, Error.CanEditParentClassRestriction));
 				}
 
-				if (AssetRepository.IsReachedTransformationLimit(model))
+				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+
+				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded));
 				}
@@ -1532,7 +1534,8 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.UseAsTransformation, Error.TransformationClassRestriction));
 				}
 
-				if (AssetRepository.IsReachedTransformationLimit(model))
+				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded));
 				}
@@ -1659,7 +1662,17 @@ namespace d360.web.Controllers.V2
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
 				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
+
+				bool enableJsonAttributes = false;
+				try
+				{
+					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
+				}
+				catch
+				{
+					// Safely ignore. Just assume it is false.
+				}
+				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -1742,9 +1755,19 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
 				}
 
+				bool enableJsonAttributes = false;
+				try
+				{
+					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
+				}
+				catch
+				{
+					// Safely ignore. Just assume it is false.
+				}
+
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
 				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
+				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -3706,7 +3729,7 @@ namespace d360.web.Controllers.V2
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
-			if (asset == null)
+			if (asset == null || assetUid == Guid.Empty)
 			{
 				isValid = "The asset with uid specified does not exist.";
 			}
@@ -3716,19 +3739,9 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid));
 			}
 
-			try
-			{
-				var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
-				HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
+      
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -3750,9 +3763,9 @@ namespace d360.web.Controllers.V2
 
 			if (resourceUid != null)
 			{
-				if (!Guid.TryParse(resourceUid, out Guid rUid) || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
+				if (!Guid.TryParse(resourceUid, out Guid rUid) || rUid == Guid.Empty || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidResourceUID));
+					return errorMessageArgumentResponse(AssetsApiMessages.InvalidResourceUID);
 				}
 				else
 				{

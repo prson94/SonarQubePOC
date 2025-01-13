@@ -887,7 +887,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     //table extensions
-    selectSingleItem(event: MouseEvent, item: SelectItem) {
+	selectSingleItem(event: MouseEvent, item: SelectItem) {
+		event?.preventDefault();
         if (this.field?.MultiSelect) {
             this.field.Items = [...this.lookupSelectedValue];
             const value = this.lookupSelectedValue.map((s) => s.value);
@@ -905,7 +906,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			}
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
-    }
+	}
 
     hexToRgb(hex: string): string {
         if (!hex) {

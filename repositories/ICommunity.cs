@@ -19,7 +19,9 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
 
-		Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users);
+		Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users);
+
+		Task<List<UserUpsertValidateModel>> CreateUsersInTenantAsync(int companyId, List<UserUpsertValidateModel> users);
 
 		/// <summary>
 		/// Used to generate a state or nonce value.
@@ -83,5 +85,20 @@ namespace repositories
 		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
+
+		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
+
+		Task<SettingInfo> ReadSettingAsync(int companyId, Setting setting);
+
+		Task<List<SettingInfo>> ReadSettingsAsync(int companyId);
+
+		Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting);
+
+		Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId);
+
+		Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting);
+
+		Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value);
+
 	}
 }

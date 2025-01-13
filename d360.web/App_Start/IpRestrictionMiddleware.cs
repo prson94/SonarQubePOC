@@ -3,6 +3,7 @@ using d360.model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using NetTools;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,8 +70,8 @@ namespace d360.web
                 if (companyID.HasValue && !host.Contains("-d3s") && !host.Contains("-igx") && !host.Contains("-pcy")) // If d3s url, automatically allow the user as they are a Data3Sixty/Precisely/Infogix employee.  Thrivent still has a d3s url
                 {
 					string ipXml = "<ips />";
-					var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
-					ipXml = ctx.GetSettingValue<string>(Setting.IpRestriction);
+					var cmy = DependencyResolver.Current.GetService<ICommunity>();
+					ipXml = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.IpRestriction);
 
                     var ip = new CompanyIpSetting { Value = ipXml };
                     var ranges = ip.Ranges;

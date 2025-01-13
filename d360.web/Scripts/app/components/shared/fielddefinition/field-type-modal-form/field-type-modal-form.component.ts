@@ -9,12 +9,15 @@ import { ComputedRelationshipLookupDefinition, FieldType, FieldTypeAPIModel, Fie
 import { RelationshipType } from "../../../../models/relationship.model";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
+import { TagService } from "../../../../services/tag.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 import * as DOMPurify from "isomorphic-dompurify";
+import { FeatureFlags } from '../../../../services/feature-flags.enum';
+import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -35,7 +38,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@Input() assetTypeName: string;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() name: string;
-
+	
 	@Input() actionTypeUid: string;
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
@@ -59,6 +62,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	savingInProgress = false;
 	formState: FormState = FormState.FieldTypeSelection;
 	areFieldTypesLoaded: boolean = false;
+
 
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -92,8 +96,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	jsonDataTypes: SelectItem[];
 	lookupFieldTokens: Record<string, unknown>[] = [];
 	regexPatternTokens: Record<string, unknown>[] = [];
-
 	lookupDefaultValueOptions: SelectItem[] = [];
+
+	tagsData: any[] = [];
 
 	responsibilityTypes: SelectItem[] = [];
 
@@ -123,11 +128,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
+
+	get isTagTypesFeatureEnabled(): boolean {
+		return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
+	}
+
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private tagService: TagService,
+		private featureFlagService: LaunchDarklyService
 	) {
 
 		this.relationshipDisplayFormatValueOptions = [
@@ -161,6 +173,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.setDefaultTitle();
 		this.loadBaseData();
 	}
+
 	ngOnDestroy(): void {
 		this.changeFormSub?.unsubscribe()
 	}
@@ -303,6 +316,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
 
 		const type = model.Fields[0].Type;
+		let tagTypeId: number = 0;
+		if (type.Tag != null) {
+			type.Tag.TagTypeUID = this.fieldTypeForm.get("TagTypeUid").value ?? null;
+			tagTypeId = this.tagsData.find(item => item.uid === type.Tag.TagTypeUID).ID;
+			type.Tag.TagTypeID = tagTypeId;
+		}
+
 		const fieldTypeApiObject = type[this.selectedFieldType];
 
 		if (this.isEditing) {
@@ -317,6 +337,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		//Asset Path
 		if (this.selectedFieldType === 'Path') {
 			type.Path.Definition.AssetTypeUid = this.fieldTypeForm.get("AssetPathListSegment").value ?? null;
+		}
+
+		//Tag
+		if (this.selectedFieldType === 'Tag') {
+			fieldTypeApiObject.TagTypeUID = this.fieldTypeForm.get("TagTypeUid").value ?? null;
+			fieldTypeApiObject.TagTypeID = tagTypeId;
 		}
 
 		//Counter
@@ -480,8 +506,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 			this.savingInProgress = false;
 		});
-
-
 	}
 
 	setForm() {
@@ -521,6 +545,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			LinkDefaultName: [null],
 			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\/|(route:)/) }],
 			LookupUid: [null],
+			TagTypeUid: [null],
 			AllowAllValue: ['false'],
 			AllowAllLabel: [null],
 			DisplayFormat: [null],
@@ -803,9 +828,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 
 				if (this.selectedFieldType === 'Tag') {
-					//The API doesn't set or get these two properties for Tag, so on edit it appears they aren't true
 					this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+					this.fieldTypeForm.controls["TagTypeUid"].setValue(type?.TagTypeUID ?? null);
+					this.fieldTypeForm.controls["AllowAllValue"].setValue(type?.AllowAllValue ?? null);
+					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
+					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
+					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
 				}
 
 				if (this.selectedFieldType === 'Text') {
@@ -879,7 +908,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	close() {
-
 		this.setDefaultFormValues();
 		if (this.relationLookupEditor) {
 			this.relationLookupEditor.resetForm();
@@ -942,6 +970,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.restoreControlsValues();
 		this.updateDisableSettings();
 		this.cdRef.markForCheck();
+		
+		if (this.selectedFieldType === 'Tag') { 
+			this.loadTagTypes();
+		}
 	}
 
 	updateApiName(event) {
@@ -1344,7 +1376,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return true;
 	}
 
-
 	public getLocaleDateString(): string {
 		return FormHelpers.getLocaleDateString();
 	}
@@ -1418,6 +1449,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.cdRef.markForCheck();
 		});
 	}
+
+	loadTagTypes() {
+		const name = this.isEditing ? this.editedFieldType.Name : ""; 
+		if (name == "") {
+			this.tagService.getTagTypes(this.assetTypeUid).subscribe((data) => {
+				this.tagsData = data;
+			});
+		}
+		else {
+			this.tagService.getTagTypes(this.assetTypeUid, name).subscribe((data) => {
+				this.tagsData = data;
+			});
+		}
+	}
+
 	updateControls(ctrlName, $event) {
 		const currentValue = this.fieldTypeForm.get(ctrlName).value ?? '';
 		const newValue = `${currentValue}{${$event.value}}`;
@@ -1450,8 +1496,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`No scores are currently defined for this asset type`;
 		}
 
+		if(!this.isTagTypesFeatureEnabled)
+		{ 
 		if (item.value === 'Tag' && this.typeFieldTypes.filter((x) => x.Type.Tag).length > 0) {
 			return $localize`Asset type can have only one Tag field type`;
+			}
 		}
 
 		return '';
@@ -1478,7 +1527,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		this.isValidPattern = false;
 	}
-
 
 	back() {
 		this.storeControlsValues();

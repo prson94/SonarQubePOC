@@ -1,8 +1,11 @@
 import { StringConstants } from "../../../static/string-constants";
 import { Tab } from "../../shared/tabs/tabs.models";
+import { AppConstants } from '../../../static/constants';
+
 
 export class GroupBasePage {
-	defaultPagingOptions: number[] = [25,50,100];
+	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	header: string = "Groups";
 	icon: string = "fa-cog";
 	isLoading: boolean = false;

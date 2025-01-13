@@ -18,7 +18,7 @@
             <div class="asset-detail-user-image" *ngIf="objectType === 'Resource' && objectUID">
                 <d3s-user-avatar [class]="'resource-image'" [resourceUid]="objectUID" [size]="75"></d3s-user-avatar>
             </div>
-            <div class="asset-detail-header">
+            <div class="asset-detail-header" [ngClass]="{'asset-detail-header-resource': objectType === 'Resource' && objectUID}">
                 <div class="right d3s-score-container" style="display: block">
                     <d3s-score-badge *ngFor="let score of model?.Scores" [score]="score" [precision]="1" [useMiniBadge]="true"></d3s-score-badge>
                 </div>

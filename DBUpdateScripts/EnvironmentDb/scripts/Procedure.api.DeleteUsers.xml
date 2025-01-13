@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteUsers-v1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.DeleteUsers-v1.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.DeleteUsers
@@ -17,7 +17,9 @@ begin
 			@date datetime,
 			@object varchar(50) = 'Resource',
 			@assetTypeId int,
-			@transactionCompleted bit = 0;
+			@transactionCompleted bit = 0,
+			@IsError bit = 0,
+			@errmsg nvarchar(4000) = 'Transaction failed to complete.';
 	
 	select @assetTypeId = ID from AssetType where Object = 'ResourceType';
 	
@@ -43,12 +45,26 @@ begin
 		where	ExecutionId = @executionId;
 
 	-- Validate incoming data.
+	
 	update	t
 	set		t.IsSuccess = 0,
-			t.Message = 'User does not exist.'
+			t.Message = 'User Uid should not be null.'
 	from	#Items  t
-			left join reporting.Global_Resource s on s.Uid = t.Uid and t.Uid is not null
-	where	s.ResourceID is null;
+	where	t.Uid is null;
+
+	update	t
+	set		t.IsSuccess = 0,
+			t.Message = replace('User for uid <uid> not found.','<uid>',t.Uid)
+	from	#Items  t
+			left join reporting.Global_Resource s on s.Uid = t.Uid and s.state != 3
+	where	s.ResourceID is null and t.IsSuccess is null;
+
+	update	t
+	set		t.IsSuccess = 0,
+			t.Message = replace('User for uid <uid> is a system user and cannot be deleted.','<uid>',t.Uid)
+	from	#Items  t
+			inner join reporting.Global_Resource s on s.Uid = t.Uid
+	where	t.IsSuccess is null and s.ResourceID < 1;
 
 	-- Populate internal IDs for group based on the incoming Uid.
 	update	t
@@ -60,83 +76,96 @@ begin
 	set		t.AssetID = s.ID
 	from	#Items  t
 			inner join [Asset] s on s.Object = @object and s.ObjectID = t.ObjectID and IsSuccess is null;
-
-	begin try
-		begin transaction;
-
-
-		insert into reporting.Global_Audit 
-			(
-			Object, ObjectID, ObjectName, 
-			ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, 
-			[Version]
-			)
-			select	distinct 
-					@object, 
-					r.ResourceID, 
-					SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
-					@userId, 
-					@date, 
-					'Removed', 
-					@object, 
-					r.ResourceID, 
-					@object, 
-					SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
-					'',
-					mv.[Version]
-			from	reporting.Global_Resource r 
-					cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = @object and ObjectID = r.ResourceID) mv
-			where	r.ResourceID in (select ObjectID from #Items where IsSuccess is null);
-
-		update	t
-		set		t.State = 3
-		from	Asset t 
-				inner join #Items s on s.AssetID = t.ID and s.IsSuccess is null;
-
-		update	t
-		set		t.State = 3
-		from	reporting.Global_Resource t 
-				inner join #Items s on s.ObjectID = t.ResourceID and s.IsSuccess is null;
 	
-		commit transaction;
-		set @transactionCompleted = 1;
-	end try
-	begin catch
-		rollback transaction;
-	end catch
+	if exists(select 1 from #Items  t where coalesce(t.IsSuccess,1) = 0)	
+		begin
+			select top 1 @errmsg = Message from #Items t where coalesce(t.IsSuccess,1) = 0 order by ItemNumber;
+			set @IsError = 1;
+		end	
+	
+	if (@IsError = 0)
+	begin	
+		begin try
+			begin transaction;
 
+
+			insert into reporting.Global_Audit 
+				(
+				Object, ObjectID, ObjectName, 
+				ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, 
+				[Version]
+				)
+				select	distinct 
+						@object, 
+						r.ResourceID, 
+						SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
+						@userId, 
+						@date, 
+						'Removed', 
+						@object, 
+						r.ResourceID, 
+						@object, 
+						SUBSTRING(r.FirstName + ' ' + r.LastName,1,250),
+						'',
+						mv.[Version]
+				from	reporting.Global_Resource r 
+						cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = @object and ObjectID = r.ResourceID) mv
+				where	r.ResourceID in (select ObjectID from #Items where IsSuccess is null);
+
+			update	t
+			set		t.State = 3
+			from	Asset t 
+					inner join #Items s on s.AssetID = t.ID and s.IsSuccess is null;
+
+			update	t
+			set		t.State = 3
+			from	reporting.Global_Resource t 
+					inner join #Items s on s.ObjectID = t.ResourceID and s.IsSuccess is null;
+		
+			commit transaction;
+			set @transactionCompleted = 1;
+		end try
+		begin catch
+			rollback transaction;
+		end catch
+	end
 	if @transactionCompleted = 1
-	begin
-		-- Updated the messaging.
-		update	#Items
-		set		Message = 'Deleted successfully',
-				IsSuccess = 1
-		where	IsSuccess is null
+		begin
+			-- Updated the messaging.
+			update	#Items
+			set		Message = 'Deleted successfully',
+					IsSuccess = 1
+			where	IsSuccess is null
 
-		-- Update api.ExecutionItem
-		update	t
-		set		t.Success = s.IsSuccess,
-				t.Message = s.Message
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId;
+			-- Update api.ExecutionItem
+			update	t
+			set		t.Success = s.IsSuccess,
+					t.Message = s.Message
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId;
 
-		update	t
-		set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+			update	t
+			set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
 
-		update	t
-		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+			update	t
+			set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
 
-		exec api.CompleteExecution @executionId, @date, '';
-	end
+			exec api.CompleteExecution @executionId, @date, '';
+		end
+	else if (@IsError = 1)
+		begin 
+			exec api.CompleteExecution @executionId, @date, @errmsg;
+		end
 	else
-	begin 
-		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
-	end
-	
+		begin 
+			exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		end
+
+	select @IsError IsError,@errmsg ErrMessage;
 end
 ]]>
     </sql>

@@ -174,6 +174,10 @@ where t.uid in @uids
 
 		public Tag GetTagByUid(Guid uid)
 		{
+			if (uid == Guid.Empty)
+			{
+				return null;
+			}
 			return CompanyContext.Tags.FirstOrDefault(x => x.uid == uid);
 		}
 

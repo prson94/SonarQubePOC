@@ -19,21 +19,11 @@ namespace repositories
 
 		Task<IEnumerable<CompanyRebuildJobStatus>> ReadRebuildStatusesAsync();
 
-		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync();
-
-		Task<SettingInfo> ReadSettingAsync(Setting setting);
-
-		Task<List<SettingInfo>> ReadSettingsAsync();
-
-		Task<T> ReadSettingValueAsync<T>(Setting setting);
-
 		Task<bool> RemoveFavoritesAsync(int resourceId, List<int> favoriteIds);
 
 		Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids);
 		
 		Task<bool> RemoveMemberFromGroupAsync(Guid groupUid, Guid userUid);
-
-		Task<RepositoryResponse<bool>> RemoveSettingAsync(Setting setting);
 
 		Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids);
 
@@ -41,8 +31,8 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
-		Task<RepositoryResponse<bool>> UpsertSettingAsync(Setting setting, string value);
+		Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false);
 
-		Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false);
+		Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue);
 	}
 }

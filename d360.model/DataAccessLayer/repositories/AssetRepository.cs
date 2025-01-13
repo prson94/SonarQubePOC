@@ -57,6 +57,10 @@ namespace d360.model.DataAccessLayer
 
 		public Asset GetAssetByUID(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				return null;
+			}
 			return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
 		}
 
@@ -1255,9 +1259,26 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment || IsBusTechAssetType))
 					{
+						bool scoringtypeallowed = false;
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
-						if (!isNumber && isNumbericFieldType)
+						bool usePathSegDtlTbl = false;
+						if (ft.Type == DataType.Path.ToString() && IsBusTechAssetType)
+						{
+							var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(ft.Definition);
+							if (pathDefinition?.AssetTypeUid != null)
+							{
+								usePathSegDtlTbl = true;
+							}
+						}
+						if (ft.Type == DataType.Score.ToString() && !isNumber )
+						{
+							var checknum = simpleFilter;
+							checknum = checknum.Replace('%',' ').Replace('[',' ').Replace(']',' ').Trim(' ');
+							scoringtypeallowed = decimal.TryParse(checknum, out _);
+						}
+
+						if (!isNumber && isNumbericFieldType && !scoringtypeallowed)
 						{
 							//if search term is not a number, do not filter over numeric field types
 							continue;
@@ -1268,7 +1289,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && !IsBusTechAssetType && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && !usePathSegDtlTbl && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -3073,39 +3094,45 @@ where an.Uid = fam.uid)
 				prefilterSql = $"and AT.Id in ({prefilterSql})";
 			}
 
-			var countSql = $@"
-select	count(1)
+			var premissionfilter = SecurityContext.IsAdministrator ? "" : $@"
+		and (
+			[AT].DefaultPermissions = 1 or 
+			( exists(select 1 from ResponsibilitySummary RSA where RSA.AssetID = A.ID and RSA.ResourceID = @userId and [AT].DefaultPermissions = 0)) or
+			( exists(select 1 from ResponsibilitySummary RSAT where RSAT.ApplyToType = 1 and RSAT.AssetTypeID = [AT].ID and RSAT.ResourceID = @userId and [AT].DefaultPermissions = 0) )
+		)";
+
+			var allQuery = $@"
+drop table if exists #tempAssetsIds;
+create table #tempAssetsIds(id bigint);
+create clustered index cx_tempAssetsIds on #tempAssetsIds(id);
+
+insert into #tempAssetsIds(id)
+select	N.ID 
 from	AssetPath N
 		inner join Asset A on A.Id = N.Id
 		inner join AssetType [AT] on AT.Id = A.AssetTypeId
 where	N.DisplayPath like @phrase {prefilterSql}
-		and (
-			[AT].DefaultPermissions = 1 or 
-			@isAdmin = 1 or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-		)";
+		{premissionfilter};
 
-			var sql = $@"
-							select	A.Uid,
-									AT.Uid as AssetTypeUid,
-									AT.Name as AssetTypeName,
-									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
-									N.Segments as SegmentsXml
-							from	AssetPath N
-									inner join Asset A on A.Id = N.Id
-									inner join AssetType [AT] on AT.ID = A.AssetTypeID
-									left join AssetTypeStyle S on S.ID = AT.ID
-							where	N.DisplayPath like @phrase {prefilterSql}
-									and (
-										[AT].DefaultPermissions = 1 or 
-										@isAdmin = 1 or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-									)
-							order by N.DisplayPath asc
-							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
-							";
+
+select count(1) from #tempAssetsIds
+
+select	A.Uid,
+		AT.Uid as AssetTypeUid,
+		AT.Name as AssetTypeName,
+		coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
+		N.Segments as SegmentsXml
+from	#tempAssetsIds t
+		inner join AssetPath N on t.id = N.id
+		inner join Asset A on A.Id = N.Id
+		inner join AssetType [AT] on AT.ID = A.AssetTypeID
+		left join AssetTypeStyle S on S.ID = AT.ID
+order by N.DisplayPath asc
+OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY;
+
+drop table if exists #tempAssetsIds;
+
+";
 
 			if (model.pageNum <= 1)
 			{
@@ -3122,9 +3149,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
-			var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
-			var total = count.First();
-			var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs, ApiTimeout);
+			var multiresult = await CompanyContext.ExecuteGetAssetsByPathQuery(allQuery, dbArgs);
+
+			var total = multiresult.total;
+			var results = multiresult.results.ToList();
 
 			returnModel.items = results;
 			returnModel.pageNum = model.pageNum;
@@ -3744,12 +3772,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, enableJsonAttributes: enableJsonAttributes);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutAssets);
 
 				#region Send score recalculation notifications.
@@ -3791,12 +3819,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue,enableJsonAttributes: enableJsonAttributes);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostAssets);
 
 				#region Send score recalculation notifications.
@@ -4050,12 +4078,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return CompanyContext.Any<Asset>(i => i.uid == uid);
 		}
 
-		public bool IsReachedTransformationLimit(AssetTypeUpsert model)
+		public bool IsReachedTransformationLimit(AssetTypeUpsert model,int useAsTransformationLimit)
 		{
 			bool reached = false;
 			if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
 			{
-				var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
 				var transformationUids = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Select(i => i.uid).ToList();
 				if (transformationUids.Contains(model.Uid))
 				{

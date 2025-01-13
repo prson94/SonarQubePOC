@@ -76,6 +76,18 @@ namespace igx.UnitTests
 		public ICommunity GetCommunity()
 		{
 			var mock = new Mock<ICommunity>();
+			mock.Setup(x => x.ReadSettingAsync(It.IsAny<int>(), It.IsAny<Setting>()) )
+				.ReturnsAsync(Setting.ActionMessage.AsInfoModel());
+
+			mock.Setup(x => x.ReadSettingValueAsync<bool>(It.IsAny<int>(), It.IsAny<Setting>()))
+				.ReturnsAsync(false);
+
+			mock.Setup(x => x.ReadSettingsAsDictionaryAsync(It.IsAny<int>()))
+				.ReturnsAsync(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
+			mock.Setup(x => x.ReadSettingsAsync(It.IsAny<int>()))
+				.ReturnsAsync(Setting.ActionMessage.GetAsList());
+
+			mock.Setup(x => x.ReadSettingValueAsync<int>(It.IsAny<int>(), It.IsAny<Setting>()));
 
 			return mock.Object;
 		}
@@ -134,8 +146,6 @@ namespace igx.UnitTests
             var issues = new List<Issue> { new Issue { ID = 1, AssetID = 1, AssetTypeID = 1 } }.AsQueryable();
             var issuesMock = CreateDbSetMock<Issue>(issues);
             mock.Setup(x => x.Issues).Returns(issuesMock.Object);
-
-            mock.Setup(x => x.GetSettingValue<int>(Setting.MaxExcelExportRows)).Returns(50000);
 
 			mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>()))
 				.Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
@@ -296,16 +306,16 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetPredicateByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
-            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5) =>
+            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5, object o6) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
                  }
                 );
 
-            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5) =>
+            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
+                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5, object o6) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -808,18 +818,6 @@ namespace igx.UnitTests
         public IWorkspaces GetWorkspacesRepository()
         {
             var mock = new Mock<IWorkspaces>();
-
-            mock.Setup(x => x.ReadSettingAsync(Setting.ActionMessage))
-                .ReturnsAsync(Setting.ActionMessage.AsInfoModel());
-
-            mock.Setup(x => x.ReadSettingValueAsync<bool>(Setting.DisableCommunityPosting))
-				.ReturnsAsync(false);
-
-            mock.Setup(x => x.ReadSettingsAsDictionaryAsync())
-				.ReturnsAsync(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
-
-            mock.Setup(x => x.ReadSettingsAsync())
-                .ReturnsAsync(Setting.ActionMessage.GetAsList());
 
             return mock.Object;
         }
