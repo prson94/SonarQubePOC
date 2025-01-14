@@ -5,10 +5,10 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.4">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.5">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-create or alter procedure api.UpsertUsers
+create or alter procedure [api].[UpsertUsers]
 	@executionId int,
 	@lookupFieldsPassedByValue bit = 0,
 	@syncwithcommunity bit = 0
@@ -98,26 +98,24 @@ begin
 	--Validate Request
 	drop table if exists #tempdupusername;
 	
-	select Username
-	into #tempdupusername
-	from #Items
-	where IsValid is null
+	select	Username
+	into	#tempdupusername
+	from	#Items
+	where	IsValid is null
 	group by Username
 	having count(1)>1;
 	
-	update t
-	set [Message] = 'Username must be unique within the request.',
-	IsValid = 0
-	from #Items t
-	inner join #tempdupusername tu on t.Username = tu.Username
-	where IsValid is null;
-	
+	update	t
+	set		[Message] = 'Username must be unique within the request.',
+			IsValid = 0
+	from	#Items t
+			inner join #tempdupusername tu on t.Username = tu.Username
+	where	IsValid is null;
 	
 	--Remove record from Field table because record already mark as invalid and execution record mark sucess = 0
-	
-	delete f
-	from #Fields f
-	inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
+	delete	f
+	from	#Fields f
+			inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
 
 	-- Start load sucessfull record.
 	begin try
@@ -155,7 +153,7 @@ begin
 		set		T.AssetID = A.ID
 		from	#Items T
 				inner join dbo.Asset A on A.Object = @object and A.ObjectID = T.ObjectID
-		where IsValid is null;
+		where	IsValid is null;
 
 		-- Asset Path
 		merge	dbo.AssetPath as T
@@ -200,7 +198,7 @@ begin
 
 		-- Resolve lookup field values and process data.
 		exec api.UpsertItemFields @userId, @date, @object, @lookupFieldsPassedByValue;
-	
+
 		exec api.UpsertChangeLog @executionId, @object;
 
 		commit transaction;
@@ -246,14 +244,14 @@ begin
 	end
 	else
 	begin 
-		if (@errormessage = null)
-			begin
-				exec api.CompleteExecution @executionId, @date, @errormessage;
-			end
+		if (@errormessage is not null)
+		begin
+			exec api.CompleteExecution @executionId, @date, @errormessage;
+		end
 		else
-			begin
-		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
-			end
+		begin
+			exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		end
 	end
 end
 ]]>

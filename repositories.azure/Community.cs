@@ -149,6 +149,7 @@ namespace repositories.azure
 			{
 				var row = tbl.NewRow();
 				itemNumber++;
+				user.ItemNumber = itemNumber;
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
 				row["Email"] = user.Email;

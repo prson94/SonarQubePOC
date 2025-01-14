@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.UpsertItemFields-v1">
+  <changeSet author="Pappas" id="Procedure.api.UpsertItemFields-v2">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertItemFields
@@ -66,7 +66,9 @@ begin
 				) ms;
 	end
 
-	-- Merge the field data.	
+	-- Merge the field data.
+	declare @fieldSql nvarchar(max) = '';
+	set @fieldSql = '
 	merge	Field as t
 	using	(
 			select	i.ObjectID,
@@ -74,8 +76,21 @@ begin
 					f.*
 			from	#Fields f
 					inner join #Items i on i.ItemNumber = f.ItemNumber
-			) as s
-	on		(t.ObjectType = @object and t.ObjectID = s.ObjectID and t.FieldTypeID = s.FieldTypeID)
+			) as s '
+
+	if @object = 'Group'
+	begin
+		set @fieldSql = @fieldSql + 'on		(t.AssetID = s.AssetID and t.FieldTypeID = s.FieldTypeID) '
+	end
+	else if @object = 'Resource'
+	begin
+		set @fieldSql = @fieldSql + 'on		(t.AssetID = s.AssetID and t.FieldTypeID = s.FieldTypeID) '
+	end
+	else
+	begin
+		set @fieldSql = @fieldSql + 'on		(t.ObjectType = @object and t.ObjectID = s.ObjectID and t.FieldTypeID = s.FieldTypeID) '
+	end
+	set @fieldSql = @fieldSql + '
 	when	matched then
 	update	set
 			t.Value = iif(s.LookupValue is null, null, s.LookupValue),
@@ -84,7 +99,9 @@ begin
 			t.UpdatedOn = @date
 	when	not matched by target then
 	insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);
+	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);'
+
+	exec sp_executesql @fieldSql, N'@userId int, @date datetime, @object varchar(50)', @userId, @date, @object;
 
 	update	F
 	set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)

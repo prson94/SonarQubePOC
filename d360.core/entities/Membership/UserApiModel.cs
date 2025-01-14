@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
+using Newtonsoft.Json;
 
 namespace d360.core.entities.Membership
 {
@@ -73,13 +74,17 @@ namespace d360.core.entities.Membership
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
 
+		[IgnoreDataMember, JsonIgnore]
         public bool IsNew { get; set; }
 
-        public int? ResourceID { get; set; }
+		[IgnoreDataMember, JsonIgnore]
+		public int? ResourceID { get; set; }
 
-        public CompanyResourceState? CompanyResourceState { get; set; }
+		[IgnoreDataMember, JsonIgnore]
+		public CompanyResourceState? CompanyResourceState { get; set; }
 
-        public int ItemNumber { get; set; }
+		[IgnoreDataMember, JsonIgnore]
+		public int ItemNumber { get; set; }
     }
 
     public class UserApiUpsertResult : IExecutionItem
