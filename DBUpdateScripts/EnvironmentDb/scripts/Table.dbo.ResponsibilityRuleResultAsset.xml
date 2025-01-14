@@ -83,123 +83,20 @@ END
   </changeSet>
 
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultAsset_AfterDelete]
-   ON  [dbo].[ResponsibilityRuleResultAsset] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON;
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v4">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[ResponsibilityRuleResultAsset_AfterDelete]
+]]>
+  </sql>
+ </changeSet>
 
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT Distinct 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM deleted D INNER JOIN [dbo].[Asset] A
-	ON D.AssetID = A.ID
-		WHERE D.AssetTypeID = 0;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT Distinct 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM deleted D INNER JOIN [dbo].[Asset] A
-	ON D.AssetTypeID = A.AssetTypeID
-		WHERE D.AssetID = 0;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v4">
-  <comment>GOV-17603,GOV-31148</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultAsset_AfterInsert]
-   ON  [dbo].[ResponsibilityRuleResultAsset] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT Distinct 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM inserted I
-	INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID
-	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
-	WHERE R.LastRunOn IS NOT NULL
-	AND I.AssetTypeID = 0;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT Distinct 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM inserted I
-	INNER JOIN [dbo].[Asset] A ON I.AssetTypeID = A.AssetTypeID
-	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
-	WHERE R.LastRunOn IS NOT NULL
-	AND I.AssetID = 0;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultAsset_AfterInsert]
-   ON  [dbo].[ResponsibilityRuleResultAsset] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM inserted I
-	INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID
-	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
-	WHERE R.LastRunOn IS NOT NULL
-	AND I.AssetTypeID = 0;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
-			'U',
-			A.Object, 
-			A.ObjectID,
-			A.ID
-	FROM inserted I
-	INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID
-	INNER JOIN [dbo].[ResponsibilityTypeRelationRule] R ON I.RuleID = R.ID
-	WHERE R.LastRunOn IS NOT NULL
-	AND I.AssetID = 0;
-END
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v4">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[ResponsibilityRuleResultAsset_AfterInsert]
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
