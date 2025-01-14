@@ -254,7 +254,7 @@ namespace d360.web.Controllers.V2
 
 				foreach (FieldTypeApiEditModel field in model.Fields)
 				{
-					if (existingFields != null && field?.Type.Tag != null)
+					if (existingFields != null && field?.Type?.Tag != null)
 					{
 						if (existingFields.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
 						{
