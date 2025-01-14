@@ -705,14 +705,13 @@ end";
 				}
 			});
 
-			if (table.Rows.Count > 0)
-			{ 
-				SqlBulkCopy bulkCopy = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect()) 
+			{
+				connection.Open();
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				if (table.Rows.Count > 0)
 				{
-					connection.Open();
-					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+					SqlBulkCopy bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -725,11 +724,22 @@ end";
 					await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
 					response.Data.AddRange(await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId }));
-				}			
+				}
+				else
+				{
+					int total = users.Count;
+					int success = users.Where(i => i.Success == true).Count();
+					int error = users.Where(i => i.Success == false).Count();
+					await connection.ExecuteAsync(
+						"update api.Execution " +
+						"set    CompletedOn = getutcdate(), [Total] = @total, Processed = @success, [Error] = @error " +
+						"where	Id = @executionId", new { executionId, total, success, error });
+				}
 			}
 
 			return response;
 		}
+		
 		public async Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue)
 		{
 			List<UserUpsertValidateModel> usersvalidate = new List<UserUpsertValidateModel>();
@@ -989,7 +999,7 @@ end";
 											[FieldValue] [nvarchar](max),
 											[LookupValue] [nvarchar](max),
 											[FieldTypeID] [int],
-											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber] ASC)
+											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber], FieldTypeID)
 									);"
 					,
 						transaction: trans);

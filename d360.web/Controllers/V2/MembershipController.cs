@@ -963,18 +963,19 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
-
-			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, true);
+			
 			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
-			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+			
+			var validatedUsers = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
 
-			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, usersvalidate);
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, validatedUsers);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
 
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, validatedUsers, lookupFieldsPassedByValue);
+			
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
@@ -1089,15 +1090,17 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
-			List<UserUpsertValidateModel> usersvalidate;
 			cleanIncomingUsers(users, false);
+
 			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
-			usersvalidate = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+			
+			var validatedUsers = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
 
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, usersvalidate, lookupFieldsPassedByValue);
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, validatedUsers, lookupFieldsPassedByValue);
+			
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
