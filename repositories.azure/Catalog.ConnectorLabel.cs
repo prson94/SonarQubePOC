@@ -564,6 +564,72 @@ namespace repositories.azure
 			}
 		}
 
+		public async Task<dynamic> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null)
+		{
+			try
+			{
+				string labelsSql = string.Empty;
+
+				if (isExact)
+				{
+					labelsSql = $@"SELECT top 10 uid, Value
+                                {(getUseCount ? ", Labels.cnt as UseCount" : "")}
+                                  FROM [dbo].[ConnectorLabel] cl
+                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
+                                where Value = @q and state = 1
+                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
+                                order by Value";
+				}
+				else
+				{
+					if (!string.IsNullOrEmpty(q))
+					{
+						q = $"%{q}%";
+					}
+
+					labelsSql = $@"SELECT top 10 uid, Value
+                                    {(getUseCount ? ", Labels.cnt as UseCount" : "")}
+                                  FROM [dbo].[ConnectorLabel] cl
+                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
+                                where state = 1
+                                {(!string.IsNullOrEmpty(q) ? " and Value like @q" : "")}
+                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
+                                order by Value";
+				}
+
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var result = await connection.QueryAsync<dynamic>(labelsSql, commandTimeout: CommandTimeout);
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		public async Task<ConnectorLabel> GetLabel(Guid parentGuid)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var parameters = new
+					{
+						Uid = parentGuid
+					};
+
+					return await connection.QueryFirstOrDefaultAsync<ConnectorLabel>(
+						$"Select * from dbo.ConnectorLabel c where c.uid = @Uid", parameters, commandTimeout: CommandTimeout);
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
 		protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
 		{
 			var valueString = value?.ToString() ?? "";

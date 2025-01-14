@@ -40,7 +40,10 @@ from	Tag t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
-		public Catalog(DapperConnectionProvider provider): base(provider) { }
+		public Catalog(DapperConnectionProvider provider, ISecurityContextProvider securityContext) : base(provider) 
+		{ 
+			SecurityContext = securityContext;
+		}
 
 		public async Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge)
 		{
@@ -1546,6 +1549,30 @@ where	ID = @id;",
 			}
 
 			return response;
+		}
+
+		public async Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var parameters = new
+					{
+						ChildrenUids = childrenUids 
+					};
+					var assetUids = await connection.QueryAsync<long>($@"select a.id from processexpandeddata ped
+                                            inner join asset a on a.uid = ped.diagramassetuid
+                                            where labeluid in @ChildrenUids ", parameters, commandTimeout: CommandTimeout);
+
+					return assetUids;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
 		}
 	}
 }

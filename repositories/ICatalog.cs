@@ -76,5 +76,7 @@ namespace repositories
 		Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value);
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
+
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
 	}
 }

@@ -29,5 +29,9 @@ namespace repositories
 		Task<(byte[], string)> GetExcelFromConnectorLabelUsage(ConnectorLabel label, IEnumerable<dynamic> response);
 
 		Task<bool> IsAuthorizedToEditConnectorLabel(Guid tagUid);
+
+		Task<dynamic> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null);
+
+		Task<ConnectorLabel> GetLabel(Guid parentGuid);
 	}
 }

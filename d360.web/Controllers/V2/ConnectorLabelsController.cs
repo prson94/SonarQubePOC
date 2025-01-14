@@ -60,38 +60,9 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null)
         {
-            string labelsSql;
+			var response = await _connectorLabelRepository.GetLabels(q, isExact,getUseCount) as object;
+            return  ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, response));
 
-            if (isExact)
-            {
-                labelsSql = $@"SELECT top 10 uid, Value
-                                {(getUseCount ? ", Labels.cnt as UseCount" : "")}
-                                  FROM [dbo].[ConnectorLabel] cl 
-                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
-                                where Value = @q and state = 1 
-                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
-                                order by Value";
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(q))
-                {
-                    q = $"%{q}%";
-                }
-
-                labelsSql = $@"SELECT top 10 uid, Value                                
-                                    {(getUseCount ? ", Labels.cnt as UseCount" : "")}
-                                  FROM [dbo].[ConnectorLabel] cl
-                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
-                                where state = 1 
-                                {(!string.IsNullOrEmpty(q) ? " and Value like @q" : "")}
-                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
-                                order by Value";
-            }
-
-            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -457,7 +428,7 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true), 
 			RequireAdminPermissions
 		]
-        public IHttpActionResult ConsolidateLabels(string parentUid, List<string> childrenUids)
+        public async Task<IHttpActionResult> ConsolidateLabels(string parentUid, List<string> childrenUids)
         {
             try
             {
@@ -481,7 +452,7 @@ namespace d360.web.Controllers.V2
                 }
                 var parentGuid = Guid.Parse(parentUid);
 
-                var parentLabel = Company.ConnectorLabels.FirstOrDefault(x => x.uid == parentGuid);
+                var parentLabel = await _connectorLabelRepository.GetLabel(parentGuid);
                 if (parentLabel == null)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, parentUid));
@@ -489,9 +460,7 @@ namespace d360.web.Controllers.V2
 
                 //Get diagram usage
                 List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
-                List<long> assetUids = Company.Query<long>($@"select a.id from processexpandeddata ped
-                                            inner join asset a on a.uid = ped.diagramassetuid
-                                            where labeluid in @children", new { children }).ToList();
+                IEnumerable<long> assetUids = await _connectorLabelRepository.GetAssetUids(children);
 
                 var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
 

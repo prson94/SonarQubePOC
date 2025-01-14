@@ -42,13 +42,13 @@ namespace d360.web.Controllers
 		private readonly ICommentRepository commentsRepository;
 		private readonly ISecurityContextProvider SecProvider;
 		private readonly ITagRepository tagRepository;
-		private readonly IConnectorLabelRepository connectorLabelRepository;
+		private readonly ICatalog connectorLabelRepository;
 		private readonly IFieldsRepository fieldsRepository;
 
 		public D3SApiController(ICoreComponentSet set,
 			ICommentRepository comments,
 			ITagRepository tagRepository,
-			IConnectorLabelRepository connectorLabelRepository,
+			ICatalog connectorLabelRepository,
 			ISecurityContextProvider secProvider,
 			IFieldsRepository fieldsRepository)
 			: base(set)
