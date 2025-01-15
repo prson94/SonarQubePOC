@@ -2,7 +2,6 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
-using d360.extensions;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using repositories.resources;
@@ -19,7 +18,6 @@ namespace repositories.azure
 {
 	public partial class Catalog : Repository, ICatalog
 	{
-		readonly ISecurityContextProvider SecurityContext;
 
 		readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
 
@@ -40,9 +38,8 @@ from	Tag t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
-		public Catalog(DapperConnectionProvider provider, ISecurityContextProvider securityContext) : base(provider) 
+		public Catalog(DapperConnectionProvider provider) : base(provider) 
 		{ 
-			SecurityContext = securityContext;
 		}
 
 		public async Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge)

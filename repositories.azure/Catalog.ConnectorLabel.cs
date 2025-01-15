@@ -3,21 +3,15 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.EMMA;
 using Newtonsoft.Json.Linq;
-using repositories.resources;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace repositories.azure
 {
@@ -168,7 +162,7 @@ namespace repositories.azure
 
 					if (results.total > 0)
 					{
-						results.items = (await connection.QueryAsync<ConnectorLabelApiModel>(sql, commandTimeout: CommandTimeout));
+						results.items = (await connection.QueryAsync<ConnectorLabelApiModel>(sql, dbArgs, commandTimeout: CommandTimeout));
 					}
 				}
 				return results;
@@ -202,17 +196,17 @@ namespace repositories.azure
 					if (label == null)
 					{
 						label = new ConnectorLabel { Value = model.Value };
-						await connection.ExecuteAsync("insert into dbo.ConnectorLabel (uid, Value) values @Uid, @Value", parameters, commandTimeout: CommandTimeout);
+						await connection.ExecuteAsync("insert into dbo.ConnectorLabel (uid, Value) values (@Uid, @Value)", parameters, commandTimeout: CommandTimeout);
 						label.uid = parameters.Uid;
 					}
 					else
 					{
 						label.State = State.Active;
-						label.CreatedBy = label.UpdatedBy = SecurityContext.ResourceID;
+						label.CreatedBy = label.UpdatedBy = CurrentUserId;
 						label.CreatedOn = label.UpdatedOn = DateTime.UtcNow;
 					}
 
-					var user = await GetUser(SecurityContext.ResourceID);
+					var user = await GetUser(CurrentUserId);
 
 					result.uid = label.uid;
 					result.UpdatedOn = label.UpdatedOn.GetValueOrDefault();
@@ -265,7 +259,7 @@ namespace repositories.azure
 				{
 					result.CreatedByUid = createUser.Uid;
 				}
-				var updateUser = await GetUser(SecurityContext.ResourceID);
+				var updateUser = await GetUser(CurrentUserId);
 				if (updateUser != null)
 				{
 					result.UpdatedByUid = updateUser.Uid;
@@ -421,7 +415,9 @@ namespace repositories.azure
 						return false;
 					}
 
-					return SecurityContext.IsAdministrator || SecurityContext.ResourceID == connectorLabel.CreatedBy;
+					var user = await GetUser(CurrentUserId);
+
+					return user.IsAdministrator || CurrentUserId == connectorLabel.CreatedBy;
 				}
 			}
 			catch (Exception)
@@ -596,10 +592,14 @@ namespace repositories.azure
                                 {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
 				}
+				var parameters = new
+				{
+					q = q
+				};
 
 				using (var connection = (SqlConnection)ConnectionProvider.Connect())
 				{
-					var result = await connection.QueryAsync<dynamic>(labelsSql, commandTimeout: CommandTimeout);
+					var result = await connection.QueryAsync<dynamic>(labelsSql, parameters, commandTimeout: CommandTimeout);
 					return result;
 				}
 			}

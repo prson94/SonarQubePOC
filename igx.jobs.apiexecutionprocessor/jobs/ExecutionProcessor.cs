@@ -243,7 +243,7 @@ namespace igx.jobs.apiexecutionprocessor
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 										break;
 									case ApiExecutionAction.PostCrossReferences:
-										ICatalog catalog = new Catalog(dapperProvider, context);
+										ICatalog catalog = new Catalog(dapperProvider);
 										var postCrossReferences = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
 										await catalog.CreateCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
 										resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
