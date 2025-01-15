@@ -774,6 +774,7 @@ end";
 				userrow.Password = user.Password;
 				userrow.ResourceID = user.ResourceID;
 				userrow.IsNew = user.IsNew;
+				
 				if (!user.ResourceID.HasValue)
 				{
 					if (string.IsNullOrEmpty(userrow.Password))
@@ -790,6 +791,13 @@ end";
 				userrow.uid = user.uid;
 
 				#region "Validatation"
+
+				if (string.IsNullOrEmpty((user.Username ?? "").Trim()))
+				{
+					success = false;
+					messages.Add("Username is empty");
+				}
+
 				if (!string.IsNullOrEmpty(user.Password))
 				{
 					if (string.IsNullOrEmpty(user.Password)
@@ -801,6 +809,7 @@ end";
 						messages.Add(Error.PasswordRule);
 					}
 				}
+
 				if (string.IsNullOrEmpty(user.FirstName))
 				{
 					success = false;
@@ -885,6 +894,7 @@ end";
 				}
 
 				#endregion
+
 				UserUpsertValidateModel usersvalidaterow = new UserUpsertValidateModel();
 				usersvalidaterow.users = userrow;
 				if (!success)
