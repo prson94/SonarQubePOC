@@ -32,12 +32,12 @@ namespace d360.web.Controllers.V2
 	public class ProcessController : BaseV2ApiController
 	{
 		private readonly IAssetRepository AssetRepository;
-		private readonly IProcessRepository ProcessRepository;
+		private readonly ICatalog ProcessRepository;
 
 		public ProcessController(
 			ICoreComponentSet set, 
 			IAssetRepository assetRepository, 
-			IProcessRepository processRepository) : base(set)
+			ICatalog processRepository) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
-			ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+			ProcessDiagramModel model = await ProcessRepository.GetAssetsProcessDiagram(assetUid);
 			var assetDetail = (await Catalog.ReadAssetDetail(asset.ID));
 			var result = new { model, assetDetail };
 
@@ -183,7 +183,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
+		public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
 		{
 			Asset targetAsset;
 			Asset sourceAsset = null;
@@ -237,7 +237,7 @@ namespace d360.web.Controllers.V2
 					throw new ArgumentNullException(OthersMessages.SourceTargetTypeMustSame);
 				}
 
-				model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
+				model = await ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
 
 				copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
 															drop table if exists #assets
@@ -310,7 +310,7 @@ namespace d360.web.Controllers.V2
 				});
 			}
 
-			ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+			ProcessDiagramModel existingProcess = await ProcessRepository.GetAssetsProcessDiagram(assetUid);
 			foreach (var item in model.linkDataArray)
 			{
 				if (item.from == Guid.Empty || item.to == Guid.Empty)
@@ -463,7 +463,7 @@ namespace d360.web.Controllers.V2
 				execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
 			}
 
-			validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
+			validationRes = await ProcessRepository.UpdateProcessDiagram(execution, model,
 				toAdd, toUpdate, toDelete,
 				targetAsset.ID, isDiagramReplace,
 				copyRelationshipModel, pdCopyMapper);
@@ -535,7 +535,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetProcessDiagramBadges(Guid assetUid)
+		public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
@@ -549,7 +549,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
-			IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
+			IEnumerable<dynamic> response = await ProcessRepository.GetDiagramAssetBadges(assetUid);
 
 			return Ok(response);
 		}

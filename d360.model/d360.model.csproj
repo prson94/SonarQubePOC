@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Compile Remove="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
+    <Compile Remove="DataAccessLayer\repositories\ProcessRepository.cs" />
   </ItemGroup>
 	
   <ItemGroup>	  
