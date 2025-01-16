@@ -3142,18 +3142,18 @@ namespace d360.web.Controllers.V2
 			{
 				AssetTagSuccessApiModel result;
 
-				if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
-				{
-					result = new AssetTagSuccessApiModel()
-					{
-						Message = $"Only TagUid OR TagName can be specified.",
-						Success = false
-					};
+				//if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+				//{
+				//	result = new AssetTagSuccessApiModel()
+				//	{
+				//		Message = $"Only TagUid OR TagName can be specified.",
+				//		Success = false
+				//	};
 
-					resultList.Add(result);
+				//	resultList.Add(result);
 
-					continue;
-				}
+				//	continue;
+				//}
 
 				if (assetTagApi.TagUID == Guid.Empty)
 				{

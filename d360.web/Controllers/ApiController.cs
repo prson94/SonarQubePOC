@@ -770,9 +770,7 @@ namespace d360.web.Controllers
 					CreatedBy = x.CreatedBy,
 					TooltipContext = "Preview",
 					TooltipUrl = "",
-					uid = x.uid,
-					TagTypeID = x.TagTypeID
-					
+					uid = x.uid
 				};
 				tagsFields.Add(roField);
 			});
@@ -1714,7 +1712,6 @@ namespace d360.web.Controllers
 						FieldName = ft.Name,
 						ShowIfEmpty = true,
 						DataType = "tag",
-						TagTypeID = ft.TagTypeID,
 						TagTypeUID = result,
 						Values = GetTagsValues(type, id,ft),
 						IsPartOfKey = ft.IsPartOfKey

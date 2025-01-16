@@ -60,7 +60,6 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerParameter("Value", "The value of the tag that's to be searched.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("TagTypeUid", "The UID for the type of the tags that's to be searched. Defaults to searching 'General'.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("TagTypeId", "The Id for the type of the tags that's to be searched. Defaults to searching 'General'.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "Search for tags completed.", typeof(List<dynamic>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Error while fetching tags.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -68,6 +67,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Search()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
+			
 			var response = await Catalog.SearchTags(queryParams);
 			return (response.IsSuccess) ? 
 				Ok(response.Data) : 
@@ -586,8 +586,8 @@ namespace d360.web.Controllers.V2
 		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse))]
 		public IHttpActionResult CheckIfTagExist(string value, Guid? tagTypeUid = null)
 		{
-			var result = tagRepository.DoesTagExists(value, tagTypeUid);
-			return (result == false) ? errorMessageNotFoundResponse("") : Ok();
+			var result = tagRepository.GetTagDetailIfExists(value,tagTypeUid);
+			return (result == null) ? errorMessageNotFoundResponse("") : Ok(result);
 		}
 
 		[HttpGet, Route("AssetTagDetails"), ApiExplorerSettings(IgnoreApi = true)]

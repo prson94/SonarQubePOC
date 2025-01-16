@@ -739,5 +739,11 @@ where t.uid in @uids
 			}
 			return CompanyContext.TagTypes.FirstOrDefault(x => x.uid == uid);
 		}
+
+		public Tag GetTagDetailIfExists(string value, Guid? tagTypeUid)
+		{
+			var tagTypeId = GetTagTypeByUid(tagTypeUid).ID;
+			return CompanyContext.Tags.FirstOrDefault(x => x.Value == value && x.TagTypeID == tagTypeId && x.State == State.Active);
+		}
 	}
 }

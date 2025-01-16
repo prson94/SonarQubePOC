@@ -206,9 +206,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     search(event, searchValue) {
         if (this.searchSub)
             {this.searchSub.unsubscribe();}
-		debugger;
         this.searchSub =
-            this.tagService.searchTagsTypeAhead(searchValue, 10,this.tagTooltip.TagTypeId)
+            this.tagService.searchTagsTypeAhead(searchValue, 10,this.tagTooltip.TagTypeUID)
                 .subscribe((res) => {
                     if (res && res.length > 0) {
                         var sorted = res.sort((a, b) => a.name.localeCompare(b.name));

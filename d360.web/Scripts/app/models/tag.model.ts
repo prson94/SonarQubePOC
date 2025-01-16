@@ -23,7 +23,6 @@ export class TagType {
     CreatedByFirstName?: string;
     CreatedByLastName?: string;
 	TagTypeUID?: string;
-	TagTypeId?: string;
 }
 
 export class TagApiModel {
@@ -31,7 +30,6 @@ export class TagApiModel {
     AssetUID: string;
 	TagName: string;
 	TagTypeUID?: string;
-	TagTypeId?: string;
 }
 
 export enum TagTypeState {

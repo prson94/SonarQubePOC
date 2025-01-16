@@ -44,5 +44,6 @@ namespace repositories
 		TagType GetTagTypeByUid(Guid? uid);
 
 		bool DoesTagTypeExists(Guid uid);
+		Tag GetTagDetailIfExists(string value, Guid? tagTypeUid);
 	}
 }

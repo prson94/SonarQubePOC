@@ -119,7 +119,6 @@ export class TagService extends BaseObservableService {
     }
 
 	doesTagExist(tag: TagType): Observable<any> {
-		debugger;
 		if (tag.TagTypeUID === undefined)
 			tag.TagTypeUID = '';
 
@@ -127,7 +126,7 @@ export class TagService extends BaseObservableService {
 
         return this.http.get(url, { observe: "response" })
             .pipe(map((data) => {
-                return data.status;
+                return data;
             }));
     }
 
@@ -152,8 +151,8 @@ export class TagService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
-	searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200, tagTypeId: any): Observable<any[]> {
-		const url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}&tagTypeId=${tagTypeId}`;
+	searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200, TagTypeUid: any): Observable<any[]> {
+		const url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}&TagTypeUid=${TagTypeUid}`;
         return this.http.get(url)
             .pipe(map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true)));

@@ -530,7 +530,7 @@ order by	lvl";
 			string value = "";
 			var response = new RepositoryResponse<List<dynamic>>(null, 200, true, "");
 
-			int tagTypeId = 0;
+			Guid tagTypeUID = Guid.Empty;
 			Guid exceptUid = Guid.Empty;
 			int maxNumberOfResults = 200;
 			bool ignoreCounts = false;
@@ -568,11 +568,11 @@ order by	lvl";
 							throw new ArgumentNullException(TagErrors.InvalidPageSize);
 						}
 						break;
-						case "tagtypeid":
-						int tagType;
-						if (int.TryParse(queryitem.Value, out tagType))
+						case "tagtypeuid":
+						Guid tagType;
+						if (Guid.TryParse(queryitem.Value, out tagType))
 						{
-							tagTypeId = tagType;
+							tagTypeUID = tagType;
 						}
 						else
 						{
@@ -581,6 +581,18 @@ order by	lvl";
 						break;
 				}
 			}
+
+			string query = string.Empty;
+			query = $@"
+				SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+
+			dynamic tagTypeId;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				tagTypeId = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new {tagTypeUID });
+			}
+
+			tagTypeId = tagTypeId.ID;
 
 			string sql;
 
