@@ -298,7 +298,7 @@ where R.ID = @ID
 						thenSql = string.Format(thenSql, "");
 
 						//create impacted assets temporary table.
-						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)";
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint, IsAssetForRescoring bit, IsAssetForIndex bit)";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						//merge into the asset table 
@@ -322,7 +322,7 @@ where R.ID = @ID
 							where T.RuleID = @ruleId;
 
 							delete T
-							{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetID into #changes" : "")}
+							OUTPUT 'DELETE',@ruleId,DELETED.AssetID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes
 							from [dbo].[ResponsibilityRuleResultAsset] T
 							left join #tempdatarule S on S.AssetID = T.AssetID
 							where T.RuleID = @ruleId and S.AssetID is null;
@@ -332,7 +332,7 @@ where R.ID = @ID
 							on		@ruleId = T.RuleID and S.AssetID = T.AssetID
 							when	not matched by target then
 							insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
-							{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetID into #changes" : "")};
+							output  $action as ActionType,inserted.RuleID,inserted.AssetID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes;
 
 							
 							drop table if exists #tempdatarule;
@@ -373,9 +373,19 @@ select  A.Uid
 from    #changes C 
 		inner join Asset A on A.ID = C.AssetID 
 		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
-where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT') 
+where C.IsAssetForRescoring = 1 and C.ActionType in ('DELETE', 'INSERT') 
 group by A.Uid";
-						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid, IsAssetForRescoring }, transaction: transaction, commandTimeout: timeout)).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid }, transaction: transaction, commandTimeout: timeout)).ToList();
+
+						// Get impacted assets, for re-indexing purposes.
+						sqlToExecute = @"
+insert into queue.ResponsibilityIndex (AssetUID)
+select  A.Uid
+from    #changes C 
+		inner join Asset A on A.ID = C.AssetID 
+		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
+where C.IsAssetForIndex = 1 and C.ActionType in ('DELETE', 'INSERT')";
+						await Connection.ExecuteAsync(sqlToExecute, new { assetTypeUid }, transaction: transaction);
 
 						//drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
@@ -480,7 +490,7 @@ where R.ID = @ID
 						thenSql = string.Format(thenSql, "");
 
 						//create impacted assets temporary table.
-						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)";
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int, IsAssetForRescoring bit, IsAssetForIndex bit)";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						//merge into the asset table 
@@ -504,7 +514,7 @@ where R.ID = @ID
 								where T.RuleID = @ruleId;
 
 								delete T
-								{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetTypeID into #changes" : "")}
+								OUTPUT 'DELETE',@ruleId,DELETED.AssetTypeID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes
 								from [dbo].[ResponsibilityRuleResultAsset] T
 								left join #tempdataruleAT S on S.AssetTypeID = T.AssetTypeID
 								where T.RuleID = @ruleId and S.AssetTypeID is null;
@@ -515,7 +525,7 @@ where R.ID = @ID
 								on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
 								when	not matched by target then
 										insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
-								{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetTypeID into #changes" : "")};
+								output  $action as ActionType,inserted.RuleID,inserted.AssetTypeID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes;
 
 								drop table if exists #tempdataruleAT";
 						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
@@ -550,9 +560,19 @@ where R.ID = @ID
 	from    #changes C 
 			inner join AssetType T on T.ID = C.AssetTypeID 
 			inner join Asset A on A.AssetTypeID = T.ID 
-	where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT')
+	where C.IsAssetForRescoring = 1 and C.ActionType in ('DELETE', 'INSERT')
 	group by A.Uid";
-						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { IsAssetForRescoring }, transaction: transaction)).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, transaction: transaction)).ToList();
+
+						// Get impacted assets, for re-indexing purposes.
+						sqlToExecute = @"
+	insert into queue.ResponsibilityIndex (AssetUID)
+	select  A.Uid
+	from    #changes C 
+			inner join AssetType T on T.ID = C.AssetTypeID 
+			inner join Asset A on A.AssetTypeID = T.ID 
+	where C.IsAssetForIndex = 1 and C.ActionType in ('DELETE', 'INSERT')";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						// Drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
@@ -2390,6 +2410,32 @@ where id = @IntersectTypeID";
 					CreateRescoreRequestsBasedOnResponsibilityRulesRun(ruleIds);
 
 					Database.ExecuteSqlCommand(@"
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	ResponsibilityTypeRelationOverrideItem O
+														inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
+														inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	[dbo].[ResponsibilityRuleResultAsset] O
+														inner join Asset A on A.ID = O.AssetID
+												where	O.RuleID in @RuleIds
+														and O.AssetTypeID = 0
+
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	[dbo].[ResponsibilityRuleResultAsset] O
+														inner join Asset A on A.AssetTypeID = O.AssetTypeID
+												where	O.RuleID in @RuleIds
+														and O.AssetID = 0;",
+														new SqlParameter("@ResponsibilityTypeID", relation.ResponsibilityTypeID),
+														new SqlParameter("@ObjectType", relation.ObjectType),
+														new SqlParameter("@ObjectID", relation.ObjectID),
+														new SqlParameter("@RuleIds", ruleIds.AsTableValuedParameter("dbo.IDTable"))
+														);
+
+					Database.ExecuteSqlCommand(@"
 												delete	O 
 												from	ResponsibilityTypeRelationOverrideItem O
 														inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
@@ -2442,25 +2488,24 @@ where id = @IntersectTypeID";
 
 		public void ProcessAssetReindexForResponsibilityChanges()
 		{
-			var batchID = randomNumberGenerator.Next(15000);
+			var batchID = randomNumberGenerator.Next(15000) + 1;
 
-			Execute(@"update queue.task
-				set MachineAssigned = @batchID
-				where Action = 'ObjectIndex' and Custom = 'U' and MachineAssigned is null", new { batchID });
+			Execute(@"update queue.ResponsibilityIndex
+				set BatchID = @batchID
+				where BatchID = 0", new { batchID });
 
 			var impactedAssets = Query<Guid>(@"
-				select distinct a.uid
-				from asset a
-				inner join queue.task q on a.id = q.AssetID
-				where q.Action = 'ObjectIndex' and q.Custom = 'U' and q.MachineAssigned = @batchID",
+				select distinct AssetUid
+				from  queue.ResponsibilityIndex
+				where BatchID = @batchID",
 				new { batchID });
 
 			if (impactedAssets.Any())
 			{
 				CreateAssetReindexRequest(impactedAssets.ToList(), ReindexBatchOperation.Update);
 
-				Execute(@"delete queue.task
-					where MachineAssigned = @batchID", new { batchID });
+				Execute(@"delete queue.ResponsibilityIndex
+					where BatchID = @batchID", new { batchID });
 			}
 		}
 
