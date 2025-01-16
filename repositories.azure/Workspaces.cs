@@ -736,7 +736,6 @@ end";
 						"where	Id = @executionId", new { executionId, total, success, error });
 				}
 			}
-
 			return response;
 		}
 		
@@ -864,12 +863,7 @@ end";
 
 				if (user.Fields != null)
 				{
-					if (fieldTypes.Count == 0)
-					{
-						success = false;
-						messages.Add(string.Format(Error.FieldTypeKeyNotFound, "No Custom Field Defined, But passed in payload"));
-					}
-					else
+					if (fieldTypes.Count > 0)
 					{
 						foreach (var field in user.Fields.Keys)
 						{
