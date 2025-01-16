@@ -657,6 +657,7 @@ end";
 			users.ForEach(u => {
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
+				Guid? executionItemUid = null;
 
 				itemNumber++;
 				row["ExecutionId"] = executionId;
@@ -665,6 +666,7 @@ end";
 				if (u.users.ExecutionItemUid.HasValue)
 				{
 					row["ExecutionItemUid"] = u.users.ExecutionItemUid.Value;
+					executionItemUid = u.users.ExecutionItemUid.Value;
 				}
 
 				if (u.users.uid.HasValue && u.users.uid != Guid.Empty)
@@ -701,7 +703,7 @@ end";
 				}
 				else
 				{   // Add error to outgoing.
-					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false });
+					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false, ExecutionItemUid = executionItemUid });
 				}
 			});
 
@@ -891,6 +893,11 @@ end";
 							}
 						}
 					}
+				}
+
+				if (user.ExecutionItemUid.HasValue)
+				{
+					userrow.ExecutionItemUid  = user.ExecutionItemUid.Value;
 				}
 
 				#endregion
