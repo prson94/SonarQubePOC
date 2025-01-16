@@ -5668,6 +5668,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parent metric must be an active group..
+        /// </summary>
+        public static string MeasureGroupStateMustBeActive {
+            get {
+                return ResourceManager.GetString("MeasureGroupStateMustBeActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Measure does not belong to a valid Allocation, indicating an invalid measure..
         /// </summary>
         public static string MeasureInvalidAllocation {

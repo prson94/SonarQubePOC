@@ -301,6 +301,11 @@ namespace d360.web.Controllers.V2
 						return errorMessageArgumentResponse(Error.IsGroupTrueParentMetric);
 					}
 
+					if (parent.State != State.Active)
+					{
+						return errorMessageArgumentResponse(Error.MeasureGroupStateMustBeActive);
+					}
+
 					if (model.IsGroup || parent.ParentUid != null)
 					{
 						return errorMessageArgumentResponse(string.Format(Error.MaxLevelForMeasure, 2));
