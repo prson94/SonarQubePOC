@@ -1,19 +1,16 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-
-using Resources;
 
 namespace d360.web.Controllers
 {
@@ -21,8 +18,8 @@ namespace d360.web.Controllers
 	{
 		#region Resource
 
-		private readonly string passwordRegex = Validation.Password_Regex;
-		private readonly string passwordRegexMessage = Validation.Password_Requirements;
+		private readonly string PasswordRegex = Error.Password_Regex;
+		private readonly string PasswordRegexMessage = Error.Password_Requirements;
 
 		#region Field Generation
 
@@ -88,10 +85,10 @@ namespace d360.web.Controllers
 					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Password",
 										required: true,
-										pattern: passwordRegex,
+										pattern: PasswordRegex,
 										minLength: null,
 										maxLength: null,
-										validationMessage: passwordRegexMessage)
+										validationMessage: PasswordRegexMessage)
 				},
 				new EditableField
 				{
@@ -304,7 +301,7 @@ namespace d360.web.Controllers
 		{
 			if (!form.HasKeys())
 			{
-				return jsonException(FormControllerApiMessage.Resource, HttpStatusCode.BadRequest);
+				return jsonException(Label.Resource, HttpStatusCode.BadRequest);
 			}
 
 			var id = parseIntField(form, "ID");
@@ -312,13 +309,13 @@ namespace d360.web.Controllers
 
 			if (!model.IsSuccess)
 			{
-				return jsonException(FormControllerApiMessage.Resource, HttpStatusCode.NotFound);
+				return jsonException(Label.Resource, HttpStatusCode.NotFound);
 			}
 
 			//valid user at this point generate a password
 			await ResetResourcePassword(model.Data.ID, model.Data.FirstName, model.Data.Email, model.Data.FormatDisplayName());
 
-			return jsonSuccess(FormControllerApiMessage.ResetPassword, id.ToString(), "reset", HttpStatusCode.OK);
+			return jsonSuccess(Information.ResetPassword, id.ToString(), "reset", HttpStatusCode.OK);
 		}
 
 		#endregion

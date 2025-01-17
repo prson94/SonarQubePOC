@@ -1,12 +1,4 @@
 ﻿using constants;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.Mvc;
-using System.Xml.Linq;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -16,7 +8,14 @@ using d360.featureflags;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
-using Resources;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web.Mvc;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -33,16 +32,16 @@ namespace d360.web.Controllers
 			Set = set;
 			Storage = storage;
 
-			defaultTitleValues.Add("Rules", PageNames.RulesPage);
-			defaultTitleValues.Add("Workflow", PageNames.WorkflowPage);
-			defaultTitleValues.Add("Business Assets", PageNames.BusinessAssetsPage);
-			defaultTitleValues.Add("Models", PageNames.ModelsPage);
-			defaultTitleValues.Add("Policies", PageNames.PoliciesPage);
-			defaultTitleValues.Add("Reference Lists", PageNames.ReferenceListsPage);
-			defaultTitleValues.Add("Community", PageNames.CommunityPage);
-			defaultTitleValues.Add("Dashboards", PageNames.DashboardsPage);
-			defaultTitleValues.Add("Technical Assets", PageNames.TechnicalAssetsPage);
-			defaultTitleValues.Add("Semantic Types", PageNames.SemanticTypePage);
+			defaultTitleValues.Add("Rules", Label.RulesPage);
+			defaultTitleValues.Add("Workflow", Label.WorkflowPage);
+			defaultTitleValues.Add("Business Assets", Label.BusinessAssetsPage);
+			defaultTitleValues.Add("Models", Label.ModelsPage);
+			defaultTitleValues.Add("Policies", Label.PoliciesPage);
+			defaultTitleValues.Add("Reference Lists", Label.ReferenceListsPage);
+			defaultTitleValues.Add("Community", Label.CommunityPage);
+			defaultTitleValues.Add("Dashboards", Label.DashboardsPage);
+			defaultTitleValues.Add("Technical Assets", Label.TechnicalAssetsPage);
+			defaultTitleValues.Add("Semantic Types", Label.SemanticTypePage);
 		}
 
 		internal List<NavigationItem> parseXmlNavigationDocument(XElement xml, bool showChildren = true)
@@ -124,7 +123,7 @@ namespace d360.web.Controllers
 			{
 				nodes = nodes.Prepend(new TopNavigationItem
 				{
-					Title = CommonNames.Text_DataCatalog,
+					Title = Label.Text_DataCatalog,
 					MenuID = "#DataCatalog",
 					SortOrder = 0,
 					Icon = "gov-data-catalog-icon",
@@ -198,8 +197,8 @@ namespace d360.web.Controllers
 				(
 					select  cast(
 								case 
-									when [Object] = 'ArtifactType' and [Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: ' + Name
-									when [Object] = 'ArtifactType' and [Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: ' + Name
+									when [Object] = 'ArtifactType' and [Class] = 1 then '{Label.AssetTypeClass_Business.CleanForSql()} :: ' + Name
+									when [Object] = 'ArtifactType' and [Class] = 8 then '{Label.AssetTypeClass_Technical.CleanForSql()} :: ' + Name
 									else Name
 								end	
 								as varchar(500)
@@ -286,7 +285,7 @@ namespace d360.web.Controllers
 			{
 				if (string.IsNullOrWhiteSpace(item.Name))
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
+					throw new ArgumentNullException(Error.FolderNameNotEmpty);
 				}
 
 				var deleteExisting = Company.Query<SiteNav>(@"with s as
@@ -306,7 +305,7 @@ namespace d360.web.Controllers
 				item.SortOrder = Company.SiteNav.Max(i => i.SortOrder) + 1;
 				Company.Add(item);
 				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderAdded;
+				message = Information.FolderAdded;
 			}
 			catch (Exception ex)
 			{
@@ -333,12 +332,12 @@ namespace d360.web.Controllers
 
 				if (fi == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				Company.Delete(fi);
 				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderItemRemoved;
+				message = Information.FolderItemRemoved;
 			}
 			catch (Exception ex)
 			{
@@ -365,7 +364,7 @@ namespace d360.web.Controllers
 
 				if (folder == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				string originalImage = folder.ImageIconUrl;
@@ -384,7 +383,7 @@ namespace d360.web.Controllers
 				Company.SiteNav.RemoveRange(subNavs);
 				Company.Delete(folder);
 				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderRemoved;
+				message = Information.FolderRemoved;
 			}
 			catch (Exception ex)
 			{
@@ -409,14 +408,14 @@ namespace d360.web.Controllers
 			{
 				if (string.IsNullOrWhiteSpace(model.Folder.Name) && string.IsNullOrWhiteSpace(model.Folder.Title))
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
+					throw new ArgumentNullException(Error.FolderNameNotEmpty);
 				}
 
 				if (model.Folder.Name != "#ASSET_TYPE" && Company.SiteNav.Any(x => x.Title == model.Folder.Title))
 				{
 					return new JsonNetResult
 					{
-						Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.FolderNameAlreadyExists, model.Folder.Title) },
+						Data = new { type = "error", success = false, message = string.Format(Error.FolderNameAlreadyExists, model.Folder.Title) },
 						Formatting = Newtonsoft.Json.Formatting.None
 					};
 				}
@@ -427,7 +426,7 @@ namespace d360.web.Controllers
 					{
 						return new JsonNetResult
 						{
-							Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.IconIsInvalid, model.Folder.Title) },
+							Data = new { type = "error", success = false, message = string.Format(Error.IconIsInvalid, model.Folder.Title) },
 							Formatting = Newtonsoft.Json.Formatting.None
 						};
 					}
@@ -462,7 +461,7 @@ namespace d360.web.Controllers
 				Company.SiteNav.AddRange(model.Items);
 				Company.SaveChanges();
 				SetSiteNavPermissions(model.Folder);
-				message = FormControllerApiMessage.FolderAdded;
+				message = Information.FolderAdded;
 			}
 			catch (Exception ex)
 			{
@@ -490,18 +489,18 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				if (siteNavAbove == null)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToTop);
+					throw new ArgumentNullException(Error.FolderAlreadySortedToTop);
 				}
 
 				siteNavAbove.SortOrder++;
 				siteNav.SortOrder--;
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedUp, siteNav.Name);
+				message = string.Format(Information.FolderMovedUp, siteNav.Name);
 			}
 			catch (Exception ex)
 			{
@@ -529,18 +528,18 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				if (siteNavBelow == null)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToBottom);
+					throw new ArgumentNullException(Error.FolderAlreadySortedToBottom);
 				}
 
 				siteNavBelow.SortOrder--;
 				siteNav.SortOrder++;
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedDown, siteNav.Name);
+				message = string.Format(Information.FolderMovedDown, siteNav.Name);
 			}
 			catch (Exception ex)
 			{
@@ -566,7 +565,7 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				siteNav.SortOrder = 1;
@@ -575,7 +574,7 @@ namespace d360.web.Controllers
 					item.SortOrder++;
 				}
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedToTop, siteNav.Name);
+				message = string.Format(Information.FolderMovedToTop, siteNav.Name);
 			}
 			catch (Exception ex)
 			{
@@ -601,12 +600,12 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, id.ToString()));
 				}
 
 				siteNav.SortOrder = Company.SiteNav.Max(x => x.SortOrder) + 1;
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedToBottom, siteNav.Name);
+				message = string.Format(Information.FolderMovedToBottom, siteNav.Name);
 			}
 			catch (Exception ex)
 			{
@@ -630,14 +629,14 @@ namespace d360.web.Controllers
 			{
 				if (folder == null)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
+					throw new ArgumentNullException(Error.InvalidFolder);
 				}
 
 				if (Company.SiteNav.Any(x => x.ID != folder.Id && x.Title == folder.Title && x.ParentID != folder.Id))
 				{
 					return new JsonNetResult
 					{
-						Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.FolderNameAlreadyExists, folder.Title) },
+						Data = new { type = "error", success = false, message = string.Format(Error.FolderNameAlreadyExists, folder.Title) },
 						Formatting = Newtonsoft.Json.Formatting.None
 					};
 				}
@@ -646,7 +645,7 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.Id.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, folder.Id.ToString()));
 				}
 
 				await UpdateImage(siteNav, folder);
@@ -671,7 +670,7 @@ namespace d360.web.Controllers
 				}
 
 				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderUpdated;
+				message = Information.FolderUpdated;
 			}
 			catch (Exception ex)
 			{
@@ -705,7 +704,7 @@ namespace d360.web.Controllers
 				{
 					if (!patch.IconPayload.IsValidImageData())
 					{
-						throw new ArgumentNullException(FormControllerApiMessage.IconIsInvalid);
+						throw new ArgumentNullException(Error.IconIsInvalid);
 					}
 					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(patch.IconPayload);
 
@@ -763,19 +762,19 @@ namespace d360.web.Controllers
 
 				if (siteNav == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, targetFolderId.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, targetFolderId.ToString()));
 				}
 
 				if (siteNavBelow == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, adjacentFolderId.ToString()));
+					throw new ArgumentNullException(string.Format(Error.FolderIdNotFound, adjacentFolderId.ToString()));
 				}
 
 				int? tmpSortOrder = siteNav.SortOrder;
 				siteNav.SortOrder = siteNavBelow.SortOrder;
 				siteNavBelow.SortOrder = tmpSortOrder;
 				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMoved, siteNav.Name);
+				message = string.Format(Information.FolderMoved, siteNav.Name);
 			}
 			catch (Exception ex)
 			{
@@ -829,11 +828,11 @@ namespace d360.web.Controllers
 			var querySql = $@"
 					select Text, [Value] ,[Type], uid from
 						(
-							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type], a.uid from [Group] g
+							select '{Label.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{Label.AssetTypeClass_Group}' as [Type], a.uid from [Group] g
 							inner join asset a on a.object ='Group' and a.objectid = g.id
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
-							select '{CommonNames.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{CommonNames.AssetTypeClass_User}' as 'Type', r.uid from reporting.Global_Resource r
+							select '{Label.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{Label.AssetTypeClass_User}' as 'Type', r.uid from reporting.Global_Resource r
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
 							+ hideUsersSql +
 						") as Sub";
@@ -882,7 +881,7 @@ namespace d360.web.Controllers
 		{
 			if (nav == null || nav.ID < 1)
 			{
-				return jsonNetException(new Exception(FormControllerApiMessage.ModelPassedToMethodInvalid));
+				return jsonNetException(new Exception(Error.ModelPassedToMethodInvalid));
 			}
 
 			var existing = Company.SiteNavPermissions.Where(p => p.SiteNavID == nav.ID).ToList();
@@ -924,12 +923,12 @@ namespace d360.web.Controllers
 
 			if (nav == null)
 			{
-				return jsonNetException(new Exception(FormControllerApiMessage.SiteNavNotFound));
+				return jsonNetException(new Exception(Error.SiteNavNotFound));
 			}
 
 			if (string.IsNullOrEmpty(perm.Object) || perm.ObjectID == 0)
 			{
-				return jsonNetException(new Exception(FormControllerApiMessage.invalidObjectPassed));
+				return jsonNetException(new Exception(Error.invalidObjectPassed));
 			}
 
 			try
@@ -968,7 +967,7 @@ namespace d360.web.Controllers
 			}
 			else
 			{
-				return jsonNetException(new Exception(FormControllerApiMessage.CoultNotFindPermission));
+				return jsonNetException(new Exception(Error.CoultNotFindPermission));
 			}
 
 			return new JsonNetResult
@@ -992,7 +991,7 @@ namespace d360.web.Controllers
 			{
 				if (admin && !SecurityContext.IsAdministrator)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
+					throw new ArgumentNullException(Error.UserDoesnotAdmin);
 				}
 
 				var resid = admin ? 0 : SecurityContext.ResourceID;
@@ -1001,14 +1000,14 @@ namespace d360.web.Controllers
 
 				if (favorite == null)
 				{
-					throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteRoute);
+					throw new ArgumentNullException(Error.NoFavoriteRoute);
 				}
 				if (moveUp)
 				{
 					var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
 					if (above == null)
 					{
-						throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteAbove);
+						throw new ArgumentNullException(Error.NoFavoriteAbove);
 					}
 					favorite.SortOrder--;
 					above.SortOrder++;
@@ -1018,14 +1017,14 @@ namespace d360.web.Controllers
 					var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
 					if (below == null)
 					{
-						throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteBelow);
+						throw new ArgumentNullException(Error.NoFavoriteBelow);
 					}
 					favorite.SortOrder++;
 					below.SortOrder--;
 				}
 
 				Company.SaveChanges();
-				message = FormControllerApiMessage.FavoriteMoved;
+				message = Information.FavoriteMoved;
 			}
 			catch (Exception ex)
 			{
@@ -1135,13 +1134,13 @@ namespace d360.web.Controllers
 
 					if (model.Class == AssetTypeClass.TechnicalAsset)
 					{
-						responseModel.DisplayValue = PageNames.TechnicalAssetsPage;
-						responseModel.MainTabTitle = PageNames.TechnicalAssetsPageTabTitle;
+						responseModel.DisplayValue = Label.TechnicalAssetsPage;
+						responseModel.MainTabTitle = Label.TechnicalAssetsPageTabTitle;
 					}
 					if (model.Class == AssetTypeClass.BusinessAsset)
 					{
-						responseModel.DisplayValue = PageNames.BusinessAssetsPage;
-						responseModel.MainTabTitle = PageNames.BusinessAssetsPageTabTitle;
+						responseModel.DisplayValue = Label.BusinessAssetsPage;
+						responseModel.MainTabTitle = Label.BusinessAssetsPageTabTitle;
 					}
 				}
 				else if (model.ObjectType == SystemObjects.TaskType.ToString())
@@ -1161,8 +1160,8 @@ namespace d360.web.Controllers
 					}
 
 					responseModel.Items.HasAudit = true;
-					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
-					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
+					responseModel.DisplayValue = Label.DiagramAssetsPage;
+					responseModel.MainTabTitle = Label.DiagramAssetsPageTabTitle;
 					responseModel.Object = SystemObjects.TaskType.ToString();
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 
@@ -1176,9 +1175,9 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
 					responseModel.IntersectTypeUid = model.IntersectTypeUid.Value;
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.TypeName = Company.Query<string>("select name from IntersectTypeDetail where uid = @uid ", new { uid = model.IntersectTypeUid.Value }).FirstOrDefault() ?? PageNames.RelationshipsTab;
-					responseModel.DisplayValue = PageNames.RelationshipsTab;
-					responseModel.MainTabTitle = PageNames.DetailsTab;
+					responseModel.TypeName = Company.Query<string>("select name from IntersectTypeDetail where uid = @uid ", new { uid = model.IntersectTypeUid.Value }).FirstOrDefault() ?? Label.RelationshipsTab;
+					responseModel.DisplayValue = Label.RelationshipsTab;
+					responseModel.MainTabTitle = Label.DetailsTab;
 					responseModel.MainTabUrl = $"admin/relationships/{model.IntersectTypeUid.Value}/details";
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
@@ -1188,8 +1187,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.WorkflowActionsTab;
-					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
+					responseModel.DisplayValue = Label.WorkflowActionsTab;
+					responseModel.MainTabTitle = Label.WorkflowActionsTabTitle;
 					responseModel.MainTabUrl = "admin/configuration/WorkflowActions";
 					responseModel.Items.HasAudit = true;
 
@@ -1201,8 +1200,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
 					responseModel.AssetTypeUid = responseModel.ResponsibilityTypeUid = model.ResponsibilityTypeUid;
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.ResponsibilitiesTab;
-					responseModel.MainTabTitle = PageNames.ResponsibilitiesTabTitle;
+					responseModel.DisplayValue = Label.ResponsibilitiesTab;
+					responseModel.MainTabTitle = Label.ResponsibilitiesTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Report.ToString())
@@ -1210,8 +1209,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.DashboardsPage;
-					responseModel.MainTabTitle = PageNames.DashboardsPage;
+					responseModel.DisplayValue = Label.DashboardsPage;
+					responseModel.MainTabTitle = Label.DashboardsPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
@@ -1219,8 +1218,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.ModelsPage;
-					responseModel.MainTabTitle = PageNames.ModelsPageTabTitle;
+					responseModel.DisplayValue = Label.ModelsPage;
+					responseModel.MainTabTitle = Label.ModelsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.PolicyType.ToString())
@@ -1228,8 +1227,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.PoliciesPage;
-					responseModel.MainTabTitle = PageNames.PoliciesPageTabTitle;
+					responseModel.DisplayValue = Label.PoliciesPage;
+					responseModel.MainTabTitle = Label.PoliciesPageTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Tag.ToString())
@@ -1237,8 +1236,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.TagsPage;
-					responseModel.MainTabTitle = PageNames.TagsPage;
+					responseModel.DisplayValue = Label.TagsPage;
+					responseModel.MainTabTitle = Label.TagsPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.RuleType.ToString())
@@ -1246,8 +1245,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.RulesPage;
-					responseModel.MainTabTitle = PageNames.RulesPage;
+					responseModel.DisplayValue = Label.RulesPage;
+					responseModel.MainTabTitle = Label.RulesPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
@@ -1255,8 +1254,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
-					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
+					responseModel.DisplayValue = Label.DiagramAssetsPage;
+					responseModel.MainTabTitle = Label.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 					var govRoleUid = await GetCachedSettingValueById<Guid>(core.enums.Setting.GovernanceRoleReferenceListUid);
@@ -1278,8 +1277,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.ResourceTypeUid);
-					responseModel.DisplayValue = PageNames.UsersPage;
-					responseModel.MainTabTitle = PageNames.UsersPage;
+					responseModel.DisplayValue = Label.UsersPage;
+					responseModel.MainTabTitle = Label.UsersPage;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1288,8 +1287,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.GroupsTab;
-					responseModel.MainTabTitle = PageNames.GroupsTab;
+					responseModel.DisplayValue = Label.GroupsTab;
+					responseModel.MainTabTitle = Label.GroupsTab;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1298,8 +1297,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = PageNames.ScoringDefinitionsTab;
-					responseModel.MainTabTitle = PageNames.ScoringDefinitionsTab;
+					responseModel.DisplayValue = Label.ScoringDefinitionsTab;
+					responseModel.MainTabTitle = Label.ScoringDefinitionsTab;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.PredicateTypeUid.HasValue)
@@ -1308,8 +1307,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.Uid = Guid.Parse(constants.CommonIdentifiers.GroupTypeUid);
-					responseModel.DisplayValue = PageNames.PredicatesPage;
-					responseModel.MainTabTitle = PageNames.PredicatesPage;
+					responseModel.DisplayValue = Label.PredicatesPage;
+					responseModel.MainTabTitle = Label.PredicatesPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Resource.ToString())
@@ -1329,8 +1328,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.GroupTypeUid);
-					responseModel.DisplayValue = PageNames.GroupsTab;
-					responseModel.MainTabTitle = PageNames.GroupsTab;
+					responseModel.DisplayValue = Label.GroupsTab;
+					responseModel.MainTabTitle = Label.GroupsTab;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1341,8 +1340,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse(CommonIdentifiers.ResourceTypeUid);
-					responseModel.DisplayValue = PageNames.UsersPage;
-					responseModel.MainTabTitle = PageNames.UsersPage;
+					responseModel.DisplayValue = Label.UsersPage;
+					responseModel.MainTabTitle = Label.UsersPage;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1355,8 +1354,8 @@ namespace d360.web.Controllers
 						execProcedure = false;
 						responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
 						responseModel.ObjectID = issueTypeId;
-						responseModel.DisplayValue = PageNames.WorkflowActionsTab;
-						responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
+						responseModel.DisplayValue = Label.WorkflowActionsTab;
+						responseModel.MainTabTitle = Label.WorkflowActionsTabTitle;
 						responseModel.Items.HasAudit = true;
 						responseModel.MainTabUrl = "admin/configuration/WorkflowActions";
 						responseModel.AssetTypeUid = model.AssetTypeUid;
@@ -1373,7 +1372,7 @@ namespace d360.web.Controllers
 				responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
 				responseModel.ObjectID = model.ObjectId ?? 0;
 				responseModel.DisplayValue = tag.Value;
-				responseModel.MainTabTitle = PageNames.TaggedAssetsPage;
+				responseModel.MainTabTitle = Label.TaggedAssetsPage;
 				responseModel.Items.HasAudit = true;
 				responseModel.Uid = tag.uid;
 			}
@@ -1387,8 +1386,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = asset.Object;
 					responseModel.ObjectID = asset.ObjectID;
-					responseModel.DisplayValue = PageNames.GroupsTab;
-					responseModel.MainTabTitle = PageNames.GroupsTab;
+					responseModel.DisplayValue = Label.GroupsTab;
+					responseModel.MainTabTitle = Label.GroupsTab;
 					responseModel.Items.HasAudit = true;
 					responseModel.Uid = asset.uid;
 				}
@@ -1416,8 +1415,8 @@ namespace d360.web.Controllers
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
 				responseModel.ObjectID = model.ObjectId ?? 0;
-				responseModel.DisplayValue = PageNames.SemanticTypePage;
-				responseModel.MainTabTitle = PageNames.SemanticTypePage;
+				responseModel.DisplayValue = Label.SemanticTypePage;
+				responseModel.MainTabTitle = Label.SemanticTypePage;
 				responseModel.Items.HasAudit = true;
 				responseModel.AssetTypeClass = AssetTypeClass.SemanticType;
 
@@ -1555,7 +1554,7 @@ namespace d360.web.Controllers
 				responseModel.Object = "Resource";
 				responseModel.ObjectID = resource.ResourceID;
 				responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
-				responseModel.MainTabTitle = PageNames.ProfilePage;
+				responseModel.MainTabTitle = Label.ProfilePage;
 				responseModel.Items.HasItemOwn = true;
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;

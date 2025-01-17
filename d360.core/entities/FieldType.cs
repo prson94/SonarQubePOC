@@ -25,7 +25,7 @@ namespace d360.core.entities
 		public int? IssueTypeID { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
 		public string Name { get; set; }
 
 		[TrackInChangeLog]
@@ -33,31 +33,31 @@ namespace d360.core.entities
 		public string Category { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
 		public string DisplayDescription { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "FormDescription_Name", Description = "FormDescription_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "FormDescription_Name", Description = "FormDescription_Description")]
 		public string FormDescription { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
 		public string ValidationDescription { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "FriendlyName_Name", Description = "FriendlyName_Description"), StringLength(250)]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "FriendlyName_Name", Description = "FriendlyName_Description"), StringLength(250)]
 		public string FriendlyName { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
 		public string Type { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(25)]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(25)]
 		public string LookupObjectType { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
 		public int? LookupObjectID { get; set; }
 
 		[TrackInChangeLog]
@@ -73,19 +73,19 @@ namespace d360.core.entities
 		public string LookupEditFormat { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Length_Name", Description = "Length_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "Length_Name", Description = "Length_Description")]
 		public int? Length { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "MinimumLength_Name", Description = "MinimumLength_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "MinimumLength_Name", Description = "MinimumLength_Description")]
 		public decimal? MinimumLength { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "MaximumLength_Name", Description = "MaximumLength_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "MaximumLength_Name", Description = "MaximumLength_Description")]
 		public decimal? MaximumLength { get; set; }
 
 		[TrackInChangeLog]
-		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
+		[DataMember, Display(ResourceType = typeof(resources.Label), Name = "Pattern_Name", Description = "Pattern_Description")]
 		[Column(TypeName = "varchar"), StringLength(1000)]
 		public string Pattern { get; set; }
 

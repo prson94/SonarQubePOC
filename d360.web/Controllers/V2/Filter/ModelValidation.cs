@@ -1,15 +1,13 @@
-﻿using System.Linq;
+﻿using d360.core.resources;
+using d360.web.Models;
+using System.Linq;
 using System.Net.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
-using d360.web.Models;
-
-using Resources;
-
 namespace d360.web.Controllers.V2
 {
-    public class ValidateModelAttribute : ActionFilterAttribute
+	public class ValidateModelAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
@@ -28,8 +26,8 @@ namespace d360.web.Controllers.V2
                     //"   at Newtonsoft.Json.Utilities.EnumUtils.ParseEnum(Type enumType, String value, Boolean disallowNumber)\r\n   at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.EnsureType(JsonReader reader, Object value, CultureInfo culture, JsonContract contract, Type targetType)"
                     if (isJsonParsingError)
                     {
-                        var errorTitle = ApiMessages.InvalidJson;
-                        var errorMessage = ApiMessages.JSONValidMessage;
+                        var errorTitle = Error.InvalidJson;
+                        var errorMessage = Error.JSONValidMessage;
 
                         try
                         {
@@ -45,7 +43,7 @@ namespace d360.web.Controllers.V2
 
                             if (errors.Count > 0)
                             {
-                                errorTitle = ApiMessages.InvalidEnumValueInJson;
+                                errorTitle = Error.InvalidEnumValueInJson;
                                 errorMessage = string.Join("; ", errors.Select(e => $"{e.Field} has error: {e.Message}"));
                             }
                         }

@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
-using d360.model.DataAccessLayer;
+using d360.core.resources;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
@@ -19,16 +10,24 @@ using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
-using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
-    /// <summary>
-    /// This service houses all endpoints handling tag management in Govern
-    /// </summary>
-    [
+	/// <summary>
+	/// This service houses all endpoints handling tag management in Govern
+	/// </summary>
+	[
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/connectorLabels"),
         Authorize,
@@ -86,13 +85,13 @@ namespace d360.web.Controllers.V2
             {
                 if (labelUid == null || labelUid == Guid.Empty)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ConnectorLabelAPIMessage.UidNotValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.UidNotValid)).ConfigureAwait(false);
                 }
 
                 var label = Company.ConnectorLabels.FirstOrDefault(x => x.uid == labelUid);
                 if (label == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()))).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.UidNotFound, labelUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -118,7 +117,7 @@ namespace d360.web.Controllers.V2
                     { "LabelUid", labelUid.ToString() }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
         /// <summary>
@@ -141,7 +140,7 @@ namespace d360.web.Controllers.V2
         {
             if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.LabelValieNotEmpty))).ConfigureAwait(false);
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
             }
 
             var labelValue = label.Value.Trim();
@@ -153,7 +152,7 @@ namespace d360.web.Controllers.V2
 
             if (labelValue.Length > 40)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.LabelMax40Char))).ConfigureAwait(false);
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelMax40Char))).ConfigureAwait(false);
             }
 
             dbRecord = new ConnectorLabel
@@ -191,7 +190,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
                 var res = await _connectorLabelRepository.GetLabels(queryParams);
@@ -200,7 +199,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorGetLabels, ex.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorGetLabels, ex.Message);
             }
         }
 
@@ -221,7 +220,7 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.ErrorInvalidDatasetMessage));
             }
 
             ConnectorLabelApiModel result = new ConnectorLabelApiModel();
@@ -232,14 +231,14 @@ namespace d360.web.Controllers.V2
                 //make sure no tag with the same name exists
                 if (await _connectorLabelRepository.DoesLabelExists(model.Value))
                 {
-                    throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
+                    throw new ArgumentNullException(Error.LabelAlreadyExists);
                 }
 
                 result = await _connectorLabelRepository.CreateConnectorLabel(model);
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorCreateLabel, e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorCreateLabel, e.Message);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
@@ -265,7 +264,7 @@ namespace d360.web.Controllers.V2
         {
             if (!(await _connectorLabelRepository.DoesLabelExists(labelUid)))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorUpdateLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
+                return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorUpdateLabel, string.Format(Error.UidNotFound, labelUid.ToString()));
             }
 
             ConnectorLabelApiModel result = new ConnectorLabelApiModel();
@@ -278,19 +277,19 @@ namespace d360.web.Controllers.V2
 
                 if (existingLabel == null)
                 {
-                    throw new ArgumentNullException(string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
+                    throw new ArgumentNullException(string.Format(Error.UidNotFound, labelUid.ToString()));
                 }
 
                 if (await _connectorLabelRepository.DoesLabelExists(labelUid, model))
                 {
-                    throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
+                    throw new ArgumentNullException(Error.LabelAlreadyExists);
                 }
 
                 result = await _connectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
             }
             catch (Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorUpdateLabel, e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorUpdateLabel, e.Message);
             }
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
@@ -319,7 +318,7 @@ namespace d360.web.Controllers.V2
             {
                 if (! (await _connectorLabelRepository.DoesLabelExists(label.uid)))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorDeleteLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, label.uid.ToString()));
+                    return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorDeleteLabel, string.Format(Error.UidNotFound, label.uid.ToString()));
                 }
             }
 
@@ -327,16 +326,16 @@ namespace d360.web.Controllers.V2
             {
                 if (!(await _connectorLabelRepository.DeleteConnectorLabels(labels)))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorDeleteLabel, ConnectorLabelAPIMessage.LabelNotFound);
+                    return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorDeleteLabel, Error.LabelNotFound);
                 }
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorDeleteLabel, ex.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorDeleteLabel, ex.Message);
 
             }
 
-            return successMessageResponse(HttpStatusCode.OK, ConnectorLabelAPIMessage.LabelRemoved, ConnectorLabelAPIMessage.LabelRemoveSucess);
+            return successMessageResponse(HttpStatusCode.OK, Information.LabelRemoved, Information.LabelRemoveSucess);
         }
 
         /// <summary>
@@ -435,27 +434,27 @@ namespace d360.web.Controllers.V2
 
                 if (Guid.Parse(parentUid) == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, parentUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, parentUid));
                 }
 
                 foreach (var item in childrenUids)
                 {
                     if (Guid.Parse(item) == Guid.Empty)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, item));
+                        return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, item));
                     }
                 }
 
                 if (childrenUids.Contains(parentUid))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, ConnectorLabelAPIMessage.UnableIncludeParentinChildLabels);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, Error.UnableIncludeParentinChildLabels);
                 }
                 var parentGuid = Guid.Parse(parentUid);
 
                 var parentLabel = await _connectorLabelRepository.GetLabel(parentGuid);
                 if (parentLabel == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, parentUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.UidNotFound, parentUid));
                 }
 
                 //Get diagram usage
@@ -519,13 +518,13 @@ namespace d360.web.Controllers.V2
                         throw;
                     }
                 }
-                var result = ConnectorLabelAPIMessage.ConsolidateSucessfully;
+                var result = Information.ConsolidateSucessfully;
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ConnectorLabelAPIMessage.ErrorConsolidateLabel, ex.Message);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorConsolidateLabel, ex.Message);
             }
         }
     }

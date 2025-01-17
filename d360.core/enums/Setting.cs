@@ -15,45 +15,45 @@ namespace d360.core.enums
     {
         [
             DefaultValue(false),
-            Description("DisableCommunityPosting_Desc", typeof(Settings)),
+            Description("DisableCommunityPosting_Desc", typeof(Label)),
             Locked(false),
-            Name("DisableCommunityPosting_Name", typeof(Settings)),
+            Name("DisableCommunityPosting_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         DisableCommunityPosting = 1,
 
         [
             DefaultValue("/Content/images/PreciselyLogo@2x.png"),
-            Description("CompanyLogo_Desc", typeof(Settings)),
+            Description("CompanyLogo_Desc", typeof(Label)),
             Locked(false),
-            Name("CompanyLogo_Name", typeof(Settings)),
+            Name("CompanyLogo_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         CompanyLogo = 2,
 
         [
             DefaultValue("/favicon.ico"),
-            Description("CompanyIcon_Desc", typeof(Settings)),
+            Description("CompanyIcon_Desc", typeof(Label)),
             Locked(false),
-            Name("CompanyIcon_Name", typeof(Settings)),
+            Name("CompanyIcon_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         CompanyIcon = 3,
 
         [
             DefaultValue("<ips />"),
-            Description("IpRestriction_Desc", typeof(Settings)),
+            Description("IpRestriction_Desc", typeof(Label)),
             Locked(false),
-            Name("IpRestriction_Name", typeof(Settings)),
+            Name("IpRestriction_Name", typeof(Label)),
             Type(SettingType.IPAddress)
         ]
         IpRestriction = 4,
 
         [
             DefaultValue(true),
-            Description("HideData3SixtyUsers_Desc", typeof(Settings)),
+            Description("HideData3SixtyUsers_Desc", typeof(Label)),
             Locked(false),
-            Name("HideData3SixtyUsers_Name", typeof(Settings)),
+            Name("HideData3SixtyUsers_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         HideData3SixtyUsers = 9,
@@ -61,456 +61,456 @@ namespace d360.core.enums
 
         [
             DefaultValue(""),
-            Description("DefaultSearchTypes_Desc", typeof(Settings)),
+            Description("DefaultSearchTypes_Desc", typeof(Label)),
             Locked(false),
-            Name("DefaultSearchTypes_Name", typeof(Settings)),
+            Name("DefaultSearchTypes_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         DefaultSearchTypes = 13,
 
         [
             DefaultValue(false),
-            Description("DisableIssueManagement_Desc", typeof(Settings)),
+            Description("DisableIssueManagement_Desc", typeof(Label)),
             Locked(false),
-            Name("DisableIssueManagement_Name", typeof(Settings)),
+            Name("DisableIssueManagement_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         DisableIssueManagement = 17,
 
         [
             DefaultValue(true),
-            Description("EnableSagacity_Desc", typeof(Settings)),
+            Description("EnableSagacity_Desc", typeof(Label)),
             Locked(false),
-            Name("EnableSagacity_Name", typeof(Settings)),
+            Name("EnableSagacity_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         EnableSagacity = 21,
 
         [
             DefaultValue(""),
-            Description("DefaultRoute_Desc", typeof(Settings)),
+            Description("DefaultRoute_Desc", typeof(Label)),
             Locked(false),
-            Name("DefaultRoute_Name", typeof(Settings)),
+            Name("DefaultRoute_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         DefaultRoute = 22,
 
         [
             DefaultValue(""),
-            Description("CustomCSSLocation_Desc", typeof(Settings)),
+            Description("CustomCSSLocation_Desc", typeof(Label)),
             Locked(false),
-            Name("CustomCSSLocation_Name", typeof(Settings)),
+            Name("CustomCSSLocation_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         CustomCSSLocation = 24,
 
         [
             DefaultValue(""),
-            Description("AzureADTenant_Desc", typeof(Settings)),
+            Description("AzureADTenant_Desc", typeof(Label)),
             Locked(true),
-            Name("AzureADTenant_Name", typeof(Settings)),
+            Name("AzureADTenant_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         AzureADTenant = 25,
 
         [
             DefaultValue(""),
-            Description("AzureGraphAPIKey_Desc", typeof(Settings)),
+            Description("AzureGraphAPIKey_Desc", typeof(Label)),
             Locked(true),
-            Name("AzureGraphAPIKey_Name", typeof(Settings)),
+            Name("AzureGraphAPIKey_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         AzureGraphAPIKey = 26,
 
         [
             DefaultValue(""),
-            Description("AzureApplicationId_Desc", typeof(Settings)),
+            Description("AzureApplicationId_Desc", typeof(Label)),
             Locked(true),
-            Name("AzureApplicationId_Name", typeof(Settings)),
+            Name("AzureApplicationId_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         AzureApplicationId = 27,
 
         [
             DefaultValue(true),
-            Description("ShowResources_Desc", typeof(Settings)),
+            Description("ShowResources_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowResources_Name", typeof(Settings)),
+            Name("ShowResources_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowResources = 28,
 
         [
             DefaultValue(true),
-            Description("ShowFollowersSidebar_Desc", typeof(Settings)),
+            Description("ShowFollowersSidebar_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowFollowersSidebar_Name", typeof(Settings)),
+            Name("ShowFollowersSidebar_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowFollowersSidebar = 29,
 
         [
             DefaultValue(true),
-            Description("ShowOwnersSidebar_Desc", typeof(Settings)),
+            Description("ShowOwnersSidebar_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowOwnersSidebar_Name", typeof(Settings)),
+            Name("ShowOwnersSidebar_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowOwnersSidebar = 30,
 
         [
             DefaultValue(true),
-            Description("ShowImpactSidebar_Desc", typeof(Settings)),
+            Description("ShowImpactSidebar_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowImpactSidebar_Name", typeof(Settings)),
+            Name("ShowImpactSidebar_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowImpactSidebar = 31,
 
         [
             DefaultValue(true),
-            Description("ShowLineageSidebar_Desc", typeof(Settings)),
+            Description("ShowLineageSidebar_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowLineageSidebar_Name", typeof(Settings)),
+            Name("ShowLineageSidebar_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowLineageSidebar = 32,
 
         [
             DefaultValue("Data360"),
-            Description("BrowserTitlePrefix_Desc", typeof(Settings)),
+            Description("BrowserTitlePrefix_Desc", typeof(Label)),
             Locked(false),
-            Name("BrowserTitlePrefix_Name", typeof(Settings)),
+            Name("BrowserTitlePrefix_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         BrowserTitlePrefix = 33,
 
         [
             DefaultValue(480),
-            Description("SessionTimeout_Desc", typeof(Settings)),
+            Description("SessionTimeout_Desc", typeof(Label)),
             Locked(false),
-            Name("SessionTimeout_Name", typeof(Settings)),
+            Name("SessionTimeout_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         SessionTimeout = 34,
 
         [
             DefaultValue(true),
-            Description("ShowFavorites_Desc", typeof(Settings)),
+            Description("ShowFavorites_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowFavorites_Name", typeof(Settings)),
+            Name("ShowFavorites_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowFavorites = 37,
 
         [
             DefaultValue(true),
-            Description("ShowSocialScoreBar_Desc", typeof(Settings)),
+            Description("ShowSocialScoreBar_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowSocialScoreBar_Name", typeof(Settings)),
+            Name("ShowSocialScoreBar_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowSocialScoreBar = 38,
 
         [
             DefaultValue(true),
-            Description("ShowHomeAssignmentTile_Desc", typeof(Settings)),
+            Description("ShowHomeAssignmentTile_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowHomeAssignmentTile_Name", typeof(Settings)),
+            Name("ShowHomeAssignmentTile_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowHomeAssignmentTile = 39,
 
         [
             DefaultValue(true),
-            Description("ShowHomeBoardTile_Desc", typeof(Settings)),
+            Description("ShowHomeBoardTile_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowHomeBoardTile_Name", typeof(Settings)),
+            Name("ShowHomeBoardTile_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowHomeBoardTile = 40,
 
         [
             DefaultValue(true),
-            Description("ShowHomeActivityTile_Desc", typeof(Settings)),
+            Description("ShowHomeActivityTile_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowHomeActivityTile_Name", typeof(Settings)),
+            Name("ShowHomeActivityTile_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowHomeActivityTile = 41,
 
         [
             DefaultValue(false),
-            Description("ShowHomePageTitle_Desc", typeof(Settings)),
+            Description("ShowHomePageTitle_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowHomePageTitle_Name", typeof(Settings)),
+            Name("ShowHomePageTitle_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowHomePageTitle = 42,
 
         [
             DefaultValue("14px"),
-            Description("HomePageTitleSize_Desc", typeof(Settings)),
+            Description("HomePageTitleSize_Desc", typeof(Label)),
             Locked(false),
-            Name("HomePageTitleSize_Name", typeof(Settings)),
+            Name("HomePageTitleSize_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         HomePageTitleSize = 43,
 
         [
             DefaultValue("#ffffff"),
-            Description("HomePageTitleColor_Desc", typeof(Settings)),
+            Description("HomePageTitleColor_Desc", typeof(Label)),
             Locked(false),
-            Name("HomePageTitleColor_Name", typeof(Settings)),
+            Name("HomePageTitleColor_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         HomePageTitleColor = 44,
 
         [
             DefaultValue(""),
-            Description("HomePageBackgroundImage_Desc", typeof(Settings)),
+            Description("HomePageBackgroundImage_Desc", typeof(Label)),
             Locked(false),
-            Name("HomePageBackgroundImage_Name", typeof(Settings)),
+            Name("HomePageBackgroundImage_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         HomePageBackgroundImage = 45,
 
         [
             DefaultValue("What item would you like to report a problem with?"),
-            Description("ActionMessage_Desc", typeof(Settings)),
+            Description("ActionMessage_Desc", typeof(Label)),
             Locked(false),
-            Name("ActionMessage_Name", typeof(Settings)),
+            Name("ActionMessage_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         ActionMessage = 47,
 
         [
             DefaultValue("Data360 Workflow"),
-            Description("WorkflowFromName_Desc", typeof(Settings)),
+            Description("WorkflowFromName_Desc", typeof(Label)),
             Locked(false),
-            Name("WorkflowFromName_Name", typeof(Settings)),
+            Name("WorkflowFromName_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         WorkflowFromName = 48,
 
         [
             DefaultValue("no-reply@data3sixty.com"),
-            Description("WorkflowFromEmail_Desc", typeof(Settings)),
+            Description("WorkflowFromEmail_Desc", typeof(Label)),
             Locked(false),
-            Name("WorkflowFromEmail_Name", typeof(Settings)),
+            Name("WorkflowFromEmail_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         WorkflowFromEmail = 49,
 
         [
             DefaultValue(""),
-            Description("JwtAuthority_Desc", typeof(Settings)),
+            Description("JwtAuthority_Desc", typeof(Label)),
             Locked(false),
-            Name("JwtAuthority_Name", typeof(Settings)),
+            Name("JwtAuthority_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         JwtAuthority = 54,
 
         [
             DefaultValue("2ec97ecb-f620-40ba-a109-afcd2e89be0f"),
-            Description("PowerBIClientId_Desc", typeof(Settings)),
+            Description("PowerBIClientId_Desc", typeof(Label)),
             Locked(true),
-            Name("PowerBIClientId_Name", typeof(Settings)),
+            Name("PowerBIClientId_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         PowerBIClientId = 55,
 
         [
             DefaultValue(""),
-            Description("PowerBIGroupId_Desc", typeof(Settings)),
+            Description("PowerBIGroupId_Desc", typeof(Label)),
             Locked(true),
-            Name("PowerBIGroupId_Name", typeof(Settings)),
+            Name("PowerBIGroupId_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         PowerBIGroupId = 56,
 
         [
             DefaultValue(true),
-            Description("ShowAllUsersAPIKey_Desc", typeof(Settings)),
+            Description("ShowAllUsersAPIKey_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowAllUsersAPIKey_Name", typeof(Settings)),
+            Name("ShowAllUsersAPIKey_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowAllUsersAPIKey = 57,
 
         [
             DefaultValue(0),
-            Description("WorkflowCatchAllGroup_Desc", typeof(Settings)),
+            Description("WorkflowCatchAllGroup_Desc", typeof(Label)),
             Locked(false),
-            Name("WorkflowCatchAllGroup_Name", typeof(Settings)),
+            Name("WorkflowCatchAllGroup_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         WorkflowCatchAllGroup = 58,
 
         [
             DefaultValue(10000),
-            Description("MaxDropdownItems_Desc", typeof(Settings)),
+            Description("MaxDropdownItems_Desc", typeof(Label)),
             Locked(false),
-            Name("MaxDropdownItems_Name", typeof(Settings)),
+            Name("MaxDropdownItems_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         MaxDropdownItems = 60,
 
         [
             DefaultValue(true),
-            Description("WriteActionDescription_Desc", typeof(Settings)),
+            Description("WriteActionDescription_Desc", typeof(Label)),
             Locked(false),
-            Name("WriteActionDescription_Name", typeof(Settings)),
+            Name("WriteActionDescription_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         WriteActionDescription = 61,
 
         [
             DefaultValue("DRAFT"),
-            Description("RequestCertificationDraft_Desc", typeof(Settings)),
+            Description("RequestCertificationDraft_Desc", typeof(Label)),
             Locked(false),
-            Name("RequestCertificationDraft_Name", typeof(Settings)),
+            Name("RequestCertificationDraft_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         RequestCertificationDraft = 64,
 
         [
             DefaultValue(6),
-            Description("UseAsTransformationLimit_Desc", typeof(Settings)),
+            Description("UseAsTransformationLimit_Desc", typeof(Label)),
             Locked(false),
-            Name("UseAsTransformationLimit_Name", typeof(Settings)),
+            Name("UseAsTransformationLimit_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         UseAsTransformationLimit = 69,
 
         [
             DefaultValue(10000),
-            Description("MaxExcelExportRows_Desc", typeof(Settings)),
+            Description("MaxExcelExportRows_Desc", typeof(Label)),
             Locked(false),
-            Name("MaxExcelExportRows_Name", typeof(Settings)),
+            Name("MaxExcelExportRows_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         MaxExcelExportRows = 71,
 
         [
             DefaultValue(false),
-            Description("ShowNavigationChildren_Desc", typeof(Settings)),
+            Description("ShowNavigationChildren_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowNavigationChildren_Name", typeof(Settings)),
+            Name("ShowNavigationChildren_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowNavigationChildren = 72,
 
         [
             DefaultValue("00000000-0000-0000-0000-000000000000"),
-            Description("GovernanceRoleReferenceListUid_Desc", typeof(Settings)),
+            Description("GovernanceRoleReferenceListUid_Desc", typeof(Label)),
             Locked(false),
-            Name("GovernanceRoleReferenceListUid_Name", typeof(Settings)),
+            Name("GovernanceRoleReferenceListUid_Name", typeof(Label)),
             Type(SettingType.Guid)
         ]
         GovernanceRoleReferenceListUid = 73,
 
         [
             DefaultValue(90),
-            Description("ApiTimeout_Desc", typeof(Settings)),
+            Description("ApiTimeout_Desc", typeof(Label)),
             Locked(false),
-            Name("ApiTimeout_Name", typeof(Settings)),
+            Name("ApiTimeout_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         ApiTimeout = 74,
 
         [
             DefaultValue(false),
-            Description("EnableJsonAttribute_Desc", typeof(Settings)),
+            Description("EnableJsonAttribute_Desc", typeof(Label)),
             Locked(false),
-            Name("EnableJsonAttribute_Name", typeof(Settings)),
+            Name("EnableJsonAttribute_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         EnableJsonAttribute = 75,
 
         [
             DefaultValue(""),
-            Description("AllowedOrigins_Desc", typeof(Settings)),
+            Description("AllowedOrigins_Desc", typeof(Label)),
             Locked(false),
-            Name("AllowedOrigins_Name", typeof(Settings)),
+            Name("AllowedOrigins_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         AllowedOrigins = 76,
 
         [
             DefaultValue(""),
-            Description("FramingDomains_Desc", typeof(Settings)),
+            Description("FramingDomains_Desc", typeof(Label)),
             Locked(false),
-            Name("FramingDomains_Name", typeof(Settings)),
+            Name("FramingDomains_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         FramingDomains = 77,
 
         [
             DefaultValue(0),
-            Description("WorkflowDigestEmailDays_Desc", typeof(Settings)),
+            Description("WorkflowDigestEmailDays_Desc", typeof(Label)),
             Locked(false),
-            Name("WorkflowDigestEmailDays_Name", typeof(Settings)),
+            Name("WorkflowDigestEmailDays_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         WorkflowDigestEmailDays = 78,
 
         [
             DefaultValue(true),
-            Description("ShowChangeLogTab_Desc", typeof(Settings)),
+            Description("ShowChangeLogTab_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowChangeLogTab_Name", typeof(Settings)),
+            Name("ShowChangeLogTab_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowChangeLogTab = 79,
 
         [
             DefaultValue(true),
-            Description("ShowCommentsTab_Desc", typeof(Settings)),
+            Description("ShowCommentsTab_Desc", typeof(Label)),
             Locked(false),
-            Name("ShowCommentsTab_Name", typeof(Settings)),
+            Name("ShowCommentsTab_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         ShowCommentsTab = 80,
 
         [
             DefaultValue(365),
-            Description("AssetDataProfileLifespan_Desc", typeof(Settings)),
+            Description("AssetDataProfileLifespan_Desc", typeof(Label)),
             Locked(false),
-            Name("AssetDataProfileLifespan_Name", typeof(Settings)),
+            Name("AssetDataProfileLifespan_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         AssetDataProfileLifespan = 81,
 
         [
             DefaultValue(200),
-            Description("AssetDefinitionColumnWidth_Desc", typeof(Settings)),
+            Description("AssetDefinitionColumnWidth_Desc", typeof(Label)),
             Locked(false),
-            Name("AssetDefinitionColumnWidth_Name", typeof(Settings)),
+            Name("AssetDefinitionColumnWidth_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         AssetDefinitionColumnWidth = 82,
         [
             DefaultValue(false),
-            Description("HideHeaderBarControls_Desc", typeof(Settings)),
+            Description("HideHeaderBarControls_Desc", typeof(Label)),
             Locked(false),
-            Name("HideHeaderBarControls_Name", typeof(Settings)),
+            Name("HideHeaderBarControls_Name", typeof(Label)),
             Type(SettingType.Boolean)
         ]
         HideHeaderBarControls = 83,
         [
             DefaultValue(250),
-            Description("DiagramMaxAvoidNodesLinkCount_Desc", typeof(Settings)),
+            Description("DiagramMaxAvoidNodesLinkCount_Desc", typeof(Label)),
             Locked(false),
-            Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Settings)),
+            Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Label)),
             Type(SettingType.Number)
         ]
         DiagramMaxAvoidNodesLinkCount = 84,
         [
             DefaultValue(""),
-            Description("EmailDomainWhitelist_Desc", typeof(Settings)),
+            Description("EmailDomainWhitelist_Desc", typeof(Label)),
             Locked(false),
-            Name("EmailDomainWhitelist_Name", typeof(Settings)),
+            Name("EmailDomainWhitelist_Name", typeof(Label)),
             Type(SettingType.Text)
         ]
         EmailDomainWhitelist = 85
@@ -737,14 +737,14 @@ namespace d360.core.enums
 
     public static class SettingExtensions
     {
-        public static string GetValue(this List<SettingInfo> settings, Setting s)
+        public static string GetValue(this List<SettingInfo> Label, Setting s)
         {
-            var value = settings.First(i => i.ID == s).Value;
+            var value = Label.First(i => i.ID == s).Value;
             return value;
         }
-        public static T GetValue<T>(this List<SettingInfo> settings, Setting s)
+        public static T GetValue<T>(this List<SettingInfo> Label, Setting s)
         {
-            var value = settings.First(i => i.ID == s).Value;
+            var value = Label.First(i => i.ID == s).Value;
             try
             {
                 return (T)Convert.ChangeType(value, typeof(T));

@@ -538,11 +538,11 @@ namespace repositories.azure
 								cross apply (
 									select
 										CASE AST.[Class]
-											WHEN 2 THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}' + ' > ' +  AST.Name
-											WHEN 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN 6 THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN 7 THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 2 THEN '{Label.AssetTypeClass_Model.CleanForSql()}' + ' > ' +  AST.Name
+											WHEN 1 THEN '{Label.AssetTypeClass_Business.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 8 THEN '{Label.AssetTypeClass_Technical.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 6 THEN '{Label.AssetTypeClass_Policy.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 7 THEN '{Label.AssetTypeClass_Rule.CleanForSql()}'+  ' > ' + AST.Name
 											ELSE '' + AST.Name
 									   END AS AssetTypeName)Type
 								{whereClause}

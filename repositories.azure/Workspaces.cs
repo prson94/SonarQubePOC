@@ -6,7 +6,6 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -189,7 +188,7 @@ where	g.id = @groupId;
 			};
 			response.Data.pageNum = queryParams.CheckForPageNumber();
 			response.Data.pageSize = queryParams.CheckForPageSize();
-
+      
 			bool isUidValid = queryParams.CheckForQueryParameter<Guid>("uid", "g.Uid", "@uid", ref dbArgs, ref queryFilters);
 			if (!isUidValid)
 			{
@@ -589,7 +588,7 @@ end";
 						jobStatus.LastStartedOn > DateTime.UtcNow.AddHours(-timeOutInHours) && 
 						state == CompanyRebuildJobStatusState.Active)
 					{
-						response = new(409, OthersError.JobinActiveState);
+						response = new(409, Error.JobinActiveState);
 					}
 					else 
 					{
@@ -613,7 +612,7 @@ end";
 				{
 					if (state == CompanyRebuildJobStatusState.Inactive)
 					{
-						response = new(409, OthersError.JobIsNotRunning);
+						response = new(409, Error.JobIsNotRunning);
 					}
 					else 
 					{
@@ -627,7 +626,7 @@ end";
 		}
 
 
-		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserApiModel> users, bool lookupFieldsPassedByValue = false)
+		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false)
 		{
 			RepositoryResponse<List<UserApiUpsertResult>> response = new([], 200, true);
 
@@ -648,6 +647,8 @@ end";
 			table.Columns.Add("ItemNumber", typeof(int));
 			table.Columns.Add("Properties", typeof(string));
 			table.Columns.Add("CustomProperties", typeof(string));
+			table.Columns.Add("Success", typeof(bool));
+			table.Columns.Add("Message", typeof(string));
 
 			#endregion
 
@@ -656,52 +657,68 @@ end";
 			users.ForEach(u => {
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
+				Guid? executionItemUid = null;
 
 				itemNumber++;
 				row["ExecutionId"] = executionId;
 				row["ItemNumber"] = itemNumber;
 
-				if (u.ExecutionItemUid.HasValue)
+				if (u.users.ExecutionItemUid.HasValue)
 				{
-					row["ExecutionItemUid"] = u.ExecutionItemUid.Value;
+					row["ExecutionItemUid"] = u.users.ExecutionItemUid.Value;
+					executionItemUid = u.users.ExecutionItemUid.Value;
 				}
 
-				if (u.uid.HasValue && u.uid != Guid.Empty)
+				if (u.users.uid.HasValue && u.users.uid != Guid.Empty)
 				{
-					jsonObject.Add("Uid", u.uid.Value);
+					jsonObject.Add("Uid", u.users.uid.Value);
 				}
-				jsonObject.Add("ObjectID", u.ResourceID);
-				jsonObject.Add("Username", u.Username);
-				jsonObject.Add("Email", u.Email);
-				jsonObject.Add("FirstName", u.FirstName);
-				jsonObject.Add("LastName", u.LastName);
-				jsonObject.Add("State", (int)(u.State ?? CompanyResourceState.Active));
-				jsonObject.Add("IsAdministrator", u.IsAdministrator);
+				jsonObject.Add("ObjectID", u.users.ResourceID);
+				jsonObject.Add("Username", u.users.Username);
+				jsonObject.Add("Email", u.users.Email);
+				jsonObject.Add("FirstName", u.users.FirstName);
+				jsonObject.Add("LastName", u.users.LastName);
+				jsonObject.Add("State", (int)(u.users.State ?? CompanyResourceState.Active));
+				jsonObject.Add("IsAdministrator", u.users.IsAdministrator);
 
 				row["Properties"] = jsonObject.ToString();
-				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.Fields);
-				
-				if (fieldProcessingResult.Item1)
+				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.users.Fields);
+
+				var message = "";
+				if (u.Success != null)
 				{
+					message = u.Message;
+				}
+				if (!fieldProcessingResult.Item1)
+				{
+					u.Success = false;
+					message += string.Join("; ", fieldProcessingResult.Item2);
+				}
+
+				if (u.Success == null || u.Success == true)
+				{
+					row["Success"] = u.Success ?? (object)DBNull.Value;
+					row["Message"] = u.Message;
 					table.Rows.Add(row);
 				}
-				else 
-				{	// Add error to outgoing.
-					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+				else
+				{   // Add error to outgoing.
+					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false, ExecutionItemUid = executionItemUid });
 				}
 			});
 
-			if (table.Rows.Count > 0)
-			{ 
-				SqlBulkCopy bulkCopy = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect()) 
+			{
+				connection.Open();
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				if (table.Rows.Count > 0)
 				{
-					connection.Open();
-					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+					SqlBulkCopy bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+					bulkCopy.ColumnMappings.Add("Success", "Success");
+					bulkCopy.ColumnMappings.Add("Message", "Message");
 					bulkCopy.ColumnMappings.Add("Properties", "Properties");
 					bulkCopy.ColumnMappings.Add("CustomProperties", "CustomProperties");
 					await bulkCopy.WriteToServerAsync(table);
@@ -709,10 +726,367 @@ end";
 					await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
 					response.Data.AddRange(await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId }));
-				}			
+				}
+				else
+				{
+					int total = users.Count;
+					int success = users.Where(i => i.Success == true).Count();
+					int error = users.Where(i => i.Success == false).Count();
+					await connection.ExecuteAsync(
+						"update api.Execution " +
+						"set    CompletedOn = getutcdate(), [Total] = @total, Processed = @success, [Error] = @error " +
+						"where	Id = @executionId", new { executionId, total, success, error });
+				}
+			}
+			return response;
+		}
+		
+		public async Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue)
+		{
+			List<UserUpsertValidateModel> usersvalidate = new List<UserUpsertValidateModel>();
+
+			int itemNumber = 0;
+			List<FieldTypeValidation> fieldTypes = new();
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				string sql = $@"SELECT {FIELD_VALIDATION_COLUMNS} 
+							FROM [dbo].[FieldType] F 
+							inner join AssetType Att on F.AssetTypeID = ATT.ID and ATT.Class = {(int)AssetTypeClass.User}";
+				fieldTypes = (await connection.QueryAsync<FieldTypeValidation>(sql)).ToList();
+
 			}
 
-			return response;
+			foreach (var user in users)
+			{
+				var success = true;
+				var messages = new List<string>();
+
+				UserApiModel userrow = new UserApiModel();
+
+				itemNumber++;
+				userrow.ItemNumber = itemNumber;
+				userrow.Username = user.Username;
+				userrow.Email = user.Email;
+				userrow.FirstName = user.FirstName;
+				userrow.LastName = user.LastName;
+				userrow.IsAdministrator = user.IsAdministrator;
+				userrow.State = user.State ?? CompanyResourceState.Active;
+				userrow.Fields = user.Fields;
+				userrow.Password = user.Password;
+				userrow.ResourceID = user.ResourceID;
+				userrow.IsNew = user.IsNew;
+				
+				if (!user.ResourceID.HasValue)
+				{
+					if (string.IsNullOrEmpty(userrow.Password))
+					{
+						userrow.Password = PasswordHelper.CreateRandomPassword();
+					}
+				}
+
+				if (!user.uid.HasValue || (user.uid.HasValue && user.uid == Guid.Empty))
+				{
+					user.uid = Guid.NewGuid();
+				}
+
+				userrow.uid = user.uid;
+
+				#region "Validatation"
+
+				if (string.IsNullOrEmpty((user.Username ?? "").Trim()))
+				{
+					success = false;
+					messages.Add("Username is empty");
+				}
+
+				if (!string.IsNullOrEmpty(user.Password))
+				{
+					if (string.IsNullOrEmpty(user.Password)
+						|| user.Password.Length < 7 || user.Password.Length > 25
+						|| !user.Password.Any(char.IsUpper) || !user.Password.Any(char.IsLower)
+						|| !user.Password.Any(char.IsDigit))
+					{
+						success = false;
+						messages.Add(Error.PasswordRule);
+					}
+				}
+
+				if (string.IsNullOrEmpty(user.FirstName))
+				{
+					success = false;
+					messages.Add(Error.FirstNameMissing);
+				}
+
+				if (string.IsNullOrEmpty(user.LastName))
+				{
+					success = false;
+					messages.Add(Error.LastNameMissing);
+				}
+
+				if (user.FirstName != null && user.FirstName.Length > 250)
+				{
+					success = false;
+					messages.Add(Error.FirstNameTooLong);
+				}
+
+				if (user.LastName != null && user.LastName.Length > 250)
+				{
+					success = false;
+					messages.Add(Error.LastNameTooLong);
+				}
+
+				if (user.IsAdministrator && !IsAdministrator)
+				{
+					success = false;
+					messages.Add("Non-administrator users cannot update the administrator flag.");
+				}
+
+				if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
+				{
+					success = false;
+					messages.Add(Error.InvalidEmail);
+				}
+				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
+				{
+					success = false;
+					messages.Add(Error.UsernameDuplicate);
+				}
+
+				if (user.Username != user.Email && (string.IsNullOrEmpty(user.Email) || !Regex.IsMatch(user.Email + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b")))
+				{
+					success = false;
+					messages.Add(Error.InvalidEmail);
+				}
+				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
+				{
+					success = false;
+					messages.Add(Error.UsernameDuplicate);
+				}
+
+				if (user.Fields != null)
+				{
+					if (fieldTypes.Count > 0)
+					{
+						foreach (var field in user.Fields.Keys)
+						{
+							var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field.Trim());
+
+							if (fieldType == null)
+							{
+								success = false;
+								messages.Add(string.Format(Error.FieldTypeKeyNotFound, field));
+							}
+							else
+							{
+								var validationResult = isFieldValid(fieldType, (user.Fields[field] ?? "").Trim());
+								if (!validationResult.IsValid)
+								{
+									success = false;
+									messages.Add(validationResult.Message);
+								}
+							}
+						}
+					}
+				}
+
+				if (user.ExecutionItemUid.HasValue)
+				{
+					userrow.ExecutionItemUid  = user.ExecutionItemUid.Value;
+				}
+
+				#endregion
+
+				UserUpsertValidateModel usersvalidaterow = new UserUpsertValidateModel();
+				usersvalidaterow.users = userrow;
+				if (!success)
+				{
+					usersvalidaterow.Success = false;
+				}
+
+
+				usersvalidaterow.Message = messages.Any() ? string.Join(". ", messages) + ". " : "";
+
+				usersvalidate.Add(usersvalidaterow);
+			}
+
+			//Store data into temp data
+
+			#region Data Tables
+
+			var userTable = new DataTable();
+			var fieldTable = new DataTable();
+
+			userTable.Columns.Add("uid", typeof(Guid));
+			userTable.Columns.Add("ResourceID", typeof(int));
+			userTable.Columns.Add("ItemNumber", typeof(int));
+			userTable.Columns.Add("Username", typeof(string));
+			userTable.Columns.Add("FirstName", typeof(string));
+			userTable.Columns.Add("LastName", typeof(string));
+			userTable.Columns.Add("Password", typeof(string));
+			userTable.Columns.Add("State", typeof(int));
+			userTable.Columns.Add("IsAdministrator", typeof(bool));
+			userTable.Columns.Add("IsNew", typeof(bool));
+			userTable.Columns.Add("Success", typeof(bool));
+			userTable.Columns.Add("Message", typeof(string));
+
+			fieldTable.Columns.Add("ItemNumber", typeof(int));
+			fieldTable.Columns.Add("FieldName", typeof(string));
+			fieldTable.Columns.Add("FieldValue", typeof(string));
+			fieldTable.Columns.Add("FieldTypeID", typeof(int));
+			fieldTable.Columns.Add("LookupValue", typeof(string));
+
+			foreach (var user in usersvalidate)
+			{
+				var row = userTable.NewRow();
+				row["uid"] = user.users.uid;
+				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+				row["ItemNumber"] = user.users.ItemNumber;
+				row["Username"] = user.users.Username;
+				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+				row["Password"] = user.users.Password ?? (object)DBNull.Value;
+				row["State"] = user.users.State;
+				row["IsAdministrator"] = user.users.IsAdministrator;
+				row["IsNew"] = user.users.IsNew;
+				row["Success"] = user.Success ?? (object)DBNull.Value;
+				row["Message"] = user.Message ?? "";
+				userTable.Rows.Add(row);
+
+				if (user.users.Fields != null)
+				{
+					foreach (var field in user.users.Fields.Keys)
+					{
+						var fieldRow = fieldTable.NewRow();
+						fieldRow["ItemNumber"] = user.users.ItemNumber;
+						fieldRow["FieldName"] = field ?? (object)DBNull.Value;
+						fieldRow["FieldValue"] = user.users.Fields[field] ?? (object)DBNull.Value;
+						var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
+						if (fieldType != null)
+						{
+							fieldRow["FieldTypeID"] = fieldType.ID;
+						}
+						else
+						{
+							fieldRow["FieldTypeID"] = (object)DBNull.Value;
+						}
+						fieldRow["LookupValue"] = (object)DBNull.Value;
+
+						fieldTable.Rows.Add(fieldRow);
+					}
+				}
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				using (SqlTransaction trans = connection.BeginTransaction())
+				{
+					await connection.ExecuteAsync(
+						sql: @"IF OBJECT_ID('tempdb..#TempUser') IS NOT NULL
+									DROP TABLE #TempUser;
+
+									CREATE TABLE #TempUser(
+										ItemNumber int,
+										[uid] uniqueidentifier,
+										[ResourceID] [int],
+										[Username] [nvarchar](250),
+										[FirstName] [nvarchar](250),
+										[LastName] [nvarchar](250),
+										[Password] [nvarchar](50) MASKED WITH (FUNCTION = 'default()'),
+										[State] [int],
+										[IsAdministrator] [bit],
+										[IsNew] [bit],
+										[Success] [bit],
+										[Message] [nvarchar](4000) not null,
+										CONSTRAINT [PK_TempUser] PRIMARY KEY CLUSTERED ([ItemNumber] ASC )
+									);
+
+									IF OBJECT_ID('tempdb..#TempUserField') IS NOT NULL
+									DROP TABLE #TempUserField;
+
+									CREATE TABLE #TempUserField(
+											ItemNumber int,
+											[FieldName] [nvarchar](250),
+											[FieldValue] [nvarchar](max),
+											[LookupValue] [nvarchar](max),
+											[FieldTypeID] [int],
+											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber], FieldTypeID)
+									);"
+					,
+						transaction: trans);
+					try
+					{
+						var bulkCopy = connection.CreateBulkCopy("#TempUser", 1000, 1200, trans);
+
+						bulkCopy.ColumnMappings.Add("uid", "uid");
+						bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("Username", "Username");
+						bulkCopy.ColumnMappings.Add("Password", "Password");
+						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+						bulkCopy.ColumnMappings.Add("LastName", "LastName");
+						bulkCopy.ColumnMappings.Add("State", "State");
+						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+						bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+						bulkCopy.ColumnMappings.Add("Success", "Success");
+						bulkCopy.ColumnMappings.Add("Message", "Message");
+
+						await bulkCopy.WriteToServerAsync(userTable);
+
+						bulkCopy = connection.CreateBulkCopy("#TempUserField", 1000, 1200, trans);
+
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+						bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+						bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+						bulkCopy.ColumnMappings.Add("LookupValue", "LookupValue");
+
+						await bulkCopy.WriteToServerAsync(fieldTable);
+
+						await connection.ExecuteAsync(@"exec api.ValidateUser @lookupFieldsPassedByValue", new { lookupFieldsPassedByValue }, trans);
+
+						trans.Commit();
+					}
+					catch (Exception)
+					{
+						try
+						{
+							if (trans != null)
+							{
+								trans.Rollback();
+							}
+						}
+						catch
+						{
+							//  Block of code to handle errors
+						}
+
+						throw;
+					}
+
+					var sql = $@"select ItemNumber,Success,Message
+								 from #TempUser
+								 where coalesce(Success,1) = 0";
+
+					var result = (await connection.QueryAsync<dynamic>(sql)).ToList();
+					foreach (var user in usersvalidate)
+					{
+						var userrow = result.FirstOrDefault(f => f.ItemNumber == user.users.ItemNumber);
+
+						if (userrow != null)
+						{
+							if (!userrow.Success)
+							{
+								user.Success = userrow.Success;
+								user.Message = userrow.Message;
+							}
+						}
+					}
+
+				}
+				#endregion
+			}
+			return usersvalidate;
 		}
 	}
 }

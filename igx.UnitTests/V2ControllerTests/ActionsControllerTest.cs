@@ -156,7 +156,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Arrange
 			var pageNum = "12345678901";
 			var pageSize = "1";
-			var expectedErrorMessage = "Invalid pageNum value provided.";
+			var expectedErrorMessage = "Invalid [pageNum] value provided.";
 			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
 			//Act

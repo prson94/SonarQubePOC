@@ -1,17 +1,15 @@
-﻿using System;
+﻿using d360.core.enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
-using d360.core.enums;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
 namespace d360.core.entities
 {
-    [DataContract]
+	[DataContract]
     public class AssetTypeExportTemplate : BaseCreatedAndUpdatedObject
     {
         #region Properties
@@ -65,7 +63,7 @@ namespace d360.core.entities
         IgnoreDataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Label), Name = "ID_Name", Description = "ID_Description")
         ]
         public int ID { get; set; }
     }

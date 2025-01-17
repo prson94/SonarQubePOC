@@ -1,7 +1,7 @@
 ﻿using d360.web.Services;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using Resources;
+using d360.core.resources;
 
 namespace igx.UnitTests.ServicesTests
 {
@@ -12,7 +12,7 @@ namespace igx.UnitTests.ServicesTests
             var testClass = new ForbiddenBusinessLayerException();
             using (new AssertionScope())
             {
-                testClass.Message.Should().Be(ApiMessages.ForbiddenUserNotAuthorizedMessage);
+                testClass.Message.Should().Be(Error.ForbiddenUserNotAuthorizedMessage);
                 testClass.InnerException.Should().BeNull();
                 testClass.Data.Should().NotBeNull();
                 testClass.Data.Count.Should().Be(0);

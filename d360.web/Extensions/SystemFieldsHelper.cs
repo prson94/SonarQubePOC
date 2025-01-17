@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
+using d360.core.resources;
 using d360.web.Models;
-
-using Resources;
+using System.Collections.Generic;
 
 namespace d360.web.Extensions
 {
-    /// <summary>
-    /// Helper class which prepares rows with System Fields in all asset types
-    /// </summary>
-    public static class SystemFieldsHelper
+	/// <summary>
+	/// Helper class which prepares rows with System Fields in all asset types
+	/// </summary>
+	public static class SystemFieldsHelper
     {
 
         public static DetailReadOnlyRowModel DetailRowInSystemFieldsForCreatedOnAndUpdatedOn(dynamic querySingleResult)
@@ -22,26 +20,26 @@ namespace d360.web.Extensions
                 {
                     columns = 2,
                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
-                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = querySingleResult.CreatedOn?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                    new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn",
+                                        FieldDescription = Label.CreatedOn_Description, Value = querySingleResult.CreatedOn?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                                         DataType = "date" }
                                 },
                     SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn",
-                                        FieldDescription = FieldInfo.UpdatedOn_Description, Value = querySingleResult.UpdatedOn.ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                    new ReadOnlyField { Name = Label.UpdatedOn_Name, FieldName = "AssetUpdatedOn",
+                                        FieldDescription = Label.UpdatedOn_Description, Value = querySingleResult.UpdatedOn.ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
                                 },
-                    Category = FieldInfo.SystemFieldCategory
+                    Category = Label.SystemFieldCategory
                 };
             }
             return new DetailReadOnlyRowModel
             {
                 columns = 1,
                 FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
-                                    FieldDescription = FieldInfo.CreatedOn_Description, Value = querySingleResult.CreatedOn?.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                new ReadOnlyField { Name = Label.CreatedOn_Name, FieldName = "AssetCreatedOn",
+                                    FieldDescription = Label.CreatedOn_Description, Value = querySingleResult.CreatedOn?.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                                     DataType = "date" }
                             },
-                Category = FieldInfo.SystemFieldCategory
+                Category = Label.SystemFieldCategory
             };
         }
 
@@ -67,7 +65,7 @@ namespace d360.web.Extensions
                         ResourceUid = resource?.Uid
                     }
                 },
-                Category = FieldInfo.SystemFieldCategory
+                Category = Label.SystemFieldCategory
             };
         }
     }

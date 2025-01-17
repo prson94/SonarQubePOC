@@ -16,12 +16,12 @@ namespace d360.model.validators
 
 			if (model == null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeSpecified}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeSpecified}");
 			}
 
 			if (string.IsNullOrEmpty(model.Value))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeSpecifiedNoValue}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeSpecifiedNoValue}");
 			}
 
 			if (!string.IsNullOrEmpty(model.Value))
@@ -31,17 +31,17 @@ namespace d360.model.validators
 
 			if (isTagTypeBlank.Length < 1)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeShort}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeShort}");
 			}
 
 			if (model.Value.Length > 100)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeLong}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeLong}");
 			}
 
 			if(!model.Value.IsValidForTag())
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeCharacters}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeCharacters}");
 			}
 
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
@@ -58,7 +58,7 @@ namespace d360.model.validators
 
 			if (uid == Guid.Empty)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeUid}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeUid}");
 			}
 
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");

@@ -2842,7 +2842,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			}
 			else if (uidDupes.Any())
 			{
-				string message = string.Format(Messages.Error_Duplicate_Relationship_Uid, string.Join(", ", uidDupes.Select(i => i.Uid)));
+				string message = string.Format(Error.Error_Duplicate_Relationship_Uid, string.Join(", ", uidDupes.Select(i => i.Uid)));
 				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
@@ -3490,7 +3490,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										if @IsAdministrator = 0
 										begin
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationSubjectAsset}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.NotPermissionModifyRelationSubjectAsset}',
 												T.Success = 0
 										from	
 												api.ExecutionRelationship T
@@ -3520,7 +3520,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 															)  ;
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationobjectAsset}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.NotPermissionModifyRelationobjectAsset}',
 												T.Success = 0
 										from	
 												api.ExecutionRelationship T
@@ -4557,14 +4557,14 @@ where ProcessUid = @ProcessUid;
 
 			if (executionItemDupes.Any())
 			{
-				string message = string.Format(CompanyContextApiError.DuplicateExecutionItem, string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString())));
+				string message = string.Format(Error.DuplicateExecutionItem, string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString())));
 
 				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipUpdateResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (tooLongOwners.Any())
 			{
-				string message = string.Format(CompanyContextApiError.OwnerValueMaxLength, string.Join(", ", tooLongOwners.Select(i => i.Owner)));
+				string message = string.Format(Error.OwnerValueMaxLength, string.Join(", ", tooLongOwners.Select(i => i.Owner)));
 				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipUpdateResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
@@ -4766,14 +4766,14 @@ where ProcessUid = @ProcessUid;
 
 					Connection.Execute($@"
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelationshipInvalidUid}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.RelationshipInvalidUid}',
 												T.Success = 0
 										from	api.ExecutionRelationship T
 										where   T.ExecutionID = @ExecutionID and T.uid is null
 
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelationshipUidNotFound}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.RelationshipUidNotFound}',
 												T.Success = 0
 										from	api.ExecutionRelationship T
 										where T.ExecutionID = @ExecutionID and T.Uid Is not null 
@@ -4795,7 +4795,7 @@ where ProcessUid = @ProcessUid;
 					{
 						Connection.Execute($@"
 											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelatioshipSpecifiedMoreThanOnce}',
+											set		T.Message = coalesce(T.Message + '; ', '') + '{Error.RelatioshipSpecifiedMoreThanOnce}',
 													T.Success = 0
 											from	api.ExecutionRelationship T
 											cross apply (
@@ -4842,7 +4842,7 @@ where ProcessUid = @ProcessUid;
 							if exists (select 1 from #tempdupuid where IntersectTypeID != @it)
 							   begin
 									update	T
-									set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.RelatioshipUidExistWithDifferentType}',
+									set		T.Message = coalesce(T.Message + '; ', '') + '{Error.RelatioshipUidExistWithDifferentType}',
 											T.Success = 0
 									from	api.ExecutionRelationship T
 									inner join #tempdupuid temp on T.uid = temp.Uid 
@@ -4929,7 +4929,7 @@ where ProcessUid = @ProcessUid;
 										create index IX_temppremissionSubitem on #temppremissionSub(ExecutionID,ItemNumber)
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationSubjectAsset}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.NotPermissionModifyRelationSubjectAsset}',
 												T.Success = 0
 										from	api.ExecutionRelationship T
 												inner join #temppremissionSub S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber
@@ -4957,7 +4957,7 @@ where ProcessUid = @ProcessUid;
 										create index IX_temppremissionObjitem on #temppremissionObj(ExecutionID,ItemNumber)
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationobjectAsset}',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{Error.NotPermissionModifyRelationobjectAsset}',
 												T.Success = 0
 										from	api.ExecutionRelationship T
 												inner join	#temppremissionObj S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber
@@ -5909,7 +5909,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                     {
                         if (fieldValue.StartsWith("#") && fieldValue.Length != 7)
                         {
-                            errorMessages.Add(CompanyContextApiError.ValidateColorField);
+                            errorMessages.Add(Error.ValidateColorField);
                             success = false;
                         }
 
@@ -5926,7 +5926,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
                                 if ((fieldValue ?? "").Length > 250)
                                 {
-                                    errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
+                                    errorMessages.Add(Error.ReferenceListCodeFieldMaxLengthCheck);
                                     success = false;
                                 }
 
@@ -5935,7 +5935,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
                                 if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
-                                    errorMessages.Add(CompanyContextApiError.IconFieldValidation);
+                                    errorMessages.Add(Error.IconFieldValidation);
                                     success = false;
                                 }
 
@@ -5944,14 +5944,14 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                 break;
                             default:
                                 success = false;
-                                errorMessages.Add(string.Format(CompanyContextApiError.ValidFieldCheck, fieldName));
+                                errorMessages.Add(string.Format(Error.ValidFieldCheck, fieldName));
                                 break;
                         }
                     }
                     else
                     {
                         success = false;
-                        errorMessages.Add(string.Format(CompanyContextApiError.ValidFieldCheck, fieldName));
+                        errorMessages.Add(string.Format(Error.ValidFieldCheck, fieldName));
                     }
                 }
                 else
@@ -5961,7 +5961,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                     if (restrictedFieldTypes.Contains(fieldType.Type))
                     {
                         success = false;
-                        errorMessages.Add(string.Format(CompanyContextApiError.RestrictFieldTypeUpdate, fieldName, fieldType.Type));
+                        errorMessages.Add(string.Format(Error.RestrictFieldTypeUpdate, fieldName, fieldType.Type));
                     }
                     else
                     {
@@ -6052,14 +6052,14 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                 if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
+                                    errorMessages.Add(string.Format(Error.FieldNameValidate, fieldName, "percentage"));
                                 }
                                 break;
                             case "JSON":
                                 if (jsonElementsEnabled && (fieldValue.Length > 2500))
                                 {
                                     success = false;
-                                    errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
+                                    errorMessages.Add(string.Format(Error.ExceedsMaximumLength, fieldName, 2500));
                                 }
                                 validationFieldProperties.JsonFieldCount++;
                                 break;
@@ -6069,14 +6069,14 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                 if (!int.TryParse(fieldValue, out counterValue) || counterValue <= 0)
                                 {
                                     success = false;
-                                    errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
+                                    errorMessages.Add(string.Format(Error.ValidateNumberFieldRange, fieldName, 0, 2147483647));
                                 }
                                 break;
                             case "System":
                                 if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
                                 {
                                     success = false;
-                                    errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
+                                    errorMessages.Add(Error.ReferenceListCodeFieldMaxLengthCheck);
                                 }
                                 break;
                             default: // Html, Text

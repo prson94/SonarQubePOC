@@ -255,7 +255,7 @@ namespace d360.core.entities
             }
             catch (Exception)
             {
-                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "CustomCss"));
+                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, String.Format(Error.NotValidBase64Value, "CustomCss"));
             }
 
             if (model.Icon != null)
@@ -268,7 +268,7 @@ namespace d360.core.entities
                 }
                 catch (Exception)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "Icon"));
+                    throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, String.Format(Error.NotValidBase64Value, "Icon"));
                 }
             }
 
@@ -282,7 +282,7 @@ namespace d360.core.entities
                 }
                 catch (Exception)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HeaderLogo"));
+                    throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, String.Format(Error.NotValidBase64Value, "HeaderLogo"));
                 }
             }
 
@@ -296,7 +296,7 @@ namespace d360.core.entities
                 }
                 catch (Exception)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HomeBackground"));
+                    throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, String.Format(Error.NotValidBase64Value, "HomeBackground"));
                 }
             }
 
@@ -354,95 +354,95 @@ namespace d360.core.entities
             model.Name = (model.Name + "").Trim();
             if (string.IsNullOrEmpty(model.Name))
             {
-                errors.Add(ThemeErrors.NameNotEmpty);
+                errors.Add(Error.NameNotEmpty);
             }
 
             if (model.BrowserIcon != null && model.BrowserIcon.Length > 512 * 1000)
             {
-                errors.Add(ThemeErrors.IconSize);
+                errors.Add(Error.IconSize);
             }
 
             if (model.BrowserIconExtension != null && model.BrowserIconExtension != ".ico" && model.BrowserIconExtension != ".png")
             {
-                errors.Add(ThemeErrors.IconType);
+                errors.Add(Error.IconType);
             }
 
             if (model.HeaderLogo != null && model.HeaderLogo.Length > 1024 * 1000)
             {
-                errors.Add(ThemeErrors.LogoSize);
+                errors.Add(Error.LogoSize);
             }
 
             if (model.HeaderLogoExtension != null &&
                 model.HeaderLogoExtension != ".gif" && model.HeaderLogoExtension != ".jpg" && model.HeaderLogoExtension != ".png")
             {
-                errors.Add(ThemeErrors.LogoType);
+                errors.Add(Error.LogoType);
             }
 
             if (model.HomePageBackground != null && model.HomePageBackground.Length > 2048 * 1000)
             {
-                errors.Add(ThemeErrors.BackgroundSize);
+                errors.Add(Error.BackgroundSize);
             }
 
             if (model.HomePageBackgroundExtension != null &&
                 model.HomePageBackgroundExtension != ".gif" && model.HomePageBackgroundExtension != ".jpg" && model.HomePageBackgroundExtension != ".png")
             {
-                errors.Add(ThemeErrors.BackgroundType);
+                errors.Add(Error.BackgroundType);
             }
 
             if (!model.BackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.BackColorFormat);
+                errors.Add(Error.BackColorFormat);
             }
 
             if (!model.BreadcrumbLinkColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.BreadcrumbColorFormat);
+                errors.Add(Error.BreadcrumbColorFormat);
             }
 
             if (!model.ButtonBackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.ButtonColorFormat);
+                errors.Add(Error.ButtonColorFormat);
             }
 
             if (!model.HeaderBackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.HeaderColorFormat);
+                errors.Add(Error.HeaderColorFormat);
             }
 
             if (!model.NavBarBackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.NavbarColorFormat);
+                errors.Add(Error.NavbarColorFormat);
             }
 
             if (!model.NavBarBackSelectedColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.NavbarSelectedColorFormat);
+                errors.Add(Error.NavbarSelectedColorFormat);
             }
 
             if (!model.PrimaryButtonBackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.PrimaryButtonColorFormat);
+                errors.Add(Error.PrimaryButtonColorFormat);
             }
 
             if (!model.TableHeaderBackColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.TableHeaderColorFormat);
+                errors.Add(Error.TableHeaderColorFormat);
             }
 
             if (!model.TableRowBackSelectedColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.TableRowColorFormat);
+                errors.Add(Error.TableRowColorFormat);
             }
 
             if (!model.TabLinkColor.IsValidRgb())
             {
-                errors.Add(ThemeErrors.TabLinkColorFormat);
+                errors.Add(Error.TabLinkColorFormat);
             }
 
             // Determine if we should throw an error.
             if (errors.Count > 0)
             {
-                throw new GenericException(System.Net.HttpStatusCode.BadRequest, ThemeErrors.ThemeInvalid, string.Join("; ", errors));
+                throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.ThemeInvalid, string.Join("; ", errors));
             }
         }
     }

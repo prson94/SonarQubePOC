@@ -1,23 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using System.Web.Mvc;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.resources;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-
-using Resources;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
-    public partial class FormController : BaseController
+	public partial class FormController : BaseController
     {
         #region Issue Types
 
@@ -140,7 +137,7 @@ namespace d360.web.Controllers
 
             if (type == null)
             {
-                throw new NotFoundException(FormControllerApiMessage.IssueType);
+                throw new NotFoundException(Label.IssueType);
             }
 
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });

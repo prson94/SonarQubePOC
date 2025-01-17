@@ -2,13 +2,13 @@
 using d360.core.entities.Process;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -112,14 +112,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
+				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
+				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
 			IEnumerable<dynamic> nodes = await ProcessRepository.GetAvailableDiagramNodesForAsset(assetUid);
@@ -147,14 +147,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
+				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
+				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
 			ProcessDiagramModel model = await ProcessRepository.GetAssetsProcessDiagram(assetUid);
@@ -207,12 +207,12 @@ namespace d360.web.Controllers.V2
 
 			if (!sourceAssetUid.HasValue && isModelEmpty)
 			{
-				throw new ArgumentNullException(OthersMessages.ModelNotEmpty);
+				throw new ArgumentNullException(Error.ModelNotEmpty);
 			}
 
 			if (sourceAssetUid.HasValue && !isModelEmpty)
 			{
-				throw new ArgumentNullException(OthersMessages.SourceAssetUidModelNotEmpty);
+				throw new ArgumentNullException(Error.SourceAssetUidModelNotEmpty);
 			}
 
 			targetAsset = await Catalog.GetAsset(assetUid);
@@ -225,17 +225,17 @@ namespace d360.web.Controllers.V2
 
 				if (sourceAsset == null)
 				{
-					throw new ArgumentNullException(OthersMessages.SourceUidNotExists);
+					throw new ArgumentNullException(Error.SourceUidNotExists);
 				}
 
 				if (sourceAsset.ID == targetAsset.ID)
 				{
-					throw new ArgumentNullException(OthersMessages.SourceTargetNotSame);
+					throw new ArgumentNullException(Error.SourceTargetNotSame);
 				}
 
 				if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
 				{
-					throw new ArgumentNullException(OthersMessages.SourceTargetTypeMustSame);
+					throw new ArgumentNullException(Error.SourceTargetTypeMustSame);
 				}
 
 				model = await ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
@@ -280,7 +280,7 @@ namespace d360.web.Controllers.V2
 			{
 				var err = new List<ValidationError>
 				{
-					new ValidationError { Error = OthersMessages.NotAuthorizedToEditDiagram }
+					new ValidationError { Error = Error.NotAuthorizedToEditDiagram }
 				};
 
 				return Ok(new
@@ -295,7 +295,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (item.from == Guid.Empty || item.to == Guid.Empty)
 				{
-					throw new ArgumentNullException(OthersMessages.LinkWithoutFromToDetected);
+					throw new ArgumentNullException(Error.LinkWithoutFromToDetected);
 				}
 			}
 
@@ -318,8 +318,8 @@ namespace d360.web.Controllers.V2
 							{
 								AssetTypeUid = Guid.Empty,
 								AssetUid = Guid.Empty,
-								ErrorType = OthersMessages.CustomConstant,
-								Error = OthersMessages.AllNodeMustLink
+								ErrorType = Error.CustomConstant,
+								Error = Error.AllNodeMustLink
 							}
 						}
 					});
@@ -478,14 +478,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
+				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
+				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
 			string result = await Request.Content.ReadAsStringAsync();
@@ -519,14 +519,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
+				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
+				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
 			IEnumerable<dynamic> response = await ProcessRepository.GetDiagramAssetBadges(assetUid);
@@ -550,14 +550,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
+				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
+				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
 			Guid baseAssetUid = await Catalog.GetDiagramAssetuid(assetUid);

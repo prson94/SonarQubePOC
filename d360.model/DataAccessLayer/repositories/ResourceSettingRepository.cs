@@ -137,7 +137,7 @@ namespace d360.model.DataAccessLayer
 			var AssetType = CompanyContext.AssetTypes.Where(t => t.uid == AssetTypeUID).FirstOrDefault();
 			if(AssetType == null)
 			{
-				throw new ArgumentException(OthersError.InvalidAssetTypeUid);
+				throw new ArgumentException(Error.InvalidAssetTypeUid);
 			}
 			return AssetType.ID;
 		}

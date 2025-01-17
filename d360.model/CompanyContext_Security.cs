@@ -2605,7 +2605,7 @@ where id = @IntersectTypeID";
 
 							if (model.ApplyToType == false && (model.Definition.When == null || model.Definition?.When?.Count == 0))
 							{
-								rowError += Messages.Error_Responsibility_ApplyToType_False;
+								rowError += Error.Error_Responsibility_ApplyToType_False;
 							}
 
 							model.Definition.Then.ForEach(th =>

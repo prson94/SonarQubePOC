@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,Puneet" id="Procedure.api.DeleteExecutionRecords-v11">
+  <changeSet author="Pappas,Puneet, TKlok" id="Procedure.api.DeleteExecutionRecords-v13">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -45,14 +45,12 @@ begin
 			delete t from api.ExecutionDeleteAssetResult t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDeletedAsset t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDeletedAssetType t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
-			delete t from api.ExecutionDeletedGroup t inner join #ex ex on t.ExecutionId = ex.ExecutionId; 
 			delete t from api.ExecutionDeletedPredicate t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDeletedRelationship t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDeletedRelationshipType t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDiagramAsset t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionDiagramAssetField t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionField t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
-			delete t from api.ExecutionGroup t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionItemDependentChange t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionLog t inner join #ex ex on t.ExecutionId = ex.Id;
 			delete t from api.ExecutionMeasure t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
@@ -63,7 +61,6 @@ begin
 			delete t from api.ExecutionResponsibilityType t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionResponsibilityTypeRelationOverrideItem t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			delete t from api.ExecutionScore t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
-			delete t from api.ExecutionUser t inner join #ex ex on t.ExecutionId = ex.ExecutionId;
 			  
 			-- Finally, delete execution header record.
 			delete t from api.Execution t inner join #ex ex on t.ExecutionId = ex.ExecutionId;

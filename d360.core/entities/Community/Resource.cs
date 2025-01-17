@@ -20,26 +20,26 @@ namespace d360.core.entities
         public string APIPublicKey { get; set; }
 
         [DataMember]
-        [Required(ErrorMessageResourceType = typeof(resources.Fields), ErrorMessageResourceName = "Email_ErrorRequired")]
-        [Display(ResourceType = typeof(resources.Fields), Name = "Email_Name", Description = "Email_Description")]
+        [Required(ErrorMessageResourceType = typeof(resources.Label), ErrorMessageResourceName = "Email_ErrorRequired")]
+        [Display(ResourceType = typeof(resources.Label), Name = "Email_Name", Description = "Email_Description")]
         public string Email { get; set; }
 
         [StringLength(250)]
         [DataMember]
-        [Required(ErrorMessageResourceType = typeof(resources.Fields), ErrorMessageResourceName = "FirstName_ErrorRequired")]
-        [Display(ResourceType = typeof(resources.Fields), Name = "FirstName_Name", Description = "FirstName_Description")]
+        [Required(ErrorMessageResourceType = typeof(resources.Label), ErrorMessageResourceName = "FirstName_ErrorRequired")]
+        [Display(ResourceType = typeof(resources.Label), Name = "FirstName_Name", Description = "FirstName_Description")]
         public string FirstName { get; set; }
 
         [StringLength(250)]
         [DataMember]
-        [Required(ErrorMessageResourceType = typeof(resources.Fields), ErrorMessageResourceName = "LastName_ErrorRequired")]
-        [Display(ResourceType = typeof(resources.Fields), Name = "LastName_Name", Description = "LastName_Description")]
+        [Required(ErrorMessageResourceType = typeof(resources.Label), ErrorMessageResourceName = "LastName_ErrorRequired")]
+        [Display(ResourceType = typeof(resources.Label), Name = "LastName_Name", Description = "LastName_Description")]
         public string LastName { get; set; }
 
         public string Password { get; set; }
 
         [DataMember]
-        [Display(ResourceType = typeof(resources.Fields), Name = "Username_Name", Description = "Username_Description")]
+        [Display(ResourceType = typeof(resources.Label), Name = "Username_Name", Description = "Username_Description")]
         public string Username { get; set; }
 
         [DataMember]

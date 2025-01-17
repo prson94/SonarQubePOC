@@ -91,7 +91,7 @@ namespace d360.model.DataAccessLayer
 				report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
 				if (report == null)
 				{
-					throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(FieldErrors.InvalidAssetTypeUid, model.AssetTypeUid));
+					throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
 				}
 
 				nowPreviousreport = report.CloneThis();
@@ -123,7 +123,7 @@ namespace d360.model.DataAccessLayer
 			{
 				string errorMessage = currentStep + ":" + ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				errorMessage = errorMessage.Length <= 2000 ? errorMessage : errorMessage.Substring(0, 2000);
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, errorMessage);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, errorMessage);
 			}
 
 			#region "Audit Log"
@@ -143,40 +143,40 @@ namespace d360.model.DataAccessLayer
 		{
 			if (model.AssetTypeUid == null || model.AssetTypeUid == Guid.Empty)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(FieldErrors.InvalidAssetTypeUid, model.AssetTypeUid));
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
 			}
 
 			var assetType = CompanyContext.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => new { x.uid, x.ID, x.Class }).FirstOrDefault();
 
 			if (assetType == null)
 			{
-				throw new GenericException(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
+				throw new GenericException(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, String.Format(Error.AssetTypeNotFound, model.AssetTypeUid));
 			}
 			model.AssetTypeId = assetType.ID;
 			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset };
 			if (!allowedClasses.Contains(assetType.Class))
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
 			}
 
 			if (model.DashboardType == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardType);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardType);
 			}
 
 			if (model.Location == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardLocation);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardLocation);
 			}
 
 			if (string.IsNullOrEmpty(model.Name))
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Messages.Error_Name_Required);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.Error_Name_Required);
 			}
 
 			if (CompanyContext.Reports.Any(x => x.Name == model.Name && x.uid != model.Uid))
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.NameExists);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.NameExists);
 			}
 
 			if(!string.IsNullOrEmpty(model.Definition?.url))
@@ -188,7 +188,7 @@ namespace d360.model.DataAccessLayer
 					var protocol = model.Definition.url.Substring(0, colonPos).ToLower();
 					if(!validProtools.Contains(protocol))
 					{
-						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardURL);
+						throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardURL);
 					}
 				}
 			}
@@ -198,13 +198,13 @@ namespace d360.model.DataAccessLayer
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardUid);
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardUid);
 			}
 
 			var dashboard = CompanyContext.Reports.FirstOrDefault(x => x.uid == uid);
 			if (dashboard == null)
 			{
-				throw new GenericException(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
+				throw new GenericException(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Information.DashboardNotFound);
 			}
 
 
