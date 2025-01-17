@@ -17,5 +17,10 @@ namespace repositories
 		Task<byte[]> GetDiagramExcel(Asset asset, byte[] image);
 
 		Task<IEnumerable<ProcessDiagramBadge>> GetDiagramAssetBadges(Guid assetUid);
+
+		Task<IEnumerable<ProcessDiagramCopyRelationshipModel>> CopyRelationshipModel(Guid? assetUid);
+
+
+		Task<Guid> GetDiagramAssetuid(Guid assetUid);
 	}
 }

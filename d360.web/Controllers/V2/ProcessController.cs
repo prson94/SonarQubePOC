@@ -215,13 +215,14 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentNullException(OthersMessages.SourceAssetUidModelNotEmpty);
 			}
 
-			targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+			targetAsset = await Catalog.GetAsset(assetUid);
 
 			if (sourceAssetUid.HasValue)
 			{
 				isDiagramReplace = true;
 
-				sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
+				sourceAsset = await Catalog.GetAsset(sourceAssetUid);
+
 				if (sourceAsset == null)
 				{
 					throw new ArgumentNullException(OthersMessages.SourceUidNotExists);
@@ -239,28 +240,7 @@ namespace d360.web.Controllers.V2
 
 				model = await ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
 
-				copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
-															drop table if exists #assets
-															create table #assets(assetUid uniqueidentifier)
-
-															insert into #assets
-																select fromuid as assetuid from processexpandeddata pxd
-																where pxd.diagramassetuid = @assetuid
-																union
-																select touid as assetuid from processexpandeddata pxd
-																where pxd.diagramassetuid = @assetuid
-
-
-															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
-															 union
-															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
-															", new { assetUid = sourceAsset.uid }).ToList();
+				copyRelationshipModel = (await Catalog.CopyRelationshipModel(sourceAsset.uid)).ToList();
 
 				rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
 				copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
@@ -296,7 +276,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (!Company.HasAssetPermission(targetAsset.ID, Permission.EditAsset))
+			if (! (await Catalog.HasAssetPermission(targetAsset.ID, Permission.EditAsset)))
 			{
 				var err = new List<ValidationError>
 				{
@@ -566,7 +546,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Url of diagram asset", typeof(string)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetProcessDiagramUrl(Guid assetUid)
+		public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
@@ -580,7 +560,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
-			Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
+			Guid baseAssetUid = await Catalog.GetDiagramAssetuid(assetUid);
 			string url = $"asset/{baseAssetUid.ToString()}/diagrams/Process/{assetUid}";
 
 			return Ok(url);
@@ -606,17 +586,7 @@ namespace d360.web.Controllers.V2
 		{
 			var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
 
-			var results = await Company.QueryAsync<dynamic>($@"
-					select a.uid,
-						an.DisplayPath as assetPath,
-						P.Path as typePath
-						from asset a
-							inner join AssetProcessDiagram apd on a.ID = apd.AssetID and a.AssetTypeID = @assettypeid
-							inner join AssetPath an on an.ID = a.ID
-							cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
-						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
-						order by an.DisplayPath",
-						new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
+			var results = await Catalog.GetAssetCopyOption(asset.uid, asset.AssetTypeID);
 
 			return Ok(results);
 		}
@@ -639,35 +609,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetIgnoredRelationships(Guid targetAssetUid)
 		{
-			var results = await Company.QueryAsync<dynamic>($@";with assets as (
-					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
-					union
-					select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
-					select	assets.uid,
-							adv.DisplayValue as 'FlowObject',
-							adv2.DisplayValue as 'RelatedAsset'
-					 from	assets
-							inner join asset a on a.uid = assets.duid
-							inner join AssetDisplayValue adv on adv.AssetID = a.ID
-							inner join [intersect] i on i.SubjectAssetID = a.ID 
-							inner join intersecttype it on i.intersecttypeid = it.id
-							inner join asset a2 on a2.ID = i.ObjectAssetID
-							inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
-					where	it.objectcardinality = 1 or it.SubjectCardinality = 1
-					union
-					select 
-						assets.uid,
-						adv.DisplayValue as 'FlowObject',
-						adv2.DisplayValue as 'RelatedAsset'
-					 from assets
-						inner join asset a on a.uid = assets.duid
-						inner join AssetDisplayValue adv on adv.AssetID = a.ID
-						inner join [intersect] i on i.ObjectAssetID = a.ID 
-						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.ID = i.SubjectAssetID 
-						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
-					where it.objectcardinality = 1 or it.SubjectCardinality = 1
-					", new { targetAssetUid });
+			var results = await Catalog.GetAssetIgnoredRelationships(targetAssetUid);
 
 			return Ok(results);
 		}

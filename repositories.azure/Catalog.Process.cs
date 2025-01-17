@@ -832,6 +832,71 @@ namespace repositories.azure
 			return bytes;
 		}
 
+		public async Task<IEnumerable<ProcessDiagramCopyRelationshipModel>> CopyRelationshipModel(Guid? assetUid)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					if (assetUid.HasValue)
+					{
+						var copyRelationshipModel = await connection.QueryAsync<ProcessDiagramCopyRelationshipModel>(@"
+															drop table if exists #assets
+															create table #assets(assetUid uniqueidentifier)
+
+															insert into #assets
+																select fromuid as assetuid from processexpandeddata pxd
+																where pxd.diagramassetuid = @assetuid
+																union
+																select touid as assetuid from processexpandeddata pxd
+																where pxd.diagramassetuid = @assetuid
+
+
+															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
+															 union
+															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
+															", new { assetUid });
+
+						return copyRelationshipModel;
+					}
+
+					return null;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
+
+		public async Task<Guid> GetDiagramAssetuid(Guid assetUid)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var result = await connection.QueryFirstOrDefaultAsync<Guid>(@"
+					select top 1 diagramassetuid from processexpandeddata 
+					where fromuid = @assetUid or touid = @assetUid", new { assetUid });
+
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
+
+
 		private class DiagramAssetRelationshipModel
 		{
 			[JsonProperty("DiagramAssetUid")]
