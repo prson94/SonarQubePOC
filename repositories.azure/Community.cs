@@ -275,21 +275,24 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 			foreach (var user in users)
 			{
-				var row = tbl.NewRow();
-				row["ItemNumber"] = user.users.ItemNumber;
-				row["Username"] = user.users.Username ?? (object)DBNull.Value;
-				row["Email"] = user.users.Email ?? (object)DBNull.Value;
-				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
-				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-				row["Password"] = user.users.Password ?? (object)DBNull.Value;
-				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
-				row["IsAdministrator"] = user.users.IsAdministrator;
-				row["State"] = user.users.State ?? CompanyResourceState.Active;
-				row["uid"] = user.users.uid ?? (object)DBNull.Value;
-				row["Success"] = user.Success ?? (object)DBNull.Value;
-				row["Message"] = user.Message;
+				if (user.Success ?? true)
+				{
+					var row = tbl.NewRow();
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username ?? (object)DBNull.Value;
+					row["Email"] = user.users.Email ?? (object)DBNull.Value;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["State"] = user.users.State ?? CompanyResourceState.Active;
+					row["uid"] = user.users.uid ?? (object)DBNull.Value;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message;
 
-				tbl.Rows.Add(row);
+					tbl.Rows.Add(row);
+				}
 			}
 
 			using (var connection = Connect())
