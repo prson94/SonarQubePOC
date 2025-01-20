@@ -143,7 +143,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
-						$@"select substring(string_agg(cast(r.uid as nvarchar(40)),','),0,4000) 
+						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
 						   from ResourceGroup s
 						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
 						   where groupid = @groupid 
