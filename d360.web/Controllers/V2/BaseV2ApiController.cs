@@ -300,7 +300,6 @@ namespace d360.web.Controllers.V2
 						}
 						else
 						{
-							var cmy = DependencyResolver.Current.GetService<ICommunity>();
 							maxRows = Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).Result;
 							Cache.SetItemInListByID(cacheKey, SecurityContext.CompanyID, maxRows, true, 5);
 						}
