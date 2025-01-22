@@ -215,8 +215,8 @@ begin
 				where F.ProcessUid = @processGuid;
 			
 				Update F
-				Set IsMatch = case when coalesce(fv.FormattedValueNew,'') = coalesce(f.FormattedValue,'') COLLATE SQL_Latin1_General_CP1_CS_AS then 1 else 0 end
-				from #api.InProcessLookUpTempFieldMulti F
+				Set IsMatch = case when coalesce(f.FormattedValue_New,'') = coalesce(f.FormattedValue,'') COLLATE SQL_Latin1_General_CP1_CS_AS then 1 else 0 end
+				from api.InProcessLookUpTempFieldMulti F
 				inner join api.InProcessLookUpFieldType FT on FT.ProcessUid = F.ProcessUid and F.FieldtypeId = FT.FieldTypeID
 				where F.ProcessUid = @processGuid;
 
