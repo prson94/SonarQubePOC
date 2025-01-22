@@ -102,7 +102,6 @@
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultSecurityAsset.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
 	<include file="scripts/Table.dbo.Semantic.xml"/>
-	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.Shortcut.xml"/>
 	<include file="scripts/Table.dbo.SiteNav.xml"/>
 	<include file="scripts/Table.dbo.SiteNavPermission.xml"/>
@@ -133,6 +132,7 @@
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
+	<include file="scripts/Table.queue.ResponsibilityIndex.xml"/>
 	<include file="scripts/Table.queue.Search.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>

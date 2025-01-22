@@ -19,6 +19,18 @@ GO
 drop table if exists [queue].[Task]
 GO
 ]]>
+  </sql>
+ </changeSet>
+ 
+   <changeSet author="PuneetGupta" id="Table.Deletions.Setting-v1">
+   <comment>GOV-36379</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			drop table if exists [dbo].[Setting]
+		]]>
     </sql>
   </changeSet>
 	

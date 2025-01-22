@@ -657,6 +657,7 @@ end";
 			users.ForEach(u => {
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
+				Guid? executionItemUid = null;
 
 				itemNumber++;
 				row["ExecutionId"] = executionId;
@@ -665,6 +666,7 @@ end";
 				if (u.users.ExecutionItemUid.HasValue)
 				{
 					row["ExecutionItemUid"] = u.users.ExecutionItemUid.Value;
+					executionItemUid = u.users.ExecutionItemUid.Value;
 				}
 
 				if (u.users.uid.HasValue && u.users.uid != Guid.Empty)
@@ -701,18 +703,17 @@ end";
 				}
 				else
 				{   // Add error to outgoing.
-					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false });
+					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false, ExecutionItemUid = executionItemUid });
 				}
 			});
 
-			if (table.Rows.Count > 0)
-			{ 
-				SqlBulkCopy bulkCopy = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect()) 
+			{
+				connection.Open();
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				if (table.Rows.Count > 0)
 				{
-					connection.Open();
-					bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
+					SqlBulkCopy bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -725,11 +726,21 @@ end";
 					await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
 					response.Data.AddRange(await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId }));
-				}			
+				}
+				else
+				{
+					int total = users.Count;
+					int success = users.Where(i => i.Success == true).Count();
+					int error = users.Where(i => i.Success == false).Count();
+					await connection.ExecuteAsync(
+						"update api.Execution " +
+						"set    CompletedOn = getutcdate(), [Total] = @total, Processed = @success, [Error] = @error " +
+						"where	Id = @executionId", new { executionId, total, success, error });
+				}
 			}
-
 			return response;
 		}
+		
 		public async Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue)
 		{
 			List<UserUpsertValidateModel> usersvalidate = new List<UserUpsertValidateModel>();
@@ -764,6 +775,7 @@ end";
 				userrow.Password = user.Password;
 				userrow.ResourceID = user.ResourceID;
 				userrow.IsNew = user.IsNew;
+				
 				if (!user.ResourceID.HasValue)
 				{
 					if (string.IsNullOrEmpty(userrow.Password))
@@ -780,6 +792,13 @@ end";
 				userrow.uid = user.uid;
 
 				#region "Validatation"
+
+				if (string.IsNullOrEmpty((user.Username ?? "").Trim()))
+				{
+					success = false;
+					messages.Add("Username is empty");
+				}
+
 				if (!string.IsNullOrEmpty(user.Password))
 				{
 					if (string.IsNullOrEmpty(user.Password)
@@ -791,6 +810,7 @@ end";
 						messages.Add(Error.PasswordRule);
 					}
 				}
+
 				if (string.IsNullOrEmpty(user.FirstName))
 				{
 					success = false;
@@ -845,12 +865,7 @@ end";
 
 				if (user.Fields != null)
 				{
-					if (fieldTypes.Count == 0)
-					{
-						success = false;
-						messages.Add(string.Format(Error.FieldTypeKeyNotFound, "No Custom Field Defined, But passed in payload"));
-					}
-					else
+					if (fieldTypes.Count > 0)
 					{
 						foreach (var field in user.Fields.Keys)
 						{
@@ -874,7 +889,13 @@ end";
 					}
 				}
 
+				if (user.ExecutionItemUid.HasValue)
+				{
+					userrow.ExecutionItemUid  = user.ExecutionItemUid.Value;
+				}
+
 				#endregion
+
 				UserUpsertValidateModel usersvalidaterow = new UserUpsertValidateModel();
 				usersvalidaterow.users = userrow;
 				if (!success)
@@ -916,41 +937,44 @@ end";
 
 			foreach (var user in usersvalidate)
 			{
-				var row = userTable.NewRow();
-				row["uid"] = user.users.uid;
-				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
-				row["ItemNumber"] = user.users.ItemNumber;
-				row["Username"] = user.users.Username;
-				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
-				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-				row["Password"] = user.users.Password ?? (object)DBNull.Value;
-				row["State"] = user.users.State;
-				row["IsAdministrator"] = user.users.IsAdministrator;
-				row["IsNew"] = user.users.IsNew;
-				row["Success"] = user.Success ?? (object)DBNull.Value;
-				row["Message"] = user.Message ?? "";
-				userTable.Rows.Add(row);
-
-				if (user.users.Fields != null)
+				if (user.Success ?? true)
 				{
-					foreach (var field in user.users.Fields.Keys)
-					{
-						var fieldRow = fieldTable.NewRow();
-						fieldRow["ItemNumber"] = user.users.ItemNumber;
-						fieldRow["FieldName"] = field ?? (object)DBNull.Value;
-						fieldRow["FieldValue"] = user.users.Fields[field] ?? (object)DBNull.Value;
-						var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
-						if (fieldType != null)
-						{
-							fieldRow["FieldTypeID"] = fieldType.ID;
-						}
-						else
-						{
-							fieldRow["FieldTypeID"] = (object)DBNull.Value;
-						}
-						fieldRow["LookupValue"] = (object)DBNull.Value;
+					var row = userTable.NewRow();
+					row["uid"] = user.users.uid;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["State"] = user.users.State;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["IsNew"] = user.users.IsNew;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message ?? "";
+					userTable.Rows.Add(row);
 
-						fieldTable.Rows.Add(fieldRow);
+					if (user.users.Fields != null)
+					{
+						foreach (var field in user.users.Fields.Keys)
+						{
+							var fieldRow = fieldTable.NewRow();
+							fieldRow["ItemNumber"] = user.users.ItemNumber;
+							fieldRow["FieldName"] = field ?? (object)DBNull.Value;
+							fieldRow["FieldValue"] = user.users.Fields[field] ?? (object)DBNull.Value;
+							var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
+							if (fieldType != null)
+							{
+								fieldRow["FieldTypeID"] = fieldType.ID;
+							}
+							else
+							{
+								fieldRow["FieldTypeID"] = (object)DBNull.Value;
+							}
+							fieldRow["LookupValue"] = (object)DBNull.Value;
+
+							fieldTable.Rows.Add(fieldRow);
+						}
 					}
 				}
 			}
@@ -971,7 +995,7 @@ end";
 										[Username] [nvarchar](250),
 										[FirstName] [nvarchar](250),
 										[LastName] [nvarchar](250),
-										[Password] [nvarchar](50) MASKED WITH (FUNCTION = 'default()'),
+										[Password] [nvarchar](50),
 										[State] [int],
 										[IsAdministrator] [bit],
 										[IsNew] [bit],
@@ -989,7 +1013,7 @@ end";
 											[FieldValue] [nvarchar](max),
 											[LookupValue] [nvarchar](max),
 											[FieldTypeID] [int],
-											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber] ASC)
+											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber], FieldTypeID)
 									);"
 					,
 						transaction: trans);
