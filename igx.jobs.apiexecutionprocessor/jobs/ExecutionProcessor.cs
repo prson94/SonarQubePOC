@@ -9,8 +9,6 @@ using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
-using DocumentFormat.OpenXml.ExtendedProperties;
-using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
