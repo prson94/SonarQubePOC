@@ -139,6 +139,23 @@ namespace repositories.azure
 					}				
 				}
 
+				//
+				if (response == null)
+				{
+					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
+						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						   from ResourceGroup s
+						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
+						   where groupid = @groupid 
+						   and r.Uid in @userUids",
+						new { userUids, groupId });
+
+					if (!string.IsNullOrWhiteSpace(useruIdsstring))
+					{
+						response = new(400, string.Format(Error.UserAlreadyMemberOfGroup, useruIdsstring));
+					}
+			}
+
 				if (response == null)
 				{
 					var rowsUpdated = await connection.ExecuteAsync(@"
