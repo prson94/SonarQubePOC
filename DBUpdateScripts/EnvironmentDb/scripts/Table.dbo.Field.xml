@@ -36,7 +36,7 @@ END
   </sql>
  </changeSet>
 
- <changeSet author="Pappas" id="Indices.dbo.Field-v5" runInTransaction="false">
+ <changeSet author="Pappas" id="Indices.dbo.Field-v5.1" runInTransaction="false">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 	if exists (select * from sys.indexes where name = 'UQ_Field_ID')
@@ -60,9 +60,9 @@ END
 		create nonclustered index IX_Field_FieldType_Include ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE(FormattedValue, [Value], UpdatedOn)
 	end
 
-	if exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_Ids')
+	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_Ids')
 	begin
-		drop index IX_Field_FieldTypeID_Include_Ids ON [dbo].[Field]
+		create nonclustered index [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
 	end
 
 	declare @ids table (ID bigint)
@@ -87,9 +87,14 @@ END
 		drop index [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field]
 	end
 	
-	if not exists (select * from sys.indexes where Name = 'IX_Field_Asset_FieldType')
+	if exists (select * from sys.indexes where Name = 'IX_Field_Asset_FieldType')
 	begin
-		create unique nonclustered index IX_Field_Asset_FieldType on [dbo].[Field] ( [AssetID] asc, [FieldTypeID] asc ) include ([Value], FormattedValue) where AssetID is not null and FieldTypeID is not null
+		DROP INDEX [IX_Field_Asset_FieldType] ON [dbo].[Field]
+	end
+
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldType_Asset')
+	begin
+		create unique nonclustered index IX_Field_FieldType_Asset on [dbo].[Field] ( [FieldTypeID] ASC, [AssetID] ASC ) include (FormattedValue, [Value]) where (FieldTypeID is not null and AssetID is not null)
 	end
 	
 	if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID')

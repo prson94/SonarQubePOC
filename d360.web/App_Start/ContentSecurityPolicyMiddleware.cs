@@ -52,9 +52,20 @@ namespace d360.web
 			// Get base CSP
 			var directives = Policies.ToDictionary(d => d.Key, d => d.Value.ToList());
 
-			string ancestor = "";
-			var cmy = DependencyResolver.Current.GetService<ICommunity>();
-			ancestor = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.FramingDomains);
+			string cspKey = "CspHeaders";
+			
+			string ancestor = null;
+
+			if (Cache.ListItemExists<string, int>(cspKey, companyID ?? 0))
+			{
+				ancestor = Cache.GetItemInListByID<string, int>(cspKey, companyID ?? 0);
+			}
+			else 
+			{
+				var cmy = DependencyResolver.Current.GetService<ICommunity>();
+				ancestor = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.FramingDomains);
+				Cache.SetItemInListByID(cspKey, companyID ?? 0, ancestor, true, 5);
+			}
 
 			//If company has a frame setting, a CSP header should be added to allow the frame ancestors
 			if (!string.IsNullOrEmpty(ancestor))
@@ -79,9 +90,25 @@ namespace d360.web
 			int? resourceId = request.Get<int?>("ResourceID");
 			if (resourceId.HasValue)
 			{
-				var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
-				var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
-				context.Set("ApplicationLanguageSetting", lang?.Value);
+				string langKey = "ResourceLanguages";
+				string resourceKey = $"{companyID ?? 0}_{resourceId.Value}";
+				string langValue = null;
+				if (Cache.ListItemExists<string, string>(langKey, resourceKey))
+				{
+					langValue = Cache.GetItemInListByID<string, string>(langKey, resourceKey);
+				}
+				else
+				{
+					var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
+					var lang = ctx.ResourceSettings.FirstOrDefault(x => x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
+					if (lang != null)
+					{
+						langValue = lang.Value;
+					}
+					Cache.SetItemInListByID(langKey, resourceKey, langValue);
+				}
+
+				context.Set("ApplicationLanguageSetting", langValue);
 			}
 
 
