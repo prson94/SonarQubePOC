@@ -70,10 +70,20 @@ namespace d360.web
                 if (companyID.HasValue && !host.Contains("-d3s") && !host.Contains("-igx") && !host.Contains("-pcy")) // If d3s url, automatically allow the user as they are a Data3Sixty/Precisely/Infogix employee.  Thrivent still has a d3s url
                 {
 					string ipXml = "<ips />";
-					var cmy = DependencyResolver.Current.GetService<ICommunity>();
-					ipXml = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.IpRestriction);
+					string ipKey = "IpRestrictions";
 
-                    var ip = new CompanyIpSetting { Value = ipXml };
+					if (Cache.ListItemExists<string, int>(ipKey, companyID ?? 0))
+					{
+						ipXml = Cache.GetItemInListByID<string, int>(ipKey, companyID ?? 0);
+					}
+					else
+					{
+						var cmy = DependencyResolver.Current.GetService<ICommunity>();
+						ipXml = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.IpRestriction);
+						Cache.SetItemInListByID(ipKey, companyID ?? 0, ipXml, true, 5);
+					}
+
+					var ip = new CompanyIpSetting { Value = ipXml };
                     var ranges = ip.Ranges;
 
                     if (ranges.Count > 0)
