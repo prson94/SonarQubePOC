@@ -730,6 +730,9 @@ end";
 
 				if (table.Rows.Count > 0)
 				{
+					await connection.ExecuteAsync(@"delete from api.ExecutionItem where executionid = @executionId", new { executionId});
+
+
 					SqlBulkCopy bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
