@@ -594,7 +594,7 @@ namespace repositories.azure
 				}
 				var parameters = new
 				{
-					q = q
+					q
 				};
 
 				using (var connection = (SqlConnection)ConnectionProvider.Connect())
