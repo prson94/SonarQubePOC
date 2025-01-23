@@ -1066,7 +1066,7 @@ select * from [Resource] where ID = @userId";
 				else
 				{
 					await connection.ExecuteAsync(
-						"insert into CompanyDigestExecution (CompanyID, InvocationID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
+						"insert into CompanyDigestExecution (CompanyID, InstanceID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
 						new { companyId, invocationId });
 				}
 			}
