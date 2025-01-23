@@ -25,7 +25,6 @@ namespace d360.model
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
             builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
             builder.RegisterType<ResourceRepository>().As<IResourceRepository>().InstancePerRequest();
-            builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();

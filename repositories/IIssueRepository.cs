@@ -11,8 +11,8 @@ namespace repositories
 
         Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid assetTypeUid);
 
-        IssueType GetIssueTypeByUID(Guid issueTypeUid);
+        Task<IssueType> GetIssueTypeByUID(Guid issueTypeUid);
 
-        Issue GetIssueByUID(Guid issueUid);
+        Task<Issue> GetIssueByUID(Guid issueUid);
     }
 }

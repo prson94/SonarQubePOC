@@ -270,11 +270,8 @@ namespace d360.web
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
-				builder.RegisterType<Workflow>().As<IWorkflow>()
-					.InstancePerRequest().OnActivating(i => {
-						var sec = i.Context.Resolve<ISecurityContextProvider>();
-						i.Instance.CurrentUserId = sec.ResourceID;
-					});
+				builder.RegisterType<repositories.azure.Workflow>().As<IWorkflow>()
+					.InstancePerRequest();
 
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {

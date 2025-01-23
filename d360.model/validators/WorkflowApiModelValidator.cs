@@ -10,11 +10,11 @@ namespace d360.model.validators
     public class WorkflowApiModelValidator : IWorkflowApiModelValidator
     {
         private readonly IAssetRepository assetRepository;
-        private readonly IIssueRepository issueRepository;
+        private readonly IWorkflow issueRepository;
         private readonly IRelationshipRepository relationshipRepository;
         private readonly IWorkflowRepository workflowRepository;
 
-        public WorkflowApiModelValidator(IAssetRepository assetRepository, IIssueRepository issueRepository,
+        public WorkflowApiModelValidator(IAssetRepository assetRepository, IWorkflow issueRepository,
             IRelationshipRepository relationshipRepository,
             IWorkflowRepository workflowRepository)
         {
@@ -220,7 +220,7 @@ namespace d360.model.validators
                 string assettypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
                 if (Guid.TryParse(assettypeUIDString, out Guid actiontypeUID))
                 {
-                    core.entities.IssueType issueType = issueRepository.GetIssueTypeByUID(actiontypeUID);
+                    core.entities.IssueType issueType = issueRepository.GetIssueTypeByUID(actiontypeUID).Result;
                     if (issueType == null)
                     {
                         isValid = false;
@@ -382,7 +382,7 @@ namespace d360.model.validators
                 
                 if (Guid.TryParse(assetUIDString, out Guid actionUID))
                 {
-                    core.entities.Issue issueType = issueRepository.GetIssueByUID(actionUID);
+                    core.entities.Issue issueType = issueRepository.GetIssueByUID(actionUID).Result;
                     
                     if (issueType == null)
                     {

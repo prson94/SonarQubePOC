@@ -561,18 +561,18 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public IIssueRepository GetIssueRepository()
+        public IWorkflow GetIssueRepository()
         {
-            var mock = new Mock<IIssueRepository>();
+            var mock = new Mock<IWorkflow>();
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
-                .Returns(new IssueType());
+                .ReturnsAsync(new IssueType());
 
             mock.Setup(x => x.GetAllocationByAssetType(It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new List<IssueTypeApiModel>() { new IssueTypeApiModel(), new IssueTypeApiModel() } as IEnumerable<IssueTypeApiModel>));
 
 
             mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
-                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
+                .ReturnsAsync((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
 
             return mock.Object;
         }
