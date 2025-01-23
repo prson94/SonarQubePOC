@@ -22,9 +22,9 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        private readonly ICommentRepository Comments;
+        private readonly ISocial Comments;
 
-        public CommentsController(ICoreComponentSet set, ICommentRepository comments) : base(set)
+        public CommentsController(ICoreComponentSet set, ISocial comments) : base(set)
         {
             Comments = comments;
         }

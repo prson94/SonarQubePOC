@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
+using repositories.azure;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,11 +37,12 @@ namespace d360.web.Controllers.V2
 	public class ActionsController : BaseV2ApiController
 	{
 		private readonly IAssetRepository assetRepository;
-		private readonly ICommentRepository commentRepository;
+		private readonly ISocial commentRepository;
 		private readonly IIssueRepository issueRepository;
 		private readonly IResponsibilityRepository responsibilityRepository;
 
-		public ActionsController(ICoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
+
+		public ActionsController(ICoreComponentSet set, ISocial comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
 			: base(set)
 		{
 			assetRepository = assets;
