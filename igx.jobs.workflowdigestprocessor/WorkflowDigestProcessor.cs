@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Membership;
+using d360.core.enums;
 using d360.extensions;
 using d360.extensions.info;
 using d360.model;
@@ -61,8 +62,10 @@ namespace igx.jobs.workflowdigestprocessor
 						{ "UrlPrefix", c.UrlPrefix }
 					};
 
-					int digestDays = await Community.ReadSettingValueAsync<int>(c.CompanyID, d360.core.enums.Setting.WorkflowCatchAllGroup);
-					SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(c.CompanyID);
+					var settings = await Community.ReadSettingsAsync(c.CompanyID);
+					int digestDays = int.Parse(settings.Single(o => o.ID == Setting.WorkflowDigestEmailDays).Value);
+					var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
+					var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
 
 					using (log.BeginScope(logProperties))
 					{
@@ -87,12 +90,13 @@ namespace igx.jobs.workflowdigestprocessor
 								{
 									CompanyID = c.CompanyID,
 									CompanyPrefix = c.UrlPrefix,
+									PrimaryCompanyPrefix = c.UrlPrefix,
 									ResourceID = 0,
 									IsAdministrator = true
 								};
 								using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() } ))
 								{
-									await company.SendDigestEmails(c.EnvironmentLevel, wfsv.fromName, wfsv.fromEmail, digestDays);
+									await company.SendDigestEmails(c.EnvironmentLevel, fromName, fromEmail, digestDays);
 								}
 							}
 						}

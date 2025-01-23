@@ -1110,6 +1110,7 @@ select * from [Resource] where ID = @userId";
 		}
 
 		#region "Company Setting"
+		
 		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId)
 		{
 			return (await ReadSettingsAsync(companyId)).ToDictionary(k => k.ID.ToString(), v => v.Value);
@@ -1197,30 +1198,6 @@ select * from [Resource] where ID = @userId";
 			}
 
 			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public async Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId)
-		{
-			SettingValuesForWorkflow wfsv;
-
-			string sql = $@"declare @defaultGroup nvarchar(10),
-							@fromName nvarchar(4000),
-							@fromEmail nvarchar(4000);
-							select @defaultGroup = [Value] from CompanySetting where CompanyId = @companyId and ID = @defaultid;
-							select @fromName = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromNameid;
-							select @fromEmail = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromEmailid;
-							select cast(COALESCE(try_cast(@defaultGroup as int),0) as nvarchar(10)) defaultGroup,
-								   @fromName fromName,
-								   @fromEmail fromEmail;";
-			using (var connection = (SqlConnection)Connect(true))
-			{
-				wfsv = await connection.QueryFirstOrDefaultAsync<SettingValuesForWorkflow>(sql, 
-						new { companyId, defaultid = (int)Setting.WorkflowCatchAllGroup, fromNameid = (int)Setting.WorkflowFromName,
-							fromEmailid = (int)Setting.WorkflowFromEmail
-						});
-			}
-
-			return wfsv;
 		}
 
 		public async Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting)
