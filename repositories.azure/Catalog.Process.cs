@@ -487,12 +487,12 @@ namespace repositories.azure
 							//Copy relationship from source asset to target asset
 							if (copyRelationshipModel.Count > 0)
 							{
-								CopyRelationships(execution, copyRelationshipModel, conn, trans);
+								await CopyRelationships(execution, copyRelationshipModel, conn, trans);
 							}
 
 							if (pdCopyMapper.Count > 0)
 							{
-								CopyTags(execution, pdCopyMapper, conn, trans);
+								await CopyTags(execution, pdCopyMapper, conn, trans);
 							}
 						}
 
@@ -655,9 +655,6 @@ namespace repositories.azure
 						});
 					}
 				}
-
-				//TODO: Chetan -> Move this piece of Code to Controller layer (IQueueSource QueueSource)
-				//QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				return validationRes;
 			}
 		}
