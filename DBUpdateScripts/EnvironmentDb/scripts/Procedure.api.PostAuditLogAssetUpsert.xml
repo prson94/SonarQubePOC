@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogAssetUpsert-v1">
+  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogAssetUpsert-v1.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.PostAuditLogAssetUpsert
@@ -111,7 +111,7 @@ begin
 					when 'D' then 'The relationship was removed because one of the associated assets was updated.'
 					when 'U' then 'This relationship has been updated.'
 					else 'This relationship has been created.'
-				end	 + '.',
+				end,
 				'RELATIONSHIP'
 		from	api.ExecutionLog l
 				cross apply openjson(l.Payload) with (ActionObjectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectName nvarchar(max), TypeName nvarchar(250), [Action] char(1)) p 

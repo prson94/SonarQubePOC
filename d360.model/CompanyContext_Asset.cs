@@ -381,6 +381,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										where ProcessUid = @ProcessUid
 										and i.IsSubject = 0;
 
+										delete t
+										from dbo.InProcessRelationAuditLog t
+										where ProcessUid = @ProcessUid;
 
 									select @totalcount = count(id) from #tempintersect;
 									while (@runcount <= @totalcount)
@@ -1021,7 +1024,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
 				Guid processUid = new Guid();
-
+				processUid = Guid.NewGuid(); 
+				
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
 				try
@@ -1990,6 +1994,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 			'R'
 	from	dbo.InProcessRelationAuditLog i
 	where ProcessUid = @processUid;
+
+	delete t
+	from dbo.InProcessRelationAuditLog t
+	where ProcessUid = @ProcessUid;
+
 ";
 
 										Connection.Execute(rlogSql, new { execution.Id, execution.ExecutionID, processUid}, transaction: trans, commandTimeout: timeout);
