@@ -132,7 +132,6 @@
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
-	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.queue.ResponsibilityIndex.xml"/>
 	<include file="scripts/Table.queue.Search.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
@@ -348,19 +347,19 @@
 	<include file="scripts/Procedure.dbo.PatchCatalog.xml"/>
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
-    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
-    <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+  <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+  <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateOwnerShipDataForGetAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderRelationshipField.xml"/>
+
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Procedure.metrics.GenerateScore.xml"/>
 	<include file="scripts/Procedure.metrics.GetImpactedAssetsForAssetResults.xml"/>
 	
-	<include file="scripts/Procedure.Queue.DeleteQueueTaskRecords.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
@@ -368,12 +367,11 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
-    <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+  <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
 	<include file="scripts/Procedure.dbo.CachedAssetFiltersProvider.xml"/>
 	<include file="scripts/Procedure.usage.Add.xml"/>
 	<include file="scripts/Procedure.dbo.GetRulesForRerun.xml"/>
-
-    <include file="scripts/Function.Deletions.xml"/>
+  <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
 	<include file="scripts/View.Deletions.xml"/>
 	<include file="scripts/Table.Deletions.xml"/>

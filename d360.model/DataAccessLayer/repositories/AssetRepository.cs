@@ -50,11 +50,6 @@ namespace d360.model.DataAccessLayer
 			StorageProvider = storageProvider;
 		}
 
-		public Asset GetAssetByObjectId(string obj, int objId)
-		{
-			return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
-		}
-
 		public Asset GetAssetByUID(Guid assetUid)
 		{
 			if (assetUid == Guid.Empty)
@@ -2206,90 +2201,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			model.items = results;
 
 			return model;
-		}
-
-		public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-
-			int pageSize = 5000;
-			int pageNum = 0;
-			bool includeTotal = true;
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
-				{
-					pageSize = res;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
-				{
-					pageNum = res - 1;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
-			{
-				if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
-				{
-					includeTotal = res;
-				}
-			}
-
-			dbArgs.Add("@assetTypeId", assetType.ID);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * pageNum);
-
-
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			int? total = null;
-			if (includeTotal)
-			{
-				var countSql = $@"
-				select 
-					count(1)
-				from 
-					Asset A
-				where 
-					A.assetTypeId = @assetTypeId";
-
-				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
-			}
-
-			var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs, ApiTimeout);
-
-			return new AssetPathResults
-			{
-				items = results,
-				total = total
-			};
 		}
 
 		public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false)
