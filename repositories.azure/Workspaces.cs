@@ -151,7 +151,7 @@ namespace repositories.azure
 
 					if (!string.IsNullOrWhiteSpace(useruIdsstring))
 					{
-						response = new(400, string.Format("User already member of group: {0}", useruIdsstring));
+						response = new(400, string.Format(Error.UserAlreadyMemberOfGroup, useruIdsstring));
 					}
 			}
 
