@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -11,6 +12,7 @@ using d360.core.resources;
 using d360.extensions;
 using d360.model.helpers.filters;
 using Dapper;
+using static LaunchDarkly.Logging.LogCapture;
 
 namespace repositories.azure
 {
@@ -293,47 +295,72 @@ namespace repositories.azure
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				var sql = "SELECT * FROM Comment WHERE Uid = @CommentUid";
-				var dbComment = connection.QuerySingleOrDefault<Comment>(sql, new { CommentUid = commentUid });
+				connection.Open();
 
-				if (dbComment == null)
+				using (var transaction = connection.BeginTransaction())
 				{
-					throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
-				}
+					try
+					{
+						var sql = "SELECT * FROM Comment WHERE Uid = @CommentUid";
+						var dbComment = connection.QuerySingleOrDefault<Comment>(sql, new { CommentUid = commentUid }, transaction);
 
-				if (dbComment.CreatedBy != CurrentUserId && !IsAdministrator)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermissionAdmin, Error.CommentUpdatePermissionAdmin);
-				}
+						if (dbComment == null)
+						{
+							throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+						}
 
-				bool commentUpdated = false;
-				var query = "SELECT COUNT(1) FROM Comment WHERE ParentID = @ParentID";
-				var exists = connection.ExecuteScalar<bool>(query, new { ParentID = dbComment.ID });
+						if (dbComment.CreatedBy != CurrentUserId && !IsAdministrator)
+						{
+							throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermissionAdmin, Error.CommentUpdatePermissionAdmin);
+						}
 
-				if (exists)
-				{
-					dbComment.IsDeleted = true;
-					dbComment.UpdatedBy = CurrentUserId;
-					dbComment.UpdatedOn = DateTime.UtcNow;
+						bool commentUpdated = false;
+						var query = "SELECT COUNT(1) FROM Comment WHERE ParentID = @ParentID";
+						var exists = connection.ExecuteScalar<bool>(query, new { ParentID = dbComment.ID }, transaction);
 
-					var sqlUpdate = @" UPDATE Comment SET IsDeleted = @IsDeleted, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn WHERE Id = @ID";
-					var affectedRows = connection.Execute(sqlUpdate, new { dbComment.IsDeleted, dbComment.UpdatedBy, dbComment.UpdatedOn, dbComment.ID });
-					commentUpdated = affectedRows > 0;
-				}
-				else
-				{
-					var sqlDelete = "DELETE FROM Comment WHERE Id = @Id";
-					var affectedDeleteRows = connection.Execute(sqlDelete, new { Id = dbComment.ID });
-					commentUpdated = affectedDeleteRows > 0;
-				}
+						if (exists)
+						{
+							dbComment.IsDeleted = true;
+							dbComment.UpdatedBy = CurrentUserId;
+							dbComment.UpdatedOn = DateTime.UtcNow;
 
-				if (commentUpdated)
-				{
-					return true;
-				}
-				else
-				{
-					throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.CommentNotRemoved);
+							var sqlUpdate = @" UPDATE Comment SET IsDeleted = @IsDeleted, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn WHERE Id = @ID";
+							var affectedRows = connection.Execute(sqlUpdate, new { dbComment.IsDeleted, dbComment.UpdatedBy, dbComment.UpdatedOn, dbComment.ID }, transaction);
+							commentUpdated = affectedRows > 0;
+						}
+						else
+						{
+							string checkCommentVote = @"SELECT 1 FROM CommentVote WHERE CommentId = @CommentId";
+
+							var hasCommentVote = connection.QueryFirstOrDefault<int>(checkCommentVote, new { CommentId = dbComment.ID }, transaction);
+
+							if (hasCommentVote > 0)
+							{
+								string deleteFromCommentVote = "DELETE FROM CommentVote WHERE CommentId = @CommentId";
+								connection.Execute(deleteFromCommentVote, new { CommentId = dbComment.ID }, transaction);
+							}
+
+							var sqlDelete = "DELETE FROM Comment WHERE Id = @Id";
+							var affectedDeleteRows = connection.Execute(sqlDelete, new { Id = dbComment.ID }, transaction);
+							commentUpdated = affectedDeleteRows > 0;
+							transaction.Commit();
+						}
+
+						if (commentUpdated)
+						{
+							return true;
+						}
+						else
+						{
+							throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.CommentNotRemoved);
+						}
+					}
+					catch (Exception)
+					{
+						transaction.Rollback();
+						connection.Close();
+						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.CommentNotRemoved);
+					}
 				}
 			}
 		}
