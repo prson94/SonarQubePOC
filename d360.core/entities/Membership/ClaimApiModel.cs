@@ -32,17 +32,4 @@ namespace d360.core.entities.Membership
 		public string Path { get; set; }
 		public ClaimAction Action { get; set; }
 	}
-
-	public class SettingValuesForWorkflow
-	{
-		[DataMember]
-		public string defaultGroup { get; set; } = "0";
-
-		[DataMember]
-		public string fromName { get; set; }= string.Empty;
-
-		[DataMember]
-		public string fromEmail { get; set; }=string.Empty;
-	}
-
 }
