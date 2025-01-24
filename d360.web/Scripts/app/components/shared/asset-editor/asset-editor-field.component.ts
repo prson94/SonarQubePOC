@@ -29,10 +29,22 @@ import { SelectItem } from 'primeng/api/selectitem';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { Dropdown } from 'primeng/dropdown';
+import { DropdownFilterEvent, DropdownFilterOptions } from 'primeng/dropdown';
+import { LazyDropdown } from '../../shared/controls/lazy-dropdown/lazy-dropdown';
+import { LazyMultiSelect } from '../../shared/controls/lazy-multiselect/lazy-multiselect';
+import { DropdownLazyLoadEvent } from '../../shared/controls/lazy-dropdown/lazy-dropdown.interface';
+import { MultiSelectLazyLoadEvent } from '../../shared/controls/lazy-multiselect/lazy-multiselect.interface'
+import { ScrollerOptions } from 'primeng/api'
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Table } from 'primeng/table';
-import { MultiSelect } from "primeng/multiselect";
+import { DomHandler } from 'primeng/dom';
+
+interface lazyLookupValue {
+	label: string,
+	value: any,
+	hasAssetReadAccess: boolean,
+	color: string
+}
 
 @Component({
     selector: 'asset-editor-field',
@@ -68,7 +80,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Output() listItemChange = new EventEmitter();
     @Output() relationItemChange = new EventEmitter();
 
-    private regexErrorMessage: string = $localize`The field doesnt meet the required pattern.`;
+	private regexErrorMessage: string = $localize`The field doesnt meet the required pattern.`;
+	private emptyMessage: string = $localize`No matches found`;
 
     private excludedRelationitems = {};
     private relationItemsLoading = false;
@@ -103,11 +116,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
 
     showLookupSearchField: boolean = false;
-    hadInitialLazyLoad: boolean = false;
+	hadInitialLazyLoad: boolean = false;
 
-    @ViewChild('dropdown', { static: false }) dropdown: Dropdown | MultiSelect;
+	virtualScrollOptions: ScrollerOptions = {
+		delay: 250,
+		showLoader: true,
+		lazy: true,
+	};
+
+	@ViewChild('dropdown', { static: false }) dropdown: LazyDropdown | LazyMultiSelect;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
-    @ViewChild("dataTable", { static: false }) dataTable: Table;
+	@ViewChild("dataTable", { static: false }) dataTable: Table;
 
     constructor(
         private fieldsService: FieldsObservableService,
@@ -153,7 +172,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
         
         return 'nonUniqueField' in formControl.errors || 'nonUniqueFieldCombination' in formControl.errors;
-    }
+	}
+
+	get fieldItems() {
+		return this.field.Items.map((i) => {
+			if ('label' in i) {
+				return i;
+			} else {
+				return { label: i.Text, ...i };
+			}
+		});
+	}
 
     //we do not want key fields error to disable submit button so we are handing this error differently
     public setKeyFieldsErrorMessage(isSingle: boolean) {
@@ -195,7 +224,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.ref.markForCheck();
     }
 
-    ngOnInit() {
+	ngOnInit() {
         if (this.field.FieldType !== 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
@@ -323,7 +352,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.field.Items.forEach((item) => {
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
-                this.selectSingleItem(null, { value: null });
+//                this.selectSingleItem(null, { value: null });
                 if (this.field.MultiSelect) {
                     this.field.Items = this.field.Items.filter((item) => value.includes(item.value));
                 } else {
@@ -338,7 +367,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.listItemChange.emit({ field: this.field, value });
                 this.ref.markForCheck();
             }, 250);
-        }
+		}
     }
 
 	ngOnChanges() {
@@ -354,12 +383,13 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.quill = this.ed.quill;
         }
 
-        if (this.dropdown && this.overlayPanel) {
-            const width = this.dropdown.el.nativeElement.offsetWidth;
-            if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
-                this.overlayPanel.container.style.width = width + "px";
-				this.overlayPanel.align();
-            }
+		if (this.dropdown && this.overlayPanel) {
+//			console.log('ngAfterViewChecked', this.dropdown instanceof LazyDropdown, this.dropdown instanceof ElementRef);
+//            const width = this.dropdown.el.nativeElement.offsetWidth;
+ //           if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
+  //              this.overlayPanel.container.style.width = width + "px";
+//				this.overlayPanel.align();
+  //          }
         }
 
     }
@@ -368,6 +398,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         if (this.fieldChangeSub != null) {
             this.fieldChangeSub.unsubscribe();
         }
+		if (this.lazyLookupSub) {
+			this.lazyLookupSub.unsubscribe();
+		}
         this.quill = null;
         this.ed = null;
     }
@@ -736,8 +769,18 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 
     lookupSelectedValue: any[] = [];
-    lookupValues: any[] = [];
-    lookupSub: Subscription;
+	lookupValues: any[] = [];
+	lookupSub: Subscription;
+
+	lazyFilterValue: string = '';
+	lazyLookupValues: lazyLookupValue[] = [];
+	lazyLookupSub: Subscription;
+	lazyLoading: boolean = false;
+	lazyMap: Map<string, lazyLookupValue[]> = new Map();
+
+	lazyFilter($event: DropdownFilterEvent, options: DropdownFilterOptions) {
+		console.log('lazy filter', $event, options);
+	}
 
     get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
@@ -753,12 +796,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         return false;
     }
 
-    lookupFieldClicked($event) {
+	lookupFieldClicked($event: PointerEvent) {
         if (this.isLookupFieldDisabled) {
             return;
-        }
+		}
+		if (DomHandler.hasClass($event.target, 'p-multiselect-token-icon')) {
+			return;
+		}
         this.overlayPanel.toggle($event);
-    }
+	}
 
     get lookupParentValue(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
@@ -784,11 +830,74 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	initLazyList() {
 		const loadParams = this.getLoadParams({ first: 0, rows: 0 });
 		this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
-			if (!this.lookupValues || this.lookupValues.length === 0) {
-				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null, hasAssetReadAccess: null }; });
+			if (!this.lazyMap.has('') || this.lazyMap.get('').length === 0) {
+				const lookupValues = this.createEmptyLookupValues(res.count);
+				this.lazyMap.set('', lookupValues);
+				this.lazyLookupValues = lookupValues;
 			}
-			this.setSelectionScrollHeight();
+			this.showLookupSearchField = (res.count > 10);
+			this.hadInitialLazyLoad = true;
+			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, 20), filter: '' });
 		});
+	}
+
+	createEmptyLookupValues(count: number): lazyLookupValue[] {
+		return Array.from({ length: count }, () => { return { label: null, value: null, color: null, hasAssetReadAccess: null }; });
+	}
+
+	lazyLoadValues(event: DropdownLazyLoadEvent | MultiSelectLazyLoadEvent) {
+		const take = event.last - event.first + 1;
+		const filter = event.filter ?? '';
+		const filterChanged = this.lazyFilterValue !== filter;
+		this.lazyFilterValue = filter;
+		var loadParams: any = this.getLoadParams({ first: event.first, rows: take, globalFilter: filter });
+
+		if (this.lazyLookupSub) {
+			this.lazyLookupSub.unsubscribe();
+		}
+
+		const callBackend = !this.lazyMap.has(filter) || this.lazyLookupValues.slice(event.first, event.last).some((i) => i.label == null);
+
+		if (!callBackend) {
+			if (filterChanged) {
+				this.lazyLookupValues = this.lazyMap.get(filter);
+				this.ref.detectChanges();
+			}
+			return;
+		}
+
+		this.lazyLookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
+			let lookupValues: lazyLookupValue[];
+
+			if (!this.lazyMap.has(filter) || this.lazyMap.get(filter).length === 0) {
+				lookupValues = this.createEmptyLookupValues(res.count);
+			} else {
+				lookupValues = this.lazyMap.get(filter);
+			}
+
+			const loadedData: lazyLookupValue[] = [];
+
+			res.items.forEach((str) => {
+				const color = str.color;
+				let hasAssetReadAccessValue = true;
+				if (str?.hasAssetReadAccess != null) {
+					hasAssetReadAccessValue = str.hasAssetReadAccess;
+				}
+				loadedData.push({ label: str.text, value: str.value, hasAssetReadAccess: hasAssetReadAccessValue, ...(color && { color }) });
+			});
+
+			Array.prototype.splice.apply(lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
+
+			if (lookupValues.length > res.count) {
+				lookupValues = lookupValues.slice(0, res.count);
+			}
+
+			this.lazyMap.set(filter, lookupValues)
+			this.lazyLookupValues = [...lookupValues];
+
+			this.ref.detectChanges();
+		});
+
 	}
 
 	getLoadParams($params) {
@@ -807,7 +916,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	}
 
 	loadListLazy($params) {
-
 		if (this.isLookupValuesLoading) {
 			return;
 		}
@@ -833,7 +941,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.showLookupSearchField = false;
             }
 
-            const loadedData = [];
+			const loadedData: lazyLookupValue[] = [];
 
             res.items.forEach((str) => {
 				const color = str.color;
@@ -870,20 +978,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				}
 			}
 
-			this.setSelectionScrollHeight();
-			
 			this.isLookupValuesLoading = false;
 			this.ref.detectChanges();
         });
-    }
-
-    onItemSelected(event) {
-    }
-
-    onDropdownChange($event: {originalEvent: PointerEvent; value: any}): void {
-        if($event.value === null) {
-            this.lookupSelectedValue = [];
-        }
     }
 
     //table extensions
@@ -904,7 +1001,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			if (!this.field.MultiSelect) {
 				this.overlayPanel.hide();
 			}
-            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+			this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+			event.preventDefault();
         }
 	}
 
@@ -932,7 +1030,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         return data ? `rgb(${data.r},${data.g},${data.b})` : '';
     }
 
-    onChangeMultiselect($event) {
+	onChangeMultiselect($event) {
+		console.log('onChangeMultiselect', $event);
         var values = this.form.controls[this.field.FieldName].value as any[];
         var newValues = [];
         this.lookupSelectedValue.forEach((item) => {
@@ -942,7 +1041,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         });
         this.lookupSelectedValue = newValues;
 
-        if (event) {
+        if ($event) {
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }
@@ -972,16 +1071,20 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	onItemInfoClick($event: MouseEvent, objectID: string): void {
 		$event.stopPropagation();
 		this.sidePanelSelectionChange.emit({ objectID: objectID.toLowerCase(), fieldName: this.field.FieldName });
+		this.dropdown.forceAlignOverlay(100);
 	}
 
-	setSelectionScrollHeight() {
-		const maxHeight: number = 320;
-		const minHeight: number = 50;
-		const calculatedHeight = Math.min(Math.max(this.lookupValues.length * 32, minHeight), maxHeight);
+	debug() {
+		let buffer = [];
+		buffer.push(this.form.controls[this.field.FieldName].getRawValue());
+		this.lazyMap.forEach((k, m) => {
+			buffer.push(m + ':' + JSON.stringify(k))
+		})
+		this.field.Items.forEach((i) => {
+			buffer.push(JSON.stringify(i));
+		});
 
-		setTimeout(() => {
-			this.selectionScrollHeight = calculatedHeight + "px";
-		}, 100);
+		return buffer.join('\r\n');
 	}
 
 }
