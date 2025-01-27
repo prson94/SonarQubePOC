@@ -975,7 +975,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	}
 
 	selectItem(event: Event, option: any) {
-		if (this.selectedOption != option) {
+		if (this.selectedOption !== option) {
 			this.selectedOption = option;
 			this.value = this.getOptionValue(option);
 
@@ -1002,7 +1002,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 		}
 
 		if (this.selectedOptionUpdated && this.itemsWrapper) {
-			let selectedItem = DomHandler.findSingle(this.overlayViewChild?.overlayViewChild?.nativeElement, 'li.p-highlight');
+			const selectedItem = DomHandler.findSingle(this.overlayViewChild?.overlayViewChild?.nativeElement, 'li.p-highlight');
 			if (selectedItem) {
 				DomHandler.scrollInView(this.itemsWrapper, selectedItem);
 			}

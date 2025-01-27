@@ -1018,7 +1018,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	isOptionDisabled(option: any) {
-		let disabled = this.optionDisabled ? ObjectUtils.resolveFieldData(option, this.optionDisabled) : option && option.disabled !== undefined ? option.disabled : false;
+		const disabled = this.optionDisabled ? ObjectUtils.resolveFieldData(option, this.optionDisabled) : option && option.disabled !== undefined ? option.disabled : false;
 		return disabled || (this.maxSelectionLimitReached && !this.isSelected(option));
 	}
 
