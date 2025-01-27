@@ -149,8 +149,8 @@
 
                         <ng-template #itemFragment let-item="item">
                             <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
-                                <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
-                                <span class="ig-colorfield-item-label">{{item.label}}</span>
+                                <div class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></div>
+                                <div class="ig-colorfield-item-label">{{item.label}}</div>
                             </div>
 
                             <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
@@ -182,6 +182,7 @@
                                          (onLazyLoad)="lazyLoadValues($event)"
                                          filterBy="label"
                                          [lazy]="true"
+                                         [resetFilterOnHide]="true"
                                          [initialItems]="fieldItems"
                                          [showClear]="true"
                                          [required]="isRequired()"
@@ -211,12 +212,15 @@
                                             [attr.name]="field.FieldName"
                                             [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                             [maxSelectedLabels]="5"
+                                            dataKey="value"
                                             optionValue="value"
                                             [options]="lazyLookupValues"
                                             optionLabel="label"
                                             [filter]="showLookupSearchField"
                                             (onLazyLoad)="lazyLoadValues($event)"
+                                            (onChange)="onChangeMultiselect($event)"
                                             [lazy]="true"
+                                            [resetFilterOnHide]="true"
                                             [initialItems]="fieldItems"
                                             [required]="isRequired()"
                                             [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
@@ -226,6 +230,10 @@
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="32"
                                             [virtualScrollOptions]="virtualScrollOptions">
+
+                            <ng-template pTemplate="removetokenicon">
+                                <span class="p-multiselect-token-icon pi pi-times"></span>
+                            </ng-template>
 
                             <ng-template let-item pTemplate="item">
                                 <ng-container [ngTemplateOutlet]="itemFragment"

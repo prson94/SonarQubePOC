@@ -113,6 +113,7 @@
 
 .p-multiselect-panel ig-lazymultiselectitem li.p-multiselect-item {
 	display: flex;
+	margin: 0px;
 }
 
 .p-multiselect-panel ul {

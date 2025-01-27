@@ -139,7 +139,7 @@ export class LazyDropdownItem {
                 <ng-container *ngIf="!selectedItemTemplate">{{ label || 'empty' }}</ng-container>
                 <ng-container *ngTemplateOutlet="selectedItemTemplate; context: { $implicit: selectedOption }"></ng-container>
             </span>
-            <span [ngClass]="{ 'p-dropdown-label p-inputtext p-placeholder': true, 'p-dropdown-label-empty': placeholder == null || placeholder.length === 0 }" *ngIf="!editable && label == null">Y-{{ placeholder || 'empty' }}</span>
+            <span [ngClass]="{ 'p-dropdown-label p-inputtext p-placeholder': true, 'p-dropdown-label-empty': placeholder == null || placeholder.length === 0 }" *ngIf="!editable && label == null">{{ placeholder || 'empty' }}</span>
             <input
                 #editableInput
                 type="text"
@@ -940,7 +940,6 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	}
 
 	getOptionLabel(option: any) {
-		console.log('getOptionLabel', option);
 		return this.optionLabel ? ObjectUtils.resolveFieldData(option, this.optionLabel) : option && option.label !== undefined ? option.label : option;
 	}
 
@@ -1038,6 +1037,9 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	 */
 	public resetFilter(): void {
 		this._filterValue = null;
+		if (this.lazy) {
+			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+		}
 
 		if (this.filterViewChild && this.filterViewChild.nativeElement) {
 			this.filterViewChild.nativeElement.value = '';
@@ -1527,7 +1529,6 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 					return this.selectedOption;
 				} else {
 					const initialIdx = this.findOptionIndex(val, this.initialItems);
-					console.log('initialIdx', initialIdx, val, this.initialItems);
 					if (initialIdx >= 0) {
 						return this.initialItems[initialIdx]
 					} else if (val !== null) {

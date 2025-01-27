@@ -352,7 +352,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.field.Items.forEach((item) => {
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
-//                this.selectSingleItem(null, { value: null });
+                this.selectSingleItem(null, { value: null });
                 if (this.field.MultiSelect) {
                     this.field.Items = this.field.Items.filter((item) => value.includes(item.value));
                 } else {
@@ -382,16 +382,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
         }
-
-		if (this.dropdown && this.overlayPanel) {
-//			console.log('ngAfterViewChecked', this.dropdown instanceof LazyDropdown, this.dropdown instanceof ElementRef);
-//            const width = this.dropdown.el.nativeElement.offsetWidth;
- //           if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
-  //              this.overlayPanel.container.style.width = width + "px";
-//				this.overlayPanel.align();
-  //          }
-        }
-
     }
 
     ngOnDestroy() {
@@ -778,11 +768,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	lazyLoading: boolean = false;
 	lazyMap: Map<string, lazyLookupValue[]> = new Map();
 
-	lazyFilter($event: DropdownFilterEvent, options: DropdownFilterOptions) {
-		console.log('lazy filter', $event, options);
-	}
-
-    get lookupSelectPlaceholder(): string {
+	get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
             return $localize`Select a ${this.field.ParentFieldTypeName}`;
         }
@@ -915,74 +901,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 		return loadParams;
 	}
 
-	loadListLazy($params) {
-		if (this.isLookupValuesLoading) {
-			return;
-		}
-
-		var loadParams: any = this.getLoadParams($params);
-
-		this.hadInitialLazyLoad = true;
-        this.isLookupValuesLoading = true;
-
-        if (this.lookupSub) {
-            this.lookupSub.unsubscribe();
-        }
-
-		this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
-			if (!this.lookupValues || this.lookupValues.length === 0 || this.lookupValues.length < res.count) {
-				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null, hasAssetReadAccess: null }; });
-			}
-
-            if (this.lookupValues.length > 10 || loadParams["filter"]) {
-                this.showLookupSearchField = true;
-            }
-            else {
-                this.showLookupSearchField = false;
-            }
-
-			const loadedData: lazyLookupValue[] = [];
-
-            res.items.forEach((str) => {
-				const color = str.color;
-				let hasAssetReadAccessValue = true;
-				if (str?.hasAssetReadAccess != null) {
-					hasAssetReadAccessValue = str.hasAssetReadAccess;
-				}
-				loadedData.push({ label: str.text, value: str.value, hasAssetReadAccess: hasAssetReadAccessValue, ...(color && { color }) });
-            });
-
-            Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
-
-            if (this.lookupValues.length > res.count) {
-                this.lookupValues = this.lookupValues.slice(0, res.count);
-			}
-
-			// Until we can use the PrimeNG dropdown filter template https://github.com/primefaces/primeng/issues/11628
-			// The Virtual scroll will shrink the dropdown container if there is less than 10 items in the list, and will not
-			// take the filter input field into account, so the area shrinks too much.
-			// By adding an empty element and hiding it, the area size is usable.
-			// This should be redone once PrimeNG has been updated to 14.x
-			if (this.showLookupSearchField && this.lookupValues.length < 10) {
-				this.lookupValues.push({ label: null, value: null, color: null, hasAssetReadAccess: null });
-			}
-
-			this.lookupValues = [...this.lookupValues];
-			
-			if (!this.field.MultiSelect) {
-				const selectedItem = this.lookupValues.find((lookup) => {
-					return lookup.value?.toLowerCase() === this.dropdown.value?.toLowerCase();
-				});
-				if (selectedItem?.value) {
-					this.selectSingleItem(null, selectedItem);
-				}
-			}
-
-			this.isLookupValuesLoading = false;
-			this.ref.detectChanges();
-        });
-    }
-
     //table extensions
 	selectSingleItem(event: MouseEvent, item: SelectItem) {
 		event?.preventDefault();
@@ -1073,18 +991,4 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 		this.sidePanelSelectionChange.emit({ objectID: objectID.toLowerCase(), fieldName: this.field.FieldName });
 		this.dropdown.forceAlignOverlay(100);
 	}
-
-	debug() {
-		let buffer = [];
-		buffer.push(this.form.controls[this.field.FieldName].getRawValue());
-		this.lazyMap.forEach((k, m) => {
-			buffer.push(m + ':' + JSON.stringify(k))
-		})
-		this.field.Items.forEach((i) => {
-			buffer.push(JSON.stringify(i));
-		});
-
-		return buffer.join('\r\n');
-	}
-
 }

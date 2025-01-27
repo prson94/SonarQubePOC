@@ -1089,10 +1089,9 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 	findSelectionIndex(val: any): number {
 		let index = -1;
-
 		if (this.value) {
 			for (let i = 0; i < this.value.length; i++) {
-				if (ObjectUtils.equals(this.value[i], val), this.dataKey) {
+				if (ObjectUtils.equals(this.value[i], val, typeof val == 'object' ? this.dataKey : null)) {
 					index = i;
 					break;
 				}
@@ -1230,6 +1229,9 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 		this._filterValue = null;
 		this._filteredOptions = null;
+		if (this.lazy) {
+			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+		}
 	}
 
 	close(event: Event) {
@@ -1267,9 +1269,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	removeChip(chip: LazyMultiSelectItem, event: MouseEvent) {
-		console.log('chip', chip, this.value);
-		this.value = (<any[]>this.value).filter((val) => !ObjectUtils.equals(val, chip, this.dataKey));
-		console.log('val2', this.value);
+		this.value = (<any[]>this.value).filter((val) => !ObjectUtils.equals(val, chip, typeof val == 'object' ? this.dataKey : null));
 		this.onModelChange(this.value);
 		this.checkSelectionLimit();
 		this.onChange.emit({ originalEvent: event, value: this.value, itemValue: chip });
@@ -1433,9 +1433,10 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			let option = options[i];
 			let optionValue = this.getOptionValue(option);
 
-			if ((val == null && optionValue == null) || ObjectUtils.equals(val, optionValue, this.dataKey)) {
+			if ((val == null && optionValue == null) || ObjectUtils.equals(val, optionValue, typeof val == 'object' ? this.dataKey : null)) {
+
 				label = this.getOptionLabel(option);
-				if (this.lazy && !this._lazySelectedOptions.some((o) => ObjectUtils.equals(this.getOptionValue(option), this.getOptionValue(o))), this.dataKey) {
+				if (this.lazy && !this._lazySelectedOptions.some((o) => ObjectUtils.equals(this.getOptionValue(option), this.getOptionValue(o)))) {
 					this._lazySelectedOptions.push(option);
 				}
 				break;
