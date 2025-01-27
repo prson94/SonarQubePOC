@@ -942,6 +942,8 @@ end";
 
 				usersvalidaterow.Message = messages.Any() ? string.Join(". ", messages) + ". " : "";
 
+				usersvalidaterow.Message = usersvalidaterow.Message.Replace("..", ".").Trim();
+
 				usersvalidate.Add(usersvalidaterow);
 			}
 
