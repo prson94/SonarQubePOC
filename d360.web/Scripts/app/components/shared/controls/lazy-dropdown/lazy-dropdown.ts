@@ -40,6 +40,8 @@ import { DropdownChangeEvent, DropdownFilterEvent, DropdownFilterOptions } from 
 import { DropdownLazyLoadEvent } from './lazy-dropdown.interface';
 import { Nullable } from 'primeng/ts-helpers';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const DROPDOWN_VALUE_ACCESSOR: any = {
 	provide: NG_VALUE_ACCESSOR,
 	useExisting: forwardRef(() => LazyDropdown),
@@ -1142,7 +1144,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 						this.scroller?.scrollToIndex(selectedIndex);
 					}
 				} else {
-					let selectedListItem = DomHandler.findSingle(this.itemsWrapper, '.p-dropdown-item.p-highlight');
+					const selectedListItem = DomHandler.findSingle(this.itemsWrapper, '.p-dropdown-item.p-highlight');
 
 					if (selectedListItem) {
 						selectedListItem.scrollIntoView({ block: 'nearest', inline: 'center' });

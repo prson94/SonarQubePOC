@@ -41,6 +41,8 @@ import { Nullable } from 'primeng/ts-helpers';
 import { MultiSelectRemoveEvent, MultiSelectFilterOptions, MultiSelectFilterEvent, MultiSelectBlurEvent, MultiSelectChangeEvent, MultiSelectFocusEvent } from 'primeng/multiselect';
 import { MultiSelectLazyLoadEvent } from './lazy-multiselect.interface';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const MULTISELECT_VALUE_ACCESSOR: any = {
 	provide: NG_VALUE_ACCESSOR,
 	useExisting: forwardRef(() => LazyMultiSelect),
