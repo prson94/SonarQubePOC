@@ -829,8 +829,10 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 	public _filteredOptions: any[] | undefined | null;
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	public onModelChange: Function = () => { };
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	public onModelTouched: Function = () => { };
 
 	public valuesAsString: string | undefined;
@@ -1002,7 +1004,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	getOptionLabel(option: any) {
-		return this.optionLabel ? ObjectUtils.resolveFieldData(option, this.optionLabel) : option && option.label != undefined ? option.label : option;
+		return this.optionLabel ? ObjectUtils.resolveFieldData(option, this.optionLabel) : option && option.label !== undefined ? option.label : option;
 	}
 
 	getOptionValue(option: any) {
@@ -1010,7 +1012,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	getOptionGroupLabel(optionGroup: any) {
-		return this.optionGroupLabel ? ObjectUtils.resolveFieldData(optionGroup, this.optionGroupLabel) : optionGroup && optionGroup.label != undefined ? optionGroup.label : optionGroup;
+		return this.optionGroupLabel ? ObjectUtils.resolveFieldData(optionGroup, this.optionGroupLabel) : optionGroup && optionGroup.label !== undefined ? optionGroup.label : optionGroup;
 	}
 
 	getOptionGroupChildren(optionGroup: any) {
@@ -1057,14 +1059,14 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	onOptionClick(event: { originalEvent: Event; option: any }) {
-		let option = event.option;
+		const option = event.option;
 		if (this.isOptionDisabled(option)) {
 			return;
 		}
 
 		let optionValue = this.getOptionValue(option);
 		let selectionIndex = this.findSelectionIndex(optionValue);
-		if (selectionIndex != -1) {
+		if (selectionIndex !== -1) {
 			this.value = (this.value as any[]).filter((val, i) => i != selectionIndex);
 			this.onRemove.emit({ newValue: this.value, removed: optionValue });
 
@@ -1104,11 +1106,11 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	get toggleAllDisabled(): boolean {
-		let optionsToRender = this.optionsToRender;
+		const optionsToRender = this.optionsToRender;
 		if (!optionsToRender || optionsToRender.length === 0) {
 			return true;
 		} else {
-			for (let option of optionsToRender) {
+			for (const option of optionsToRender) {
 				if (!this.isOptionDisabled(option)) return false;
 			}
 
@@ -1449,7 +1451,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	get allChecked(): boolean {
-		let optionsToRender = this.optionsToRender;
+		const optionsToRender = this.optionsToRender;
 		if (!optionsToRender || optionsToRender.length === 0) {
 			return false;
 		} else {
@@ -1458,10 +1460,10 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			let selectedEnabledItemsLength = 0;
 			let visibleOptionsLength = this.group ? 0 : this.optionsToRender.length;
 
-			for (let option of optionsToRender) {
+			for (const option of optionsToRender) {
 				if (!this.group) {
-					let disabled = this.isOptionDisabled(option);
-					let selected = this.isSelected(option);
+					const disabled = this.isOptionDisabled(option);
+					const selected = this.isSelected(option);
 
 					if (disabled) {
 						if (selected) selectedDisabledItemsLength++;
@@ -1471,9 +1473,9 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 						else return false;
 					}
 				} else {
-					for (let opt of this.getOptionGroupChildren(option)) {
-						let disabled = this.isOptionDisabled(opt);
-						let selected = this.isSelected(opt);
+					for (const opt of this.getOptionGroupChildren(option)) {
+						const disabled = this.isOptionDisabled(opt);
+						const selected = this.isSelected(opt);
 
 						if (disabled) {
 							if (selected) selectedDisabledItemsLength++;
@@ -1533,7 +1535,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 			if (this.group) {
 				let filteredGroups = [];
-				for (let optgroup of this.options as any[]) {
+				for (const optgroup of this.options as any[]) {
 					let filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
 					if (filteredSubOptions && filteredSubOptions.length) {
 						filteredGroups.push({ ...optgroup, ...{ [this.optionGroupChildren]: filteredSubOptions } });

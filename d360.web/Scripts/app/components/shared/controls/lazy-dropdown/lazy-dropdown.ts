@@ -1206,7 +1206,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 		if (this.optionsToDisplay && this.optionsToDisplay.length) {
 			for (let i = index - 1; 0 <= i; i--) {
-				let option = this.optionsToDisplay[i];
+				const option = this.optionsToDisplay[i];
 				if (this.isOptionDisabled(option)) {
 					continue;
 				} else {
@@ -1217,7 +1217,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 			if (!prevEnabledOption) {
 				for (let i = this.optionsToDisplay.length - 1; i >= index; i--) {
-					let option = this.optionsToDisplay[i];
+					const option = this.optionsToDisplay[i];
 					if (this.isOptionDisabled(option)) {
 						continue;
 					} else {
@@ -1273,10 +1273,10 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 					this.show();
 				} else {
 					if (this.group) {
-						let selectedItemIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
+						const selectedItemIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
 
 						if (selectedItemIndex !== -1) {
-							let nextItemIndex = selectedItemIndex.itemIndex + 1;
+							const nextItemIndex = selectedItemIndex.itemIndex + 1;
 							if (nextItemIndex < this.getOptionGroupChildren(this.optionsToDisplay[selectedItemIndex.groupIndex]).length) {
 								this.selectItem(event, this.getOptionGroupChildren(this.optionsToDisplay[selectedItemIndex.groupIndex])[nextItemIndex]);
 								this.selectedOptionUpdated = true;
@@ -1321,8 +1321,8 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 						}
 					}
 				} else {
-					let selectedItemIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
-					let prevEnabledOption = this.findPrevEnabledOption(selectedItemIndex);
+					const selectedItemIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
+					const prevEnabledOption = this.findPrevEnabledOption(selectedItemIndex);
 					if (prevEnabledOption) {
 						this.selectItem(event, prevEnabledOption);
 						this.selectedOptionUpdated = true;
@@ -1566,13 +1566,13 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	}
 
 	activateFilter() {
-		let searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
+		const searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
 
 		if (this.options && this.options.length) {
 			if (this.group) {
-				let filteredGroups = [];
-				for (let optgroup of this.options) {
-					let filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
+				const filteredGroups = [];
+				for (const optgroup of this.options) {
+					const filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
 					if (filteredSubOptions && filteredSubOptions.length) {
 						filteredGroups.push({ ...optgroup, ...{ [this.optionGroupChildren]: filteredSubOptions } });
 					}
