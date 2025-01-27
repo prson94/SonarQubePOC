@@ -1166,7 +1166,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 	uncheckAll() {
 		const optionsToRender = this.optionsToRender;
-		let val: any[] = [];
+		const val: any[] = [];
 
 		[...optionsToRender, ...this._lazySelectedOptions].forEach((opt) => {
 			if (!this.group) {
@@ -1305,7 +1305,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 		switch ((<KeyboardEvent>event.originalEvent).which) {
 			//down
-			case 40:
+			case 40: {
 				const nextItem = this.findNextItem((event.originalEvent.target as any).parentElement);
 				if (nextItem) {
 					nextItem.focus();
@@ -1313,9 +1313,9 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 				event.originalEvent.preventDefault();
 				break;
-
+			}
 			//up
-			case 38:
+			case 38: {
 				const prevItem = this.findPrevItem((event.originalEvent.target as any).parentElement);
 				if (prevItem) {
 					prevItem.focus();
@@ -1323,7 +1323,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 				event.originalEvent.preventDefault();
 				break;
-
+			}
 			//enter
 			case 13:
 				this.onOptionClick(event);
