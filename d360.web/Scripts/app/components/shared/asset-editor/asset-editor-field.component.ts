@@ -29,7 +29,7 @@ import { SelectItem } from 'primeng/api/selectitem';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { DropdownFilterEvent, DropdownFilterOptions } from 'primeng/dropdown';
+import { DropdownFilterOptions } from 'primeng/dropdown';
 import { LazyDropdown } from '../../shared/controls/lazy-dropdown/lazy-dropdown';
 import { LazyMultiSelect } from '../../shared/controls/lazy-multiselect/lazy-multiselect';
 import { DropdownLazyLoadEvent } from '../../shared/controls/lazy-dropdown/lazy-dropdown.interface';
@@ -41,7 +41,7 @@ import { DomHandler } from 'primeng/dom';
 
 interface lazyLookupValue {
 	label: string,
-	value: any,
+	value: unknown,
 	hasAssetReadAccess: boolean,
 	color: string
 }
@@ -836,7 +836,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 		const filter = event.filter ?? '';
 		const filterChanged = this.lazyFilterValue !== filter;
 		this.lazyFilterValue = filter;
-		var loadParams: any = this.getLoadParams({ first: event.first, rows: take, globalFilter: filter });
+		const loadParams = this.getLoadParams({ first: event.first, rows: take, globalFilter: filter });
 
 		if (this.lazyLookupSub) {
 			this.lazyLookupSub.unsubscribe();
