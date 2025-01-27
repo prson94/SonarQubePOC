@@ -1070,10 +1070,12 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	registerOnChange(fn: Function): void {
 		this.onModelChange = fn;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	registerOnTouched(fn: Function): void {
 		this.onModelTouched = fn;
 	}
@@ -1249,7 +1251,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 			if (!nextEnabledOption) {
 				for (let i = 0; i < index; i++) {
-					let option = this.optionsToDisplay[i];
+					const option = this.optionsToDisplay[i];
 					if (this.isOptionDisabled(option)) {
 						continue;
 					} else {
@@ -1457,7 +1459,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 				if (!option) {
 					for (let i = 0; i <= index.groupIndex; i++) {
 						for (let j = 0; j < (index.groupIndex === i ? index.itemIndex : this.getOptionGroupChildren(this.optionsToDisplay[i]).length); j++) {
-							let opt = this.getOptionGroupChildren(this.optionsToDisplay[i])[j];
+							const opt = this.getOptionGroupChildren(this.optionsToDisplay[i])[j];
 							if (
 								this.getOptionLabel(opt)
 									.toLocaleLowerCase(this.filterLocale)

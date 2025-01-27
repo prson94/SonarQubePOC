@@ -1045,10 +1045,12 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		this.filled = this.value && this.value.length > 0;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	registerOnChange(fn: Function): void {
 		this.onModelChange = fn;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	registerOnTouched(fn: Function): void {
 		this.onModelTouched = fn;
 	}
@@ -1064,8 +1066,8 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			return;
 		}
 
-		let optionValue = this.getOptionValue(option);
-		let selectionIndex = this.findSelectionIndex(optionValue);
+		const optionValue = this.getOptionValue(option);
+		const selectionIndex = this.findSelectionIndex(optionValue);
 		if (selectionIndex !== -1) {
 			this.value = (this.value as any[]).filter((val, i) => i !== selectionIndex);
 			this.onRemove.emit({ newValue: this.value, removed: optionValue });
@@ -1088,14 +1090,14 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	isSelected(option: any) {
-		return this.findSelectionIndex(this.getOptionValue(option)) != -1;
+		return this.findSelectionIndex(this.getOptionValue(option)) !== -1;
 	}
 
 	findSelectionIndex(val: any): number {
 		let index = -1;
 		if (this.value) {
 			for (let i = 0; i < this.value.length; i++) {
-				if (ObjectUtils.equals(this.value[i], val, typeof val == 'object' ? this.dataKey : null)) {
+				if (ObjectUtils.equals(this.value[i], val, typeof val === 'object' ? this.dataKey : null)) {
 					index = i;
 					break;
 				}
@@ -1123,7 +1125,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			return;
 		}
 
-		let allChecked = this.allChecked;
+		const allChecked = this.allChecked;
 
 		if (allChecked || this.lazy) this.uncheckAll();
 		else this.checkAll();
@@ -1137,7 +1139,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 	checkAll() {
 		const optionsToRender = this.optionsToRender;
-		let val: any[] = [];
+		const val: any[] = [];
 
 		optionsToRender.forEach((opt) => {
 			if (!this.group) {
@@ -1146,7 +1148,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 					val.push(this.getOptionValue(opt));
 				}
 			} else {
-				let subOptions = this.getOptionGroupChildren(opt);
+				const subOptions = this.getOptionGroupChildren(opt);
 
 				if (subOptions) {
 					subOptions.forEach((option: any) => {
@@ -1163,19 +1165,19 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	uncheckAll() {
-		let optionsToRender = this.optionsToRender;
+		const optionsToRender = this.optionsToRender;
 		let val: any[] = [];
 
 		[...optionsToRender, ...this._lazySelectedOptions].forEach((opt) => {
 			if (!this.group) {
-				let optionDisabled = this.isOptionDisabled(opt);
+				const optionDisabled = this.isOptionDisabled(opt);
 				if (optionDisabled && this.isSelected(opt)) {
 					val.push(this.getOptionValue(opt));
 				}
 			} else {
 				if (opt.items) {
 					opt.items.forEach((option: any) => {
-						let optionDisabled = this.isOptionDisabled(option);
+						const optionDisabled = this.isOptionDisabled(option);
 						if (optionDisabled && this.isSelected(option)) {
 							val.push(this.getOptionValue(option));
 						}
@@ -1273,7 +1275,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	removeChip(chip: LazyMultiSelectItem, event: MouseEvent) {
-		this.value = (<any[]>this.value).filter((val) => !ObjectUtils.equals(val, chip, typeof val == 'object' ? this.dataKey : null));
+		this.value = (<any[]>this.value).filter((val) => !ObjectUtils.equals(val, chip, typeof val === 'object' ? this.dataKey : null));
 		this.onModelChange(this.value);
 		this.checkSelectionLimit();
 		this.onChange.emit({ originalEvent: event, value: this.value, itemValue: chip });
@@ -1304,7 +1306,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		switch ((<KeyboardEvent>event.originalEvent).which) {
 			//down
 			case 40:
-				var nextItem = this.findNextItem((event.originalEvent.target as any).parentElement);
+				const nextItem = this.findNextItem((event.originalEvent.target as any).parentElement);
 				if (nextItem) {
 					nextItem.focus();
 				}
@@ -1314,7 +1316,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 			//up
 			case 38:
-				var prevItem = this.findPrevItem((event.originalEvent.target as any).parentElement);
+				const prevItem = this.findPrevItem((event.originalEvent.target as any).parentElement);
 				if (prevItem) {
 					prevItem.focus();
 				}
@@ -1340,14 +1342,14 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	findNextItem(item: any): HTMLElement | null {
-		let nextItem = item.nextElementSibling;
+		const nextItem = item.nextElementSibling;
 
 		if (nextItem) return DomHandler.hasClass(nextItem.children[0], 'p-disabled') || DomHandler.isHidden(nextItem.children[0]) || DomHandler.hasClass(nextItem, 'p-multiselect-item-group') ? this.findNextItem(nextItem) : nextItem.children[0];
 		else return null;
 	}
 
 	findPrevItem(item: any): HTMLElement | null {
-		let prevItem = item.previousElementSibling;
+		const prevItem = item.previousElementSibling;
 
 		if (prevItem) return DomHandler.hasClass(prevItem.children[0], 'p-disabled') || DomHandler.isHidden(prevItem.children[0]) || DomHandler.hasClass(prevItem, 'p-multiselect-item-group') ? this.findPrevItem(prevItem) : prevItem.children[0];
 		else return null;
@@ -1394,7 +1396,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			if (this.value.length <= this.maxSelectedLabels || this.selectedItemsLabel === 'ellipsis') {
 				this.valuesAsString = label;
 			} else {
-				let pattern = /{(.*?)}/;
+				const pattern = /{(.*?)}/;
 				if (pattern.test(this.selectedItemsLabel)) {
 					this.valuesAsString = this.selectedItemsLabel.replace((this.selectedItemsLabel as any).match(pattern)[0], this.value.length + '');
 				} else {
@@ -1411,7 +1413,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 			let label = null;
 
 			for (let i = 0; i < (this.options as any[]).length; i++) {
-				let subOptions = this.getOptionGroupChildren((this.options as any[])[i]);
+				const subOptions = this.getOptionGroupChildren((this.options as any[])[i]);
 				if (subOptions) {
 					label = this.searchLabelByValue(val, subOptions);
 
@@ -1434,10 +1436,10 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		}
 
 		for (let i = 0; i < options.length; i++) {
-			let option = options[i];
-			let optionValue = this.getOptionValue(option);
+			const option = options[i];
+			const optionValue = this.getOptionValue(option);
 
-			if ((val == null && optionValue == null) || ObjectUtils.equals(val, optionValue, typeof val == 'object' ? this.dataKey : null)) {
+			if ((val == null && optionValue == null) || ObjectUtils.equals(val, optionValue, typeof val === 'object' ? this.dataKey : null)) {
 
 				label = this.getOptionLabel(option);
 				if (this.lazy && !this._lazySelectedOptions.some((o) => ObjectUtils.equals(this.getOptionValue(option), this.getOptionValue(o)))) {
@@ -1531,12 +1533,12 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 	activateFilter() {
 		if (this.hasFilter() && this._options) {
-			let searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
+			const searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
 
 			if (this.group) {
-				let filteredGroups = [];
+				const filteredGroups = [];
 				for (const optgroup of this.options as any[]) {
-					let filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
+					const filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
 					if (filteredSubOptions && filteredSubOptions.length) {
 						filteredGroups.push({ ...optgroup, ...{ [this.optionGroupChildren]: filteredSubOptions } });
 					}
