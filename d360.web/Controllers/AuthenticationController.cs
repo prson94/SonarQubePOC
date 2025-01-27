@@ -1036,7 +1036,11 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
-                    if (!string.IsNullOrEmpty(ReturnUrl))
+
+					var loggedInOn = DateTime.UtcNow;
+					saveUserAsLocalResource(resource, loggedInOn);
+
+					if (!string.IsNullOrEmpty(ReturnUrl))
                     {
                         Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out Uri testUri);
 
