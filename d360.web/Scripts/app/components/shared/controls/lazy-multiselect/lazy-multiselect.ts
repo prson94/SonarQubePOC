@@ -1067,7 +1067,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		let optionValue = this.getOptionValue(option);
 		let selectionIndex = this.findSelectionIndex(optionValue);
 		if (selectionIndex !== -1) {
-			this.value = (this.value as any[]).filter((val, i) => i != selectionIndex);
+			this.value = (this.value as any[]).filter((val, i) => i !== selectionIndex);
 			this.onRemove.emit({ newValue: this.value, removed: optionValue });
 
 			if (this.selectionLimit) {
@@ -1136,12 +1136,12 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	}
 
 	checkAll() {
-		let optionsToRender = this.optionsToRender;
+		const optionsToRender = this.optionsToRender;
 		let val: any[] = [];
 
 		optionsToRender.forEach((opt) => {
 			if (!this.group) {
-				let optionDisabled = this.isOptionDisabled(opt);
+				const optionDisabled = this.isOptionDisabled(opt);
 				if (!optionDisabled || (optionDisabled && this.isSelected(opt))) {
 					val.push(this.getOptionValue(opt));
 				}
@@ -1150,7 +1150,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 
 				if (subOptions) {
 					subOptions.forEach((option: any) => {
-						let optionDisabled = this.isOptionDisabled(option);
+						const optionDisabled = this.isOptionDisabled(option);
 						if (!optionDisabled || (optionDisabled && this.isSelected(option))) {
 							val.push(this.getOptionValue(option));
 						}
@@ -1382,7 +1382,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		if (this.value && (this.options || this._lazySelectedOptions) && this.value.length && this.displaySelectedLabel) {
 			let label = '';
 			for (let i = 0; i < this.value.length; i++) {
-				let itemLabel = this.findLabelByValue(this.value[i]);
+				const itemLabel = this.findLabelByValue(this.value[i]);
 				if (itemLabel) {
 					if (label.length > 0) {
 						label = label + ', ';

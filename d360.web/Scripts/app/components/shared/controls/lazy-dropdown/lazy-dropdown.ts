@@ -787,8 +787,10 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 	value: any;
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	onModelChange: Function = () => { };
 
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	onModelTouched: Function = () => { };
 
 	optionsToDisplay: any[] | undefined;
@@ -928,7 +930,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	get filled(): boolean {
 		if (typeof this.value === 'string') return !!this.value;
 
-		return this.value || this.value != null || this.value != undefined;
+		return this.value || this.value !== null || this.value !== undefined;
 	}
 
 	get isVisibleClearIcon(): boolean | undefined {
@@ -1236,7 +1238,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 		if (this.optionsToDisplay && this.optionsToDisplay.length) {
 			for (let i = index + 1; i < this.optionsToDisplay.length; i++) {
-				let option = this.optionsToDisplay[i];
+				const option = this.optionsToDisplay[i];
 				if (this.isOptionDisabled(option)) {
 					continue;
 				} else {
@@ -1290,8 +1292,8 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 							}
 						}
 					} else {
-						let selectedItemIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
-						let nextEnabledOption = this.findNextEnabledOption(selectedItemIndex);
+						const selectedItemIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
+						const nextEnabledOption = this.findNextEnabledOption(selectedItemIndex);
 						if (nextEnabledOption) {
 							this.selectItem(event, nextEnabledOption);
 							this.selectedOptionUpdated = true;
@@ -1306,14 +1308,14 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 			//up
 			case 38:
 				if (this.group) {
-					let selectedItemIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
+					const selectedItemIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
 					if (selectedItemIndex !== -1) {
-						let prevItemIndex = selectedItemIndex.itemIndex - 1;
+						const prevItemIndex = selectedItemIndex.itemIndex - 1;
 						if (prevItemIndex >= 0) {
 							this.selectItem(event, this.getOptionGroupChildren(this.optionsToDisplay[selectedItemIndex.groupIndex])[prevItemIndex]);
 							this.selectedOptionUpdated = true;
 						} else if (prevItemIndex < 0) {
-							let prevGroup = this.optionsToDisplay[selectedItemIndex.groupIndex - 1];
+							const prevGroup = this.optionsToDisplay[selectedItemIndex.groupIndex - 1];
 							if (prevGroup) {
 								this.selectItem(event, this.getOptionGroupChildren(prevGroup)[this.getOptionGroupChildren(prevGroup).length - 1]);
 								this.selectedOptionUpdated = true;
@@ -1384,11 +1386,12 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 		else this.searchValue = this.searchValue ? this.searchValue + char : char;
 
 		let newOption;
+		let searchIndex;
 		if (this.group) {
-			let searchIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay as any[]) : { groupIndex: 0, itemIndex: 0 };
+			searchIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay as any[]) : { groupIndex: 0, itemIndex: 0 };
 			newOption = this.searchOptionWithinGroup(searchIndex);
 		} else {
-			let searchIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay as any[]) : -1;
+			searchIndex = this.selectedOption ? this.findOptionIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay as any[]) : -1;
 			newOption = this.searchOption(++searchIndex);
 		}
 
@@ -1418,7 +1421,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 
 	searchOptionInRange(start: number, end: number) {
 		for (let i = start; i < end; i++) {
-			let opt = (this.optionsToDisplay as any[])[i];
+			const opt = (this.optionsToDisplay as any[])[i];
 			if (
 				this.getOptionLabel(opt)
 					.toLocaleLowerCase(this.filterLocale)
@@ -1439,7 +1442,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 			if (this.optionsToDisplay) {
 				for (let i = index.groupIndex; i < this.optionsToDisplay.length; i++) {
 					for (let j = index.groupIndex === i ? index.itemIndex + 1 : 0; j < this.getOptionGroupChildren(this.optionsToDisplay[i]).length; j++) {
-						let opt = this.getOptionGroupChildren(this.optionsToDisplay[i])[j];
+						const opt = this.getOptionGroupChildren(this.optionsToDisplay[i])[j];
 						if (
 							this.getOptionLabel(opt)
 								.toLocaleLowerCase(this.filterLocale)
@@ -1512,7 +1515,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 		if (this.group && !inGroup) {
 			let opt!: SelectItem;
 			if (opts && opts.length) {
-				for (let optgroup of opts) {
+				for (const optgroup of opts) {
 					opt = this.findOption(val, this.getOptionGroupChildren(optgroup), true);
 					if (opt) {
 						break;
@@ -1521,7 +1524,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 			}
 			return opt;
 		} else {
-			let index: number = this.findOptionIndex(val, opts);
+			const index: number = this.findOptionIndex(val, opts);
 			if (index !== -1) {
 				return opts[index];
 			}
@@ -1545,7 +1548,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	}
 
 	onFilterInputChange(event: Event | any): void {
-		let inputValue = (event.target as HTMLInputElement).value;
+		const inputValue = (event.target as HTMLInputElement).value;
 		if (this.lazy) {
 			this._filterValue = inputValue;
 			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
