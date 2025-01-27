@@ -297,6 +297,7 @@ where	g.id = @groupId;
 			
 			if (simpleQueryFilters.Count > 0)
 			{
+				countSql += Environment.NewLine + " inner join dbo.Asset ag on ag.Object = 'Group' and ag.ObjectID = g.ID "; 
 				queryFilters.Add(string.Join(" or ", simpleQueryFilters));
 				countSql += $" {string.Join("\n", fieldJoins)}";
 			}
