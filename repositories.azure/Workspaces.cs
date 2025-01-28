@@ -798,6 +798,7 @@ end";
 			{
 				var success = true;
 				var messages = new List<string>();
+				Guid orgUid = user.uid ?? Guid.Empty;
 
 				UserApiModel userrow = new UserApiModel();
 
@@ -830,6 +831,13 @@ end";
 				userrow.uid = user.uid;
 
 				#region "Validatation"
+
+				if (!user.IsNew && !user.ResourceID.HasValue)
+				{
+					success = false;
+					messages.Add(string.Format(Error.UserUidNotFound, orgUid));
+				}
+
 
 				if (string.IsNullOrEmpty((user.Username ?? "").Trim()))
 				{
