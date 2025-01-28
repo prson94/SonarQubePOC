@@ -917,6 +917,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.interface.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.interface.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\owner-list.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-delete.ts" />
@@ -2427,7 +2431,7 @@
     <None Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <None Include="Scripts\app\components\tag\tag-item.component.less" />
     <None Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.less" />
-    <None Include="Scripts\app\**\*.css" />
+	<None Include="Scripts\app\**\*.css" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Authentication\Login.cshtml" />
