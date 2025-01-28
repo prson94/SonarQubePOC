@@ -140,8 +140,8 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         this.formMode = FormMode.Default;
     }
 
-    changeType(e: any) {
-        this.transition.transitionType = e;
+	changeType(e: any) {
+		this.transition.transitionType = parseInt(e);
         this.transitionChange.emit(this.transition);
         this.filterFormFields();
         this.filterHttpFields();
