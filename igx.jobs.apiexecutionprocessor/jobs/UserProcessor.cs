@@ -66,10 +66,10 @@ namespace igx.jobs.apiexecutionprocessor
 
 												CREATE TABLE #TempExecItemsUsers(
 													[ItemNumber] [int] NOT NULL,
-													[Properties] [nvarchar](max) constraint DF_TempExecItemsUsers_Properties default('{}') NOT NULL,
+													[Properties] [nvarchar](max) default('{}') NOT NULL,
 													[Message] [nvarchar](max) NULL,
 													[Success] [bit] NULL,
-													constraint [PK_TempExecItemsUsers] PRIMARY KEY CLUSTERED ( [ItemNumber] ASC)
+													PRIMARY KEY CLUSTERED ( [ItemNumber] ASC)
 												);",
 											transaction: transaction);
 
