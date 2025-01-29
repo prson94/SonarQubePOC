@@ -26,7 +26,7 @@ namespace repositories.azure
 			get
 			{
 				int commandTimeout;
-				if (!int.TryParse(ConfigurationManager.AppSettings["ApiTimeout"], out commandTimeout))
+				if (!int.TryParse(ConnectionProvider.CommandTimeOut, out commandTimeout))
 				{
 					commandTimeout = 90;
 				}
