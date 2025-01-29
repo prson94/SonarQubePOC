@@ -517,22 +517,24 @@ end
 			using (var connection = Connect(true))
 			{
 				response = await connection.QuerySingleOrDefaultAsync<OidcAuthenticationSettings>($@"
-select	oidc.*
+declare @json nvarchar(max)
+select	@json = d.AuthenticationSettings
 from	CompanyDomainSetting u
 		inner join DomainSetting d on d.ID = u.DomainSettingID 
-		cross apply openjson(d.AuthenticationSettings) with (
-			baseUri nvarchar(500), 
-			discoveryUri nvarchar(500), 
-			jwtAuthorityUri nvarchar(500),
-			clientId nvarchar(500), 
-			clientSecret nvarchar(500), 
-			audience nvarchar(500), 
-			nameClaimType nvarchar(500), 
-			scopesJson nvarchar(max) '$.scopes' as json,
-			extraParametersJson nvarchar(max) '$.extraParameters' as json
-		) oidc
-where	u.UrlPrefix = @prefix",
-					new { prefix }
+where	u.UrlPrefix = @prefix
+
+select	oidc.* 
+from	openjson(@json) with (
+	baseUri nvarchar(500), 
+	discoveryUri nvarchar(500), 
+	jwtAuthorityUri nvarchar(500),
+	clientId nvarchar(500), 
+	clientSecret nvarchar(500), 
+	audience nvarchar(500), 
+	nameClaimType nvarchar(500),
+	scopesJson nvarchar(max) '$.scopes' as json,
+	extraParametersJson nvarchar(max) '$.extraParameters' as json
+) oidc", new { prefix }
 				);
 			}
 

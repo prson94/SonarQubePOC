@@ -23,6 +23,7 @@ namespace d360.web
 	    }
     }
 
+
     public class MvcApplication : HttpApplication
     {
         protected void Application_BeginRequest()
