@@ -65,7 +65,7 @@ from	Tag t
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -103,12 +103,21 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName, 
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA 
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
+
 
 select	top 1
 @PreviousValue = [Value]
@@ -129,7 +138,7 @@ from	#tbl
 
 drop table if exists #tbl;
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow,tagTypeId });
 			}
 
 			return response;
@@ -521,6 +530,7 @@ order by	lvl";
 			string value = "";
 			var response = new RepositoryResponse<List<dynamic>>(null, 200, true, "");
 
+			Guid tagTypeUID = Guid.Empty;
 			Guid exceptUid = Guid.Empty;
 			int maxNumberOfResults = 200;
 			bool ignoreCounts = false;
@@ -558,8 +568,31 @@ order by	lvl";
 							throw new ArgumentNullException(Error.InvalidPageSize);
 						}
 						break;
+						case "tagtypeuid":
+						Guid tagType;
+						if (Guid.TryParse(queryitem.Value, out tagType))
+						{
+							tagTypeUID = tagType;
+						}
+						else
+						{
+							throw new ArgumentNullException(Error.InvalidParameter);
+						}
+						break;
 				}
 			}
+
+			string query = string.Empty;
+			query = $@"
+				SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+
+			dynamic tagTypeId;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				tagTypeId = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new {tagTypeUID });
+			}
+
+			tagTypeId = tagTypeId.ID;
 
 			string sql;
 
@@ -572,7 +605,7 @@ order by	lvl";
 				select top {maxNumberOfResults} T.ID, T.Value as name, T.uid as code , cast(0 as bigint) [count]
 				into #temptagdata
 				from Tag T 
-				where State = 1 and T.Value like @value and T.uid != @exceptUid;
+				where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId;
 
 				update t
 				set [count] = (select count(1) from AssetTag atg where atg.TagID = t.ID)
@@ -586,13 +619,13 @@ order by	lvl";
 			else
 			{
 				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
-						where State = 1 and T.Value like @value and T.uid != @exceptUid
+						where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId
 						order by name";
 			}
 			IEnumerable<dynamic> results;
 			using (var connection = ConnectionProvider.Connect())
 			{
-				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid });
+				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid, tagTypeId });
 			}
 			response.Data = results.ToList();
 			return response;
@@ -1008,7 +1041,7 @@ ORDER BY
 			return models;
 		}
 
-		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -1046,12 +1079,20 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName, 
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA 
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
 
 select	top 1
 @PreviousValue = [Value]
@@ -1073,7 +1114,7 @@ from	#tbl
 drop table if exists #tbl;
 
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow, tagTypeId });
 			}
 
 			return response;

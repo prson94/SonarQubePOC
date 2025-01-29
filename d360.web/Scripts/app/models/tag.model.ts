@@ -22,13 +22,14 @@ export class TagType {
     TooltipID: number;
     CreatedByFirstName?: string;
     CreatedByLastName?: string;
-    TagTypeUID?: string;
+	TagTypeUID?: string;
 }
 
 export class TagApiModel {
     TagUID: string;
     AssetUID: string;
-    TagName: string;
+	TagName: string;
+	TagTypeUID?: string;
 }
 
 export enum TagTypeState {

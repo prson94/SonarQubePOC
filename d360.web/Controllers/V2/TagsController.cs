@@ -61,6 +61,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Search()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
+			
 			var response = await Catalog.SearchTags(queryParams);
 			return (response.IsSuccess) ? 
 				Ok(response.Data) : 
@@ -577,10 +578,10 @@ namespace d360.web.Controllers.V2
 		[HttpGet, Route("exists"), SwaggerProduces("application/json"),
 		SwaggerResponse(HttpStatusCode.OK, "Tag does exist.", typeof(HttpStatusCode)),
 		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse))]
-		public IHttpActionResult CheckIfTagExist(string value)
+		public IHttpActionResult CheckIfTagExist(string value, Guid? tagTypeUid = null)
 		{
-			var result = tagRepository.GetTagByName(value);
-			return (result == null) ? errorMessageNotFoundResponse("") : Ok();
+			var result = tagRepository.GetTagDetailIfExists(value,tagTypeUid);
+			return (result == null) ? errorMessageNotFoundResponse("") : Ok(result);
 		}
 
 		[HttpGet, Route("AssetTagDetails"), ApiExplorerSettings(IgnoreApi = true)]
