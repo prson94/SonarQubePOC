@@ -481,18 +481,32 @@ namespace d360.model.DataAccessLayer
 					var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
-						var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
+						long assetID = 0;
+						bool isdiagramClass = false; 
+						var qry = $@"
+									select a.id,case when att.Class = 15 then 1 else 0 end ClassIsDiagram
+									from Asset a
+									inner join AssetType att on att.id = a.assettypeid
+									where a.uid = cast(@assetUid as uniqueidentifier);
+									";
+						var assetinfo = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(qry, new { assetUid }, ApiTimeout);
+						if (assetinfo != null)
+						{
+							assetID = (long) assetinfo.id;
+							isdiagramClass = (int)assetinfo.id > 0 ? true : false;
+						}
+
 						dbArgs.Add("@CurrentResourceID", SecurityContext.ResourceID);
 						dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
 						var subjectClause = "";
 						var objectClause = "";
 
-						if (asset != null)
+						if (assetID > 0)
 						{
 							isFilteredByAssetUID = true;
 							subjectClause = "I.SubjectAssetID = cast(@assetId as bigint)";
 							objectClause = "I.ObjectAssetID = cast(@assetId as bigint)";
-							dbArgs.Add("@assetId", asset.ID);
+							dbArgs.Add("@assetId", assetID);
 
 						}
 						else
@@ -551,9 +565,9 @@ namespace d360.model.DataAccessLayer
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
 							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							{(!SecurityContext.IsAdministrator ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
 							where {subjectClause}
-							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
@@ -570,9 +584,9 @@ namespace d360.model.DataAccessLayer
 							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							{(!SecurityContext.IsAdministrator ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
 							where fia.id is null and {objectClause}
-							{(!SecurityContext.IsAdministrator ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
 							option(recompile);
 							";
 
