@@ -15,8 +15,6 @@ namespace repositories
 {
 	public interface IAssetRepository
 	{
-		Asset GetAssetByObjectId(string obj, int objId);
-
 		Asset GetAssetByUID(Guid assetUid);
 		AssetTypeClass GetAssetClassByUID(Guid assetUid);
 
@@ -25,8 +23,6 @@ namespace repositories
 		List<AssetTypeClassInfo> GetAssetTypeList();
 
 		Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null);
-
-		Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
 

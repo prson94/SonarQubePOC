@@ -9,8 +9,8 @@ p {
 
 div.main-container {
 	position: absolute;
-	left: 25%;
-	top:28%;
+	left: 18%;
+	top:10%;
 	margin-top: -2px;
 	z-index: 1001;
 	min-height: 40px;
@@ -21,6 +21,7 @@ div.main-container {
 	border-radius: 4px;
 	box-shadow: 0px 1px 3px 0px rgba(63, 63, 68, 0.15), 0px 0px 0px 1px rgba(63, 63, 68, 0.05);
 	overflow-y: auto;
+	font-weight: normal;
   
 	>.header {
 		padding: 12px 12px 0px 12px;
@@ -46,6 +47,7 @@ div.main-container {
           &:first-child {
 						flex: 15;
 						cursor: pointer;
+						margin-top: -10px;
 					}
 		
           &:nth-child(2) {
@@ -68,4 +70,12 @@ div.main-container {
 		border: 1px solid #ccc;
 		padding: 5px 10px 5px 10px;
 	}
+
+	::ng-deep .ig-search-field {
+		font-weight: normal !important;
+	  }
+
+	::ng-deep .ig-search-field-keypress {
+		margin-top: -4px !important;
+	  }
 }

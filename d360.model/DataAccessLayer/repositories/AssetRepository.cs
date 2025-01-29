@@ -50,13 +50,12 @@ namespace d360.model.DataAccessLayer
 			StorageProvider = storageProvider;
 		}
 
-		public Asset GetAssetByObjectId(string obj, int objId)
-		{
-			return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
-		}
-
 		public Asset GetAssetByUID(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				return null;
+			}
 			return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
 		}
 
@@ -98,7 +97,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueForuseastransformation, useAsTransformationString);
+						throw new ArgumentException(Error.InvalidValueForuseastransformation, useAsTransformationString);
 					}
 				}
 
@@ -119,7 +118,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueHierachical, hierarchicalString);
+						throw new ArgumentException(Error.InvalidValueHierachical, hierarchicalString);
 					}
 				}
 
@@ -133,7 +132,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueAutoDisplayParent, autoDisplayParentString);
+						throw new ArgumentException(Error.InvalidValueAutoDisplayParent, autoDisplayParentString);
 					}
 				}
 
@@ -148,7 +147,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueObj, obj);
+						throw new ArgumentException(Error.InvalidValueObj, obj);
 					}
 					if (int.TryParse(objId, out int otid))
 					{
@@ -157,7 +156,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueObjID, objId);
+						throw new ArgumentException(Error.InvalidValueObjID, objId);
 					}
 				}
 
@@ -171,7 +170,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -194,7 +193,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -211,7 +210,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -229,7 +228,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -242,7 +241,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+						throw new ArgumentException(Error.InvalidValueincludedashboardflag, includeString);
 					}
 				}
 
@@ -255,7 +254,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
+						throw new ArgumentException(Error.InvalidValueincludeLevels, includeLevelsString);
 					}
 				}
 
@@ -417,12 +416,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			if (assetType == null)
 			{
-				throw new Exception(AssetTypeErrors.InvalidAssetType);
+				throw new Exception(Error.InvalidAssetType);
 			}
 
 			if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
 			{
-				throw new ArgumentException(AssetTypeErrors.UseAsAdminUseWithAssetUid);
+				throw new ArgumentException(Error.UseAsAdminUseWithAssetUid);
 			}
 
 			assetTypeID = assetType.ID;
@@ -1065,7 +1064,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (assetUids.Any(x => x == Guid.Empty))
 				{
-					throw new ArgumentException(AssetTypeErrors.InvalidAssetUid);
+					throw new ArgumentException(Error.InvalidAssetUid);
 				}
 
 				if (assetUids.Count > 0)
@@ -1258,6 +1257,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						bool scoringtypeallowed = false;
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
+						bool usePathSegDtlTbl = false;
+						if (ft.Type == DataType.Path.ToString() && IsBusTechAssetType)
+						{
+							var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(ft.Definition);
+							if (pathDefinition?.AssetTypeUid != null)
+							{
+								usePathSegDtlTbl = true;
+							}
+						}
 						if (ft.Type == DataType.Score.ToString() && !isNumber )
 						{
 							var checknum = simpleFilter;
@@ -1276,7 +1284,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && !IsBusTechAssetType && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && !usePathSegDtlTbl && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -1487,7 +1495,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (ownerUids.Any(x => x == Guid.Empty))
 				{
-					throw new Exception(AssetTypeErrors.InvalidOwnerUid);
+					throw new Exception(Error.InvalidOwnerUid);
 				}
 
 				if (ownerUids.Count > 0)
@@ -1533,7 +1541,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (notOwnerUids.Any(x => x == Guid.Empty))
 				{
-					throw new Exception(AssetTypeErrors.InvalidOwnerUid);
+					throw new Exception(Error.InvalidOwnerUid);
 				}
 
 				if (notOwnerUids.Count > 0)
@@ -1579,12 +1587,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						parentUid = pUid;
 						if (!CompanyContext.Any<Asset>(i => i.uid == pUid))
 						{
-							throw new ArgumentException(string.Format(AssetTypeErrors._parentuidNotValidAsset, pUid.ToString()));
+							throw new ArgumentException(string.Format(Error._parentuidNotValidAsset, pUid.ToString()));
 						}
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors._parentUidNotValidUid);
+						throw new ArgumentException(Error._parentUidNotValidUid);
 					}
 				}
 			}
@@ -2193,90 +2201,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			model.items = results;
 
 			return model;
-		}
-
-		public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-
-			int pageSize = 5000;
-			int pageNum = 0;
-			bool includeTotal = true;
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
-				{
-					pageSize = res;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
-				{
-					pageNum = res - 1;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
-			{
-				if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
-				{
-					includeTotal = res;
-				}
-			}
-
-			dbArgs.Add("@assetTypeId", assetType.ID);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * pageNum);
-
-
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			int? total = null;
-			if (includeTotal)
-			{
-				var countSql = $@"
-				select 
-					count(1)
-				from 
-					Asset A
-				where 
-					A.assetTypeId = @assetTypeId";
-
-				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
-			}
-
-			var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs, ApiTimeout);
-
-			return new AssetPathResults
-			{
-				items = results,
-				total = total
-			};
 		}
 
 		public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false)
@@ -3081,39 +3005,45 @@ where an.Uid = fam.uid)
 				prefilterSql = $"and AT.Id in ({prefilterSql})";
 			}
 
-			var countSql = $@"
-select	count(1)
+			var premissionfilter = SecurityContext.IsAdministrator ? "" : $@"
+		and (
+			[AT].DefaultPermissions = 1 or 
+			( exists(select 1 from ResponsibilitySummary RSA where RSA.AssetID = A.ID and RSA.ResourceID = @userId and [AT].DefaultPermissions = 0)) or
+			( exists(select 1 from ResponsibilitySummary RSAT where RSAT.ApplyToType = 1 and RSAT.AssetTypeID = [AT].ID and RSAT.ResourceID = @userId and [AT].DefaultPermissions = 0) )
+		)";
+
+			var allQuery = $@"
+drop table if exists #tempAssetsIds;
+create table #tempAssetsIds(id bigint);
+create clustered index cx_tempAssetsIds on #tempAssetsIds(id);
+
+insert into #tempAssetsIds(id)
+select	N.ID 
 from	AssetPath N
 		inner join Asset A on A.Id = N.Id
 		inner join AssetType [AT] on AT.Id = A.AssetTypeId
 where	N.DisplayPath like @phrase {prefilterSql}
-		and (
-			[AT].DefaultPermissions = 1 or 
-			@isAdmin = 1 or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-		)";
+		{premissionfilter};
 
-			var sql = $@"
-							select	A.Uid,
-									AT.Uid as AssetTypeUid,
-									AT.Name as AssetTypeName,
-									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
-									N.Segments as SegmentsXml
-							from	AssetPath N
-									inner join Asset A on A.Id = N.Id
-									inner join AssetType [AT] on AT.ID = A.AssetTypeID
-									left join AssetTypeStyle S on S.ID = AT.ID
-							where	N.DisplayPath like @phrase {prefilterSql}
-									and (
-										[AT].DefaultPermissions = 1 or 
-										@isAdmin = 1 or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
-									)
-							order by N.DisplayPath asc
-							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
-							";
+
+select count(1) from #tempAssetsIds
+
+select	A.Uid,
+		AT.Uid as AssetTypeUid,
+		AT.Name as AssetTypeName,
+		coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
+		N.Segments as SegmentsXml
+from	#tempAssetsIds t
+		inner join AssetPath N on t.id = N.id
+		inner join Asset A on A.Id = N.Id
+		inner join AssetType [AT] on AT.ID = A.AssetTypeID
+		left join AssetTypeStyle S on S.ID = AT.ID
+order by N.DisplayPath asc
+OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY;
+
+drop table if exists #tempAssetsIds;
+
+";
 
 			if (model.pageNum <= 1)
 			{
@@ -3130,9 +3060,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
-			var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
-			var total = count.First();
-			var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs, ApiTimeout);
+			var multiresult = await CompanyContext.ExecuteGetAssetsByPathQuery(allQuery, dbArgs);
+
+			var total = multiresult.total;
+			var results = multiresult.results.ToList();
 
 			returnModel.items = results;
 			returnModel.pageNum = model.pageNum;
@@ -3236,7 +3167,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					#region
 
 					var objectType = model.Class == AssetTypeClass.Model ? SystemObjects.TaxonomyType : SystemObjects.PolicyType;
-					var errorMessage = model.Class == AssetTypeClass.Model ? AssetTypeErrors.InvalidModelDepth : AssetTypeErrors.InvalidPolicyDepth;
+					var errorMessage = model.Class == AssetTypeClass.Model ? Error.InvalidModelDepth : Error.InvalidPolicyDepth;
 
 					at = new AssetType
 					{
@@ -3265,7 +3196,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
 					{
-						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, errorMessage);
+						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, Error.InvalidMaximumDepthTitle, errorMessage);
 					}
 
 					CompanyContext.Add(at);
@@ -3432,8 +3363,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					{
 						return new Tuple<HttpStatusCode, string, string>(
 							HttpStatusCode.BadRequest,
-							string.Format(AssetTypeErrors.WrongClass, model.Class.ToString()),
-							$"{string.Format(AssetTypeErrors.InvalidClass, model.Class.ToString())} {AssetTypeErrors.CheckRequest}"
+							string.Format(Error.WrongClass, model.Class.ToString()),
+							$"{string.Format(Error.InvalidClass, model.Class.ToString())} {Error.CheckRequest}"
 						);
 					}
 
@@ -3472,7 +3403,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					{
 						if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
 						{
-							return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidMaximumDepthTitle, AssetTypeErrors.InvalidModelDepth);
+							return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, Error.InvalidMaximumDepthTitle, Error.InvalidModelDepth);
 						}
 
 						for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
@@ -3533,8 +3464,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						{
 							return new Tuple<HttpStatusCode, string, string>(
 								HttpStatusCode.Conflict,
-								AssetTypeErrors.InvalidParentSelected,
-								$"{AssetTypeErrors.ParentChildRelationExists} {AssetTypeErrors.CheckRequest}"
+								Error.InvalidParentSelected,
+								$"{Error.ParentChildRelationExists} {Error.CheckRequest}"
 							);
 						}
 
@@ -3928,7 +3859,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{
 					return new APIExecutionExternalAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidDirection,
+						Message = Error.InvalidDirection,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -3948,7 +3879,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{
 					return new APIExecutionExternalAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidDirection,
+						Message = Error.InvalidDirection,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -4312,7 +4243,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					}
 					else
 					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueReturnCount, returncountString);
+						throw new ArgumentException(Error.InvalidValueReturnCount, returncountString);
 					}
 				}
 			}
@@ -5200,11 +5131,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				switch (res.Class)
 				{
-					case AssetTypeClass.BusinessAsset: res.title = CommonNames.AssetTypeClass_Business + ": " + res.title; break;
-					case AssetTypeClass.TechnicalAsset: res.title = CommonNames.AssetTypeClass_Technical + ": " + res.title; break;
-					case AssetTypeClass.Model: res.title = CommonNames.AssetTypeClass_Model + ": " + res.title; break;
-					case AssetTypeClass.Policy: res.title = CommonNames.AssetTypeClass_Policy + ": " + res.title; break;
-					case AssetTypeClass.Rule: res.title = CommonNames.AssetTypeClass_Rule + ": " + res.title; break;
+					case AssetTypeClass.BusinessAsset: res.title = Label.AssetTypeClass_Business + ": " + res.title; break;
+					case AssetTypeClass.TechnicalAsset: res.title = Label.AssetTypeClass_Technical + ": " + res.title; break;
+					case AssetTypeClass.Model: res.title = Label.AssetTypeClass_Model + ": " + res.title; break;
+					case AssetTypeClass.Policy: res.title = Label.AssetTypeClass_Policy + ": " + res.title; break;
+					case AssetTypeClass.Rule: res.title = Label.AssetTypeClass_Rule + ": " + res.title; break;
 					default: break;
 				}
 			});

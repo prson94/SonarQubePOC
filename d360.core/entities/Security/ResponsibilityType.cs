@@ -13,10 +13,10 @@ namespace d360.core.entities
     {
         #region Properties
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
+        [DataMember, Display(ResourceType = typeof(resources.Label), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
         public string Name { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
+        [DataMember, Display(ResourceType = typeof(resources.Label), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
         public DateTime? UpdatedOn { get; set; }

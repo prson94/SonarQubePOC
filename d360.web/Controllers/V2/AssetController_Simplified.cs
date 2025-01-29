@@ -1,10 +1,11 @@
-﻿using d360.core.enums;
+﻿using d360.core;
+using d360.core.enums;
 using d360.core.resources;
+using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using d360.model.helpers.filters;
-using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -29,6 +28,7 @@ namespace d360.web.Controllers.V2
 		{
 			public int Id { get; set; }
 			public string Name { get; set; }
+			public bool? ISITExists { get; set; }
 		}
 
 		public class PropertyDefinition
@@ -191,7 +191,11 @@ namespace d360.web.Controllers.V2
 			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
-			sql = $"select p.Id, p.Name from [Predicate] p where p.[Type] = {(int)PredicateType.CatalogBrowse}";
+			sql = $@"select p.Id, p.Name,cast(case when count(IT.ID) > 0 then 1 else 0 end as bit) ISITExists
+					from [Predicate] p 
+					left join [intersecttype] IT on IT.PredicateID = P.ID
+					where p.[Type] = {(int)PredicateType.CatalogBrowse}
+					group by p.Id, p.Name";
 			var predicates = Company.Query<PredValue>(sql).ToList();
 
 			#region Add columns
@@ -207,7 +211,7 @@ namespace d360.web.Controllers.V2
 				{
 					ApiName = p.Name,
 					Column = $@"P{p.Id}.val as [{p.Name}]",
-					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
+					DataStatement = (bool)p.ISITExists ? $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)" : $"outer apply (select Null val )P{p.Id}(val)",
 					Position = columns.Max(c => c.Position) + 1,
 					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} WITH (NOEXPAND) on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
 					CatalogColumnType = CatalogColumnType.Predicate,
@@ -241,7 +245,7 @@ namespace d360.web.Controllers.V2
 				}
 				catch (FilterExpressionParserException ex)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.InvalidFilterExpressionUsedMessage));
 				}
 
 				if (filters.Count > 0)
@@ -370,7 +374,7 @@ namespace d360.web.Controllers.V2
 
 									if (!filterOperation.In("ct", "nct"))
 									{
-										return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.displaypathsegmentValidOper));
+										return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.displaypathsegmentValidOper));
 									}
 									if (assetsHierarchyTempTable.Length == 0)
 									{
@@ -534,7 +538,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.InvalidFilterExpressionUsedMessage));
 				}
 			}
 
@@ -616,7 +620,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetsApiMessages.InvalidSortDataCatalog, key, string.Join(", ", columns.Where(x => !string.IsNullOrEmpty(x.Sort)).Select(x => x.ApiName)))));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.InvalidSortDataCatalog, key, string.Join(", ", columns.Where(x => !string.IsNullOrEmpty(x.Sort)).Select(x => x.ApiName)))));
 				}
 			}
 
@@ -764,7 +768,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where))
 						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
+							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.InvalidFilterExpressionUsedMessage));
 						}
 						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where);
 					}

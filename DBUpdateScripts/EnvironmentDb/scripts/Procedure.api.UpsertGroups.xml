@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.UpsertGroups-v1">
+  <changeSet author="Pappas,Puneet" id="Procedure.api.UpsertGroups-v1.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertGroups
@@ -21,6 +21,8 @@ begin
 			@assetTypeId int,
 			@transactionCompleted bit = 0;
 	
+	declare @errormessage nvarchar(4000)='';
+
 	select @assetTypeId = ID from AssetType where Object = 'GroupType';
 	
 	select	@isInsert = iif([Action] = 19, 1, 0),
@@ -72,7 +74,15 @@ begin
 		update	t
 		set		t.ObjectID = s.ID,
 				t.IsValid = 0,
-				t.Message = 'Group already exists.'
+				t.Message = 'Already a group called [' + s.name + '];'
+		from	#Items  t
+				inner join [Group] s on s.Name = t.Name and t.Name is not null;
+
+
+		update	t
+		set		t.ObjectID = s.ID,
+				t.IsValid = 0,
+				t.Message = coalesce(t.Message,'') + ' Group already exists.'
 		from	#Items  t
 				inner join [Group] s on s.Uid = t.Uid and t.Uid is not null;
 
@@ -232,6 +242,7 @@ begin
 	end try
 	begin catch
 		rollback transaction;
+		set @errormessage = substring(ERROR_MESSAGE(),1,4000);
 	end catch
 
 	if @transactionCompleted = 1
@@ -268,7 +279,14 @@ begin
 	end
 	else
 	begin 
-		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		if (@errormessage is not null)
+		begin
+			exec api.CompleteExecution @executionId, @date, @errormessage;
+		end
+		else
+		begin
+			exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		end
 	end
 end
 ]]>

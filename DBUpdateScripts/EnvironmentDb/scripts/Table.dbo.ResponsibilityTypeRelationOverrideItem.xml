@@ -73,61 +73,28 @@ END
   </sql>
  </changeSet> 
   
-  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-DeleteTrigger-v1.3">
-    <comment>GOV-9766</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-      CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
-         ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
-         AFTER DELETE
-      AS 
-	      SET NOCOUNT ON
-	      INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		      select 'Delete', [queue].WriteIndexXml('Removed', a.[object], a.[objectid], coalesce(d.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', d.ID, d.AssetID from deleted d inner join Asset A on A.id = D.AssetID
-      
-      ]]>
-    </sql>  
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-DeleteTrigger-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+      drop trigger if exists [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
+]]>
+  </sql>  
+ </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-InsertTrigger-v1.3">
-    <comment>GOV-9766</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-      CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterInsert]
-         ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
-         AFTER INSERT
-      AS 
-	      SET NOCOUNT ON
-	      INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		      select 'Add', [queue].WriteIndexXml('Add', a.[Object], a.[ObjectID], coalesce(i.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', i.ID, i.AssetID from inserted i  inner join Asset A on A.id = i.AssetID
-      
-      ]]>
-    </sql>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-InsertTrigger-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+      drop trigger if exists [dbo].[ResponsibilityTypeRelationOverrideItem_AfterInsert]
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-UpdateTrigger-v1.3">
-    <comment>GOV-9766</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-          CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpdate]
-             ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
-             AFTER Update
-          AS 
-	          SET NOCOUNT ON
-	          INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		          select 'Update', [queue].WriteIndexXml('Update', a.[object], a.[objectid], coalesce(i.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', i.ID,i.AssetID from inserted i inner join Asset A on I.AssetID = A.ID
-          
-      ]]>
-    </sql>  
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-UpdateTrigger-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+          drop trigger if exists [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpdate]
+]]>
+  </sql>  
+ </changeSet>
 
 </databaseChangeLog>

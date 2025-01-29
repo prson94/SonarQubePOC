@@ -1465,5 +1465,19 @@ drop table if exists #tempdata_32763_TA;
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-36193">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+DELETE FROM RebuildJobStatus
+WHERE JobToken = 1;
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>

@@ -190,7 +190,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(SearchServerUrl))
             {
-                throw new ArgumentException(OthersError.NoSearchUrlError);
+                throw new ArgumentException(d360.core.resources.Error.NoSearchUrlError);
             }
 
             var uri = new Uri("http://" + SearchServerUrl);
@@ -434,7 +434,7 @@ namespace d360.extensions.search
                 JObject result = JObject.Parse(response.Body);
                 if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
                 {
-                    throw new ArgumentException(OthersError.NotDetermineServerVersion);
+                    throw new ArgumentException(d360.core.resources.Error.NotDetermineServerVersion);
                 }
             }
 
@@ -664,7 +664,7 @@ namespace d360.extensions.search
 
                 if (result == null)
                 {
-                    throw new ArgumentException(OthersError.InvalidResponseData);
+                    throw new ArgumentException(d360.core.resources.Error.InvalidResponseData);
                 }
 
                 var hasErrors = result.GetValue("errors");
@@ -687,7 +687,7 @@ namespace d360.extensions.search
 
             if (postingErrors.Count > 0)
             {
-                throw new ArgumentException(OthersError.AddIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                throw new ArgumentException(d360.core.resources.Error.AddIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
             }
         }
 
@@ -986,7 +986,7 @@ namespace d360.extensions.search
             switch (strategy)
             {
                 case STRATEGY_NONE:
-                    throw new ArgumentException(OthersError.CannotUseSearch);
+                    throw new ArgumentException(d360.core.resources.Error.CannotUseSearch);
                 case STRATEGY_PartialUID:
                     mainQueries.Add(new PrefixQuery
                     {
@@ -1126,7 +1126,7 @@ namespace d360.extensions.search
                     });
                     break;
                 default:
-                    throw new ArgumentException(OthersError.UnknownSearchStrategy + strategy);
+                    throw new ArgumentException(d360.core.resources.Error.UnknownSearchStrategy + strategy);
             }
 
             double? tagBoost = null;
@@ -1802,27 +1802,27 @@ namespace d360.extensions.search
             switch (temp)
             {
                 case "BUSINESSASSET":
-                    return CommonNames.AssetTypeClass_Business;
+                    return Label.AssetTypeClass_Business;
                 case "TECHNICALASSET":
-                    return CommonNames.AssetTypeClass_Technical;
+                    return Label.AssetTypeClass_Technical;
 				case "MODEL":
 				case "TAXONOMY":
-                    return CommonNames.AssetTypeClass_Model;
+                    return Label.AssetTypeClass_Model;
                 case "DIAGRAM":
-                    return CommonNames.AssetTypeClass_DiagramAsset;
+                    return Label.AssetTypeClass_DiagramAsset;
                 case "DOMAIN":
 				case "REFERENCE":
-					return CommonNames.AssetTypeClass_Reference;
+					return Label.AssetTypeClass_Reference;
                 case "SYNONYM":
-                    return CommonNames.AssetTypeClass_GramaticType;
+                    return Label.AssetTypeClass_GramaticType;
                 case "SEMANTICTYPE":
-                    return CommonNames.AssetTypeClass_SemanticType; 
+                    return Label.AssetTypeClass_SemanticType; 
 				case "POLICY":
-					return CommonNames.AssetTypeClass_Policy;
+					return Label.AssetTypeClass_Policy;
 				case "GROUP":
-					return CommonNames.AssetTypeClass_Group;
+					return Label.AssetTypeClass_Group;
 				case "USER":
-					return CommonNames.AssetTypeClass_User;
+					return Label.AssetTypeClass_User;
                 default:
                     return key;
             }
@@ -2356,7 +2356,7 @@ namespace d360.extensions.search
 
             if (result == null)
             {
-                throw new ArgumentNullException(OthersError.InvalidResponseData);
+                throw new ArgumentNullException(d360.core.resources.Error.InvalidResponseData);
             }
 
             var hasErrors = result.GetValue("errors");
@@ -2417,7 +2417,7 @@ namespace d360.extensions.search
 
             if (result == null)
             {
-                throw new ArgumentNullException(OthersError.InvalidResponseData);
+                throw new ArgumentNullException(d360.core.resources.Error.InvalidResponseData);
             }
 
             var hasErrors = result.GetValue("errors");
@@ -2436,7 +2436,7 @@ namespace d360.extensions.search
                 }
                 if (postingErrors.Count > 0)
                 {
-                    throw new ArgumentNullException(OthersError.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                    throw new ArgumentNullException(core.resources.Error.UpdateIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
                 }
             }
         }

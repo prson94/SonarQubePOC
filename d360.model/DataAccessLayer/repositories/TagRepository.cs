@@ -166,7 +166,7 @@ where t.uid in @uids
 
 			if (!string.IsNullOrEmpty(taguid))
 			{
-				retvalue = string.Format(TagErrors.DeleteCascadeTagRelateAsset, taguid);
+				retvalue = string.Format(Error.DeleteCascadeTagRelateAsset, taguid);
 			}
 
 			return retvalue;
@@ -174,6 +174,10 @@ where t.uid in @uids
 
 		public Tag GetTagByUid(Guid uid)
 		{
+			if (uid == Guid.Empty)
+			{
+				return null;
+			}
 			return CompanyContext.Tags.FirstOrDefault(x => x.uid == uid);
 		}
 
@@ -372,7 +376,7 @@ where t.uid in @uids
 						}
 						else
 						{
-							throw new ArgumentException(TagErrors.InvalidPageSize, "_pagesize");
+							throw new ArgumentException(Error.InvalidPageSize, "_pagesize");
 						}
 
 						break;
@@ -390,7 +394,7 @@ where t.uid in @uids
 						}
 						else
 						{
-							throw new ArgumentNullException(TagErrors.InvalidPageNumber);
+							throw new ArgumentNullException(Error.InvalidPageNumber);
 						}
 
 						break;
@@ -422,7 +426,7 @@ where t.uid in @uids
 						}
 						else
 						{
-							throw new ArgumentException(TagErrors.InvalidSortBy);
+							throw new ArgumentException(Error.InvalidSortBy);
 						}
 
 						break;
@@ -443,11 +447,11 @@ where t.uid in @uids
 						}
 						else
 						{
-							string[] allowedDirections = new string[] { "asc", "desc" };
+							string[] allowedDirections = ["asc", "desc"];
 							var order = param.Value;
 							if (!allowedDirections.Contains(order.Trim().ToLower()))
 							{
-								throw new ArgumentException(TagErrors.InvalidSortOrder);
+								throw new ArgumentException(Error.InvalidSortOrder);
 							}
 							sortOrder = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
 						}
@@ -456,7 +460,7 @@ where t.uid in @uids
 					case "_includetotal":
 						if (!bool.TryParse(param.Value, out includeTotal))
 						{
-							throw new ArgumentException(string.Format(TagErrors.Invalid_IncludeTotal, param.Value));
+							throw new ArgumentException(string.Format(Error.Invalid_IncludeTotal, param.Value));
 						}
 
 						break;
@@ -465,7 +469,7 @@ where t.uid in @uids
 
 			if (IsGlobalSearchException)
 			{
-				throw new ArgumentException(TagErrors.InvalidParaMeter, "globalSearch");
+				throw new ArgumentException(Error.Global_Search_InvalidParameter, "globalSearch");
 			}
 
 			string sortClause = $"ORDER BY {sortField} {sortOrder}";
@@ -535,12 +539,12 @@ where t.uid in @uids
 						A.[Uid] as AssetUid,
 						AST.[Uid] as AssetTypeUid,
 						CASE 
-							WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
-							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
-							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
-							WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
-							WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
-							WHEN AST.Object = 'TaskType' THEN '{CommonNames.AssetTypeClass_Task.CleanForSql()} : '
+							WHEN AST.Object = 'TaxonomyType' THEN '{Label.AssetTypeClass_Model.CleanForSql()} : '
+							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{Label.AssetTypeClass_Business.CleanForSql()} : '
+							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{Label.AssetTypeClass_Technical.CleanForSql()} : '
+							WHEN AST.Object = 'PolicyType' THEN '{Label.AssetTypeClass_Policy.CleanForSql()} : '
+							WHEN AST.Object = 'RuleType' THEN '{Label.AssetTypeClass_Rule.CleanForSql()} : '
+							WHEN AST.Object = 'TaskType' THEN '{Label.AssetTypeClass_Task.CleanForSql()} : '
 							ELSE ''
 						END + AST.Name AS AssetType, 
 						A.Object,

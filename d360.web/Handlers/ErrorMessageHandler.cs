@@ -1,13 +1,10 @@
-﻿using System;
+﻿using d360.core.resources;
+using d360.web.Models;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
-using d360.core.exceptions;
-using d360.web.Models;
-
-using Resources;
 
 namespace d360.web.Handlers
 {
@@ -51,11 +48,11 @@ namespace d360.web.Handlers
 			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
 			{
 				responseMetadata.message = null;
-				responseMetadata.title = ApiMessages.BadRequest;
+				responseMetadata.title = Error.BadRequest;
 			} 
 			else if (response.StatusCode == HttpStatusCode.BadRequest)
 			{
-				responseMetadata.title = ApiMessages.BadRequest;
+				responseMetadata.title = Error.BadRequest;
 			}
 
 			var result = request.CreateResponse(response.StatusCode, responseMetadata);

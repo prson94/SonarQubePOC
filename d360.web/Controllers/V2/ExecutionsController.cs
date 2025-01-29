@@ -2,25 +2,22 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 using d360.extensions;
-using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using static d360.core.entities.Resource;
@@ -75,7 +72,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 			}
 
 			if (queryParams.Any(x => x.Key == "_status"))
@@ -84,7 +81,7 @@ namespace d360.web.Controllers.V2
 				
 				if (!Enum.IsDefined(typeof(ExecutionInternalStatus), status))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ExecutionStatusInvalid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ExecutionStatusInvalid)).ConfigureAwait(false);
 				}
 			}
 
@@ -92,7 +89,7 @@ namespace d360.web.Controllers.V2
 
 			if (executions.StatusCode != HttpStatusCode.OK)
 			{
-				return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(executions.StatusCode, Error.InvalidRequest, executions.Message)).ConfigureAwait(false);
 			}
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions))).ConfigureAwait(false);
@@ -127,12 +124,12 @@ namespace d360.web.Controllers.V2
 
 			if (payload == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
 			}
 
 			if (payload.Assets == null && payload.Relations == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
 			}
 			if (payload.Assets == null)
 			{
@@ -169,40 +166,40 @@ namespace d360.web.Controllers.V2
 
 			if (execution == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
 			}
 
 			if (execution.State == State.Deleted)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
 			}
 
 			if (execution.CompletedOn != null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDFinishedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ExecutionUIDFinishedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
 			}
 
 			if (execution.ProcessingStartedOn != null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDStartedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ExecutionUIDStartedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
 			}
 
 			if (!execution.Route.Contains("batch"))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
 			}
 
 			execution.State = State.Deleted;
 			execution.CompletedOn = DateTime.UtcNow;
-			execution.ErrorMessage = ApiMessages.ExecutionCancelByUser;
+			execution.ErrorMessage = Error.ExecutionCancelByUser;
 
 			bool isDone = Company.Update(execution);
 
-			response.message = string.Format(ApiMessages.ExecutionCancel, executionID.ToString());
+			response.message = string.Format(Error.ExecutionCancel, executionID.ToString());
 
 			return isDone ?
 				Ok(response) : 
-				errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel);
+				errorMessageResponse(HttpStatusCode.InternalServerError, Error.InvalidRequest, Error.ExecutionWrongWhenCancel);
 		}
 
 		/// <summary>
@@ -299,25 +296,25 @@ namespace d360.web.Controllers.V2
 			if (model == null)
 			{
 				res.Code = HttpStatusCode.BadRequest;
-				res.Message = ApiMessages.ErrorInvalidDatasetMessage;
+				res.Message = Error.ErrorInvalidDatasetMessage;
 			}
 
 			if (model?.Status == null)
 			{
 				res.Code = HttpStatusCode.BadRequest;
-				res.Message = ApiMessages.StatusRequied;
+				res.Message = Error.StatusRequied;
 			}
 
 			if (model.Component?.Length > 250)
 			{
 				res.Code = HttpStatusCode.BadRequest;
-				res.Message = ApiMessages.ComponentMaxSize250;
+				res.Message = Error.ComponentMaxSize250;
 			}
 
 			if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
 			{
 				res.Code = HttpStatusCode.BadRequest;
-				res.Message = ApiMessages.StatusInvalid;
+				res.Message = Error.StatusInvalid;
 			}
 
 			if (res.Code != HttpStatusCode.Created)
@@ -368,7 +365,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 			}
 
 			#region "Filter Condition"
@@ -379,7 +376,7 @@ namespace d360.web.Controllers.V2
 
 				if (!Enum.IsDefined(typeof(ExecutionExternalStatus), status))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.StatusInvalid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.StatusInvalid)).ConfigureAwait(false);
 				}
 			}
 
@@ -387,14 +384,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_startDate").Value, out DateTime _tempstartDate))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidStartDate);
 				}
 
 				_startDate = _tempstartDate;
 
 				if (_startDate == DateTime.MinValue || DateTime.Compare((DateTime)_startDate, SqlDateTimeMin) < 0)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidStartDate);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidStartDate);
 				}
 			}
 
@@ -402,19 +399,19 @@ namespace d360.web.Controllers.V2
 			{
 				if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_endDate").Value, out DateTime _tempendDate))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidEndDate);
 				}
 
 				_endDate = _tempendDate;
 
 				if (_endDate == DateTime.MaxValue || DateTime.Compare((DateTime)_endDate, SqlDateTimeMin) < 0)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidEndDate);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidEndDate);
 				}
 
 				if (_startDate != null && DateTime.Compare((DateTime)_endDate, (DateTime)_startDate) < 0)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.StartEndDateValidation);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.StartEndDateValidation);
 				}
 			}
 
@@ -422,7 +419,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value, out Guid tempexternalId))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(ApiMessages.InvalidExternalID, queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value.ToString()))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, string.Format(Error.InvalidExternalID, queryParams.ToList().FirstOrDefault(q => q.Key == "externalId").Value.ToString()))).ConfigureAwait(false);
 				}
 
 				externalId = tempexternalId;
@@ -433,7 +430,7 @@ namespace d360.web.Controllers.V2
 
 				if (results <= 0)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ApiMessages.ConnectorStatusNotFound, externalId.ToString()))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.ConnectorStatusNotFound, externalId.ToString()))).ConfigureAwait(false);
 				}
 			}
 
@@ -443,11 +440,11 @@ namespace d360.web.Controllers.V2
 
 				if (string.IsNullOrEmpty(component))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.ComponentNotValid);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.ComponentNotValid);
 				}
 				else if (component.Length > 250)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.ComponentMaxSize250);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.ComponentMaxSize250);
 				}
 			}
 
@@ -456,7 +453,7 @@ namespace d360.web.Controllers.V2
 			var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);				
 			if (executions.StatusCode != HttpStatusCode.OK)
 			{
-				return errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message);
+				return errorMessageResponse(executions.StatusCode, Error.InvalidRequest, executions.Message);
 			}
 
 			return Ok(executions);
@@ -504,7 +501,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 			}
 
 			#region "Filter Condition"
@@ -513,7 +510,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out int _temppageSize))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageSize);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidPageSize);
 				}
 
 				_pageSize = _temppageSize;
@@ -523,7 +520,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out int _temppageNum))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageNum);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidPageNum);
 				}
 
 				_pageNum = _temppageNum;
@@ -536,7 +533,7 @@ namespace d360.web.Controllers.V2
 				
 				if (!allowedDirections.Contains(order.Trim().ToLower()))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidDirectionPassed);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirectionPassed);
 				}
 
 				_direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
@@ -553,7 +550,7 @@ namespace d360.web.Controllers.V2
 												"requestedbyname" };
 				if (!validOrderByFields.Contains(orderByCol.ToLower()))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidOrder);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidOrder);
 				}
 
 				orderBySql = $" order by {orderByCol} {_direction} ";
@@ -691,14 +688,14 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
 			}
 
 			var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
 
 			if (load == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidLoadUid, ApiMessages.InvalidLoadUid)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidLoadUid, Error.InvalidLoadUid)).ConfigureAwait(false);
 			}
 
 			var useExecutionTable = false;
@@ -716,7 +713,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value, out int _temppageSize))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageSize);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidPageSize);
 				}
 
 				_pageSize = _temppageSize;
@@ -726,7 +723,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value, out int _temppageNum))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, Validation.InvalidPageNum);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidPageNum);
 				}
 
 				_pageNum = _temppageNum;
@@ -739,7 +736,7 @@ namespace d360.web.Controllers.V2
 
 				if (!allowedDirections.Contains(order.Trim().ToLower()))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidDirectionPassed);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirectionPassed);
 				}
 
 				_direction = allowedDirections.Contains(order.Trim().ToLower()) ? order : "desc";
@@ -760,7 +757,7 @@ namespace d360.web.Controllers.V2
 
 				if (!validOrderByFields.Contains(orderByCol.ToLower()))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ActionApiMessages.InvalidOrder);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidOrder);
 				}
 
 				orderBySql = $" order by {orderByCol} {_direction} ";
@@ -1010,7 +1007,7 @@ namespace d360.web.Controllers.V2
 
 			if (load == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidLoadUid, NOT_FOUND_GENERIC_MESSAGE)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidLoadUid, NOT_FOUND_GENERIC_MESSAGE)).ConfigureAwait(false);
 			}
 
 			var useExecutionTable = false;
@@ -1197,7 +1194,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (assetTypeUid == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeUidProvided)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUidProvided)).ConfigureAwait(false);
 					}
 				}
 
@@ -1205,7 +1202,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (intersectTypeUid == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
 					}
 				}
 
@@ -1215,7 +1212,7 @@ namespace d360.web.Controllers.V2
 
 				if (file == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "file"))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "file"))).ConfigureAwait(false);
 				}
 
 				byte[] bytes = await file.ReadAsByteArrayAsync();
@@ -1472,7 +1469,7 @@ namespace d360.web.Controllers.V2
 					Company.Add(load);
 					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{SecurityContext.CompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
 					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = SecurityContext.CompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
-					response.message = FormControllerApiMessage.FileUploadedAndQueueProcessing;
+					response.message = Information.FileUploadedAndQueueProcessing;
 					
 					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
 				}
@@ -1485,12 +1482,12 @@ namespace d360.web.Controllers.V2
 					}
 					string err = error.ToString();
 
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, err)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, err)).ConfigureAwait(false);
 				}
 			}
 			catch (Exception e)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
 

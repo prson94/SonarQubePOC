@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace repositories.azure
 {
-	public class Catalog : Repository, ICatalog
+	public partial class Catalog : Repository, ICatalog
 	{
 		readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
 
@@ -383,12 +383,12 @@ where	ExecutionID = @executionID
 
 			if (value.Length < 1)
 			{
-				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeShort);
+				return new RepositoryResponse<TagApiModel>(400, Error.InvalidTagTypeShort);
 			}
 
 			if (value.Length > 100)
 			{
-				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeLong);
+				return new RepositoryResponse<TagApiModel>(400, Error.InvalidTagTypeLong);
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -397,13 +397,13 @@ where	ExecutionID = @executionID
 				if (tagTypeId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and lower([Value]) = @value and state = @state",
-						new { tagTypeId, value = value.ToLower(), state = State.Active}
+						"select cast(iif(count(1) > 0, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and [Value] = @value and state = @state",
+						new { tagTypeId, value , state = State.Active}
 					);
 
 					if (tagExists)
 					{
-						response = new RepositoryResponse<TagApiModel>(409, TagErrors.TagExists);
+						response = new RepositoryResponse<TagApiModel>(409, Error.TagExists);
 					}
 					else
 					{
@@ -430,7 +430,7 @@ values (@auditID,0,'Name',@Value,Null)
 				}
 				else
 				{
-					response = new RepositoryResponse<TagApiModel>(404, TagErrors.TagTypeNotFound);
+					response = new RepositoryResponse<TagApiModel>(404, Error.TagTypeNotFound);
 				}
 			}
 
@@ -444,31 +444,31 @@ values (@auditID,0,'Name',@Value,Null)
 			value = (value ?? "").Trim();
 			if (string.IsNullOrEmpty(value))
 			{
-				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeSpecifiedNoValue);
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeSpecifiedNoValue);
 			}
 			if (value.Length < 1)
 			{
-				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeShort);
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeShort);
 			}
 			if (value.Length > 100)
 			{
-				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeLong);
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeLong);
 			}
 			if (!value.IsValidForTag())
 			{
-				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeCharacters);
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeCharacters);
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var exists = await connection.QuerySingleOrDefaultAsync<bool>(
-					"select cast(iif(count(1) > 1, 1, 0) as bit) from TagType where lower([Value]) = @value and State = @state",
-					new { value = value.ToLower(), state = State.Active }
+					"select cast(iif(count(1) > 0, 1, 0) as bit) from TagType where [Value] = @value and State = @state",
+					new { value, state = State.Active }
 				);
 
 				if (exists)
 				{
-					response = new RepositoryResponse<TagTypeApiModel>(null, 409, false, TagErrors.TagExists);
+					response = new RepositoryResponse<TagTypeApiModel>(null, 409, false, Error.TagExists);
 				}
 				else
 				{
@@ -565,7 +565,7 @@ order by	lvl";
 						}
 						else
 						{
-							throw new ArgumentNullException(TagErrors.InvalidPageSize);
+							throw new ArgumentNullException(Error.InvalidPageSize);
 						}
 						break;
 						case "tagtypeuid":
@@ -576,7 +576,7 @@ order by	lvl";
 						}
 						else
 						{
-							throw new ArgumentNullException(TagErrors.InvalidParaMeter);
+							throw new ArgumentNullException(Error.InvalidParameter);
 						}
 						break;
 				}
@@ -660,22 +660,22 @@ where	t.uid = @uid";
 					switch (itemClass)
 					{
 						case AssetTypeClass.TechnicalAsset:
-							breadcrumb = CommonNames.AssetTypeClass_Technical;
+							breadcrumb = Label.AssetTypeClass_Technical;
 							break;
 						case AssetTypeClass.Policy:
-							breadcrumb = CommonNames.AssetTypeClass_Policy;
+							breadcrumb = Label.AssetTypeClass_Policy;
 							break;
 						case AssetTypeClass.Model:
-							breadcrumb = CommonNames.AssetTypeClass_Model;
+							breadcrumb = Label.AssetTypeClass_Model;
 							break;
 						case AssetTypeClass.Rule:
-							breadcrumb = CommonNames.AssetTypeClass_Rule;
+							breadcrumb = Label.AssetTypeClass_Rule;
 							break;
 						case AssetTypeClass.Diagram:
-							breadcrumb = CommonNames.AssetTypeClass_Task;
+							breadcrumb = Label.AssetTypeClass_Task;
 							break;
 						default:
-							breadcrumb = CommonNames.AssetTypeClass_Business;
+							breadcrumb = Label.AssetTypeClass_Business;
 							break;
 					}
 					breadcrumb += $"{chevron}{item.Name}";
@@ -692,112 +692,6 @@ where	t.uid = @uid";
 			}
 
 			return response;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(long id)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@id", id);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName,
-		Type,
-		TypeID,
-		uid
-from	AssetDetail
-where   ID = @id";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(string @object, int objectId)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@o", @object);
-			dbArgs.Add("@oid", objectId);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName as AssetTypeName,
-		Type,
-		TypeID,
-		uid,
-		assetTypeUid
-from	AssetDetail
-where   [ObjectID] = @oid and [Object] = @o";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
-		{
-			var dbArgs = new DynamicParameters();
-
-			dbArgs.Add("@assetTypeId", assetTypeId);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * (pageNum - 1));
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			var model = new AssetPathResults();
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				var countSql = "select count(1) from Asset where AssetTypeId = @assetTypeId";
-				if (includeTotal) 
-				{
-					model.total = await connection.QueryFirstAsync<int>(countSql, dbArgs);
-				}
-				model.items = await connection.QueryAsync<AssetPathResult>(sql, dbArgs);
-			}
-
-			return model;
 		}
 
 		public async Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000)
@@ -949,19 +843,19 @@ order by    P.[Path];";
 			
 			if (!queryParams.ValidateForQueryParameter<Guid>("uid",ref parameterValue))
 			{
-				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidTagUid, parameterValue));
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(Error.InvalidTagUid, parameterValue));
 			}
 				
 			var validOrderFieldsList = validOrderFields.Select(x => x.QueryStringPropertyName).ToList();
 
 			if (!queryParams.ValidateForQueryParameterFromList("_order", validOrderFieldsList, ref parameterValue))
 			{
-				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidOrderBy, parameterValue));
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(Error.InvalidOrderBy, parameterValue));
 			}
 
 			if (!queryParams.ValidateForQueryParameter<string>("_direction", ref parameterValue))
 			{
-				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidDirection, parameterValue));
+				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(Error.InvalidDirection, parameterValue));
 			}
 
 			#endregion
@@ -1327,7 +1221,7 @@ drop table if exists #tbl;
 			if (tagTypes.Any(t => t == SYSTEM_TAG_TYPE_UID))
 			{
 				return new RepositoryResponse<bool>( 
-					false, 403, false, string.Format(TagErrors.TagTypeNotDeletable, SYSTEM_TAG_TYPE_UID)
+					false, 403, false, string.Format(Error.TagTypeNotDeletable, SYSTEM_TAG_TYPE_UID)
 				);
 			}
 
@@ -1430,15 +1324,15 @@ drop table if exists #tbl;
 				if (tagId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"select cast(iif(count(1) > 0, 1, 0) as bit) " +
 						"from Tag " +
-						"where TagTypeID = @tagTypeId and ID <> @tagId and lower([Value]) = @value",
-						new { tagId, tagTypeId, value = value.ToLower() }
+						"where TagTypeID = @tagTypeId and ID <> @tagId and [Value] = @value",
+						new { tagId, tagTypeId, value }
 					);
 
 					if (tagExists)
 					{
-						response = new RepositoryResponse<bool>(false, 409, false, TagErrors.TagExists);
+						response = new RepositoryResponse<bool>(false, 409, false, Error.TagExists);
 					}
 					else
 					{
@@ -1514,7 +1408,7 @@ drop table if exists #TempTagValues;
 				}
 				else
 				{
-					response = new RepositoryResponse<bool>(false, 404, false, TagErrors.TagUidNotExists);
+					response = new RepositoryResponse<bool>(false, 404, false, Error.TagUidNotExists);
 				}
 			}
 
@@ -1529,19 +1423,19 @@ drop table if exists #TempTagValues;
 
 			if (string.IsNullOrEmpty(value))
 			{
-				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeSpecifiedNoValue);
+				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeSpecifiedNoValue);
 			}
 			if (value.Length < 1)
 			{
-				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeShort);
+				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeShort);
 			}
 			if (value.Length > 100)
 			{
-				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeLong);
+				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeLong);
 			}
 			if (!value.IsValidForTag())
 			{
-				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeCharacters);
+				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeCharacters);
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -1552,15 +1446,15 @@ drop table if exists #TempTagValues;
 				if (id > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"select cast(iif(count(1) > 0, 1, 0) as bit) " +
 						"from TagType " +
-						"where ID <> @id and lower([Value]) = @value and State = @state",
-						new { id, value = value.ToLower(), state = State.Active }
+						"where ID <> @id and [Value] = @value and State = @state",
+						new { id, value, state = State.Active }
 					);
 
 					if (tagExists)
 					{
-						response = new RepositoryResponse<bool>(false, 409, false, TagErrors.TagExists);
+						response = new RepositoryResponse<bool>(false, 409, false, Error.TagExists);
 					}
 					else
 					{
@@ -1579,7 +1473,7 @@ where	ID = @id;",
 				}
 				else
 				{
-					response = new RepositoryResponse<bool>(400, TagErrors.TagUidNotExists);
+					response = new RepositoryResponse<bool>(400, Error.TagUidNotExists);
 				}
 			}
 

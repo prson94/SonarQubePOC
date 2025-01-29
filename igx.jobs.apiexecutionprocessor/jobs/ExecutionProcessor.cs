@@ -9,7 +9,6 @@ using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
-using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -287,8 +286,15 @@ namespace igx.jobs.apiexecutionprocessor
 									case ApiExecutionAction.UpsertUsers:
 										var workspace = new Workspaces(dapperProvider);
 										UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
-										await Community.CreateUsersInTenantAsync(info.CompanyID, model.Users.ToList());
-										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, model.Users.ToList(), model.LookupFieldsPassedByValue);
+										List<UserUpsertValidateModel> validuser;
+										var users = model.Users.ToList();
+										users.ForEach(u => {
+											u.IsNew = model.IsInsert ? true : false;
+										});
+										await Community.GetUsersInTenantAsync(info.CompanyID, users);
+										validuser = await workspace.ValidateUserData(users, true, context.IsAdministrator, model.LookupFieldsPassedByValue);
+										await Community.CreateUsersInTenantAsync(info.CompanyID, validuser);
+										var userResponse = await workspace.UpsertUsersAsync(dbExecutionItem.Id, validuser, model.LookupFieldsPassedByValue);
 										await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, userResponse.Data);
 										resultsSql = "";// @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
 										break;

@@ -40,6 +40,10 @@ export class TagTypesPanelComponent {
         this.theDeleteCallback = this.deleteTagType.bind(this);
     }
 
+    onClick(e: Event){
+        e.stopPropagation();
+    }
+
     filterTagTypes(val: string) {
         if (val?.length > 0) {
             this.tagTypes = this.tagTypesCopy.filter((tag) => tag.Value.toLowerCase()

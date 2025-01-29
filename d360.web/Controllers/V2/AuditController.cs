@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.Models;
+using d360.core.resources;
 using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
@@ -11,7 +12,6 @@ using d360.web.Utilities;
 using Dapper;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -148,7 +148,7 @@ namespace d360.web.Controllers.V2
 				if (ex is ArgumentException || ex is FilterExpressionParserException)
 				{
 					var msg = ex.Message.Replace("\n", " ").Replace("\r", "");
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, msg)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, msg)).ConfigureAwait(false);
 				}
 
 				throw;
@@ -209,7 +209,7 @@ namespace d360.web.Controllers.V2
 			string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
 
 			List<DefaultFilter> fieldList = new List<DefaultFilter>
@@ -274,7 +274,7 @@ namespace d360.web.Controllers.V2
 			{
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage);
 			}
 
 			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
@@ -513,13 +513,13 @@ select count(1) from AuditView {whereSql};
 		{
 			if (assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(AssetsApiMessages.InvalidAssetTypeUid);
+				throw new ArgumentException(Error.InvalidAssetTypeUid);
 			}
 
 			dynamic objectInfo = GetLegacyObjectDetails(assetUid);
 			if (objectInfo == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetAssetTypeNotFound, assetUid));
+				throw new NotFoundBusinessLayerException(string.Format(Error.AssetAssetTypeNotFound, assetUid));
 			}
 
 			dynamic result = new System.Dynamic.ExpandoObject();
@@ -1195,22 +1195,22 @@ drop table if exists #tempauditdata;
 				var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
 				if (_pageSize.Length > 10)
 				{
-					return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageSizeString);
+					return string.Format(Error.InvalidValueMessage, Label.PageSizeString);
 				}
 				if (long.TryParse(_pageSize, out pageSize))
 				{
 					if (pageSize > pageSizeLimit)
 					{
-						return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageSizeString);
+						return string.Format(Error.InvalidNumberTooLarge, Label.PageSizeString);
 					}
 					if (pageSize <= 0)
 					{
-						return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageSizeString);
+						return string.Format(Error.MinLengthCheckGTZero, Label.PageSizeString);
 					}
 				}
 				else
 				{
-					return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageSizeString);
+					return string.Format(Error.NumberValueMessage, Label.PageSizeString);
 				}
 			}
 
@@ -1220,19 +1220,19 @@ drop table if exists #tempauditdata;
 
 				if (_pageNum.Length > 10)
 				{
-					return string.Format(ApiMessages.InvalidValueMessage, ApiMessages.PageNumString);
+					return string.Format(Error.InvalidValueMessage, Label.PageNumString);
 				}
 
 				if (long.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
-						return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageNumString);
+						return string.Format(Error.MinLengthCheckGTZero, Label.PageNumString);
 					}
 				}
 				else
 				{
-					return string.Format(ApiMessages.NumberValueMessage, ApiMessages.PageNumString);
+					return string.Format(Error.NumberValueMessage, Label.PageNumString);
 				}
 			}
 

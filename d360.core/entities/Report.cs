@@ -1,17 +1,15 @@
-﻿using System;
+﻿using d360.core.entities.Contracts;
+using d360.core.exceptions;
+using d360.core.resources;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
-
-using d360.core.entities.Contracts;
-using d360.core.exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System.Linq;
-using System.Web;
-using d360.core.resources;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -19,11 +17,11 @@ namespace d360.core.entities
 	public class Report : BaseIntObject, IIntObject, IUpdatedMetadata
 	{
 		[DataMember]
-		[Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "ReportName_Description")]
+		[Display(ResourceType = typeof(resources.Label), Name = "Name_Name", Description = "ReportName_Description")]
 		public string Name { get; set; }
 
 		[DataMember]
-		[Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "ReportDescription_Description")]
+		[Display(ResourceType = typeof(resources.Label), Name = "Description_Name", Description = "ReportDescription_Description")]
 		public string Description { get; set; }
 
 		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -180,7 +178,7 @@ namespace d360.core.entities
 				}
 				catch
 				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardType);
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardType);
 				}
 			}
 			if (!string.IsNullOrEmpty(formData["definition"]))
@@ -191,7 +189,7 @@ namespace d360.core.entities
 				}
 				catch
 				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDefinitionValue);
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDefinitionValue);
 				}
 			}
 			if (!string.IsNullOrEmpty(formData["description"]))
@@ -212,7 +210,7 @@ namespace d360.core.entities
 				}
 				catch
 				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardLocation);
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Information.InvalidDashboardLocation);
 				}
 			}
 			if (!string.IsNullOrEmpty(formData["name"]))
@@ -263,7 +261,7 @@ namespace d360.core.entities
 					this.uid = _uid;
 					if (this.uid == Guid.Empty)
 					{
-						this.errors.Add(DashboardMessages.InvalidDashboardUid);
+						this.errors.Add(Information.InvalidDashboardUid);
 					}
 				}
 
@@ -279,7 +277,7 @@ namespace d360.core.entities
 						case "detail": this.location = DashboardLocation.Detail; break;
 						case "3":
 						case "homepage": this.location = DashboardLocation.Homepage; break;
-						default: this.errors.Add(DashboardMessages.InvalidDashboardLocation); break;
+						default: this.errors.Add(Information.InvalidDashboardLocation); break;
 					}
 				}
 
@@ -291,7 +289,7 @@ namespace d360.core.entities
 					this.assetTypeUid = _uid;
 					if (this.assetTypeUid == Guid.Empty)
 					{
-						this.errors.Add(DashboardMessages.InvalidDashboardDashboardAssetTypeUid);
+						this.errors.Add(Information.InvalidDashboardDashboardAssetTypeUid);
 					}
 				}
 				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid")
@@ -302,7 +300,7 @@ namespace d360.core.entities
 					this.assetUid = _uid;
 					if (this.assetUid == Guid.Empty)
 					{
-						this.errors.Add(DashboardMessages.InvalidDashboardDashboardAssetUid);
+						this.errors.Add(Information.InvalidDashboardDashboardAssetUid);
 					}
 				}
 				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id")

@@ -61,7 +61,6 @@ namespace repositories.azure
 						{
 							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
-
 							if (parsedValue == Guid.Empty)
 							{
 								isValidParameter = false;
@@ -79,25 +78,33 @@ namespace repositories.azure
 						{
 							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
+							isValidParameter = true;
 						}
 						else
 						{
 							isValidParameter = false;
 						}
 					}
-					else 
+					else
 					{
 						dbArgs.Add(sqlparameternameArgs, rawValue);
 						queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
+						isValidParameter = true;
 					}
 				}
+			}
+			else
+			{
+				// If no filter provided, then we are good here.
+				isValidParameter = true;
 			}
 
 			if (defaultValue is not null && !dbArgs.ParameterNames.Contains(sqlparameternameArgs))
 			{
 				dbArgs.Add(sqlparameternameArgs, defaultValue);
+				isValidParameter = true;
 			}
-
+      
 			return isValidParameter;
 		}
 
@@ -114,6 +121,10 @@ namespace repositories.azure
 					if (int.TryParse(rawValue, out parsedValue))
 					{
 						value = parsedValue;
+						if (value <= 0)
+						{
+							value = 1;
+						}
 					}
 				}
 			}

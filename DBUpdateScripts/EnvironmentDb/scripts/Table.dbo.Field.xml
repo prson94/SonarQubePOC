@@ -36,65 +36,137 @@ END
   </sql>
  </changeSet>
 
- <changeSet author="TDuric" id="Indices.dbo.Field-v3" runInTransaction="false">
+ <changeSet author="Pappas" id="Indices.dbo.Field-v5.1" runInTransaction="false">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-	IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
-	BEGIN
-		DROP FULLTEXT INDEX ON [dbo].[Field]
-	END
+	if exists (select * from sys.indexes where name = 'UQ_Field_ID')
+	begin
+		ALTER TABLE [dbo].[FieldJsonProperty] DROP CONSTRAINT [FK_FieldJsonProperty_Field];
+		drop index UQ_Field_ID ON [dbo].[Field];
+	end
+
+	if exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include')
+	begin
+		drop index IX_Field_FieldTypeID_Include ON [dbo].[Field]
+	end
+
+	if exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_date')
+	begin
+		drop index IX_Field_FieldTypeID_Include_date ON [dbo].[Field]
+	end
 	
-	if not exists (select * from sys.indexes where name = 'UQ_Field_ID')
+	if not exists (select * from sys.indexes where name = 'IX_Field_FieldType_Include')
 	begin
-		create unique nonclustered index [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
+		create nonclustered index IX_Field_FieldType_Include ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE(FormattedValue, [Value], UpdatedOn)
 	end
 
-	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include')
-	begin
-		create nonclustered index [IX_Field_FieldTypeID_Include] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([FormattedValue],[Value])
-	end
-
-	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_date')
-	begin
-		create nonclustered index [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([UpdatedOn])
-	end
-
-	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeID_Include_Ids')
+	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_Ids')
 	begin
 		create nonclustered index [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
 	end
 
-	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIDAssetID_Include')
+	declare @ids table (ID bigint)
+
+	insert into @ids
+		select	max(ID) as MaxID
+		from	Field 
+		where	AssetID is not null group by FieldTypeID, AssetID having count(1) > 1
+
+	delete	f
+	from	Field f
+			inner join (
+				select	FieldTypeID, 
+						AssetID
+				from	Field 
+				where	AssetID is not null group by FieldTypeID, AssetID having count(1) > 1
+			) g on g.AssetID = f.AssetID and g.FieldTypeID = f.FieldTypeID
+			where f.ID not in (select ID from @ids);
+
+	if exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIDAssetID_Include')
 	begin
-		create nonclustered index [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field] ([FieldTypeID] ASC, [AssetID] ASC ) INCLUDE([FormattedValue],[Value])
+		drop index [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field]
 	end
 	
-	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIntersectID')
+	if exists (select * from sys.indexes where Name = 'IX_Field_Asset_FieldType')
 	begin
-		create index [IX_Field_FieldTypeIdIntersectID] on [dbo].[Field](FieldTypeID, IntersectID)
+		DROP INDEX [IX_Field_Asset_FieldType] ON [dbo].[Field]
 	end
 
-	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIssueID')
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldType_Asset')
 	begin
-		create index [IX_Field_FieldTypeIdIssueID] on [dbo].[Field](FieldTypeID, IssueID)
+		create unique nonclustered index IX_Field_FieldType_Asset on [dbo].[Field] ( [FieldTypeID] ASC, [AssetID] ASC ) include (FormattedValue, [Value]) where (FieldTypeID is not null and AssetID is not null)
 	end
 	
 	if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID')
 	begin
 		create nonclustered index [IX_Field_AssetID] ON [dbo].[Field] ([AssetID] ASC)
 	end
+
+
+	delete @ids;
 	
+	insert into @ids
+		select	max(ID) as MaxID
+		from	Field 
+		where	IntersectID is not null group by FieldTypeID, IntersectID having count(1) > 1
+
+	delete	f
+	from	Field f
+			inner join (
+				select	FieldTypeID, 
+						IntersectID
+				from	Field 
+				where	IntersectID is not null group by FieldTypeID, IntersectID having count(1) > 1
+			) g on g.IntersectID = f.IntersectID and g.FieldTypeID = f.FieldTypeID
+			where f.ID not in (select ID from @ids);
+
+	if exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIntersectID')
+	begin
+		drop index [IX_Field_FieldTypeIdIntersectID] on [dbo].[Field]
+	end
+
+	if not exists (select * from sys.indexes where Name = 'IX_Field_Intersect_FieldType')
+	begin
+		create unique nonclustered index [IX_Field_Intersect_FieldType] on [dbo].[Field] ( IntersectID asc, FieldTypeID asc ) include ([Value], FormattedValue) where IntersectID is not null and FieldTypeID is not null
+	end
+
 	if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectID')
 	begin
 		create nonclustered index [IX_Field_IntersectID] ON [dbo].[Field] ([IntersectID] ASC)
+	end
+
+
+	delete @ids;
+	
+	insert into @ids
+		select	max(ID) as MaxID
+		from	Field 
+		where	IssueID is not null group by FieldTypeID, IssueID having count(1) > 1
+
+	delete	f
+	from	Field f
+			inner join (
+				select	FieldTypeID, 
+						IssueID
+				from	Field 
+				where	IssueID is not null group by FieldTypeID, IssueID having count(1) > 1
+			) g on g.IssueID = f.IssueID and g.FieldTypeID = f.FieldTypeID
+			where f.ID not in (select ID from @ids);
+
+	if exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIssueID')
+	begin
+		drop index [IX_Field_FieldTypeIdIssueID] on [dbo].[Field]
+	end
+
+	if not exists (select * from sys.indexes where Name = 'IX_Field_Issue_FieldType')
+	begin
+		create unique nonclustered index IX_Field_Issue_FieldType on [dbo].[Field] ( [IssueID] asc, [FieldTypeID] asc ) include ([Value], FormattedValue) where IssueID is not null and FieldTypeID is not null
 	end
 
 	if not exists (select * from sys.indexes where Name = 'IX_Field_IssueID')
 	begin
 		create nonclustered index [IX_Field_IssueID] ON [dbo].[Field] ([IssueID] ASC)
 	end
-	
-	
 ]]>
   </sql>
  </changeSet> 

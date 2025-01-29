@@ -17,13 +17,13 @@ namespace d360.core.entities
         
         public string Category { get; set; }
 
-        [Display(ResourceType = typeof(resources.Fields), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
+        [Display(ResourceType = typeof(resources.Label), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
         public string DisplayDescription { get; set; }
 
-        [Display(ResourceType = typeof(resources.Fields), Name = "FormDescription_Name", Description = "FormDescription_Description")]
+        [Display(ResourceType = typeof(resources.Label), Name = "FormDescription_Name", Description = "FormDescription_Description")]
         public string FormDescription { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
+        [DataMember, Display(ResourceType = typeof(resources.Label), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
         public string ValidationDescription { get; set; }
 
         [Column(TypeName = "varchar"), StringLength(25)]

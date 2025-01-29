@@ -72,10 +72,10 @@ namespace igx.jobs.apiexecutionprocessor
 							var assetUrl = $"{rootUrl}/asset/{asset.uid}";
 							var commentUrl = $"{rootUrl}/asset/{asset.uid}/comments";
 
-							var subject = string.Format(Notifications.TaggedCommentMailSubject, commenterName, asset.DisplayValue);
-							var heading = string.Format(Notifications.TaggedCommentMailHeader, commenterName);
+							var subject = string.Format(Information.TaggedCommentMailSubject, commenterName, asset.DisplayValue);
+							var heading = string.Format(Information.TaggedCommentMailHeader, commenterName);
 							var body = string.Format(
-								Notifications.TaggedCommentMailBody,
+								Information.TaggedCommentMailBody,
 								commenterName,
 								assetUrl,
 								asset.DisplayValue,
@@ -93,7 +93,7 @@ namespace igx.jobs.apiexecutionprocessor
 									{ "notify_header", heading },
 									{ "notify_message", body },
 									{ "comment_link", commentUrl },
-									{ "comment_link_text", Notifications.TaggedCommentMailCommentLink }
+									{ "comment_link_text", Information.TaggedCommentMailCommentLink }
 									},
 									"tagged-in-comment-notification"
 								);

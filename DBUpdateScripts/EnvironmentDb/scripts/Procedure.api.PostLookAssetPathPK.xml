@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.api.PostLookAssetPathPK-v1">
+  <changeSet author="PuneetGupta" id="Procedure.api.PostLookAssetPathPK-v2.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.PostLookAssetPathPK
@@ -24,6 +24,7 @@ begin
 		select distinct FT.AssetTypeID
 		from api.InProcessLookUpField PF
 		inner join FieldType FT on PF.FieldTypeID = FT.ID and FT.IsPartOfKey = 1 and Type = 'LOOKUP'
+		where PF.ProcessUid = @processGuid;
 		
 		select @totalcount = max(id)
 		from #TempLookUpAssetPath ;
@@ -35,11 +36,11 @@ begin
 			inner join assettype att on tp.AssetTypeID = att.id 
 			where tp.id = @runcount;
 			
-			Insert into InProcessPostAssetPath(ProcessUid, AssetTypeID, AssetID)
+			Insert into api.InProcessPostAssetPath(ProcessUid, AssetTypeID, AssetID)
 			select distinct @processGuid, FT.AssetTypeID, PF.AssetID
 			from FieldType FT
-			inner join api.InProcessLookUpField PF on PF.FieldTypeID = FT.ID 
-			where FT.AssetTypeID = @AssetTypeID;
+			inner join api.InProcessLookUpField PF on PF.ProcessUid = @processGuid and PF.FieldTypeID = FT.ID 
+			where FT.AssetTypeID = @AssetTypeID ;
 			
 			exec api.MergeAssetPaths null, @class, null, null, null,null, @processGuid,@AssetTypeID  ;
 			

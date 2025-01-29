@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Web.Http.Description;
-
-using Resources;
-
 using Swashbuckle.Swagger;
+using d360.core.resources;
 
 namespace d360.web.Filters
 {
@@ -41,7 +39,7 @@ namespace d360.web.Filters
 
         private static string GetDescription(SwaggerDescriptionAttribute attribute)
         {
-            return Swagger.ResourceManager.GetString(attribute.DescriptionKey);
+            return Label.ResourceManager.GetString(attribute.DescriptionKey);
         }
 
         private static SwaggerDescriptionAttribute GetAttribute(System.Web.Http.Controllers.HttpParameterDescriptor httpParameter)

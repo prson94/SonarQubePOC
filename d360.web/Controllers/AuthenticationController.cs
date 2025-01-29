@@ -16,7 +16,6 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using repositories;
-using Resources;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -93,7 +92,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignature);
+                            throw new ArgumentNullException(core.resources.Error.FailedToVerifySignature);
                         }
                     }
                     else
@@ -104,7 +103,7 @@ namespace d360.web.Controllers
                         }
                         else
                         {
-                            throw new ArgumentNullException(OthersMessages.FailedToVerifySignatureNoIDP);
+                            throw new ArgumentNullException(core.resources.Error.FailedToVerifySignatureNoIDP);
                         }
                     }
                 }
@@ -267,7 +266,8 @@ namespace d360.web.Controllers
 							var isAdmin = isCompanyAdministrator ? isCompanyAdministrator : companyResource.IsAdministrator; 
 							var loggedInOn = DateTime.UtcNow;
 							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, isAdmin, loggedInOn, AuthenticationMethod.UI);
-                        }
+							saveUserAsLocalResource(resource, loggedInOn);
+						}
                         else
                         {
                             // The company resource account is not active, so ensure that user is NOT able to log in.
@@ -564,9 +564,7 @@ namespace d360.web.Controllers
 					Processed = 0,
 					ApplicationId = "AllowNewUserLogin"
 				};
-				var users = new List<UserApiModel>
-								{
-									new UserApiModel
+				var users = new UserApiModel
 									{
 										FirstName = resource.FirstName,
 										LastName = resource.LastName,
@@ -575,10 +573,19 @@ namespace d360.web.Controllers
 										Username = resource.Username,
 										Email = resource.Email,
 										IsNew = true
+								};
+				
+				var usersvalid = new List<UserUpsertValidateModel>
+								{
+									new UserUpsertValidateModel
+									{
+										users = users,
+										Success = true,
+										Message = ""
 									}
 								};
 
-				await Workspace.UpsertUsersAsync(execution.Id, users, true);
+				await Workspace.UpsertUsersAsync(execution.Id, usersvalid, true);
 			}
 		}
 
@@ -684,7 +691,7 @@ namespace d360.web.Controllers
 
                     if (string.IsNullOrEmpty(oidc.baseUri) || string.IsNullOrEmpty(oidc.clientId))
                     {
-                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
+                        return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, core.resources.Error.MissingConfigInfo);
                     }
 
                     var state = Community.GenerateOpenIdRequestValue();
@@ -786,7 +793,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    throw new ArgumentException(OthersMessages.NoAssertionsInResponse);
+                    throw new ArgumentException(core.resources.Error.NoAssertionsInResponse);
                 }
 
                 var attributes = samlAssertion.GetAttributeStatements()[0].Attributes;
@@ -885,14 +892,14 @@ namespace d360.web.Controllers
 			if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
             {
 				Log.LogCritical($"Code and/or State is empty or null.");
-				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.OpenIdCodeOrStateIsNotPresent);
             }
 
 			var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
 			if (string.IsNullOrEmpty(oidc.baseUri) || string.IsNullOrEmpty(oidc.clientId) || string.IsNullOrEmpty(oidc.clientSecret) || string.IsNullOrEmpty(oidc.audience))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, core.resources.Error.MissingConfigInfo);
             }
 
             var baseUri = oidc.baseUri;
@@ -901,7 +908,7 @@ namespace d360.web.Controllers
             if (openIdRequest == null)
             {
 				Log.LogError($"Could not find openIdRequest.");
-				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);
             }
 
             var client = new HttpClient();
@@ -942,7 +949,7 @@ namespace d360.web.Controllers
             if (openIdRequest.Nonce != incomingNonce)
             {
 				Log.LogTrace($"Nonces do not match: Incoming: {incomingNonce}; Valid: {openIdRequest.Nonce}");
-				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthenticationNonces);
             }
 
 			var combinedClaims = new List<System.Security.Claims.Claim>();
@@ -1029,7 +1036,11 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
-                    if (!string.IsNullOrEmpty(ReturnUrl))
+
+					var loggedInOn = DateTime.UtcNow;
+					saveUserAsLocalResource(resource, loggedInOn);
+
+					if (!string.IsNullOrEmpty(ReturnUrl))
                     {
                         Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out Uri testUri);
 
@@ -1047,12 +1058,12 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(OthersMessages.Unauthorized, OthersMessages.IncorrectPassword);
+                    ModelState.AddModelError(core.resources.Error.Unauthorized, core.resources.Error.IncorrectPassword);
                     return View("Login", model);
                 }
             }
 
-            ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
+            ModelState.AddModelError(core.resources.Error.UnknownError, UNKNOWN_ERROR_MESSAGE);
 
             return View("Login", model);
         }

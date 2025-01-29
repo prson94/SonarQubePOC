@@ -2,7 +2,7 @@
 using System.Web.Http.ExceptionHandling;
 using d360.web.Services;
 using d360.web.Utilities;
-using Resources;
+using d360.core.resources;
 
 namespace d360.web.Handlers.Exceptions
 {
@@ -20,8 +20,8 @@ namespace d360.web.Handlers.Exceptions
 		protected override void ComposeErrorResponse(ExceptionHandlerContext context, ProblemDetailsResponse problemDetails)
 		{
 			problemDetails.Status = 401;
-			problemDetails.Title = ApiMessages.EndpointNotAuthorizedHeading;
-			problemDetails.Detail = ApiMessages.EndpointNotAuthorizedMessage;
+			problemDetails.Title = Error.EndpointNotAuthorizedHeading;
+			problemDetails.Detail = Error.EndpointNotAuthorizedMessage;
 		}
 	}
 }

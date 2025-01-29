@@ -191,15 +191,15 @@ namespace d360.core.enums
         {
             switch (type)
             {
-                case AssetTypeClass.BusinessAsset: return CommonNames.AssetTypeClass_Business;
-                case AssetTypeClass.TechnicalAsset: return CommonNames.AssetTypeClass_Technical;
-                case AssetTypeClass.Model: return CommonNames.AssetTypeClass_Model;
-                case AssetTypeClass.Policy: return CommonNames.AssetTypeClass_Policy;
-                case AssetTypeClass.Rule: return CommonNames.AssetTypeClass_Rule;
-                case AssetTypeClass.Diagram: return CommonNames.AssetTypeClass_Task;
-                case AssetTypeClass.User: return CommonNames.AssetTypeClass_User;
-                case AssetTypeClass.Group: return CommonNames.AssetTypeClass_Group;
-                case AssetTypeClass.Reference: return CommonNames.AssetTypeClass_Reference;
+                case AssetTypeClass.BusinessAsset: return Label.AssetTypeClass_Business;
+                case AssetTypeClass.TechnicalAsset: return Label.AssetTypeClass_Technical;
+                case AssetTypeClass.Model: return Label.AssetTypeClass_Model;
+                case AssetTypeClass.Policy: return Label.AssetTypeClass_Policy;
+                case AssetTypeClass.Rule: return Label.AssetTypeClass_Rule;
+                case AssetTypeClass.Diagram: return Label.AssetTypeClass_Task;
+                case AssetTypeClass.User: return Label.AssetTypeClass_User;
+                case AssetTypeClass.Group: return Label.AssetTypeClass_Group;
+                case AssetTypeClass.Reference: return Label.AssetTypeClass_Reference;
                 default: return type.ToString();
             }
         }

@@ -1,4 +1,18 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using repositories;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -6,26 +20,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.queue;
-using d360.extensions;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using d360.web.Services;
-
-using Microsoft.Web.Http;
-using Newtonsoft.Json;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -102,7 +96,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
 
 			var response = await Catalog.ReadTagsAsync(queryParams);
@@ -133,15 +127,15 @@ namespace d360.web.Controllers.V2
 			Guid _tagUid;
 			if (!Guid.TryParse(tagUid, out _tagUid))
 			{
-				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidGuid, tagUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidGuid, tagUid));
 			}
 			if (!tagRepository.DoesTagExists(_tagUid))
 			{
-				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
+				return errorMessageNotFoundResponse(string.Format(Error.TagUidNotFound, tagUid));
 			}
 			if (!tagRepository.IsAuthorizedToEditTag(_tagUid))
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.AccessDenied);
 			}
 
 			if (!cascade)
@@ -157,7 +151,7 @@ namespace d360.web.Controllers.V2
 
 			var response = await Catalog.RemoveTagsAsync(new List<Guid> { _tagUid });
 			return (response.IsSuccess) ? 
-				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage) :
+				successMessageResponse(HttpStatusCode.OK, Information.TagRemoved, Information.TagRemoveMessage) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message, response.Message);
 		}
 
@@ -179,7 +173,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
 			var response = await Catalog.CreateTagAsync(model.Value, model.TagTypeUid);
@@ -209,17 +203,17 @@ namespace d360.web.Controllers.V2
 			Guid tagId;
 			if (!Guid.TryParse(tagUid, out tagId))
 			{
-				return errorMessageArgumentResponse(ApiMessages.InvalidGuid);
+				return errorMessageArgumentResponse(Error.InvalidGuid);
 			}
 
 			if (!tagRepository.DoesTagExists(tagId))
 			{
-				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
+				return errorMessageNotFoundResponse(string.Format(Error.TagUidNotFound, tagUid));
 			}
 
 			if (!tagRepository.IsAuthorizedToEditTag(tagId))
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ForbiddenUserNotAuthorizedMessage);
 			}
 
 			var response = await Catalog.UpdateTagAsync(tagId, model.Value);
@@ -263,18 +257,18 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 			foreach (var item in model)
 			{
 				if (!tagRepository.DoesTagExists(item.uid))
 				{
-					return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.TagUidNotFound, item.uid.ToString()));
 				}
 
 				if (!tagRepository.IsAuthorizedToEditTag(item.uid))
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+					return errorMessageResponse(HttpStatusCode.Forbidden, Error.AccessDenied);
 				}
 			}
 
@@ -293,7 +287,7 @@ namespace d360.web.Controllers.V2
 			var uids = model.Select(o => o.uid).ToList();
 			var response = await Catalog.RemoveTagsAsync(uids);
 			return (response.IsSuccess) ?
-				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage) :
+				successMessageResponse(HttpStatusCode.OK, Information.TagRemoveTitle, Information.TagRemoveMessage) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message, response.Message);
 		}
 
@@ -318,7 +312,7 @@ namespace d360.web.Controllers.V2
 			Guid _parentUid;
 			if (!Guid.TryParse(parentUid, out _parentUid))
 			{
-				return errorMessageArgumentResponse(string.Format(ApiMessages.CustomUidNotValid, parentUid));
+				return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, parentUid));
 			}
 
 			var _childrenUids = new List<Guid>();
@@ -331,13 +325,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageArgumentResponse(string.Format(ApiMessages.CustomUidNotValid, item));
+					return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, item));
 				}
 			}
 
 			if (_childrenUids.Contains(_parentUid))
 			{
-				return errorMessageArgumentResponse(TagsApiMessages.ParentNotIncludeInChild);
+				return errorMessageArgumentResponse(Error.ParentNotIncludeInChild);
 			}
 
 			var response = await Catalog.ConsolidateTagsAsync(_parentUid, _childrenUids);
@@ -457,7 +451,7 @@ namespace d360.web.Controllers.V2
 
 			if (!tagRepository.DoesTagExists(tagUid))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidRequest, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidRequest, string.Format(Error.TagUidNotFound, tagUid.ToString()));
 			}
 
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -465,14 +459,14 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
 
 			if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
 			{
 				if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
 				}
 
 				if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
@@ -481,12 +475,12 @@ namespace d360.web.Controllers.V2
 
 					if (assetType == null)
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
 					}
 				}
 				else
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
 				}
 			}
 
@@ -655,7 +649,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception e)
 			{
-				return errorMessageArgumentResponse(TagsApiMessages.ErrorTagPermissionDetail);
+				return errorMessageArgumentResponse(Error.ErrorTagPermissionDetail);
 			}
 		}
 
@@ -677,7 +671,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception e)
 			{
-				return errorMessageArgumentResponse(TagsApiMessages.ErrorAssetTagDetail);
+				return errorMessageArgumentResponse(Error.ErrorAssetTagDetail);
 			}
 		}
 
@@ -730,7 +724,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 			var response = await Catalog.CreateTagTypeAsync(model.Value);
 			return (response.IsSuccess) ?
@@ -760,12 +754,12 @@ namespace d360.web.Controllers.V2
 			Guid tagTypeId;
 			if (!Guid.TryParse(tagTypeUid, out tagTypeId))
 			{
-				return errorMessageArgumentResponse(ApiMessages.InvalidGuid);
+				return errorMessageArgumentResponse(Error.InvalidGuid);
 			}
 
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.Invalid);
+				return errorMessageArgumentResponse(Error.Invalid);
 			}
 
 			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
@@ -802,15 +796,15 @@ namespace d360.web.Controllers.V2
 			Guid _tagTypeUid;
 			if (!Guid.TryParse(tagTypeUid, out _tagTypeUid))
 			{
-				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidGuid, _tagTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidGuid, _tagTypeUid));
 			}
 			if (!tagRepository.DoesTagTypeExists(_tagTypeUid))
 			{
-				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagTypeUidNotFound, _tagTypeUid));
+				return errorMessageNotFoundResponse(string.Format(Error.TagTypeUidNotFound, _tagTypeUid));
 			}
 			var response = await Catalog.RemoveTagTypesAsync(new List<Guid> { _tagTypeUid });
 			return response.IsSuccess ?
-				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagTypeRemoved, TagsApiMessages.TagTypeRemoveMessage) :
+				successMessageResponse(HttpStatusCode.OK, Information.TagTypeRemoved, Information.TagTypeRemoveMessage) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 	}

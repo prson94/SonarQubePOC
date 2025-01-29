@@ -40,24 +40,24 @@ namespace d360.web.Controllers
 			sql = $@"Select * from ({sql}) as A {sortsql} ";
 			var list = Company.Query<dynamic>(sql, dbArgs);
 
-			var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = ExcelExports.Common_ExcelDateFormat);
-			var document = new ExcelDocument(Smart.Format(ExcelExports.WorkflowMonitor_DocumentName, new { DateTime.Now }))
+			var dateStyle = ExcelCell.MakeStyle(style => style.FormatCode = Label.Common_ExcelDateFormat);
+			var document = new ExcelDocument(Smart.Format(Label.WorkflowMonitor_DocumentName, new { DateTime.Now }))
 			{
-				new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+				new ExcelSheet(Label.Common_ItemsSheetName)
 				{
 					HeaderRows = {
 						new ExcelRow()
 						{
-							ExcelExports.WorkflowMonitor_WorkflowName,
-							ExcelExports.WorkflowMonitor_Type,
-							ExcelExports.WorkflowMonitor_TypeName,
-							ExcelExports.WorkflowMonitor_Asset,
-							ExcelExports.WorkflowMonitor_Initiator,
-							ExcelExports.WorkflowMonitor_Started,
-							ExcelExports.WorkflowMonitor_Completed,
-							ExcelExports.WorkflowMonitor_Status,
-							ExcelExports.WorkflowMonitor_WorkflowInstanceUID,
-							ExcelExports.WorkflowMonitor_Url
+							Label.WorkflowMonitor_WorkflowName,
+							Label.WorkflowMonitor_Type,
+							Label.WorkflowMonitor_TypeName,
+							Label.WorkflowMonitor_Asset,
+							Label.WorkflowMonitor_Initiator,
+							Label.WorkflowMonitor_Started,
+							Label.WorkflowMonitor_Completed,
+							Label.WorkflowMonitor_Status,
+							Label.WorkflowMonitor_WorkflowInstanceUID,
+							Label.WorkflowMonitor_Url
 						}
 					},
 

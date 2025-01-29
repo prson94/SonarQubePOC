@@ -1,0 +1,433 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DashboardNotFound" xml:space="preserve">
+    <value>No se ha encontrado el dashboard basado en el identificador único proporcionado.</value>
+  </data>
+  <data name="DashboardRemoved" xml:space="preserve">
+    <value>Se ha eliminado el dashboard</value>
+  </data>
+  <data name="ErrorOnCreate" xml:space="preserve">
+    <value>Error al añadir el dashboard</value>
+  </data>
+  <data name="ErrorOnDelete" xml:space="preserve">
+    <value>Error al eliminar el dashboard</value>
+  </data>
+  <data name="ErrorOnGet" xml:space="preserve">
+    <value>Error al recuperar el dashboard</value>
+  </data>
+  <data name="ErrorOnUpdate" xml:space="preserve">
+    <value>Error al actualizar el dashboard</value>
+  </data>
+  <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
+    <value>[AssetTypeUid] proporcionado no válido.</value>
+  </data>
+  <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
+    <value>[AssetUid] proporcionado no válido.</value>
+  </data>
+  <data name="InvalidDashboardLocation" xml:space="preserve">
+    <value>La [Location] debe ser uno de los siguientes valores: List, Detail o Homepage</value>
+  </data>
+  <data name="InvalidDashboardType" xml:space="preserve">
+    <value>[ReportType] debe ser uno de los siguientes valores: DqPlus o PowerBi</value>
+  </data>
+  <data name="InvalidDashboardUid" xml:space="preserve">
+    <value>UID no válido proporcionado.</value>
+  </data>
+  <data name="InvalidDashboardURL" xml:space="preserve">
+    <value>Valor [URL] no válido de [Definition]</value>
+  </data>
+  <data name="InvalidDefinitionValue" xml:space="preserve">
+    <value>Valor JSON no válido para [Definition]</value>
+  </data>
+  <data name="NameExists" xml:space="preserve">
+    <value>Ya existe un dashboard con el mismo nombre</value>
+  </data>
+	<data name="TaggedCommentMailBody" xml:space="preserve">
+    <value>{0} le ha etiquetado en un comentario el &lt;a href='{1}' class='link'&gt;{2}&lt;/a&gt; a las {3}</value>
+  </data>
+	<data name="TaggedCommentMailCommentLink" xml:space="preserve">
+    <value>Ver comentario</value>
+  </data>
+	<data name="TaggedCommentMailHeader" xml:space="preserve">
+    <value>{0} le ha etiquetado en un comentario</value>
+  </data>
+	<data name="TaggedCommentMailSender" xml:space="preserve">
+    <value>D360 Govern</value>
+  </data>
+	<data name="TaggedCommentMailSubject" xml:space="preserve">
+    <value>{0} le ha etiquetado en un comentario el {1}</value>
+  </data>
+	<data name="ActionAssetCommentBody" xml:space="preserve">
+    <value>Nuevo {0} realizado.</value>
+  </data>
+	<data name="ActionCreatedMsg" xml:space="preserve">
+    <value>Acción creada</value>
+  </data>
+	<data name="ActionTypeDeleted" xml:space="preserve">
+    <value>El tipo de acción se ha eliminado</value>
+  </data>
+	<data name="ActionTypeNotFound" xml:space="preserve">
+    <value>Tipo de acción no encontrado</value>
+  </data>
+	<data name="ActionTypeUpdated" xml:space="preserve">
+    <value>El tipo de acción se ha actualizado.</value>
+  </data>
+	<data name="AddAllocationsSuccessful" xml:space="preserve">
+    <value>Asignaciones añadidas correctamente</value>
+  </data>
+	<data name="AddSingleAllocationSuccessful" xml:space="preserve">
+    <value>Asignación añadida correctamente</value>
+  </data>
+	<data name="DeleteAllocationSuccessful" xml:space="preserve">
+    <value>Asignación borrada correctamente.</value>
+  </data>
+	<data name="Success" xml:space="preserve">
+    <value>Correcto</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>Filtro eliminado.</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>El campo se ha movido correctamente.</value>
+  </data>
+	<data name="StyleUpdated" xml:space="preserve">
+    <value>Estilos actualizados correctamente.</value>
+  </data>
+	<data name="SuccessfullyAdded" xml:space="preserve">
+    <value>{0} añadido correctamente.</value>
+  </data>
+	<data name="SucessfullyUpdated" xml:space="preserve">
+    <value>{0} actualizado correctamente.</value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>Plantilla eliminada.</value>
+  </data>
+	<data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>Plantilla eliminada correctamente.</value>
+  </data>
+	<data name="RebuildRequest" xml:space="preserve">
+    <value>Solicitud de reconstrucción recibida y aceptada.</value>
+  </data>
+	<data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} se ha creado correctamente.</value>
+  </data>
+	<data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} se ha eliminado correctamente.</value>
+  </data>
+	<data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} se ha eliminado correctamente.</value>
+  </data>
+	<data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} se ha editado correctamente.</value>
+  </data>
+	<data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han actualizado correctamente.</value>
+  </data>
+	<data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>Elementos del menú de ayuda actualizados.</value>
+  </data>
+	<data name="HelpItemsAdded" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han creado correctamente.</value>
+  </data>
+	<data name="HelpItemsDeleted" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han eliminado correctamente.</value>
+  </data>
+	<data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>Elementos del menú de ayuda creados.</value>
+  </data>
+	<data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>Elementos del menú de ayuda eliminados.</value>
+  </data>
+	<data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>Se han eliminado correctamente los favoritos especificados</value>
+  </data>
+	<data name="FavoritesListCleared" xml:space="preserve">
+    <value>Lista de favoritos borrada.</value>
+  </data>
+	<data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>Ya no está viendo {0}.</value>
+  </data>
+	<data name="YouAreNowWatching" xml:space="preserve">
+    <value>Ahora está viendo {0}.</value>
+  </data>
+  <data name="ResponsibilitySuccessAddMessage" xml:space="preserve">
+    <value>Responsabilidad añadida correctamente</value>
+  </data>
+  <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
+    <value>Responsabilidad eliminada correctamente</value>
+  </data>
+	<data name="ConsolidateSucessfully" xml:space="preserve">
+    <value>Las etiquetas de los conectores se han consolidado correctamente</value>
+  </data>
+	<data name="LabelRemoved" xml:space="preserve">
+    <value>Etiqueta del conector eliminada.</value>
+  </data>
+	<data name="LabelRemoveSucess" xml:space="preserve">
+    <value>La etiqueta del conector se ha eliminado correctamente.</value>
+  </data>
+	<data name="AssetTypeCreatedMessage" xml:space="preserve">
+    <value>Se ha creado el tipo de activo</value>
+  </data>
+	<data name="CorrectEndpoint" xml:space="preserve">
+    <value>El punto de conexión correcto para {0} es {1}://{2}{3}</value>
+  </data>
+	<data name="RequestCreatedMsg" xml:space="preserve">
+    <value>Solicitud creada correctamente</value>
+  </data>
+	<data name="ApiEndPointUriRemoved" xml:space="preserve">
+    <value>URI de punto de conexión API eliminado correctamente.</value>
+  </data>
+	<data name="ApiEndPointVersionRemoved" xml:space="preserve">
+    <value>Versión de punto de conexión API eliminada correctamente.</value>
+  </data>
+	<data name="ApiFieldRemoved" xml:space="preserve">
+    <value>Campo API eliminado correctamente.</value>
+  </data>
+	<data name="ApiFieldUpdated" xml:space="preserve">
+    <value>Campo API actualizado correctamente.</value>
+  </data>
+	<data name="ApiServiceRemoved" xml:space="preserve">
+    <value>Servicio API eliminado correctamente.</value>
+  </data>
+	<data name="EndPointRemoved" xml:space="preserve">
+    <value>Punto de conexión eliminado correctamente.</value>
+  </data>
+	<data name="FavoriteMoved" xml:space="preserve">
+    <value>El favorito se ha movido correctamente.</value>
+  </data>
+	<data name="FieldCreated" xml:space="preserve">
+    <value>El campo se ha creado correctamente.</value>
+  </data>
+	<data name="FileUploadedAndQueueProcessing" xml:space="preserve">
+    <value>Archivo cargado y en cola para el procesamiento.</value>
+  </data>
+	<data name="FolderAdded" xml:space="preserve">
+    <value>Carpeta añadida correctamente</value>
+  </data>
+	<data name="FolderItemRemoved" xml:space="preserve">
+    <value>Elemento de carpeta eliminado correctamente.</value>
+  </data>
+	<data name="FolderMoved" xml:space="preserve">
+    <value>Carpeta {0} movida correctamente.</value>
+  </data>
+	<data name="FolderMovedDown" xml:space="preserve">
+    <value>Carpeta {0} movida correctamente hacia abajo.</value>
+  </data>
+	<data name="FolderMovedToBottom" xml:space="preserve">
+    <value>Carpeta {0} movida correctamente a la parte inferior.</value>
+  </data>
+	<data name="FolderMovedToTop" xml:space="preserve">
+    <value>Carpeta {0} movida correctamente a la parte superior.</value>
+  </data>
+	<data name="FolderMovedUp" xml:space="preserve">
+    <value>Carpeta {0} movida correctamente hacia arriba.</value>
+  </data>
+	<data name="FolderRemoved" xml:space="preserve">
+    <value>Carpeta eliminada correctamente.</value>
+  </data>
+	<data name="FolderUpdated" xml:space="preserve">
+    <value>Carpeta actualizada correctamente.</value>
+  </data>
+	<data name="GrammarAllocationModified" xml:space="preserve">
+    <value>Asignación gramatical modificada correctamente.</value>
+  </data>
+	<data name="ItemCreatedProcessed" xml:space="preserve">
+    <value>El elemento se ha creado y procesado correctamente.</value>
+  </data>
+	<data name="ItemRemoved" xml:space="preserve">
+    <value>Elemento eliminado correctamente.</value>
+  </data>
+	<data name="ItemUpdatedProcessed" xml:space="preserve">
+    <value>El elemento se ha actualizado y procesado correctamente.</value>
+  </data>
+	<data name="NamespaceCreated" xml:space="preserve">
+    <value>Espacio de nombre creado correctamente.</value>
+  </data>
+	<data name="NamespaceRemoved" xml:space="preserve">
+    <value>Espacio de nombre de API eliminado correctamente.</value>
+  </data>
+	<data name="NamespaceUpdated" xml:space="preserve">
+    <value>Espacio de nombre actualizado correctamente.</value>
+  </data>
+	<data name="RequestSubmitted" xml:space="preserve">
+    <value>Se ha enviado su solicitud</value>
+  </data>
+	<data name="ResetPassword" xml:space="preserve">
+    <value>Las contraseñas de los usuarios se han actualizado correctamente.</value>
+  </data>
+	<data name="ServiceCreated" xml:space="preserve">
+    <value>Servicio creado correctamente.</value>
+  </data>
+	<data name="ServiceEndpointCreated" xml:space="preserve">
+    <value>Punto de conexión del servicio creado correctamente.</value>
+  </data>
+	<data name="ShortcutAdded" xml:space="preserve">
+    <value>Acceso directo añadido correctamente</value>
+  </data>
+	<data name="ShortcutDeleted" xml:space="preserve">
+    <value>Acceso directo eliminado correctamente.</value>
+  </data>
+	<data name="ShortcutModified" xml:space="preserve">
+    <value>Acceso directo modificado correctamente</value>
+  </data>
+	<data name="ShortcutMoved" xml:space="preserve">
+    <value>Acceso directo {0} movido {1} correctamente.</value>
+  </data>
+	<data name="SynonymCreated" xml:space="preserve">
+    <value>Sinónimo {0} creado correctamente.</value>
+  </data>
+	<data name="SynRemoved" xml:space="preserve">
+    <value>Sinónimo eliminado correctamente</value>
+  </data>
+	<data name="UriCreated" xml:space="preserve">
+    <value>URI creado correctamente.</value>
+  </data>
+	<data name="VersionCreated" xml:space="preserve">
+    <value>Versión creada correctamente.</value>
+  </data>
+	<data name="VersionUpdated" xml:space="preserve">
+    <value>Versión actualizada correctamente.</value>
+  </data>
+	<data name="MetricAdded" xml:space="preserve">
+    <value>Métrica añadida</value>
+  </data>
+	<data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>La métrica especificada se ha añadido correctamente</value>
+  </data>
+	<data name="MetricRemoved" xml:space="preserve">
+    <value>Métrica eliminada.</value>
+  </data>
+	<data name="MetricRemoveMessage" xml:space="preserve">
+    <value>Métrica eliminada correctamente.</value>
+  </data>
+	<data name="MetricUpdated" xml:space="preserve">
+    <value>Métrica actualizada</value>
+  </data>
+	<data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>La métrica especificada se ha actualizado correctamente</value>
+  </data>
+	<data name="TagRemoved" xml:space="preserve">
+    <value>Etiqueta eliminada</value>
+  </data>
+	<data name="TagRemoveMessage" xml:space="preserve">
+    <value>La etiqueta se ha eliminado correctamente.</value>
+  </data>
+	<data name="TagRemoveTitle" xml:space="preserve">
+    <value>Etiquetas eliminadas.</value>
+  </data>
+</root>

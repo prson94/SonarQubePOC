@@ -21,10 +21,10 @@ namespace d360.core
         [Description("True/False")]
         Boolean = 1 << 0,
 
-        [Description("Date")]
+        [Description("Date"), SqlDataType("date")]
         Date = 1 << 1,
 
-        [Description("Date With Time")]
+        [Description("Date With Time"), SqlDataType("datetime")]
         DateTime = 1 << 2,
 
         [Description("Hidden"), ReadOnly(true)]
@@ -33,10 +33,10 @@ namespace d360.core
         [Description("Html/Richtext")]
         Html = 1 << 5,
 
-        [Description("Number")]
+        [Description("Number"), SqlDataType("bigint")]
         Number = 1 << 6,
 
-        [Description("Decimal Number")]
+        [Description("Decimal Number"), SqlDataType("float")]
         Decimal = 1 << 7,
 
         [Description("List")]
@@ -108,7 +108,25 @@ namespace d360.core
 
     public static class DataTypeExtensions
     {
-        public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type)
+		public static string AsSqlDataType(this DataType type)
+		{
+			SqlDataTypeAttribute dt = type.GetType()
+				.GetMember(type.ToString())
+				.Where(m => m.MemberType == MemberTypes.Field)
+				.Single().GetCustomAttributes(typeof(SqlDataTypeAttribute))
+				.Cast<SqlDataTypeAttribute>()
+				.SingleOrDefault();
+			if (dt == null)
+			{
+				return "nvarchar(max)";
+			}
+			else
+			{
+				return dt.Datatype;
+			}
+		}
+
+		public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type)
         {
             var list = new List<DataTypeInfo>();
 
@@ -222,7 +240,7 @@ namespace d360.core
 				else
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.ValidateBoolValue, name);
+					result.Message += string.Format(Error.ValidateBoolValue, name);
 				}
 			}
 
@@ -243,7 +261,7 @@ namespace d360.core
 				else
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "date");
+					result.Message += string.Format(Error.FieldNameValidate, name, "date");
 				}
 			}
 
@@ -264,7 +282,7 @@ namespace d360.core
 				else
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "datetime");
+					result.Message += string.Format(Error.FieldNameValidate, name, "datetime");
 				}
 			}
 
@@ -286,7 +304,7 @@ namespace d360.core
 						if (dValue < minLength.Value)
 						{
 							result.IsValid = false;
-							result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+							result.Message += string.Format(Error.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
 						}
 					}
 					if (maxLength.HasValue)
@@ -294,21 +312,21 @@ namespace d360.core
 						if (dValue > maxLength.Value)
 						{
 							result.IsValid = false;
-							result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+							result.Message += string.Format(Error.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
 						}
 					}
 				}
 				else 
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.FieldNameValidate, name, "decimal");
+					result.Message += string.Format(Error.FieldNameValidate, name, "decimal");
 				}
 				if (length.HasValue)
 				{
 					if (value.Length != length.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+						result.Message += string.Format(Error.CheckExactLength, name, length.Value);
 					}
 				}
 			}
@@ -325,7 +343,7 @@ namespace d360.core
 				if (value.Count(c => c == '|') != 1 && !value.Equals('|'))
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.ValidateLinkValue, name);
+					result.Message += string.Format(Error.ValidateLinkValue, name);
 				}
 				else 
 				{
@@ -346,7 +364,7 @@ namespace d360.core
 				if (!allowMultiple && value.Split(',').Length > 1)
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.FieldNotAllowedMultipleValies, name);
+					result.Message += string.Format(Error.FieldNotAllowedMultipleValies, name);
 				}
 			}
 
@@ -368,7 +386,7 @@ namespace d360.core
 						if (dValue < minLength.Value)
 						{
 							result.IsValid = false;
-							result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+							result.Message += string.Format(Error.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
 						}
 					}
 					if (maxLength.HasValue)
@@ -376,21 +394,21 @@ namespace d360.core
 						if (dValue > maxLength.Value)
 						{
 							result.IsValid = false;
-							result.Message += string.Format(CompanyContextApiError.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
+							result.Message += string.Format(Error.NumericMaximumValueCheck, name, maxLength.Value.ToString(decimalFormatString));
 						}
 					}
 				}
 				else
 				{
 					result.IsValid = false;
-					result.Message += string.Format(CompanyContextApiError.ValidateNumberFieldRange, name, -9223372036854775808, 9223372036854775807);
+					result.Message += string.Format(Error.ValidateNumberFieldRange, name, -9223372036854775808, 9223372036854775807);
 				}
 				if (length.HasValue)
 				{
 					if (value.Length != length.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+						result.Message += string.Format(Error.CheckExactLength, name, length.Value);
 					}
 				}
 			}
@@ -410,7 +428,7 @@ namespace d360.core
 					if (value.Length != length.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.CheckExactLength, name, length.Value);
+						result.Message += string.Format(Error.CheckExactLength, name, length.Value);
 					}
 				}
 
@@ -419,7 +437,7 @@ namespace d360.core
 					if (value.Length < minLength.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
+						result.Message += string.Format(Error.NumericMinimumValueCheck, name, minLength.Value.ToString(decimalFormatString));
 					}
 				}
 
@@ -428,7 +446,7 @@ namespace d360.core
 					if (value.Length > maxLength.Value)
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.ExceedsMaximumLength, name, maxLength.Value.ToString(decimalFormatString));
+						result.Message += string.Format(Error.ExceedsMaximumLength, name, maxLength.Value.ToString(decimalFormatString));
 					}
 				}
 
@@ -437,7 +455,7 @@ namespace d360.core
 					if (!Regex.IsMatch(value, pattern))
 					{
 						result.IsValid = false;
-						result.Message += string.Format(CompanyContextApiError.RegularExpressionPatternMatch, name);
+						result.Message += string.Format(Error.RegularExpressionPatternMatch, name);
 					}
 				}
 			}
@@ -454,7 +472,7 @@ namespace d360.core
 			if (string.IsNullOrEmpty(value) && required)
 			{
 				result.IsValid = false;
-				result.Message += string.Format(CompanyContextApiError.FieldValueIsRequired, name);
+				result.Message += string.Format(Error.FieldValueIsRequired, name);
 			}
 
 			return result;
@@ -468,7 +486,7 @@ namespace d360.core
 			if (restrictedFieldTypes.Contains(typeName))
 			{
 				result.IsValid = false;
-				result.Message += string.Format(CompanyContextApiError.RestrictFieldTypeUpdate, name, typeName);
+				result.Message += string.Format(Error.RestrictFieldTypeUpdate, name, typeName);
 			}
 
 			return result;

@@ -1,10 +1,10 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
-using d360.core.resources;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 using d360.extensions;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -16,7 +16,6 @@ using Dapper;
 using MediatR;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -29,13 +28,13 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
-using System.Text.RegularExpressions;
 
 namespace d360.web.Controllers.V2
 {
@@ -98,32 +97,32 @@ namespace d360.web.Controllers.V2
 					|| !u.Password.Any(char.IsUpper) || !u.Password.Any(char.IsLower)
 					|| !u.Password.Any(char.IsDigit))
 					{
-						errors.Add(MemberShipErrors.PasswordRule);
+						errors.Add(Error.PasswordRule);
 					}
 
 					if (string.IsNullOrEmpty(u.FirstName))
 					{
-						errors.Add(MemberShipErrors.FirstNameMissing);
+						errors.Add(Error.FirstNameMissing);
 					}
 
 					if (string.IsNullOrEmpty(u.LastName))
 					{
-						errors.Add(MemberShipErrors.LastNameMissing);
+						errors.Add(Error.LastNameMissing);
 					}
 
 					if (u.FirstName != null && u.FirstName.Length > 250)
 					{
-						errors.Add(MemberShipErrors.FirstNameTooLong);
+						errors.Add(Error.FirstNameTooLong);
 					}
 
 					if (u.LastName != null && u.LastName.Length > 250)
 					{
-						errors.Add(MemberShipErrors.LastNameTooLong);
+						errors.Add(Error.LastNameTooLong);
 					}
 
 					if (string.IsNullOrEmpty(u.Username) || !Regex.IsMatch(u.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
 					{
-						errors.Add(MemberShipErrors.InvalidEmail);
+						errors.Add(Error.InvalidEmail);
 					}
 				}
 			}
@@ -208,7 +207,7 @@ namespace d360.web.Controllers.V2
 
 				if (!SecurityContext.IsAdministrator && !showResources && IsCurrentUser == false)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.Forbidden, Error.AccessDenied)).ConfigureAwait(false);
 				}
 
 				string finalSql = "";
@@ -229,7 +228,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "iscommunityuserresposibility").Value, out bool tempbool))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidBoolean)).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidBoolean)).ConfigureAwait(false);
 					}
 
 					iscommunityuserresposibility = tempbool;
@@ -239,7 +238,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "responsibilitytypeuid").Value, out Guid tempguid))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(ApiMessages.InvalidGuid, queryParams.ToList().FirstOrDefault(q => q.Key == "responsibilitytypeuid").Value))).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, string.Format(Error.InvalidGuid, queryParams.ToList().FirstOrDefault(q => q.Key == "responsibilitytypeuid").Value))).ConfigureAwait(false);
 					}
 
 					responsibilitytypeuid = tempguid;
@@ -335,7 +334,7 @@ namespace d360.web.Controllers.V2
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
 				}
 
 				List<FieldType> fieldTypes;
@@ -521,12 +520,12 @@ namespace d360.web.Controllers.V2
 
 				if (validCols.All(x => x.ToLowerInvariant() != _order.ToLowerInvariant()))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.OrderByFieldNotFound)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderByFieldNotFound)).ConfigureAwait(false);
 				}
 
 				if (!new[] { "asc", "desc" }.Contains(_direction.ToLowerInvariant()))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
 				}
 
 				orderBySQL = $"order by {_order} {_direction}";
@@ -584,13 +583,13 @@ namespace d360.web.Controllers.V2
 			{
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
 				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
 
@@ -615,18 +614,18 @@ namespace d360.web.Controllers.V2
 		{
 			if (groupUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ActionApiMessages.UidNotEmptyAndRequired);
+				return errorMessageArgumentResponse(Error.UidNotEmptyAndRequired);
 			}
 
 			if (users.Count == 0)
 			{
-				return errorMessageArgumentResponse(ApiMessages.NoUserUIDProvided);
+				return errorMessageArgumentResponse(Error.NoUserUIDProvided);
 			}
 
 			bool duplicates = users.GroupBy(u => u.Uid).Any(g => g.Count() > 1);
 			if (duplicates)
 			{
-				return errorMessageArgumentResponse(ApiMessages.DuplicateUserUidProvided);
+				return errorMessageArgumentResponse(Error.DuplicateUserUidProvided);
 			}
 
 			var response = await Workspace.AddMembersToGroupAsync(groupUid, users.Select(u => u.Uid).ToList());
@@ -856,8 +855,8 @@ namespace d360.web.Controllers.V2
 		{
 			var response = await Workspace.RemoveMemberFromGroupAsync(groupUid, resourceUid);
 			return response ?
-				successMessageResponse(HttpStatusCode.OK, ApiMessages.Userremoved, ApiMessages.UserremovedMessage) :
-				errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ResourceGroupNotExists);
+				successMessageResponse(HttpStatusCode.OK, Error.Userremoved, Error.UserremovedMessage) :
+				errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ResourceGroupNotExists);
 		}
 
 		/// <summary>
@@ -880,7 +879,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (users == null || users.Count() == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			var uids = users.Select(u => u.Uid).ToList();
@@ -961,15 +960,22 @@ namespace d360.web.Controllers.V2
 		{
 			if (users == null || users.Count == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			cleanIncomingUsers(users, true);
-			var communityResponse = await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
 			
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			
+			var validatedUsers = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, validatedUsers);
+
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, validatedUsers, lookupFieldsPassedByValue);
+			
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
@@ -1008,7 +1014,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (users == null || users.Count == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			cleanIncomingUsers(users, true);
@@ -1081,16 +1087,22 @@ namespace d360.web.Controllers.V2
 		{
 			if (users == null || users.Count == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			cleanIncomingUsers(users, false);
 
-			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, users);
+			await Community.GetUsersInTenantAsync(SecurityContext.CompanyID, users);
+			
+			var validatedUsers = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
+
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, validatedUsers);
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
-			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, users, lookupFieldsPassedByValue);
+
+			var tenantResponse = await Workspace.UpsertUsersAsync(execution.Id, validatedUsers, lookupFieldsPassedByValue);
+			
 			return sendRepositoryOkResponse(tenantResponse);
 		}
 
@@ -1105,14 +1117,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (user == null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			cleanIncomingUsers(new List<UserApiModel> { user }, false);
 
 			if (SecurityContext.AuthenticationType != AuthenticationType.Forms)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.IsChangePwdReqAuthOtherThanForm);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.IsChangePwdReqAuthOtherThanForm);
 			}
 
 			var newPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
@@ -1163,7 +1175,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (users == null || users.Count == 0)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.NoUserRequest);
 			}
 
 			cleanIncomingUsers(users, false);
@@ -1236,7 +1248,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> DeleteFavorites(List<int> favoriteIds)
 		{
 			await Workspace.RemoveFavoritesAsync(SecurityContext.ResourceID, favoriteIds);
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ApiMessages.FavoritesSuccessfullyDeleted);
+			return successMessageResponse(HttpStatusCode.OK, Error.Success, Information.FavoritesSuccessfullyDeleted);
 		}
 
 		/// <summary>
@@ -1256,7 +1268,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (string.IsNullOrWhiteSpace(favorite.Route))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.FavoritesEmptyRoute);
 			}
 
 			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
@@ -1292,7 +1304,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (string.IsNullOrWhiteSpace(favorite.Route))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.FavoritesEmptyRoute);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.FavoritesEmptyRoute);
 			}
 
 			await Mediator.Send(new ToggleFavoriteOrHomePageCommand.Argument
@@ -1329,7 +1341,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (groups.Count() < 1)
 			{
-				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
+				return errorMessageArgumentResponse(Error.NoGroupRequest);
 			}
 			
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
@@ -1381,14 +1393,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (groups.Count < 1)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.NoGroupRequest);
 			}
 
 			var isValid = groups.All(x => x.Uid.HasValue);
 
 			if (!isValid)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.UidNotEmptyAndRequired);
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
@@ -1419,12 +1431,12 @@ namespace d360.web.Controllers.V2
 		{
 			if (groups.Count < 1)
 			{
-				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
+				return errorMessageArgumentResponse(Error.NoGroupRequest);
 			}
 
 			if (groups.Any(x => string.IsNullOrEmpty(x.Name)))
 			{
-				return errorMessageArgumentResponse(ApiMessages.NameMissingInGroupPayload);
+				return errorMessageArgumentResponse(Error.NameMissingInGroupPayload);
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PostGroups);
@@ -1517,13 +1529,13 @@ namespace d360.web.Controllers.V2
 
 			if (!SecurityContext.IsAdministrator && !showAllUsersAPIKey)
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.Forbidden, Error.AccessDenied);
 			}
 
 			var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
 			if (!resource.IsSuccess)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidUser);
 			}
 
 			var apikeydetail = new ApiKeyDetailModel
@@ -1534,7 +1546,7 @@ namespace d360.web.Controllers.V2
 
 			if (apikeydetail.apiKey == null || apikeydetail.apiSecret == null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidUser);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidUser);
 			}
 
 			return Ok(apikeydetail);
@@ -1592,14 +1604,14 @@ namespace d360.web.Controllers.V2
 
 			if ((model.assetTypeUid == null && model.assetUid == null) || (model.assetTypeUid != null && model.assetUid != null))
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.AssetTypeOrAssetRequired)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.AssetTypeOrAssetRequired)).ConfigureAwait(false);
 			}
 
 			if (model.assetTypeUid != null)
 			{
 				if ((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUid)).ConfigureAwait(false);
 				}
 				else
 				{
@@ -1616,7 +1628,7 @@ namespace d360.web.Controllers.V2
 
 				if ((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetUid)).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetUid)).ConfigureAwait(false);
 				}
 				else
 				{
@@ -1633,13 +1645,13 @@ namespace d360.web.Controllers.V2
 
 				if (followDetail.HardFollow)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.AlreadyWatch, (model.assetTypeUid != null) ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AlreadyWatch, (model.assetTypeUid != null) ? $"{Error.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 				}
 				else
 				{
 					if (followDetail != null && !followDetail.HardFollow)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatch, name, parentName))).ConfigureAwait(false);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.CurrentWatch, name, parentName))).ConfigureAwait(false);
 					}
 				}
 			}
@@ -1648,19 +1660,19 @@ namespace d360.web.Controllers.V2
 			{
 				if (followDetail == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.NotCurrentWatch, (model.assetTypeUid != null) ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.NotCurrentWatch, (model.assetTypeUid != null) ? $"{Error.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 				}
 
 				if (followDetail != null && !followDetail.HardFollow)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.CurrentWatchNotUnwatchIndividually, parentName))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.CurrentWatchNotUnwatchIndividually, parentName))).ConfigureAwait(false);
 				}
 			}
 
 			bool success = Company.UpdateFollowStatus(AssetTypeID, AssetID, null, includeChildren);
 
-			return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(success ? ApiMessages.YouAreNowWatching : ApiMessages.YouAreNoLongerWatching,
-																													  model.assetTypeUid != null ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+			return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, Error.Success, string.Format(success ? Information.YouAreNowWatching : Information.YouAreNoLongerWatching,
+																													  model.assetTypeUid != null ? $"{Error.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1684,12 +1696,12 @@ namespace d360.web.Controllers.V2
 
 			if (!user.IsSuccess || user.Data != null)
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.ResourceUidNotValid);
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ResourceUidNotValid);
 			}
 
 			if (size < 1 || size > 2048)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ImageSize2048);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.ImageSize2048);
 			}
 
 			MD5 md5Hasher = MD5.Create();
@@ -1765,7 +1777,7 @@ namespace d360.web.Controllers.V2
 
 			if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetTypeUid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUid);
 			}
 
 			var assetType = Assets.GetAssetTypeByUID(assetTypeUid);
@@ -1775,7 +1787,7 @@ namespace d360.web.Controllers.V2
 
 				if ((assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == assetUid.Value))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetUid);
 				}
 				else
 				{
@@ -1783,7 +1795,7 @@ namespace d360.web.Controllers.V2
 
 					if (asset.AssetTypeUid != assetTypeUid)
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.AssetValidateWithAssetType);
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.AssetValidateWithAssetType);
 					}
 
 					response = Company.Any<Follow>(F => F.AssetID  == asset.ID && F.ResourceID == SecurityContext.ResourceID);
@@ -1816,27 +1828,27 @@ namespace d360.web.Controllers.V2
 
 			if (model is null)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ErrorInvalidDatasetMessage);
 			}
 
 			if (string.IsNullOrEmpty(model?.apiKey))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apikey"));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "apikey"));
 			}
 
 			if (string.IsNullOrEmpty(model?.apiSecret))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.RequiredFieldError, "apiSecret"));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "apiSecret"));
 			}
 
 			if (resource.IsSuccess)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidUser);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUser);
 			}
 
 			if (resource.Data.APIPublicKey != model.apiKey || resource.Data.APIPrivateKey != model.apiSecret)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidApiKeyOrApiSecret);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidApiKeyOrApiSecret);
 			}
 
 			var updatedResource = await Community.UpdateUserApiCredentialsAsync(SecurityContext.ResourceID);
@@ -1902,7 +1914,7 @@ namespace d360.web.Controllers.V2
 
 			if (claim.Path?.Length > 250)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ValueNotExpectedRange);
+				return errorMessageArgumentResponse(Error.ValueNotExpectedRange);
 			}
 
 			var newClaim = new ClaimMapping();

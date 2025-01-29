@@ -8,7 +8,6 @@ using d360.web.Services;
 using d360.web.Utilities;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -88,14 +87,14 @@ namespace d360.web.Controllers.V2
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(Error.InvalidResponsibilityUid);
 			}
 
 			dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
 
 			if (responsibilityTypes == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, uid.ToString()));
+				throw new NotFoundBusinessLayerException(string.Format(Error.ResponsibilityTypeUidNotExist, uid.ToString()));
 			}
 
 			return Ok(new { data = responsibilityTypes });
@@ -139,12 +138,12 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString())));
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
 			}
 
 			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, Error.AccessDenied));
 			}
 
 			IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
@@ -219,7 +218,7 @@ namespace d360.web.Controllers.V2
 
 			if (responsibility == null)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(Error.InvalidResponsibilityUid);
 			}
 
 			foreach (var allocation in model)
@@ -231,7 +230,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Message = Error.InvalidAssetTypeUid,
 						Success = false
 					});
 					continue;
@@ -252,7 +251,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Message = string.Format(Error.InvalidAssetTypeClass, assetType.Class.ToString()),
 						Success = false
 					});
 
@@ -265,7 +264,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
+						Message = string.Format(Error.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
 						Success = false
 					});
 
@@ -277,7 +276,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ActionApiMessages.UniqueAllocation,
+						Message = Error.UniqueAllocation,
 						Success = false
 					});
 
@@ -314,7 +313,7 @@ namespace d360.web.Controllers.V2
 			ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
 			if (responsibility == null)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(Error.InvalidResponsibilityUid);
 			}
 
 			foreach (var allocation in model)
@@ -325,7 +324,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Message = Error.InvalidAssetTypeUid,
 						Success = false
 					});
 
@@ -346,7 +345,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Message = string.Format(Error.InvalidAssetTypeClass, assetType.Class.ToString()),
 						Success = false
 					});
 
@@ -359,7 +358,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
+						Message = string.Format(Error.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
 						Success = false
 					});
 
@@ -371,7 +370,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ResponsibilityApiMessages.AllocationNotFound,
+						Message = Error.AllocationNotFound,
 						Success = false
 					});
 
@@ -407,7 +406,7 @@ namespace d360.web.Controllers.V2
 			ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
 			if (responsibility == null)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(Error.InvalidResponsibilityUid);
 			}
 
 			foreach (var allocation in model.Items)
@@ -418,7 +417,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Message = Error.InvalidAssetTypeUid,
 						Success = false
 					});
 
@@ -440,7 +439,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Message = string.Format(Error.InvalidAssetTypeClass, assetType.Class.ToString()),
 						Success = false
 					});
 
@@ -452,7 +451,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = ResponsibilityApiMessages.AllocationNotFound,
+						Message = Error.AllocationNotFound,
 						Success = false
 					});
 
@@ -569,25 +568,25 @@ namespace d360.web.Controllers.V2
 						case "_responsibilitytypeuid":
 							if (!Guid.TryParse(q.Value, out responsibilityUidFilter) || responsibilityUidFilter == Guid.Empty)
 							{
-								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._responsibilitytypeuid));
+								throw new ArgumentException(string.Format(Error.Error_Parameter_InvalidUidValue, Label._responsibilitytypeuid));
 							}
 							break;
 						case "_assigneeuid":
 							if (!Guid.TryParse(q.Value, out assigneeUidFilter) || assigneeUidFilter == Guid.Empty)
 							{
-								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assigneeuid));
+								throw new ArgumentException(string.Format(Error.Error_Parameter_InvalidUidValue, Label._assigneeuid));
 							}
 							break;
 						case "_assettypeuid":
 							if (!Guid.TryParse(q.Value, out assetTypeUidFilter) || assetTypeUidFilter == Guid.Empty)
 							{
-								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assettypeuid));
+								throw new ArgumentException(string.Format(Error.Error_Parameter_InvalidUidValue, Label._assettypeuid));
 							}
 							break;
 						case "_assetuid":
 							if (!Guid.TryParse(q.Value, out assetUidFilter) || assetUidFilter == Guid.Empty)
 							{
-								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assetuid));
+								throw new ArgumentException(string.Format(Error.Error_Parameter_InvalidUidValue, Label._assetuid));
 							}
 							break;
 						case "_timeout":
@@ -614,7 +613,7 @@ namespace d360.web.Controllers.V2
 			//validation dont allow assigneeuid filter across entire universe
 			if (assigneeUidFilter != Guid.Empty && assetTypeUidFilter == Guid.Empty && assetUidFilter == Guid.Empty)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.assigneeUidFilterValidation);
+				throw new ArgumentException(Error.assigneeUidFilterValidation);
 			}
 
 			int.TryParse(pageSize, out int _pageSize);
@@ -650,29 +649,29 @@ namespace d360.web.Controllers.V2
 
 			if (responsibilityTypes == null)
 			{
-				throw new ArgumentException(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(Error.JSONValidMessage);
 			}
 
 			if (responsibilityTypes.Count == 0)
 			{
-				throw new ArgumentException(RelationshipsApiMessages.PredicateRequired);
+				throw new ArgumentException(Error.PredicateRequired);
 			}
 
 			if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				throw new ArgumentException(string.Format(Error.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			foreach (var type in responsibilityTypes)
 			{
 				if (type.Name?.Trim().Length > 250)
 				{
-					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+					throw new ArgumentException(Error.NameMaxLength250Char);
 				}
 
 				if (type.Description?.Trim().Length > 4000)
 				{
-					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
+					throw new ArgumentException(string.Format(Error.DescriptionLengthValidation, type.Description?.Trim().Length));
 				}
 			}
 
@@ -680,7 +679,7 @@ namespace d360.web.Controllers.V2
 
 			if (existingUids.Any())
 			{
-				string errorMessage = string.Format(ResponsibilityApiMessages.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
+				string errorMessage = string.Format(Error.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
 
 				throw new ArgumentException(errorMessage);
 			}
@@ -718,7 +717,7 @@ namespace d360.web.Controllers.V2
 			Guid assetId;
 			if (!Guid.TryParse(assetUid, out assetId))
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+				throw new ArgumentException(Error.InvalidAssetUid);
 			}
 
 			if (!Company.Assets.Any(x => x.uid == assetId))
@@ -749,7 +748,7 @@ namespace d360.web.Controllers.V2
 			Guid assetId;
 			if (!Guid.TryParse(assetUid, out assetId))
 			{
-				throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+				throw new ArgumentException(Error.InvalidAssetUid);
 			}
 
 			if (!Company.Assets.Any(x => x.uid == assetId))
@@ -787,29 +786,29 @@ namespace d360.web.Controllers.V2
 
 			if (responsibilityTypes == null)
 			{
-				throw new ArgumentException(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(Error.JSONValidMessage);
 			}
 
 			if (responsibilityTypes.Count == 0)
 			{
-				throw new ArgumentException(RelationshipsApiMessages.PredicateRequired);
+				throw new ArgumentException(Error.PredicateRequired);
 			}
 
 			if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				throw new ArgumentException(string.Format(Error.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			foreach (var type in responsibilityTypes)
 			{
 				if (type.Name?.Trim().Length > 250)
 				{
-					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+					throw new ArgumentException(Error.NameMaxLength250Char);
 				}
 
 				if (type.Description?.Trim().Length > 4000)
 				{
-					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
+					throw new ArgumentException(string.Format(Error.DescriptionLengthValidation, type.Description?.Trim().Length));
 				}
 			}
 
@@ -840,25 +839,25 @@ namespace d360.web.Controllers.V2
 		{
 			if (responsibilityTypes == null)
 			{
-				throw new ArgumentException(ApiMessages.JSONValidMessage);
+				throw new ArgumentException(Error.JSONValidMessage);
 			}
 
 			if (responsibilityTypes.Uid == null || responsibilityTypes.Uid == Guid.Empty)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new ArgumentException(Error.InvalidResponsibilityUid);
 			}
 
 			var results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
 
 			if (results.Message == "Not found")
 			{
-				var notFoundResponsibilityMessage = string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, results.Uid);
+				var notFoundResponsibilityMessage = string.Format(Error.ResponsibilityTypeUidNotExist, results.Uid);
 				throw new NotFoundBusinessLayerException(notFoundResponsibilityMessage);
 			}
 
 			else if (results.Message == "Has asset assignments")
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ResponsibilityTypeHasAssetAssigments);
+				throw new ArgumentException(Error.ResponsibilityTypeHasAssetAssigments);
 			}
 
 			return Ok(results);
@@ -887,19 +886,19 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				throw new ArgumentException(string.Format(Error.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 			if (responsibility == null)
 			{
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				throw new ArgumentException(string.Format(Error.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			(var responsibilityOverride, var resourceUid) = await ResponsibilityRepository.GetResponsibilityTypeRelationOverride(asset.ID, responsibility.ID);
 			if (responsibilityOverride == null)
 			{
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityOverrideNotExist, responsibilityUid.ToString()));
+				throw new ArgumentException(string.Format(Error.ResponsibilityOverrideNotExist, responsibilityUid.ToString()));
 			}
 
 			string isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForResources(responsibility.ID, asset.ID, model);
@@ -918,8 +917,8 @@ namespace d360.web.Controllers.V2
 						vstr = vstr.Replace("<NEWLINE>", "");
 					}
 
-					vstr = vstr.Replace("<InvalidUid>", ResponsibilityApiMessages.ResourceUidInvalid);
-					vstr = vstr.Replace("<AlreadyAssigned>", ResponsibilityApiMessages.ReponsibilityOverrideResourceExists);
+					vstr = vstr.Replace("<InvalidUid>", Error.ResourceUidInvalid);
+					vstr = vstr.Replace("<AlreadyAssigned>", Error.ReponsibilityOverrideResourceExists);
 				}
 				throw new ArgumentException(vstr);
 
@@ -927,7 +926,7 @@ namespace d360.web.Controllers.V2
 
 			if (!Company.HasAssetPermission(asset.ID, Permission.EditResponsibilities))
 			{
-				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
+				throw new UnauthorizedBusinessLayerException(Error.EndpointNotAuthorizedMessage);
 			}
 
 			var deleteModel = new List<ResponsibilityOverrideDeleteModel>();
@@ -969,36 +968,36 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
 			if (responsibility == null)
 			{
-				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			if (!passedResponsibilityCheck && !Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
 			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedMessage);
 			}
 
 			bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
 			if (!isValidResponsibilityForAsset)
 			{
-				return errorMessageArgumentResponse(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
+				return errorMessageArgumentResponse(Error.ReposibilityTypeNotValidForAsset);
 			}
 
 			if (model.ResourceUid.Count == 0)
 			{
-				return errorMessageArgumentResponse(ResponsibilityApiMessages.ResourceUidNotEmpty);
+				return errorMessageArgumentResponse(Error.ResourceUidNotEmpty);
 			}
 
 			if (model.ResourceUid.Any(x => x == Guid.Empty))
 			{
-				return errorMessageArgumentResponse(ResponsibilityApiMessages.ResourceUidInvalid);
+				return errorMessageArgumentResponse(Error.ResourceUidInvalid);
 			}
 
 			var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(model.ResourceUid, asset.uid, responsibility.UID).ToList();
@@ -1006,13 +1005,13 @@ namespace d360.web.Controllers.V2
 			if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
 			{
 				var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidResourceGroupUid, badAsset.uid.ToString()));
 			}
 
 			if (securityAssets.Any(x => x.Exists == true))
 			{
 				var badAsset = securityAssets.First(x => x.Exists == true);
-				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
+				return errorMessageArgumentResponse(string.Format(Error.ReponsibilityOverrideExists, badAsset.uid.ToString()));
 			}
 
 			foreach (var uid in model.ResourceUid)
@@ -1020,7 +1019,7 @@ namespace d360.web.Controllers.V2
 				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
 				if (sas == null)
 				{
-					return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+					return errorMessageArgumentResponse(string.Format(Error.ResourceGroupUidNotExists, uid.ToString()));
 				}
 			}
 
@@ -1028,8 +1027,8 @@ namespace d360.web.Controllers.V2
 
 			return Ok(new ConfirmResponse
 			{
-				title = ApiMessages.Success,
-				message = ResponsibilityApiMessages.ResponsibilitySuccessAddMessage
+				title = Error.Success,
+				message = Information.ResponsibilitySuccessAddMessage
 			});
 		}
 
@@ -1057,7 +1056,7 @@ namespace d360.web.Controllers.V2
 			var result = new ApiExecutionRecievedResponse
 			{
 				ExecutionID = execution.ExecutionID,
-				Message = ApiMessages.ExecutionIDStatus,
+				Message = Error.ExecutionIDStatus,
 				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}"
 			};
 
@@ -1088,36 +1087,36 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				throw new ArgumentException(string.Format(Error.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
 			if (responsibility == null)
 			{
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				throw new ArgumentException(string.Format(Error.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			if (!passedResponsibilityCheck && !Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
 			{
-				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
+				throw new UnauthorizedBusinessLayerException(Error.EndpointNotAuthorizedMessage);
 			}
 
 			bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
 			if (!isValidResponsibilityForAsset)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
+				throw new ArgumentException(Error.ReposibilityTypeNotValidForAsset);
 			}
 
 			if (resourceUids.Count == 0)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidNotEmpty);
+				throw new ArgumentException(Error.ResourceUidNotEmpty);
 			}
 
 			if (resourceUids.Any(x => x.ResourceUid == Guid.Empty))
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidInvalid);
+				throw new ArgumentException(Error.ResourceUidInvalid);
 			}
 
 			var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(resourceUids.Select(x => x.ResourceUid).ToList(), asset.uid, responsibility.UID).ToList();
@@ -1125,13 +1124,13 @@ namespace d360.web.Controllers.V2
 			if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
 			{
 				var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
+				throw new ArgumentException(string.Format(Error.InvalidResourceGroupUid, badAsset.uid.ToString()));
 			}
 
 			if (securityAssets.Any(x => x.Exists != true))
 			{
 				var badAsset = securityAssets.First(x => x.Exists != true);
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
+				throw new ArgumentException(string.Format(Error.ReponsibilityOverrideExists, badAsset.uid.ToString()));
 			}
 
 			foreach (var uid in resourceUids.Select(x => x.ResourceUid).ToList())
@@ -1139,13 +1138,13 @@ namespace d360.web.Controllers.V2
 				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
 				if (sas == null)
 				{
-					throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+					throw new ArgumentException(string.Format(Error.ResourceGroupUidNotExists, uid.ToString()));
 				}
 			}
 
 			ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-			return Ok(new ConfirmResponse { title = ApiMessages.Success, message = ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage });
+			return Ok(new ConfirmResponse { title = Error.Success, message = Information.ResponsibilitySuccessDeleteMessage });
 		}
 
 		/// <summary>
@@ -1197,14 +1196,14 @@ namespace d360.web.Controllers.V2
 
 			if (responsibility == null)
 			{
-				throw new NotFoundBusinessLayerException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new NotFoundBusinessLayerException(Error.InvalidResponsibilityUid);
 			}
 
 			var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
 
 			if (existingUids.Any())
 			{
-				string errorMessage = string.Format(ResponsibilityApiMessages.DuplicateResponsibilityRule, string.Join(", ", existingUids.Select(i => i.ToString())));
+				string errorMessage = string.Format(Error.DuplicateResponsibilityRule, string.Join(", ", existingUids.Select(i => i.ToString())));
 				throw new ArgumentException(errorMessage);
 			}
 
@@ -1261,7 +1260,7 @@ namespace d360.web.Controllers.V2
 
 			if (responsibility == null)
 			{
-				throw new NotFoundBusinessLayerException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new NotFoundBusinessLayerException(Error.InvalidResponsibilityUid);
 			}
 
 			var execution = getApiExecution(responsibilityRules.Count, action: ApiExecutionAction.Miscellaneous);
@@ -1431,7 +1430,7 @@ namespace d360.web.Controllers.V2
 
 			if (!allowedTests.Contains(testType.ToLower()))
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidTestType);
+				throw new ArgumentException(Error.InvalidTestType);
 			}
 
 			var hideD3SUsers = await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
@@ -1450,7 +1449,7 @@ namespace d360.web.Controllers.V2
 
 			if (!allowedValues.Contains(direction.Trim().ToLower()))
 			{
-				throw new ArgumentException(ApiMessages.InvalidDirection);
+				throw new ArgumentException(Error.InvalidDirection);
 			}
 
 			var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams, testType);

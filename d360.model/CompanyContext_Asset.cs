@@ -48,6 +48,8 @@ namespace d360.model
 
 		Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
+		Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs);
+
 		AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
 
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
@@ -379,6 +381,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										where ProcessUid = @ProcessUid
 										and i.IsSubject = 0;
 
+										delete t
+										from dbo.InProcessRelationAuditLog t
+										where ProcessUid = @ProcessUid;
 
 									select @totalcount = count(id) from #tempintersect;
 									while (@runcount <= @totalcount)
@@ -883,6 +888,23 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			return model;
 		}
 
+		public async Task<AssetsByPathQueryResults> ExecuteGetAssetsByPathQuery(string getAllQuery, DynamicParameters dbArgs)
+		{
+			AssetsByPathQueryResults model = new AssetsByPathQueryResults();
+
+			SqlMapper.GridReader gridReader = await Database.Connection.QueryMultipleAsync(
+			  new CommandDefinition(getAllQuery,
+			  parameters: dbArgs,
+			  commandTimeout: ApiTimeout
+			));
+
+			model.total = gridReader.Read<int>().FirstOrDefault();
+
+			model.results = gridReader.Read<AssetsByPathItemApiViewModel>().ToList();
+
+			return model;
+		}
+
 		public string GetEscapedFilterString(string filter, bool isContains = false)
 		{
 			return wildcardValue(escapeForSQLLike(filter), isContains);
@@ -1002,7 +1024,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
 				Guid processUid = new Guid();
-
+				processUid = Guid.NewGuid(); 
+				
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
 				try
@@ -1971,6 +1994,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 			'R'
 	from	dbo.InProcessRelationAuditLog i
 	where ProcessUid = @processUid;
+
+	delete t
+	from dbo.InProcessRelationAuditLog t
+	where ProcessUid = @ProcessUid;
+
 ";
 
 										Connection.Execute(rlogSql, new { execution.Id, execution.ExecutionID, processUid}, transaction: trans, commandTimeout: timeout);

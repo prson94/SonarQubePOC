@@ -1,31 +1,27 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.web.Controllers.V2;
+using d360.web.Services;
+using d360.web.Utilities;
+using FluentAssertions;
+using igx.UnitTests.Core;
+using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
-
 using Xunit;
-using Moq;
-using FluentAssertions;
-using igx.UnitTests.Core;
-
-using d360.web.Controllers.V2;
-using d360.web.Services;
-using d360.web.Utilities;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core;
-using Resources;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-    [Trait("Unit tests", "Relationship controller")]
+	[Trait("Unit tests", "Relationship controller")]
     public class RelationshipControllerTest : BaseTest
     {
 	    private readonly TestDependencyResolver DependencyResolver;
@@ -370,7 +366,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 			var invalidIntersectTypeUid = Guid.Parse(DataConstants.InvalidGUID);
 
-			var expectedMessage = string.Format(ActionApiMessages.RelationShipTypeUidNotFound, invalidIntersectTypeUid.ToString());
+			var expectedMessage = string.Format(Error.RelationshipTypeUIdNotFound, invalidIntersectTypeUid.ToString());
 
 			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model); };
 
@@ -402,7 +398,7 @@ namespace igx.UnitTests.V2ControllerTests
                 model.Add(new RelationshipInsert() { SubjectAssetUid = validUid });
             }
 
-			var expectedMessage = string.Format(RelationshipsApiMessages.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
+			var expectedMessage = string.Format(Error.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
 
 			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
 
@@ -436,7 +432,7 @@ namespace igx.UnitTests.V2ControllerTests
         {
 			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
 
-			var expectedMessage = string.Format(ActionApiMessages.RelationShipTypeUidNotFound, invalidUid.ToString());
+			var expectedMessage = string.Format(Error.RelationshipTypeUIdNotFound, invalidUid.ToString());
 
 			var model = new RelationshipUpdates();
 
@@ -464,7 +460,7 @@ namespace igx.UnitTests.V2ControllerTests
 			var maxSyncApiItemCount = 250;
 			var validUid = Guid.Parse(DataConstants.ValidGUID);
 
-			var expectedMessage = string.Format(RelationshipsApiMessages.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
+			var expectedMessage = string.Format(Error.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
 
 			var model = new RelationshipUpdates();
             for (int i = 0; i <= maxSyncApiItemCount; i++)

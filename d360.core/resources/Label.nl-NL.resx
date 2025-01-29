@@ -1,0 +1,1889 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Lineage" xml:space="preserve">
+    <value>Lineage</value>
+  </data>
+  <data name="LineageTechnical" xml:space="preserve">
+    <value>Lineage: technisch</value>
+  </data>
+  <data name="Object_Default" xml:space="preserve">
+    <value>Standaard</value>
+  </data>
+  <data name="Object_Deleted" xml:space="preserve">
+    <value>Verwijderd</value>
+  </data>
+  <data name="Object_GroupMembership" xml:space="preserve">
+    <value>Groepslidmaatschap</value>
+  </data>
+  <data name="Object_Users" xml:space="preserve">
+    <value>Gebruikers</value>
+  </data>
+  <data name="Promotion" xml:space="preserve">
+    <value>Promotie</value>
+  </data>
+  <data name="Promotion_ViaWorkflow" xml:space="preserve">
+    <value>Promotie (via Workflow voorstellen)</value>
+  </data>
+  <data name="Relation" xml:space="preserve">
+    <value>Relatie</value>
+  </data>
+  <data name="Responsibilities" xml:space="preserve">
+    <value>Verantwoordelijkheden</value>
+  </data>
+  <data name="Synonyms" xml:space="preserve">
+    <value>Synoniemen</value>
+  </data>
+  <data name="Unrelation" xml:space="preserve">
+    <value>Relatie ongedaan maken</value>
+  </data>
+  <data name="UsersGroups" xml:space="preserve">
+    <value>Gebruikers/groepen</value>
+  </data>
+  <data name="AssetTypeClass_ActionType" xml:space="preserve">
+    <value>Action Type</value>
+  </data>
+  <data name="AssetTypeClass_Business" xml:space="preserve">
+    <value>Business Asset</value>
+  </data>
+  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Diagram Asset</value>
+  </data>
+  <data name="AssetTypeClass_GenericType" xml:space="preserve">
+    <value>Generic Type</value>
+  </data>
+  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Grammatic Type</value>
+  </data>
+  <data name="AssetTypeClass_Group" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="AssetTypeClass_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="AssetTypeClass_ModelType" xml:space="preserve">
+    <value>Model Type</value>
+  </data>
+  <data name="AssetTypeClass_Policy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
+    <value>Policy Type</value>
+  </data>
+  <data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
+    <value>Reference List</value>
+  </data>
+  <data name="AssetTypeClass_Relationship" xml:space="preserve">
+    <value>Relationship</value>
+  </data>
+  <data name="AssetTypeClass_Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+  <data name="AssetTypeClass_Rule" xml:space="preserve">
+    <value>Rule</value>
+  </data>
+  <data name="AssetTypeClass_RuleType" xml:space="preserve">
+    <value>Rule Type</value>
+  </data>
+  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>Semantic Type</value>
+  </data>
+  <data name="AssetTypeClass_Task" xml:space="preserve">
+    <value>Diagram</value>
+  </data>
+  <data name="AssetTypeClass_Technical" xml:space="preserve">
+    <value>Technical Asset</value>
+  </data>
+  <data name="AssetTypeClass_User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="CommonName_AssetType" xml:space="preserve">
+    <value>Asset Type</value>
+  </data>
+  <data name="Instance" xml:space="preserve">
+    <value>Instance</value>
+  </data>
+  <data name="ReferenceItem" xml:space="preserve">
+    <value>Reference Item</value>
+  </data>
+  <data name="Text_DataCatalog" xml:space="preserve">
+    <value>Data Catalog</value>
+  </data>
+  <data name="Text_Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="Text_GroupMembership" xml:space="preserve">
+    <value>Group Membership</value>
+  </data>
+  <data name="Text_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+	<data name="AssetTypeClass_ActionType" xml:space="preserve">
+    <value>Actietype</value>
+  </data>
+	<data name="AssetTypeClass_Business" xml:space="preserve">
+    <value>Bedrijfsasset</value>
+  </data>
+	<data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Diagramasset</value>
+  </data>
+	<data name="AssetTypeClass_GenericType" xml:space="preserve">
+    <value>Generiek type</value>
+  </data>
+	<data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Grammaticaal type</value>
+  </data>
+	<data name="AssetTypeClass_Group" xml:space="preserve">
+    <value>Groep</value>
+  </data>
+	<data name="AssetTypeClass_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+	<data name="AssetTypeClass_ModelType" xml:space="preserve">
+    <value>Modeltype</value>
+  </data>
+	<data name="AssetTypeClass_Policy" xml:space="preserve">
+    <value>Beleid</value>
+  </data>
+	<data name="AssetTypeClass_PolicyType" xml:space="preserve">
+    <value>Beleidstype</value>
+  </data>
+	<data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Referentie</value>
+  </data>
+	<data name="AssetTypeClass_ReferenceList" xml:space="preserve">
+    <value>Referentielijst</value>
+  </data>
+	<data name="AssetTypeClass_Relationship" xml:space="preserve">
+    <value>Relatie</value>
+  </data>
+	<data name="AssetTypeClass_Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+	<data name="AssetTypeClass_Rule" xml:space="preserve">
+    <value>Regel</value>
+  </data>
+	<data name="AssetTypeClass_RuleType" xml:space="preserve">
+    <value>Regeltype</value>
+  </data>
+	<data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>Semantisch type</value>
+  </data>
+	<data name="AssetTypeClass_Task" xml:space="preserve">
+    <value>Diagram</value>
+  </data>
+	<data name="AssetTypeClass_Technical" xml:space="preserve">
+    <value>Technische asset</value>
+  </data>
+	<data name="AssetTypeClass_User" xml:space="preserve">
+    <value>Gebruiker</value>
+  </data>
+	<data name="CommonName_AssetType" xml:space="preserve">
+    <value>Assettype</value>
+  </data>
+	<data name="Instance" xml:space="preserve">
+    <value>Exemplaar</value>
+  </data>
+	<data name="ReferenceItem" xml:space="preserve">
+    <value>Referentie-item</value>
+  </data>
+	<data name="Text_DataCatalog" xml:space="preserve">
+    <value>Gegevenscatalogus</value>
+  </data>
+	<data name="Text_Folder" xml:space="preserve">
+    <value>Map</value>
+  </data>
+	<data name="Text_GroupMembership" xml:space="preserve">
+    <value>Groepslidmaatschap</value>
+  </data>
+	<data name="Text_Users" xml:space="preserve">
+    <value>Gebruikers</value>
+  </data>
+	<data name="Common_ApiInfoSheetName" xml:space="preserve">
+    <value>API-gegevens</value>
+  </data>
+	<data name="Common_ExcelDateFormat" xml:space="preserve">
+    <value>mm/dd/jjjj</value>
+  </data>
+	<data name="Common_ExportName" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+	<data name="Common_ItemsSheetName" xml:space="preserve">
+    <value>Items</value>
+  </data>
+	<data name="Common_PageNum" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+	<data name="Common_PageSize" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+	<data name="Common_Total" xml:space="preserve">
+    <value>totaal</value>
+  </data>
+	<data name="FollowedResources_AssetID" xml:space="preserve">
+    <value>Asset-ID</value>
+  </data>
+	<data name="FollowedResources_AssetPath" xml:space="preserve">
+    <value>Assetpad</value>
+  </data>
+	<data name="FollowedResources_DocumentName" xml:space="preserve">
+    <value>Gevolgde items met ingang van {Now:d}</value>
+  </data>
+	<data name="OwnedResources_AssetID" xml:space="preserve">
+    <value>Asset-ID</value>
+  </data>
+	<data name="OwnedResources_AssetUID" xml:space="preserve">
+    <value>Asset-UID</value>
+  </data>
+	<data name="OwnedResources_DocumentName" xml:space="preserve">
+    <value>Items in eigendom met ingang van {Now:d}</value>
+  </data>
+	<data name="OwnedResources_Name" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+	<data name="OwnedResources_Role" xml:space="preserve">
+    <value>Rol</value>
+  </data>
+	<data name="OwnedResources_Via" xml:space="preserve">
+    <value>Via</value>
+  </data>
+	<data name="OwnedResources_ViaType" xml:space="preserve">
+    <value>Via-type</value>
+  </data>
+	<data name="Relationships_DocumentName" xml:space="preserve">
+    <value>Relaties  {0}</value>
+  </data>
+	<data name="Relationships_Object_Asset_Path" xml:space="preserve">
+    <value>Pad naar objectasset</value>
+  </data>
+	<data name="Relationships_Object_Asset_Type_Path" xml:space="preserve">
+    <value>Pad naar objectassettype</value>
+  </data>
+	<data name="Relationships_Object_Asset_Type_UID" xml:space="preserve">
+    <value>Objectassettype-UID</value>
+  </data>
+	<data name="Relationships_Object_Display_Name" xml:space="preserve">
+    <value>Weergavenaam van object</value>
+  </data>
+	<data name="Relationships_Object_UID" xml:space="preserve">
+    <value>Object-UID</value>
+  </data>
+	<data name="Relationships_Predicate_Inverse" xml:space="preserve">
+    <value>Predicaat omkeren</value>
+  </data>
+	<data name="Relationships_Predicate_Name" xml:space="preserve">
+    <value>Predicaatnaam</value>
+  </data>
+	<data name="Relationships_Predicate_Type" xml:space="preserve">
+    <value>Predicaattype</value>
+  </data>
+	<data name="Relationships_Predicate_UID" xml:space="preserve">
+    <value>Predicaat-UID</value>
+  </data>
+	<data name="Relationships_Relationship_Type_UID" xml:space="preserve">
+    <value>Relatietype-UID</value>
+  </data>
+	<data name="Relationships_Relationship_UID" xml:space="preserve">
+    <value>Relatie-UID</value>
+  </data>
+	<data name="Relationships_SheetName" xml:space="preserve">
+    <value>Relaties</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Path" xml:space="preserve">
+    <value>Pad naar onderwerpasset</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Type_Path" xml:space="preserve">
+    <value>Pad naar onderwerpassettype</value>
+  </data>
+	<data name="Relationships_Subject_Asset_Type_UID" xml:space="preserve">
+    <value>Onderwerpassettype-UID</value>
+  </data>
+	<data name="Relationships_Subject_Display_Name" xml:space="preserve">
+    <value>Weergavenaam van onderwerp</value>
+  </data>
+	<data name="Relationships_Subject_UID" xml:space="preserve">
+    <value>Onderwerp-UID</value>
+  </data>
+	<data name="WorkflowAssignments_ActionTypeName" xml:space="preserve">
+    <value>Naam actietype</value>
+  </data>
+	<data name="WorkflowAssignments_ActionTypeUID" xml:space="preserve">
+    <value>UID actietype</value>
+  </data>
+	<data name="WorkflowAssignments_Assignees" xml:space="preserve">
+    <value>Toegewezen personen</value>
+  </data>
+	<data name="WorkflowAssignments_Assignments" xml:space="preserve">
+    <value>Toewijzingen</value>
+  </data>
+	<data name="WorkflowAssignments_AssociatedWith" xml:space="preserve">
+    <value>Gekoppeld aan</value>
+  </data>
+	<data name="WorkflowAssignments_ExportDate" xml:space="preserve">
+    <value>Exportdatum</value>
+  </data>
+	<data name="WorkflowAssignments_ExportInfoTab" xml:space="preserve">
+    <value>Exportgegevens</value>
+  </data>
+	<data name="WorkflowAssignments_Initiated" xml:space="preserve">
+    <value>Gestart</value>
+  </data>
+	<data name="WorkflowAssignments_InitiatorUid" xml:space="preserve">
+    <value>Initiator-UID</value>
+  </data>
+	<data name="WorkflowAssignments_Requests" xml:space="preserve">
+    <value>Aanvragen</value>
+  </data>
+	<data name="WorkflowMonitor_Asset" xml:space="preserve">
+    <value>Asset</value>
+  </data>
+	<data name="WorkflowMonitor_Completed" xml:space="preserve">
+    <value>Voltooid</value>
+  </data>
+	<data name="WorkflowMonitor_DocumentName" xml:space="preserve">
+    <value>Workflowitems met ingang van {Now:d}</value>
+  </data>
+	<data name="WorkflowMonitor_Initiator" xml:space="preserve">
+    <value>Initiator</value>
+  </data>
+	<data name="WorkflowMonitor_Started" xml:space="preserve">
+    <value>Gestart</value>
+  </data>
+	<data name="WorkflowMonitor_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+	<data name="WorkflowMonitor_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+	<data name="WorkflowMonitor_TypeName" xml:space="preserve">
+    <value>Typenaam</value>
+  </data>
+	<data name="WorkflowMonitor_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+	<data name="WorkflowMonitor_WorkflowInstanceUID" xml:space="preserve">
+    <value>Workflowexemplaar-UID</value>
+  </data>
+	<data name="WorkflowMonitor_WorkflowName" xml:space="preserve">
+    <value>Workflownaam</value>
+  </data>
+	<data name="Code_Name" xml:space="preserve">
+    <value>Code</value>
+  </data>
+	<data name="LastLoggedInOn_Description" xml:space="preserve">
+    <value>De datum waarop deze resource voor het laatst is aangemeld.</value>
+  </data>
+	<data name="LastLoggedInOn_Name" xml:space="preserve">
+    <value>Laatst aangemeld op</value>
+  </data>
+	<data name="Description_Description" xml:space="preserve">
+    <value>De beschrijving voor dit item.</value>
+  </data>
+	<data name="Description_ErrorRequired" xml:space="preserve">
+    <value>Beschrijving is een vereist veld.</value>
+  </data>
+	<data name="Description_Name" xml:space="preserve">
+    <value>Beschrijving</value>
+  </data>
+	<data name="Email_Description" xml:space="preserve">
+    <value>Het e-mailadres voor deze resource.</value>
+  </data>
+	<data name="Email_ErrorRegex" xml:space="preserve">
+    <value>E-mailadres bevat tekens die niet zijn toegestaan.</value>
+  </data>
+	<data name="Email_ErrorRequired" xml:space="preserve">
+    <value>E-mailadres is een vereist veld.</value>
+  </data>
+	<data name="Email_Name" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+	<data name="FirstName_Description" xml:space="preserve">
+    <value>De voornaam voor deze resource.</value>
+  </data>
+	<data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>Voornaam bevat tekens die niet zijn toegestaan.</value>
+  </data>
+	<data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>Voornaam is een vereist veld.</value>
+  </data>
+	<data name="FirstName_Name" xml:space="preserve">
+    <value>Voornaam</value>
+  </data>
+	<data name="FriendlyName_Description" xml:space="preserve">
+    <value>De naam die wordt gebruikt wanneer deze veldwaarde voor uw publiek wordt weergegeven.</value>
+  </data>
+	<data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>Beschrijvende naam is vereist.</value>
+  </data>
+	<data name="FriendlyName_Name" xml:space="preserve">
+    <value>Beschrijvende naam</value>
+  </data>
+	<data name="ID_Description" xml:space="preserve">
+    <value>De unieke ID voor dit item.</value>
+  </data>
+	<data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+    <comment>u</comment>
+  </data>
+	<data name="LastName_Description" xml:space="preserve">
+    <value>De achternaam voor deze resource.</value>
+  </data>
+	<data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>Achternaam bevat tekens die niet zijn toegestaan.</value>
+  </data>
+	<data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>Achternaam is een vereist veld.</value>
+  </data>
+	<data name="LastName_Name" xml:space="preserve">
+    <value>Achternaam</value>
+  </data>
+	<data name="Length_Description" xml:space="preserve">
+    <value>De exacte lengte dat dit veld vereist voor een waarde.</value>
+  </data>
+	<data name="Length_Name" xml:space="preserve">
+    <value>Lengte</value>
+  </data>
+	<data name="LookupObjectID_Description" xml:space="preserve">
+    <value/>
+  </data>
+	<data name="LookupObjectID_Name" xml:space="preserve">
+    <value>Opzoekobject-ID</value>
+  </data>
+	<data name="LookupObjectType_Description" xml:space="preserve">
+    <value>Het opzoektype dat dit veld gebruikt.</value>
+  </data>
+	<data name="LookupObjectType_Name" xml:space="preserve">
+    <value>Opzoekobjecttype</value>
+  </data>
+	<data name="MaximumLength_Description" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor de waarde in dit veld.</value>
+  </data>
+	<data name="MaximumLength_Name" xml:space="preserve">
+    <value>Maximumlengte</value>
+  </data>
+	<data name="MinimumLength_Description" xml:space="preserve">
+    <value>De minimaal toegestane lengte voor de waarde in dit veld.</value>
+  </data>
+	<data name="MinimumLength_Name" xml:space="preserve">
+    <value>Minimumlengte</value>
+  </data>
+	<data name="Name_Description" xml:space="preserve">
+    <value>De naam voor dit item.</value>
+  </data>
+	<data name="Name_ErrorRegex" xml:space="preserve">
+    <value>Naam bevat tekens die niet zijn toegestaan.</value>
+  </data>
+	<data name="Name_ErrorRequired" xml:space="preserve">
+    <value>Naam is een vereist veld.</value>
+  </data>
+	<data name="Name_Name" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+	<data name="Path_Description" xml:space="preserve">
+    <value>Het pad binnen de hiërarchie.</value>
+  </data>
+	<data name="Path_Name" xml:space="preserve">
+    <value>Pad</value>
+  </data>
+	<data name="Pattern_Description" xml:space="preserve">
+    <value>Het validatiepatroon dat wordt gebruikt wanneer een waarde voor dit veld wordt opgegeven.</value>
+  </data>
+	<data name="Pattern_Name" xml:space="preserve">
+    <value>Validatiepatroon</value>
+  </data>
+	<data name="Status_Name" xml:space="preserve">
+    <value>Status</value>
+  </data>
+	<data name="Type_Description" xml:space="preserve">
+    <value>Het type voor dit item.</value>
+  </data>
+	<data name="Type_ErrorRequired" xml:space="preserve">
+    <value>Type is een vereist veld.</value>
+  </data>
+	<data name="Type_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+	<data name="Username_Description" xml:space="preserve">
+    <value>De gebruikersnaam voor deze resource.</value>
+  </data>
+	<data name="Username_ErrorRegex" xml:space="preserve">
+    <value>Gebruikersnaam bevat tekens die niet zijn toegestaan.</value>
+  </data>
+	<data name="Username_ErrorRequired" xml:space="preserve">
+    <value>Gebruikersnaam is een vereist veld.</value>
+  </data>
+	<data name="Username_Name" xml:space="preserve">
+    <value>Gebruikersnaam</value>
+  </data>
+	<data name="Level_Description" xml:space="preserve">
+    <value>Het niveau van dit informatiemodel binnen de totale catalogusstructuur.</value>
+  </data>
+	<data name="Level_Name" xml:space="preserve">
+    <value>Niveau</value>
+  </data>
+	<data name="DisplayDescription_Description" xml:space="preserve">
+    <value>De beschrijving die zichtbaar is wanneer een gebruiker de informatie in dit veld leest.</value>
+  </data>
+	<data name="DisplayDescription_Name" xml:space="preserve">
+    <value>Weergavebeschrijving</value>
+  </data>
+	<data name="FormDescription_Description" xml:space="preserve">
+    <value>De beschrijving die zichtbaar is wanneer een gebruiker de informatie in dit veld bijwerkt.</value>
+  </data>
+	<data name="FormDescription_Name" xml:space="preserve">
+    <value>Formulierbeschrijving</value>
+  </data>
+	<data name="MaximumDepth_Description" xml:space="preserve">
+    <value>De maximumdiepte van het informatiemodel.</value>
+  </data>
+	<data name="MaximumDepth_Name" xml:space="preserve">
+    <value>Maximumdiepte</value>
+  </data>
+	<data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>De primaire eigenaar van de groep.  Deze persoon is verantwoordelijk voor het dagelijkse beheer van de groep, waaronder het toewijzen van taken aan leden.</value>
+  </data>
+	<data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>Primaire eigenaar</value>
+  </data>
+	<data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>De secundaire eigenaar van de groep.  Deze persoon is de back-upeigenaar van de groep als de primaire eigenaar niet beschikbaar is.</value>
+  </data>
+	<data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>Secundaire eigenaar</value>
+  </data>
+	<data name="ReportDescription_Description" xml:space="preserve">
+    <value>Een beschrijving van de betekenis voor dit rapport; wat met dit rapport wordt geprobeerd uit te leggen.</value>
+  </data>
+	<data name="ValidationDescription_Description" xml:space="preserve">
+    <value>Dit bericht wordt aan de gebruiker getoond als ze ongeldige of ontbrekende informatie in dit veld opgeven.  U moet voor dit veld een bepaalde vorm van validatie van reguliere expressiepatronen inschakelen, anders wordt het bericht niet weergegeven.</value>
+  </data>
+	<data name="ValidationDescription_Name" xml:space="preserve">
+    <value>Validatiebericht</value>
+  </data>
+	<data name="DisplayFormat_Description" xml:space="preserve">
+    <value>De indeling van de weergavewaarde.</value>
+  </data>
+	<data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Weergave-indeling</value>
+  </data>
+	<data name="ReportName_Description" xml:space="preserve">
+    <value>De naam voor dit rapport.  Deze naam wordt overal gebruikt waar het rapport beschikbaar is voor weergave.</value>
+  </data>
+	<data name="ReportObjectType_Description" xml:space="preserve">
+    <value>Het objecttype waar dit rapport beschikbaar is.</value>
+  </data>
+	<data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Doeltype</value>
+  </data>
+	<data name="SourceNotes_Description" xml:space="preserve">
+    <value>Definieert informatie met betrekking tot de bron of origine van deze referentielijst.</value>
+  </data>
+	<data name="SourceNotes_Name" xml:space="preserve">
+    <value>Bronopmerkingen</value>
+  </data>
+	<data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>Of deze groep automatisch moet worden beheerd via SAML-groepsclaims</value>
+  </data>
+	<data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>Is Active Directory</value>
+  </data>
+	<data name="Parent_Name" xml:space="preserve">
+    <value>Eigenaar/bovenliggend element</value>
+  </data>
+	<data name="RegexPatternChoose" xml:space="preserve">
+    <value>Voorbeeld kiezen...</value>
+  </data>
+	<data name="RegexPatternEmail" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+	<data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>Interne URL</value>
+  </data>
+	<data name="RegexPatternIP" xml:space="preserve">
+    <value>IP-adres</value>
+  </data>
+	<data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>Telefoon Noord-Amerika</value>
+  </data>
+	<data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>Openbare URL</value>
+  </data>
+	<data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>Postcode VS</value>
+  </data>
+	<data name="Administrator_Name" xml:space="preserve">
+    <value>Beheerder?</value>
+  </data>
+	<data name="AssetPath_Name" xml:space="preserve">
+    <value>Assetpad</value>
+  </data>
+	<data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>Toegewezen gebruiker/groep</value>
+  </data>
+	<data name="Color_Name" xml:space="preserve">
+    <value>Kleur</value>
+  </data>
+	<data name="Context_Name" xml:space="preserve">
+    <value>Context</value>
+  </data>
+	<data name="OwnedItems_Name" xml:space="preserve">
+    <value>Items in eigendom</value>
+  </data>
+	<data name="Responsibility_Name" xml:space="preserve">
+    <value>Verantwoordelijkheid</value>
+  </data>
+	<data name="Via_Name" xml:space="preserve">
+    <value>Via</value>
+  </data>
+	<data name="LastSeen_Name" xml:space="preserve">
+    <value>Laatst gezien</value>
+  </data>
+	<data name="FieldsRemoved" xml:space="preserve">
+    <value>Velden zijn verwijderd.</value>
+  </data>
+	<data name="FieldsUpdated" xml:space="preserve">
+    <value>Velden zijn bijgewerkt.</value>
+  </data>
+	<data name="ActionsTab" xml:space="preserve">
+    <value>Acties</value>
+  </data>
+	<data name="AssetsTab" xml:space="preserve">
+    <value>Assets</value>
+  </data>
+	<data name="BusinessAssetsPage" xml:space="preserve">
+    <value>Bedrijfsassets</value>
+  </data>
+	<data name="BusinessAssetsPageTabTitle" xml:space="preserve">
+    <value>Bedrijfsassettypen</value>
+  </data>
+	<data name="ChangeLogTab" xml:space="preserve">
+    <value>Logboek met wijzigingen</value>
+  </data>
+	<data name="ChildrenTab" xml:space="preserve">
+    <value>Onderliggende elementen</value>
+  </data>
+	<data name="CommentsTab" xml:space="preserve">
+    <value>Opmerkingen</value>
+  </data>
+	<data name="CommunityPage" xml:space="preserve">
+    <value>Community</value>
+  </data>
+	<data name="DashboardsPage" xml:space="preserve">
+    <value>Dashboards</value>
+  </data>
+	<data name="DashboardsTab" xml:space="preserve">
+    <value>Dashboards</value>
+  </data>
+	<data name="DefinitionTab" xml:space="preserve">
+    <value>Definitie</value>
+  </data>
+	<data name="DetailsTab" xml:space="preserve">
+    <value>Details</value>
+  </data>
+	<data name="DiagramAssetsPage" xml:space="preserve">
+    <value>Diagramassets</value>
+  </data>
+	<data name="DiagramAssetsPageTabTitle" xml:space="preserve">
+    <value>Diagramassettypen</value>
+  </data>
+	<data name="FieldDefinitionsTab" xml:space="preserve">
+    <value>Velden</value>
+  </data>
+	<data name="FollowersTab" xml:space="preserve">
+    <value>Volgers</value>
+  </data>
+	<data name="FollowingTab" xml:space="preserve">
+    <value>Volgend</value>
+  </data>
+	<data name="GroupsTab" xml:space="preserve">
+    <value>Groepen</value>
+  </data>
+	<data name="HomePage" xml:space="preserve">
+    <value>Home</value>
+  </data>
+	<data name="ImpactDiagramTab" xml:space="preserve">
+    <value>Impactdiagram</value>
+  </data>
+	<data name="LineageDiagramTab" xml:space="preserve">
+    <value>Lineagediagram</value>
+  </data>
+	<data name="ModelsPage" xml:space="preserve">
+    <value>Modellen</value>
+  </data>
+	<data name="ModelsPageTabTitle" xml:space="preserve">
+    <value>Modeltypen</value>
+  </data>
+	<data name="ModelTab" xml:space="preserve">
+    <value>Model</value>
+  </data>
+	<data name="PoliciesPage" xml:space="preserve">
+    <value>Beleid</value>
+  </data>
+	<data name="PoliciesPageTabTitle" xml:space="preserve">
+    <value>Beleidstypen</value>
+  </data>
+	<data name="PolicyTab" xml:space="preserve">
+    <value>Beleid</value>
+  </data>
+	<data name="PredicatesPage" xml:space="preserve">
+    <value>Predicaten</value>
+  </data>
+	<data name="ProcessDiagramTab" xml:space="preserve">
+    <value>Procesdiagram</value>
+  </data>
+	<data name="ProfilePage" xml:space="preserve">
+    <value>Profiel</value>
+  </data>
+	<data name="ProfileTab" xml:space="preserve">
+    <value>Profiel</value>
+  </data>
+	<data name="ReferenceListsPage" xml:space="preserve">
+    <value>Referentielijsten</value>
+  </data>
+	<data name="ReferenceTypesPage" xml:space="preserve">
+    <value>Referentietypen</value>
+  </data>
+	<data name="ReferenceTypesTab" xml:space="preserve">
+    <value>Referentietypen</value>
+  </data>
+	<data name="RelationshipsTab" xml:space="preserve">
+    <value>Relaties</value>
+  </data>
+	<data name="RelationshipsTabTitle" xml:space="preserve">
+    <value>Relatietypen</value>
+  </data>
+	<data name="ResponsibilitiesTab" xml:space="preserve">
+    <value>Verantwoordelijkheden</value>
+  </data>
+	<data name="ResponsibilitiesTabTitle" xml:space="preserve">
+    <value>Verantwoordelijkheidstypen</value>
+  </data>
+	<data name="RuleResultsTab" xml:space="preserve">
+    <value>Regelresultaten</value>
+  </data>
+	<data name="RulesPage" xml:space="preserve">
+    <value>Regels</value>
+  </data>
+	<data name="ScoringDefinitionsTab" xml:space="preserve">
+    <value>Scoredefinities</value>
+  </data>
+	<data name="ScoringTab" xml:space="preserve">
+    <value>Scores</value>
+  </data>
+	<data name="SemanticTypePage" xml:space="preserve">
+    <value>Semantische typen</value>
+  </data>
+	<data name="TaggedAssetsPage" xml:space="preserve">
+    <value>Getagde assets</value>
+  </data>
+	<data name="TagsPage" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+	<data name="TechnicalAssetsPage" xml:space="preserve">
+    <value>Technische assets</value>
+  </data>
+	<data name="TechnicalAssetsPageTabTitle" xml:space="preserve">
+    <value>Technische assettypen</value>
+  </data>
+	<data name="UsersPage" xml:space="preserve">
+    <value>Gebruikers</value>
+  </data>
+	<data name="WorkflowActionsTab" xml:space="preserve">
+    <value>Workflowacties</value>
+  </data>
+	<data name="WorkflowActionsTabTitle" xml:space="preserve">
+    <value>Actietypen</value>
+  </data>
+	<data name="WorkflowPage" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+	<data name="WorkflowTab" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+  <data name="ActionMessage_Desc" xml:space="preserve">
+    <value>Dit is het bericht dat aan gebruikers moet worden weergegeven op de pagina Actie ondernemen.</value>
+  </data>
+  <data name="ActionMessage_Name" xml:space="preserve">
+    <value>Bericht Actie ondernemen</value>
+  </data>
+  <data name="AllowedOrigins_Desc" xml:space="preserve">
+    <value>Een door komma's gescheiden lijst met toegestane CORS-oorsprongen.</value>
+  </data>
+  <data name="AllowedOrigins_Name" xml:space="preserve">
+    <value>Toegestane oorsprongen</value>
+  </data>
+  <data name="ApiTimeout_Desc" xml:space="preserve">
+    <value>Deze instelling wijzigt de time-out van alle v2 API GET-aanroepen op basis van de waarde in seconden.</value>
+  </data>
+  <data name="ApiTimeout_Name" xml:space="preserve">
+    <value>API-time-out</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
+    <value>Aantal dagen dat gegevens van het assetgegevensprofiel moeten worden bewaard.</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
+    <value>Levensduur assetgegevensprofiel</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>Breedte van kolommen (in pixels) die is gebruikt om de opmaak van velden in het paneel Assetdefinitie te bepalen.</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>Kolombreedte Assetdefinitie</value>
+  </data>
+  <data name="AzureADTenant_Desc" xml:space="preserve">
+    <value>De naam van de Azure Active Directory-tenant.</value>
+  </data>
+  <data name="AzureADTenant_Name" xml:space="preserve">
+    <value>Naam van Azure AD-tenant</value>
+  </data>
+  <data name="AzureApplicationId_Desc" xml:space="preserve">
+    <value>De toepassings-ID van de Data3Sixty-website van de Azure AD-portal</value>
+  </data>
+  <data name="AzureApplicationId_Name" xml:space="preserve">
+    <value>Azure AD-toepassings-ID</value>
+  </data>
+  <data name="AzureGraphAPIKey_Desc" xml:space="preserve">
+    <value>De sleutel voor de graph-API van Azure Active Directory.</value>
+  </data>
+  <data name="AzureGraphAPIKey_Name" xml:space="preserve">
+    <value>Azure Graph API-sleutel</value>
+  </data>
+  <data name="BrowserTitlePrefix_Desc" xml:space="preserve">
+    <value>Voorvoegsel dat moet worden gebruikt voor de browsertitelbalk.</value>
+  </data>
+  <data name="BrowserTitlePrefix_Name" xml:space="preserve">
+    <value>Voorvoegsel browsertitel</value>
+  </data>
+  <data name="CompanyIcon_Desc" xml:space="preserve">
+    <value>Upload uw bedrijfspictogram.</value>
+  </data>
+  <data name="CompanyIcon_Name" xml:space="preserve">
+    <value>Bedrijfspictogram</value>
+  </data>
+  <data name="CompanyLogo_Desc" xml:space="preserve">
+    <value>Upload uw bedrijfslogo.</value>
+  </data>
+  <data name="CompanyLogo_Name" xml:space="preserve">
+    <value>Bedrijfslogo</value>
+  </data>
+  <data name="CustomCSSLocation_Desc" xml:space="preserve">
+    <value>De locatie van aangepaste stylesheets.</value>
+  </data>
+  <data name="CustomCSSLocation_Name" xml:space="preserve">
+    <value>Locatie aangepaste stylesheets</value>
+  </data>
+  <data name="DefaultRoute_Desc" xml:space="preserve">
+    <value>De standaardpagina die wordt weergegeven nadat u zich hebt aangemeld bij Data3Sixty.</value>
+  </data>
+  <data name="DefaultRoute_Name" xml:space="preserve">
+    <value>Standaardroute</value>
+  </data>
+  <data name="DefaultSearchTypes_Desc" xml:space="preserve">
+    <value>Deze instelling bepaalt de standaardtypen die moeten worden gebruikt voor de zoekfunctie.</value>
+  </data>
+  <data name="DefaultSearchTypes_Name" xml:space="preserve">
+    <value>Standaardtypen die moeten worden gebruikt om te zoeken</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>Maximumaantal koppelingen in het lineagediagram waarvoor de weergave-instelling AvoidNodes wordt gebruikt. Als het aantal hoger is, worden koppelingen zonder hoeken en als een rechte lijn tussen twee knooppunten weergegeven. Dit verbetert de weergaveprestaties van diagrammen met meer gegevens.</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>Maximumaantal diagramkoppelingen dat gebruikmaakt van de weergavesjabloon AvoidNodes</value>
+  </data>
+  <data name="DisableCommunityPosting_Desc" xml:space="preserve">
+    <value>Hierdoor kan het plaatsen van opmerkingen en antwoorden worden uitgeschakeld op alle Community Boards in het hele systeem.  Gebruikers kunnen Community Boards en alle opmerkingen op systeemniveau nog steeds zien.</value>
+  </data>
+  <data name="DisableCommunityPosting_Name" xml:space="preserve">
+    <value>Communityberichten uitschakelen</value>
+  </data>
+  <data name="DisableIssueManagement_Desc" xml:space="preserve">
+    <value>Hiermee worden de knop Actie ondernemen en de pagina Bewaken in de gebruikersinterface verborgen.</value>
+  </data>
+  <data name="DisableIssueManagement_Name" xml:space="preserve">
+    <value>Actie ondernemen uitschakelen</value>
+  </data>
+  <data name="EmailDomainWhitelist_Desc" xml:space="preserve">
+    <value>Deze instelling bevat een door komma's gescheiden lijst met toegestane domeinen. Indien aanwezig is het voor gebruikers met e-mailadressen van de opgegeven domeinen toegestaan om zich aan te melden bij Govern.</value>
+  </data>
+  <data name="EmailDomainWhitelist_Name" xml:space="preserve">
+    <value>Toegestane e-maildomeinen</value>
+  </data>
+  <data name="EnableJsonAttribute_Desc" xml:space="preserve">
+    <value>Schakel ondersteuning voor het veldtype JSON-attribuut in.  Als u deze optie inschakelt, worden alle eigenschappen voor alle JSON-velden in de Govern-omgeving ingeschakeld. Ook dit veldtype wordt ingeschakeld. Standaard ingesteld op Niet waar.  Als u deze waarde wijzigt, moeten de desbetreffende gegevens opnieuw worden geladen om JSON-eigenschappen te parseren.</value>
+  </data>
+  <data name="EnableJsonAttribute_Name" xml:space="preserve">
+    <value>JSON-attribuut inschakelen</value>
+  </data>
+  <data name="EnableSagacity_Desc" xml:space="preserve">
+    <value>Hiermee schakelt u het gebruik van DQ+-dashboards in</value>
+  </data>
+  <data name="EnableSagacity_Name" xml:space="preserve">
+    <value>DQ+-dashboards inschakelen</value>
+  </data>
+  <data name="FramingDomains_Desc" xml:space="preserve">
+    <value>Geef een door komma's gescheiden lijst met toegestane domeinen op</value>
+  </data>
+  <data name="FramingDomains_Name" xml:space="preserve">
+    <value>Framing</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
+    <value>De UID van de referentielijst die de governancerollen bevat waarvan de Diagram Designer afhankelijk is.</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
+    <value>Referentielijst-UID van governanceregel</value>
+  </data>
+  <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
+    <value>Hiermee worden Data3Sixty-gebruikers van een omgeving verborgen; deze accounts kunnen dan dus niet worden bewerkt.</value>
+  </data>
+  <data name="HideData3SixtyUsers_Name" xml:space="preserve">
+    <value>Data3Sixty-gebruikers verbergen</value>
+  </data>
+  <data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>Met deze instellingen worden de besturingselementen aan de rechterkant van de kopbalk verborgen</value>
+  </data>
+  <data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>Besturingselementen kopbalk verbergen</value>
+  </data>
+  <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om een aangepaste afbeelding op de startpagina weer te geven.</value>
+  </data>
+  <data name="HomePageBackgroundImage_Name" xml:space="preserve">
+    <value>Achtergrondafbeelding startpagina</value>
+  </data>
+  <data name="HomePageTitleColor_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de kleur van de titel op de startpagina in te stellen.</value>
+  </data>
+  <data name="HomePageTitleColor_Name" xml:space="preserve">
+    <value>Kleur van titel op startpagina</value>
+  </data>
+  <data name="HomePageTitleSize_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de grootte van de titel op de startpagina in te stellen.</value>
+  </data>
+  <data name="HomePageTitleSize_Name" xml:space="preserve">
+    <value>Grootte van titel op startpagina</value>
+  </data>
+  <data name="IpRestriction_Desc" xml:space="preserve">
+    <value>U kunt er (optioneel) voor kiezen om toegang tot deze pagina te beperken op IP-bereik.</value>
+  </data>
+  <data name="IpRestriction_Name" xml:space="preserve">
+    <value>Beperkingen IP-bereik</value>
+  </data>
+  <data name="JwtAuthority_Desc" xml:space="preserve">
+    <value>Autoriteits-URI voor JWT-tokens</value>
+  </data>
+  <data name="JwtAuthority_Name" xml:space="preserve">
+    <value>Autoriteits-URI voor JWT</value>
+  </data>
+  <data name="MaxDropdownItems_Desc" xml:space="preserve">
+    <value>Dit is het maximumaantal items om weer te geven in een vervolgkeuzelijst voordat wordt overgeschakeld naar typeahead.</value>
+  </data>
+  <data name="MaxDropdownItems_Name" xml:space="preserve">
+    <value>Maximumaantal items in vervolgkeuzelijst</value>
+  </data>
+  <data name="MaxExcelExportRows_Desc" xml:space="preserve">
+    <value>Dit is het maximumaantal items dat kan worden geëxporteerd in een Excel-spreadsheet.</value>
+  </data>
+  <data name="MaxExcelExportRows_Name" xml:space="preserve">
+    <value>Maximumaantal rijen voor exporteren in Excel</value>
+  </data>
+  <data name="PowerBIClientId_Desc" xml:space="preserve">
+    <value>De client-ID voor de Power BI Embedded-client-ID.</value>
+  </data>
+  <data name="PowerBIClientId_Name" xml:space="preserve">
+    <value>Power BI Embedded-client-ID</value>
+  </data>
+  <data name="PowerBIGroupId_Desc" xml:space="preserve">
+    <value>ID voor de werkruimte van deze clients in Power BI.</value>
+  </data>
+  <data name="PowerBIGroupId_Name" xml:space="preserve">
+    <value>ID van Power BI Embedded-werkruimte/-groep</value>
+  </data>
+  <data name="RequestCertificationDraft_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om te bepalen wanneer de knop Certificering aanvragen beschikbaar is in Govern en wat als conceptstatus wordt beschouwd.</value>
+  </data>
+  <data name="RequestCertificationDraft_Name" xml:space="preserve">
+    <value>Statuswaarden die bepalen of de knop Certificering aanvragen beschikbaar is</value>
+  </data>
+  <data name="SessionTimeout_Desc" xml:space="preserve">
+    <value>Aantal minuten voordat er een time-out van de gebruikerssessie optreedt.</value>
+  </data>
+  <data name="SessionTimeout_Name" xml:space="preserve">
+    <value>Sessietime-out (minuten)</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de API-sleutel van de gebruiker in de gebruikersinterface weer te geven/te verbergen.</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Name" xml:space="preserve">
+    <value>API-sleutel gebruiker weergeven</value>
+  </data>
+  <data name="ShowChangeLogTab_Desc" xml:space="preserve">
+    <value>Wanneer dit is ingesteld op Niet waar, wordt het tabblad Logboek met wijzigingen verborgen in de gebruikersinterface.</value>
+  </data>
+  <data name="ShowChangeLogTab_Name" xml:space="preserve">
+    <value>Tabblad Logboek met wijzigingen weergeven</value>
+  </data>
+  <data name="ShowCommentsTab_Desc" xml:space="preserve">
+    <value>Wanneer dit is ingesteld op Niet waar, wordt het tabblad Opmerkingen verborgen in de gebruikersinterface.</value>
+  </data>
+  <data name="ShowCommentsTab_Name" xml:space="preserve">
+    <value>Tabblad Opmerkingen weergeven</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Desc" xml:space="preserve">
+    <value>Met deze instelling wordt bepaald of de aangepaste API-beheerpagina wel of niet wordt weergegeven.</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Name" xml:space="preserve">
+    <value>Aangepaste API-beheerpagina weergeven</value>
+  </data>
+  <data name="ShowFavorites_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de functie voor favorieten uit te schakelen.</value>
+  </data>
+  <data name="ShowFavorites_Name" xml:space="preserve">
+    <value>Favorieten weergeven</value>
+  </data>
+  <data name="ShowFollowersSidebar_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de zijbalk Volgers uit te schakelen.</value>
+  </data>
+  <data name="ShowFollowersSidebar_Name" xml:space="preserve">
+    <value>Zijbalk Volgers weergeven</value>
+  </data>
+  <data name="ShowHomeActivityTile_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de activiteitstegel op de startpagina weer te geven/te verbergen.</value>
+  </data>
+  <data name="ShowHomeActivityTile_Name" xml:space="preserve">
+    <value>Activiteitstegel op startpagina weergeven</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de toewijzingstegel op de startpagina weer te geven/te verbergen.</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
+    <value>Toewijzingstegel op startpagina weergeven</value>
+  </data>
+  <data name="ShowHomeBoardTile_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de dashboardtegel op de startpagina weer te geven/te verbergen.</value>
+  </data>
+  <data name="ShowHomeBoardTile_Name" xml:space="preserve">
+    <value>Dashboardtegel op startpagina weergeven</value>
+  </data>
+  <data name="ShowHomePageTitle_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de titel op de startpagina weer te geven/te verbergen.</value>
+  </data>
+  <data name="ShowHomePageTitle_Name" xml:space="preserve">
+    <value>Titel startpagina weergeven</value>
+  </data>
+  <data name="ShowImpactSidebar_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de zijbalk Impact uit te schakelen.</value>
+  </data>
+  <data name="ShowImpactSidebar_Name" xml:space="preserve">
+    <value>Zijbalk Impact weergeven</value>
+  </data>
+  <data name="ShowLineageSidebar_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de zijbalk Lineage uit te schakelen.</value>
+  </data>
+  <data name="ShowLineageSidebar_Name" xml:space="preserve">
+    <value>Zijbalk Lineage weergeven</value>
+  </data>
+  <data name="ShowNavigationChildren_Desc" xml:space="preserve">
+    <value>Geef de onderliggende items in het navigatiemenu weer.</value>
+  </data>
+  <data name="ShowNavigationChildren_Name" xml:space="preserve">
+    <value>Onderliggende items navigatiemenu weergeven</value>
+  </data>
+  <data name="ShowOwnersSidebar_Desc" xml:space="preserve">
+    <value>Deze instelling wordt gebruikt om de zijbalk Eigenaarschap uit te schakelen.</value>
+  </data>
+  <data name="ShowOwnersSidebar_Name" xml:space="preserve">
+    <value>Zijbalk Eigenaarschap weergeven</value>
+  </data>
+  <data name="ShowResources_Desc" xml:space="preserve">
+    <value>Geef andere gebruikers weer dan niet-administratieve gebruikers.</value>
+  </data>
+  <data name="ShowResources_Name" xml:space="preserve">
+    <value>Resources weergeven</value>
+  </data>
+  <data name="ShowSocialScoreBar_Desc" xml:space="preserve">
+    <value>Deze instelling stelt beheerders in staat om de sociale balk, die boven aan detailpagina's wordt weergegeven, uit te schakelen. Deze instelling is standaard ingeschakeld.</value>
+  </data>
+  <data name="ShowSocialScoreBar_Name" xml:space="preserve">
+    <value>Sociale balk/scorebalk weergeven</value>
+  </data>
+  <data name="UseAsTransformationLimit_Desc" xml:space="preserve">
+    <value>Maximumaantal assettypen dat kan worden gemarkeerd als een transformatie-assettype.</value>
+  </data>
+  <data name="UseAsTransformationLimit_Name" xml:space="preserve">
+    <value>Gebruiken als transformatielimiet</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
+    <value>Deze instelling bepaalt welke groep gebruikers e-mails moet krijgen als verantwoordelijkheden in een workflow ertoe leiden dat geen enkele gebruiker de workflowtoewijzing krijgt. Als de waarde 0 of niet-gedefinieerd is, krijgen alle beheerders in een regio de toewijzingen.</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
+    <value>Standaardgebruikersgroep workflow</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
+    <value>Deze instelling bepaalt op welke dagen e-mails met workflowsamenvattingen worden verzonden.</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Name" xml:space="preserve">
+    <value>Dagen voor e-mail met workflowsamenvattingen</value>
+  </data>
+  <data name="WorkflowFromEmail_Desc" xml:space="preserve">
+    <value>Dit is het e-mailadres dat wordt gebruikt voor e-mails vanuit de workflow.</value>
+  </data>
+  <data name="WorkflowFromEmail_Name" xml:space="preserve">
+    <value>Afzender e-mailadres workflow</value>
+  </data>
+  <data name="WorkflowFromName_Desc" xml:space="preserve">
+    <value>Dit is de naam die wordt weergegeven wanneer een e-mail vanuit de workflow wordt verzonden.</value>
+  </data>
+  <data name="WorkflowFromName_Name" xml:space="preserve">
+    <value>Naam e-mailadres workflow</value>
+  </data>
+  <data name="WriteActionDescription_Desc" xml:space="preserve">
+    <value>Beschrijving van Actie schrijven naar Opmerkingen.</value>
+  </data>
+  <data name="WriteActionDescription_Name" xml:space="preserve">
+    <value>Beschrijving van Actie schrijven</value>
+  </data>
+	<data name="Taxonomy" xml:space="preserve">
+    <value>Informatiemodel</value>
+  </data>
+	<data name="TaxonomyType" xml:space="preserve">
+    <value>Informatiemodel</value>
+  </data>
+	<data name="Group" xml:space="preserve">
+    <value>Groep</value>
+  </data>
+	<data name="Resource" xml:space="preserve">
+    <value>Gebruiker</value>
+  </data>
+	<data name="ResourceType" xml:space="preserve">
+    <value>Gebruikerstype</value>
+  </data>
+	<data name="Role" xml:space="preserve">
+    <value>Rol</value>
+  </data>
+	<data name="Ownership" xml:space="preserve">
+    <value>Eigenaarschap</value>
+  </data>
+	<data name="Company" xml:space="preserve">
+    <value>Bedrijf</value>
+  </data>
+	<data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Informatiemodel Niveau</value>
+  </data>
+	<data name="Artifact" xml:space="preserve">
+    <value>Artefact</value>
+  </data>
+	<data name="ReferenceList" xml:space="preserve">
+    <value>Referentielijst</value>
+  </data>
+	<data name="BooleanFalse" xml:space="preserve">
+    <value>Nee</value>
+  </data>
+	<data name="BooleanTrue" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+	<data name="Default" xml:space="preserve">
+    <value>Standaard</value>
+  </data>
+	<data name="State_Closed" xml:space="preserve">
+    <value>Gesloten</value>
+  </data>
+	<data name="State_Pending" xml:space="preserve">
+    <value>In behandeling</value>
+  </data>
+	<data name="State_Waiting" xml:space="preserve">
+    <value>Wachten op gebruiker(s)</value>
+  </data>
+	<data name="PageNumString" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+	<data name="PageSizeString" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+	<data name="EndpointMethod" xml:space="preserve">
+    <value>Endpoint methode</value>
+  </data>
+	<data name="UidConstant" xml:space="preserve">
+    <value>UID</value>
+  </data>
+	<data name="TargetAssetType" xml:space="preserve">
+    <value>doelassettype</value>
+  </data>
+	<data name="add" xml:space="preserve">
+    <value>toevoegen</value>
+  </data>
+	<data name="confirm" xml:space="preserve">
+    <value>bevestigen</value>
+  </data>
+	<data name="_assettypeuid" xml:space="preserve">
+    <value>_assettypeuid</value>
+  </data>
+	<data name="_assetuid" xml:space="preserve">
+    <value>_assetuid</value>
+  </data>
+	<data name="_assigneeuid" xml:space="preserve">
+    <value>_assigneeuid</value>
+  </data>
+	<data name="_responsibilitytypeuid" xml:space="preserve">
+    <value>_responsibilitytypeuid</value>
+  </data>
+	<data name="CommentType_Action" xml:space="preserve">
+    <value>Open acties</value>
+  </data>
+	<data name="CommentType_Social" xml:space="preserve">
+    <value>Opmerking</value>
+  </data>
+  <data name="AssetId_Description" xml:space="preserve">
+    <value>De asset-ID is de unieke ID voor deze asset in alle Data360-assets.</value>
+  </data>
+  <data name="AssetId_Name" xml:space="preserve">
+    <value>Asset-ID</value>
+  </data>
+  <data name="CreatedOn_Description" xml:space="preserve">
+    <value>De datum waarop dit item is gemaakt in Data360.</value>
+  </data>
+  <data name="CreatedOn_Name" xml:space="preserve">
+    <value>Gemaakt op</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Beschrijving</value>
+  </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>De weergave-indeling moet worden opgegeven om de tekstgebaseerde weergavewaarde van het item op de juiste manier weer te geven.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Weergave-indeling</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+  <data name="Parent_Description" xml:space="preserve">
+    <value>De eigenaar voor dit item.</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Eigenaar/bovenliggend element</value>
+  </data>
+  <data name="RuleType_Description" xml:space="preserve">
+    <value>Het type van de regel categoriseert de regel volgens het doel ervan.</value>
+  </data>
+  <data name="RuleType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="SystemFieldCategory" xml:space="preserve">
+    <value>Systeemvelden</value>
+  </data>
+  <data name="SystemNoCategory" xml:space="preserve">
+    <value>Geen</value>
+  </data>
+  <data name="UID_Description" xml:space="preserve">
+    <value>De UID is de unieke ID voor dit item in Data360.</value>
+  </data>
+  <data name="Asset_UID_Description" xml:space="preserve">
+    <value>De asset-UID is de unieke ID voor dit item in Data360.</value>
+  </data>
+  <data name="AssetType_UID_Description" xml:space="preserve">
+    <value>De assettype-UID is de unieke ID voor het assettype in Data360.</value>
+  </data>
+  <data name="UID_Name" xml:space="preserve">
+    <value>UID</value>
+  </data>
+  <data name="Asset_UID_Name" xml:space="preserve">
+    <value>Asset-UID</value>
+  </data>
+  <data name="AssetType_UID_Name" xml:space="preserve">
+    <value>Assettype-UID</value>
+  </data>
+  <data name="UpdatedOn_Description" xml:space="preserve">
+    <value>De datum waarop dit item voor het laatst is aangepast in Data360.</value>
+  </data>
+  <data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Datum laatste aanpassing</value>
+  </data>
+  <data name="RuleID_Name" xml:space="preserve">
+    <value>Regel-ID</value>
+  </data>
+  <data name="CreatedBy_Name" xml:space="preserve">
+    <value>Gemaakt door</value>
+  </data>
+  <data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
+    <value>is een Active Directory-groep</value>
+  </data>
+  <data name="PrimaryOwner_Name" xml:space="preserve">
+    <value>Primaire eigenaar</value>
+  </data>
+  <data name="SecondaryOwner_Name" xml:space="preserve">
+    <value>Secundaire eigenaar</value>
+  </data>
+  <data name="UpdatedBy_Name" xml:space="preserve">
+    <value>Laatst aangepast door</value>
+  </data>
+  <data name="Relationship_Type_Name" xml:space="preserve">
+    <value>Relatietype</value>
+  </data>
+  <data name="Relationship_UID_Name" xml:space="preserve">
+    <value>Relatie-UID</value>
+  </data>
+  <data name="Load_Action" xml:space="preserve">
+    <value>Actie</value>
+  </data>
+  <data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Foutberichten</value>
+  </data>
+  <data name="Load_Errors" xml:space="preserve">
+    <value>Fouten</value>
+  </data>
+  <data name="Load_Incompletes" xml:space="preserve">
+    <value>Onvolledige items</value>
+  </data>
+  <data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>minder dan een minuut</value>
+  </data>
+  <data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>minuut/minuten</value>
+  </data>
+  <data name="Load_Notes" xml:space="preserve">
+    <value>Opmerkingen</value>
+  </data>
+  <data name="Load_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Load_Successes" xml:space="preserve">
+    <value>Successen</value>
+  </data>
+  <data name="Load_Target" xml:space="preserve">
+    <value>Doel</value>
+  </data>
+  <data name="Load_TookMinutes" xml:space="preserve">
+    <value>Duurde (minuten)</value>
+  </data>
+  <data name="Load_Total" xml:space="preserve">
+    <value>Totaal</value>
+  </data>
+  <data name="Load_UploadedBy" xml:space="preserve">
+    <value>Geüpload door</value>
+  </data>
+	<data name="Add_Asset_Type_Directions" xml:space="preserve">
+    <value>Pas dit type {0} aan met behulp van het onderstaande formulier.</value>
+  </data>
+	<data name="Add_Asset_Type_Title" xml:space="preserve">
+    <value>Type {0} toevoegen</value>
+  </data>
+	<data name="ArtifactType" xml:space="preserve">
+    <value>Zakelijk</value>
+  </data>
+	<data name="Edit_Asset_Type_Title" xml:space="preserve">
+    <value>Type {0} aanpassen</value>
+  </data>
+	<data name="InUse_Error_Delete" xml:space="preserve">
+    <value>Het relatietype dat u probeert te verwijderen, heeft gevestigde relaties.  Verwijder deze relaties voordat u het relatietype verwijdert.</value>
+  </data>
+	<data name="InUse_RelationShipType_Error_Delete" xml:space="preserve">
+    <value>Naar het relatietype wordt door een of meer veldtypedefinities verwezen. Verwijder deze of werk ze bij voordat u dit relatietype verwijdert.</value>
+  </data>
+	<data name="NoFormData_FieldType" xml:space="preserve">
+    <value>Type field</value>
+  </data>
+	<data name="Permisions_Error_Add" xml:space="preserve">
+    <value>U hebt geen machtigingen om dit toe te voegen.</value>
+  </data>
+	<data name="Permisions_Error_Delete" xml:space="preserve">
+    <value>U hebt geen machtigingen om dit te verwijderen.</value>
+  </data>
+	<data name="Permisions_Error_Edit" xml:space="preserve">
+    <value>U hebt geen machtigingen om dit bij te werken.</value>
+  </data>
+	<data name="PolicyType" xml:space="preserve">
+    <value>Beleid</value>
+  </data>
+	<data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
+    <value>'Then' is vereist.</value>
+  </data>
+	<data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
+    <value>'When' bevat een ongeldige FieldTypeId voor dit assettype.</value>
+  </data>
+	<data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
+    <value>'When' is vereist als ApplyToType is ingesteld op False.</value>
+  </data>
+	<data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
+    <value>'When' is vereist.</value>
+  </data>
+	<data name="RuleType" xml:space="preserve">
+    <value>Regel</value>
+  </data>
+	<data name="TaxonomyType" xml:space="preserve">
+    <value>Model</value>
+  </data>
+	<data name="Taxonomy_ChangeParent_Warning" xml:space="preserve">
+    <value>Als u het bovenliggende element van een model wijzigt, kan dit aanzienlijke gevolgen hebben voor het eigenaarschap in het hele systeem.</value>
+  </data>
+  <data name="Execution_ApplicationId" xml:space="preserve">
+    <value>Een optionele queryparameter waarmee een ID wordt opgegeven voor de toepassing die de API aanroept. Hierdoor kunnen beheerders zien welke toepassingen verbinding maken met de server en welke resources ze gebruiken.</value>
+  </data>
+	<data name="AssetCount" xml:space="preserve">
+    <value>AssetCount</value>
+  </data>
+	<data name="AssetTypeUid" xml:space="preserve">
+    <value>AssetTypeUid</value>
+  </data>
+	<data name="AutoDisplayParent" xml:space="preserve">
+    <value>Bovenliggend element automatisch weergeven</value>
+  </data>
+	<data name="CanEditParent" xml:space="preserve">
+    <value>Kan bovenliggend element bewerken</value>
+  </data>
+	<data name="ExecutionID" xml:space="preserve">
+    <value>ExecutionID</value>
+  </data>
+	<data name="ExecutionUid" xml:space="preserve">
+    <value>ExecutionUid</value>
+  </data>
+	<data name="model" xml:space="preserve">
+    <value>model</value>
+  </data>
+	<data name="UseAsTransformation" xml:space="preserve">
+    <value>Gebruiken als transformatie</value>
+  </data>
+	<data name="ApiSheetName" xml:space="preserve">
+    <value>API-gegevens</value>
+  </data>
+	<data name="AssetIdColumn" xml:space="preserve">
+    <value>Asset-ID</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetPathColumn" xml:space="preserve">
+    <value>Assetpad</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetSheetName" xml:space="preserve">
+    <value>Assets</value>
+  </data>
+	<data name="AssetTypePathColumn" xml:space="preserve">
+    <value>Pad naar assettype</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="AssetTypeUidColumn" xml:space="preserve">
+    <value>Assettype-UID</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+	<data name="AssetUidColumn" xml:space="preserve">
+    <value>Asset-UID</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="UrlColumn" xml:space="preserve">
+    <value>URL</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="BaseTypeColumn" xml:space="preserve">
+    <value>Basistype</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="DescriptionColumn" xml:space="preserve">
+    <value>Beschrijving</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="DisabledColumn" xml:space="preserve">
+    <value>Uitgeschakeld</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="Duplicate" xml:space="preserve">
+    <value>Dubbele vermelding</value>
+  </data>
+	<data name="EffectiveFromColumn" xml:space="preserve">
+    <value>Met ingang van</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="EffectiveThroughColumn" xml:space="preserve">
+    <value>Effectief t/m</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="HeaderFilterColumn" xml:space="preserve">
+    <value>Kopfilter</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="HeaderFilterConfidenceColumn" xml:space="preserve">
+    <value>Vertrouwen kopfilter</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="InvalidValuesColumn" xml:space="preserve">
+    <value>Ongeldige waarden</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="JsonColumn" xml:space="preserve">
+    <value>JSON</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MatchedAssetExportFileName" xml:space="preserve">
+    <value>Gefilterd: {0} {1} veldenlijst _{2}_.xlsx</value>
+  </data>
+	<data name="MatchedAssetIdColumn" xml:space="preserve">
+    <value>{0} Veldasset-ID</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetNameColumn" xml:space="preserve">
+    <value>{0} Veldnaam</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetPathColumn" xml:space="preserve">
+    <value>{0} Veldassetpad</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetTagsColumn" xml:space="preserve">
+    <value>{0} Veldtags</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetTypePathColumn" xml:space="preserve">
+    <value>{0} Pad naar veldassettype</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetUidColumn" xml:space="preserve">
+    <value>{0} Veldasset-UID</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchedAssetUrlColumn" xml:space="preserve">
+    <value>{0} Veld-URL</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="MatchTypeColumn" xml:space="preserve">
+    <value>Overeenkomsttype</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MaximumColumn" xml:space="preserve">
+    <value>Maximum</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumColumn" xml:space="preserve">
+    <value>Minimum</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumMaximumPresentColumn" xml:space="preserve">
+    <value>Minimum Maximum Aanwezig</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="MinimumSamplesColumn" xml:space="preserve">
+    <value>Minimumvoorbeelden</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="NameColumn" xml:space="preserve">
+    <value>Naam</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="PriorityColumn" xml:space="preserve">
+    <value>Prioriteit</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="QualifierColumn" xml:space="preserve">
+    <value>Kwalificatie</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="RegularExpressionColumn" xml:space="preserve">
+    <value>Reguliere expressie</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="RequiredSimilarType" xml:space="preserve">
+    <value>similarType is een vereist veld.</value>
+  </data>
+	<data name="SemanticBaseTypeBoolean" xml:space="preserve">
+    <value>Waar/Niet waar (Booleaans)</value>
+  </data>
+	<data name="SemanticBaseTypeNumber" xml:space="preserve">
+    <value>Nummer ({0})</value>
+  </data>
+	<data name="SemanticMatchTypeAdvanced" xml:space="preserve">
+    <value>Geavanceerd (JSON)</value>
+  </data>
+	<data name="SemanticMatchTypeList" xml:space="preserve">
+    <value>Lijst met waarden</value>
+  </data>
+	<data name="SemanticMatchTypePattern" xml:space="preserve">
+    <value>Patroon in gegevens</value>
+  </data>
+	<data name="SemanticSourceBuiltIn" xml:space="preserve">
+    <value>Ingebouwd</value>
+  </data>
+	<data name="SemanticSourceUserDefined" xml:space="preserve">
+    <value>Door gebruiker gedefinieerd</value>
+  </data>
+	<data name="SemanticStatusUnderReview" xml:space="preserve">
+    <value>Wordt gecontroleerd</value>
+  </data>
+	<data name="SemanticTypeExportFilename" xml:space="preserve">
+    <value>Lijst met gefilterde semantische typen {0}.xslx</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeUidColumn" xml:space="preserve">
+    <value>UID van semantisch type</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeURLColumn" xml:space="preserve">
+    <value>URL van semantisch type</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeAssetExportFilename" xml:space="preserve">
+    <value>Lijst met gefilterde assets voor {0} {1}.xlsx</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+	<data name="Similar" xml:space="preserve">
+    <value>Vergelijkbaar</value>
+  </data>
+	<data name="SourceColumn" xml:space="preserve">
+    <value>Semantische bron</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="StatusColumn" xml:space="preserve">
+    <value>Status</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="TagsColumn" xml:space="preserve">
+    <value>Tags</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+	<data name="ThresholdColumn" xml:space="preserve">
+    <value>Drempel</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="ValidLocalesColumn" xml:space="preserve">
+    <value>Geldige landinstellingen</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="ValidValuesColumn" xml:space="preserve">
+    <value>Geldige waarden</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeStatusExportFilename" xml:space="preserve">
+    <value>Lijst met semantische typestatus {0}.xlsx</value>
+  </data>
+	<data name="ColorColumn" xml:space="preserve">
+    <value>Kleur</value>
+    <comment>User for Semantic Type Status export</comment>
+  </data>
+	<data name="AssetUrlColumn" xml:space="preserve">
+    <value>Asset-URL</value>
+    <comment>Used for Semantic Types Assets Export</comment>
+  </data>
+	<data name="SemanticTypeDisabledColumn" xml:space="preserve">
+    <value>Uitgeschakeld</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="SemanticTypeEffectiveRangeColumn" xml:space="preserve">
+    <value>Effectief bereik</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+	<data name="ApiField" xml:space="preserve">
+    <value>API-veld</value>
+  </data>
+	<data name="ApiService" xml:space="preserve">
+    <value>API-service</value>
+  </data>
+	<data name="ApiServiceEndpoint" xml:space="preserve">
+    <value>Endpoint van API-service</value>
+  </data>
+	<data name="apiserviceversion" xml:space="preserve">
+    <value>API-serviceversie</value>
+  </data>
+	<data name="ApiServiceVersionEntity" xml:space="preserve">
+    <value>API-serviceversie-entiteit</value>
+  </data>
+	<data name="ApiServiceVersionUri" xml:space="preserve">
+    <value>API-serviceversie-URI</value>
+  </data>
+	<data name="AssetType" xml:space="preserve">
+    <value>Assettype</value>
+  </data>
+	<data name="Contract" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+	<data name="CustomSynonym" xml:space="preserve">
+    <value>Aangepast synoniem</value>
+  </data>
+	<data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+	<data name="endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+	<data name="field" xml:space="preserve">
+    <value>Veld</value>
+  </data>
+	<data name="FileRequired" xml:space="preserve">
+    <value>Bestand is vereist</value>
+  </data>
+	<data name="IssueType" xml:space="preserve">
+    <value>Probleemtype</value>
+  </data>
+	<data name="Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+	<data name="ItemDate" xml:space="preserve">
+    <value>Itemdatum</value>
+  </data>
+	<data name="LoadAction" xml:space="preserve">
+    <value>LoadAction</value>
+  </data>
+	<data name="PolicyType" xml:space="preserve">
+    <value>Beleidstype</value>
+  </data>
+	<data name="PolicyTypeLevel" xml:space="preserve">
+    <value>Beleidstypeniveau</value>
+  </data>
+	<data name="PowerBICredentials" xml:space="preserve">
+    <value>Power BI-referenties</value>
+  </data>
+	<data name="Relationship" xml:space="preserve">
+    <value>Relatie</value>
+  </data>
+	<data name="RelationshipType" xml:space="preserve">
+    <value>Relatietype</value>
+  </data>
+	<data name="Report" xml:space="preserve">
+    <value>Rapport</value>
+  </data>
+	<data name="Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+	<data name="Responsibility" xml:space="preserve">
+    <value>Verantwoordelijkheid</value>
+  </data>
+	<data name="ResponsibilityType" xml:space="preserve">
+    <value>ResponsibilityType</value>
+  </data>
+	<data name="serviceConstant" xml:space="preserve">
+    <value>Service</value>
+  </data>
+	<data name="Synonym" xml:space="preserve">
+    <value>Synonym</value>
+  </data>
+	<data name="TaxonomyType" xml:space="preserve">
+    <value>Taxonomietype</value>
+  </data>
+	<data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Taxonomietypeniveau</value>
+  </data>
+	<data name="TypeConstant" xml:space="preserve">
+    <value>Type</value>
+  </data>
+	<data name="uriConstant" xml:space="preserve">
+    <value>URI</value>
+  </data>
+	<data name="version" xml:space="preserve">
+    <value>Versie</value>
+  </data>
+</root>

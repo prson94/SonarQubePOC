@@ -51,7 +51,7 @@ namespace d360.model.DataAccessLayer
 			var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
 			if (asset == null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
 			}
 
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
@@ -282,7 +282,7 @@ namespace d360.model.DataAccessLayer
 					asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
 					if (asset == null)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
+						throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
 					}
 					else
                     {
@@ -446,7 +446,7 @@ namespace d360.model.DataAccessLayer
 					Asset asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
 					if (asset == null)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
+						throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
 					}
 					else
 					{
@@ -676,12 +676,12 @@ namespace d360.model.DataAccessLayer
 
 			if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, CommonErrors.BadRequest, string.Format(CommonErrors.InvalidParameter, "typeQualifier"));
+				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidParameter, "typeQualifier"));
 			}
 
 			if (minConfidence <= 0 || minConfidence > 1)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, CommonErrors.BadRequest, string.Format(CommonErrors.InvalidParameter, "minConfidence"));
+				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidParameter, "minConfidence"));
 			}
 
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
@@ -913,18 +913,18 @@ namespace d360.model.DataAccessLayer
 
 			if (asset == null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", CommentErrors.AssetUidNotFound);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", Error.AssetUidNotFound);
 			}
 
 			AssetDataProfile dataprofile = CompanyContext.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
 			if (dataprofile == null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.ProfileRecordNotExists);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", Error.ProfileRecordNotExists);
 			}
 
 			if (similarType == null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeRequired);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, "", Error.SignatureTypeRequired);
 			}
 			else
 			{
@@ -945,7 +945,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", OthersError.SignatureTypeInvalid);
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", Error.SignatureTypeInvalid);
 				}
 			}
 

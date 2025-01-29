@@ -245,11 +245,37 @@ namespace d360.web
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+
+				builder.RegisterType<History>().As<IHistory>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
+				builder.RegisterType<Scoring>().As<IScoring>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
 				builder.RegisterType<Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
+
+				builder.RegisterType<Social>().As<ISocial>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
+				builder.RegisterType<Workflow>().As<IWorkflow>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();

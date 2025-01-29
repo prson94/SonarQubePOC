@@ -267,47 +267,6 @@ namespace igx.UnitTests.RepositoryTests
 
 
 		[Fact]
-		public async void GetAssetsPath()
-		{
-			var mockCompanyContext = new Mock<ICompanyContext>();
-
-			mockCompanyContext.Setup(x => x.QueryFirstOrDefaultAsync<int>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
-				.Returns((string sql, object param, int timeout) =>
-				{
-					return Task.FromResult(5);
-				});
-
-
-			mockCompanyContext.Setup(x => x.QueryAsync<AssetPathResult>(It.IsAny<string>(), It.IsAny<DynamicParameters>(), It.IsAny<int>()))
-				.Returns((string sql, DynamicParameters param, int timeout) =>
-				{
-					var res = new List<AssetPathResult>();
-					var expectedParams = new List<string> { "pagesize", "pagenum", "offset", "assetTypeId" };
-
-					if (!expectedParams.All(x => param.ParameterNames.Select(y => y.ToLowerInvariant()).Contains(x.ToLowerInvariant())))
-					{
-						return null;
-					}
-
-					return Task.FromResult(res as IEnumerable<AssetPathResult>);
-				});
-
-			List<string> mustContain = new List<string>();
-
-
-
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
-
-			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
-			pars.Add(new KeyValuePair<string, string>("_pagesize", "30"));
-			pars.Add(new KeyValuePair<string, string>("_pagenum", "5"));
-			pars.Add(new KeyValuePair<string, string>("_includetotal", "true"));
-
-			var assetType = new AssetType { ID = 1, uid = Guid.Parse(DataConstants.ValidGUID) };
-			var result = await assetRepository.GetAssetPaths(assetType, pars);
-		}
-
-		[Fact]
 		public void GetAssetsExcel()
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
@@ -504,14 +463,6 @@ namespace igx.UnitTests.RepositoryTests
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
 
-			mockCompanyContext.Setup(x => x.QueryAsync<int>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
-					  .Returns((string sql, object param, int timeout) =>
-					  {
-						  var res = new List<int>();
-						  res.Add(2);
-						  return Task.FromResult(res as IEnumerable<int>);
-					  });
-
 			List<string> queryMustContain = new List<string>();
 
 			queryMustContain.Add("inner join IntersectType I on I.SubjectAssetTypeID"); //filter by subject
@@ -522,8 +473,8 @@ namespace igx.UnitTests.RepositoryTests
 			queryMustContain.Add("select T.ID from AssetType T"); //is from type filter
 			queryMustContain.Add("AssetPath N"); //main select
 
-			mockCompanyContext.Setup(x => x.QueryAsync<AssetsByPathItemApiViewModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
-					 .Returns((string sql, object param, int timeout) =>
+			mockCompanyContext.Setup(x => x.ExecuteGetAssetsByPathQuery(It.IsAny<string>(), It.IsAny<DynamicParameters>()))
+					 .Returns((string sql, DynamicParameters param) =>
 					 {
 						 bool hasMissingSQL = false;
 						 foreach (var item in queryMustContain)
@@ -540,10 +491,11 @@ namespace igx.UnitTests.RepositoryTests
 							 return null;
 						 }
 
-
-						 var res = new List<AssetsByPathItemApiViewModel>();
-						 res.Add(new AssetsByPathItemApiViewModel() { });
-						 return Task.FromResult(res as IEnumerable<AssetsByPathItemApiViewModel>);
+						 var res = new AssetsByPathQueryResults();
+						 var asset = new AssetsByPathItemApiViewModel();
+						 res.total = 2;
+						 res.results = new List<AssetsByPathItemApiViewModel>() { asset };
+						 return Task.FromResult(res);
 					 });
 			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
 

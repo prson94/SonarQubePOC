@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using d360.model;
 using d360.utils.company;
 using d360.web.Extensions;
@@ -9,7 +10,6 @@ using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using repositories;
-using Resources;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -205,7 +206,7 @@ namespace d360.web
 					{
 						u = null;
 						System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-						context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
+						context.Response.Write($"\"{Error.EndpointNotAuthorizedHeading}\"");
 						context.Response.StatusCode = 401;
 
 						return;
@@ -219,7 +220,7 @@ namespace d360.web
 						{
 							System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
 
-							context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
+							context.Response.Write($"\"{Error.EndpointNotAuthorizedHeading}\"");
 							context.Response.StatusCode = 401;
 
 							return;
@@ -246,8 +247,24 @@ namespace d360.web
 
 		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context)
 		{
+			int companyID = context.Get<int>("CompanyID");
+			var urlSegment = context.Get<string>("CompanyDomain");
+
 			string authority = await getJwtAuthority(context);
-			var authenticationSettings = context.Request.Get<OidcAuthenticationSettings>("AuthenticationSettings");
+
+			var cacheKey = $"OidcSettings_{companyID}";
+			OidcAuthenticationSettings authenticationSettings = null;
+			if (Cache.ListItemExists<OidcAuthenticationSettings, int>(cacheKey, companyID))
+			{
+				authenticationSettings = Cache.GetItemInListByID<OidcAuthenticationSettings, int>(cacheKey, companyID);
+			}
+			else
+			{
+				var cmy = DependencyResolver.Current.GetService<ICommunity>();
+				authenticationSettings = await cmy.ReadIdpOidcSettingsByTenantPrefix(urlSegment);
+				Cache.SetItemInListByID(cacheKey, companyID, authenticationSettings, true, 5);
+			}
+
 			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
 			Log.LogTrace($"JWT Authority : {authority}");

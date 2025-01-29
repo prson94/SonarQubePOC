@@ -2,10 +2,8 @@
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
-import { isNil, isUndefined } from "lodash-es";
+import { isNil } from "lodash-es";
 import { Subscription } from 'rxjs';
-
-
 
 @Directive({
     selector: "[igDropdown]"
@@ -22,7 +20,7 @@ export class DropdownDirective implements AfterContentInit, OnInit, OnDestroy {
 
 	onShowSubscription: Subscription;
 
-	constructor(public el: ElementRef, public dropdownRef: Dropdown) { }
+	constructor(public el: ElementRef, public dropdownRef: Dropdown ) { }
 
 	ngOnInit() {
 		this.onShowSubscription = this.dropdownRef.onShow.subscribe(() => {
@@ -83,16 +81,8 @@ export class DropdownDirective implements AfterContentInit, OnInit, OnDestroy {
         this.dropdownRef.scrollHeight = "340px";
 
 		if (this.alwaysShowFilter) {
-			this.enableFilter();
-		}
-	}
-
-	enableFilter() {
-		this.dropdownRef.filter = true;
-		this.dropdownRef.filterPlaceholder = $localize`Search fields`;
-		//PrimeNG bug, if dropdown has group and filter, filterby must be set.
-		if (this.dropdownRef.group && isUndefined(this.dropdownRef.filterBy)) {
-			this.dropdownRef.filterBy = 'label';
+			this.dropdownRef.filter = true;
+			this.dropdownRef.filterPlaceholder = $localize`Search fields`;
 		}
 	}
 
@@ -128,7 +118,8 @@ export class DropdownDirective implements AfterContentInit, OnInit, OnDestroy {
 
 		const count: number = this.getItemsCount();
 		if (count > 10 || this.alwaysShowFilter) {
-			this.enableFilter();
+			this.dropdownRef.filter = true;
+			this.dropdownRef.filterPlaceholder = $localize`Search fields`;
 		}
 		else {
 			this.dropdownRef.filter = false;

@@ -34,24 +34,24 @@ namespace d360.core.validators
 		{
 			if (!SupportedClasses.Contains(model.Class))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.UnsupportedAssetClass);
 			}
 
 			if (string.IsNullOrWhiteSpace(model.Name))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsEmpty} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format($"{Error.FieldIsEmpty} {Error.FieldProvideCorrectValue}", "Asset Type Name"));
 			}
 
 			char[] invalidChars = new[] { '\0' };
 
 			if (model.Name.Any(invalidChars.Contains))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format($"{AssetTypeErrors.FieldIsInvalid} {AssetTypeErrors.FieldProvideCorrectValue}", "Asset Type Name"));
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format($"{Error.FieldIsInvalid} {Error.FieldProvideCorrectValue}", "Asset Type Name"));
 			}
 
 			if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidDisplayFormat} {Error.CheckRequest}");
 			}
 
 			#region Basic Model Validation
@@ -61,25 +61,25 @@ namespace d360.core.validators
 			
 			if (!isValid)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, validationResults.First().ErrorMessage);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, validationResults.First().ErrorMessage);
 			}
 
 			#endregion
 
 			if (ModelHasDuplicateNames(model, parentAssetType, isInsert))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ErrorNameTaken);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.ErrorNameTaken);
 			}
 
 			if (!isInsert)
 			{
 				if (assetType == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid);
 				}
 				else if (assetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnClass);
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnClass);
 				}
 				else
 				{
@@ -94,22 +94,22 @@ namespace d360.core.validators
 			{
 				if (parentAssetType == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidParentUid} {Error.CheckRequest}");
 				}
 				else if (parentAssetType.Class != model.Class)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidParentUid} {Error.CheckRequest}");
 				}
 				else if (!ParentAssetTypeClass.Contains(model.Class) && !ForceParentToItself)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidParentUid} {Error.CheckRequest}");
 				}
 
 				if (ForceParentToItself)
 				{
 					if (model.ParentUid != model.Uid)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidParentUid} {Error.CheckRequest}");
 					}
 				}
 			}
@@ -120,14 +120,14 @@ namespace d360.core.validators
 				{
 					if (CompanyContext.Any<AssetType>(i => i.uid == model.Uid))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.AssetTypeExistsTitle, AssetTypeErrors.AssetTypeWithUidExists);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeExistsTitle, Error.AssetTypeWithUidExists);
 					}
 				}
 				if (!string.IsNullOrEmpty(model.SourceID))
 				{
 					if (CompanyContext.Any<AssetType>(i => i.SourceID == model.SourceID))
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.AssetTypeExistsTitle, AssetTypeErrors.AssetTypeWithSourceIdExists);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.AssetTypeExistsTitle, Error.AssetTypeWithSourceIdExists);
 					}
 				}
 			}
@@ -135,7 +135,7 @@ namespace d360.core.validators
 			{
 				if (model.ParentUid.HasValue && model.ParentUid == model.Uid && !ForceParentToItself)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidParentUid} {Error.CheckRequest}");
 				}
 			}
 
@@ -143,41 +143,41 @@ namespace d360.core.validators
 			{
 				if (predicate == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 				}
 				else if (predicate != null && !PredicateSupportingClasses.Contains(model.Class))
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 				}
 				else if (predicate.Type == PredicateType.InterTypeHierarchy && !(model.ParentUid.HasValue && model.ParentUid != Guid.Empty))
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidParentUid);
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.InvalidParentUid);
 				}
 			}
 
 			if (parentAssetType != null && predicate == null && PredicateSupportingClasses.Contains(model.Class))
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 			}
 			else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 			}
 			else if (isInsert && parentAssetType == null && predicate != null && ParentAssetTypeClass.Contains(model.Class))
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid);
 			}
 			else if (parentAssetType != null && predicate != null && model.Class.In(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 			}
 			else if (predicate != null && model.Class.In(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset) && predicate.Type == PredicateType.IntraTypeHierarchy)
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 			}
 			else if (predicate != null && model.Class.In(AssetTypeClass.Model, AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
 			{
-				return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
+				return new WorkHttpStatus(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.ImproperPredicate);
 			}
 
 			if (!isInsert)
@@ -186,7 +186,7 @@ namespace d360.core.validators
 				AssetType currentParentType = CompanyContext.GetParentType(assetType.ID);
 				if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.AssetsWithAssignedParents);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.AssetsWithAssignedParents);
 				}
 			}
 
@@ -197,7 +197,7 @@ namespace d360.core.validators
 
 			if (model.IconStyle == null || model.IconStyle?.BackColor == null || !Regex.Match(model.IconStyle?.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle?.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidStyle} {Error.CheckRequest}");
 			}
 
 			if (model.IconStyle.BackColor != null && model.IconStyle.ForeColor != null)
@@ -207,23 +207,23 @@ namespace d360.core.validators
 
 				if (backColour.ToUpper().Equals(foreColour.ToUpper()))
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MatchingIconStyle}");
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.MatchingIconStyle}");
 				}
 			}
 
 			if (model.Class == AssetTypeClass.Diagram && model.FlowObjectType == null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MissingFlowObjectType}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.MissingFlowObjectType}");
 			}
 
 			if (model.Class == AssetTypeClass.Diagram && (_governanceRoleUid == null || _governanceRoleUid == Guid.Empty))
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.GovernanceRoleNotSet}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.GovernanceRoleNotSet}");
 			}
 
 			if (model.Class != AssetTypeClass.Diagram && model.FlowObjectType != null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedFlowObjectType}");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.UnsupportedFlowObjectType}");
 			}
 
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");

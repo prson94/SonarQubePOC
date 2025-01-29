@@ -5,7 +5,6 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -136,41 +135,28 @@ namespace repositories.azure
 			return response;
 		}
 
-		public async Task<List<UserApiModel>> CreateUsersInTenantAsync(int companyId, List<UserApiModel> users)
+		public async Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users)
 		{
 			var tbl = new DataTable();
 			tbl.Columns.Add("ItemNumber", typeof(int));
 			tbl.Columns.Add("ResourceID", typeof(int));
 			tbl.Columns.Add("Username", typeof(string));
 			tbl.Columns.Add("Email", typeof(string));
-			tbl.Columns.Add("FirstName", typeof(string));
-			tbl.Columns.Add("LastName", typeof(string));
 			tbl.Columns.Add("uid", typeof(Guid));
-			tbl.Columns.Add("State", typeof(int));
-			tbl.Columns.Add("IsAdministrator", typeof(bool));
 
 			int itemNumber = 0;
 			foreach (var user in users)
 			{
+				var row = tbl.NewRow();
 				itemNumber++;
 				user.ItemNumber = itemNumber;
-
-				var row = tbl.NewRow();
-
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
 				row["Email"] = user.Email;
-				row["FirstName"] = user.FirstName;
-				row["LastName"] = user.LastName;
-				row["IsAdministrator"] = user.IsAdministrator;
-				row["State"] = user.State ?? CompanyResourceState.Active;
-
-				if (!user.uid.HasValue || (user.uid.HasValue && user.uid == Guid.Empty))
+				if (user.uid != null)
 				{
-					user.uid = Guid.NewGuid();
+					row["uid"] = user.uid;
 				}
-
-				row["uid"] = user.uid;
 
 				tbl.Rows.Add(row);
 			}
@@ -188,13 +174,8 @@ namespace repositories.azure
 							ItemNumber int,
 							Username nvarchar(500),
 							Email nvarchar(500),
-							FirstName nvarchar(250),
-							LastName nvarchar(250),
-
 							ResourceID int,
-							[uid] uniqueidentifier,
-							IsAdministrator bit,
-							[State] int
+							[uid] uniqueidentifier
 						)", transaction: trans);
 
 						SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)connection, SqlBulkCopyOptions.Default, trans)
@@ -205,10 +186,6 @@ namespace repositories.azure
 						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 						bulkCopy.ColumnMappings.Add("Username", "Username");
 						bulkCopy.ColumnMappings.Add("Email", "Email");
-						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
-						bulkCopy.ColumnMappings.Add("LastName", "LastName");
-						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
-						bulkCopy.ColumnMappings.Add("State", "State");
 						bulkCopy.ColumnMappings.Add("uid", "uid");
 
 						await bulkCopy.WriteToServerAsync(tbl);
@@ -234,55 +211,8 @@ update  U
 set     U.[uid] = newid()
 from    #Users U
 where U.[uid] = '00000000-0000-0000-0000-000000000000';
-
-update	T
-set		T.FirstName = S.FirstName,
-		T.LastName = S.LastName,
-		T.Email = S.Email
-from	[Resource] T
-		inner join #Users S on S.ResourceID = T.ID;
-
-insert into [Resource] (Username, [Password], LastName, FirstName, Email, Uid)
-	select	Username, '{None}', LastName, FirstName, Email, Uid
-	from	#Users
-	where	ResourceID is null;
-
-update  U
-set     U.ResourceID = R.ID
-from    #Users U
-		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null;
-
-if exists(select 1 from #Users T group by T.ResourceID having count(1)>1)
-begin
-	update	T
-	set		T.IsAdministrator = S.IsAdministrator,
-			T.State = S.State
-	from CompanyResource T
-	inner join #Users S on T.ResourceID = S.ResourceID 
-	where T.CompanyID = @companyId;
-
-	insert	into CompanyResource(CompanyID, ResourceID, IsAdministrator, State)
-	select distinct @companyId, S.ResourceID, S.IsAdministrator, S.State
-	from #Users S
-	left join CompanyResource T on T.CompanyID = @companyId and T.ResourceID = S.ResourceID 
-	where T.CompanyID is null;
-end
-else
-begin
-	merge	CompanyResource as T
-	using	(select * from #Users) as S
-	on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
-	when	matched then
-	update  set
-			T.IsAdministrator = S.IsAdministrator,
-			T.State = S.State
-	when	not matched by target then
-	insert	(CompanyID, ResourceID, IsAdministrator, State)
-	values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);
-end
-
-", 
-						new { companyId}, transaction: trans);
+",
+						new { companyId }, transaction: trans);
 
 						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
 
@@ -301,6 +231,186 @@ end
 									user.uid = user.uid == Guid.Empty ? result.uid : user.uid;
 								}
 								user.CompanyResourceState = CompanyResourceState.Active;
+							}
+						}
+
+						trans.Commit();
+					}
+					catch
+					{
+						try
+						{
+							if (trans != null)
+							{
+								trans.Rollback();
+							}
+						}
+						catch
+						{
+						}
+
+						throw;
+					}
+				}
+			}
+
+			return users;
+		}
+
+		public async Task<List<UserUpsertValidateModel>> CreateUsersInTenantAsync(int companyId, List<UserUpsertValidateModel> users)
+		{
+			var tbl = new DataTable();
+			tbl.Columns.Add("ItemNumber", typeof(int));
+			tbl.Columns.Add("ResourceID", typeof(int));
+			tbl.Columns.Add("Username", typeof(string));
+			tbl.Columns.Add("Email", typeof(string));
+			tbl.Columns.Add("FirstName", typeof(string));
+			tbl.Columns.Add("LastName", typeof(string));
+			tbl.Columns.Add("Password", typeof(string));
+			tbl.Columns.Add("uid", typeof(Guid));
+			tbl.Columns.Add("State", typeof(int));
+			tbl.Columns.Add("IsAdministrator", typeof(bool));
+			tbl.Columns.Add("Success", typeof(bool));
+			tbl.Columns.Add("Message", typeof(string));
+
+			foreach (var user in users)
+			{
+				if (user.Success ?? true)
+				{
+					var row = tbl.NewRow();
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username ?? (object)DBNull.Value;
+					row["Email"] = user.users.Email ?? (object)DBNull.Value;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["State"] = user.users.State ?? CompanyResourceState.Active;
+					row["uid"] = user.users.uid ?? (object)DBNull.Value;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message;
+
+					tbl.Rows.Add(row);
+				}
+			}
+
+			using (var connection = Connect())
+			{
+				connection.Open();
+				using (SqlTransaction trans = ((SqlConnection)connection).BeginTransaction())
+				{
+					try
+					{
+						await connection.ExecuteAsync(@"
+						create table #Users
+						(
+							ItemNumber int,
+							Username nvarchar(500),
+							Email nvarchar(500),
+							FirstName nvarchar(250),
+							LastName nvarchar(250),
+							Password nvarchar(250),
+							ResourceID int,
+							[uid] uniqueidentifier,
+							IsAdministrator bit,
+							[State] int,
+							[Success] bit,
+							[Message] varchar(4000)
+						)", transaction: trans);
+
+						SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)connection, SqlBulkCopyOptions.Default, trans)
+						{
+							DestinationTableName = "#Users"
+						};
+
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("Username", "Username");
+						bulkCopy.ColumnMappings.Add("Email", "Email");
+						bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
+						bulkCopy.ColumnMappings.Add("LastName", "LastName");
+						bulkCopy.ColumnMappings.Add("Password", "Password");
+						bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+						bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
+						bulkCopy.ColumnMappings.Add("State", "State");
+						bulkCopy.ColumnMappings.Add("uid", "uid");
+						bulkCopy.ColumnMappings.Add("Success", "Success");
+						bulkCopy.ColumnMappings.Add("Message", "Message");
+
+						await bulkCopy.WriteToServerAsync(tbl);
+
+						// NOTE: We need to ensure we are not auto-joining any users we should not be, and resetting their data. Make sure to check if user is already part of client we are on.
+						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
+
+						await connection.ExecuteAsync(@"
+update	T
+set		T.FirstName = S.FirstName,
+		T.LastName = S.LastName,
+		T.Email = S.Email
+from	[Resource] T
+		inner join #Users S on S.ResourceID = T.ID
+where coalesce(S.Success,1) = 1;
+
+insert into [Resource] (Username, [Password], LastName, FirstName, Email, Uid)
+	select	Username, [Password], LastName, FirstName, Email, Uid
+	from	#Users
+	where	ResourceID is null and coalesce(Success,1) = 1;
+
+update  U
+set     U.ResourceID = R.ID
+from    #Users U
+		inner join [Resource] R on R.Username = U.Username and U.ResourceID is null
+where  coalesce(U.Success,1) = 1;
+
+if exists(select 1 from #Users T group by T.ResourceID having count(1)>1)
+begin
+	update	T
+	set		T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	from CompanyResource T
+	inner join #Users S on T.ResourceID = S.ResourceID 
+	where T.CompanyID = @companyId and coalesce(S.Success,1) = 1;
+
+	insert	into CompanyResource(CompanyID, ResourceID, IsAdministrator, State)
+	select distinct @companyId, S.ResourceID, S.IsAdministrator, S.State
+	from #Users S
+	left join CompanyResource T on T.CompanyID = @companyId and T.ResourceID = S.ResourceID 
+	where T.CompanyID is null and coalesce(S.Success,1) = 1;
+end
+else
+begin
+	merge	CompanyResource as T
+	using	(select * from #Users where coalesce(Success,1) = 1) as S
+	on		(T.CompanyID = @companyId and T.ResourceID = S.ResourceID)
+	when	matched then
+	update  set
+			T.IsAdministrator = S.IsAdministrator,
+			T.State = S.State
+	when	not matched by target then
+	insert	(CompanyID, ResourceID, IsAdministrator, State)
+	values	(@companyId, S.ResourceID, S.IsAdministrator, S.State);
+end
+
+",
+						new { companyId }, transaction: trans);
+
+						var results = await connection.QueryAsync<dynamic>(@"select * from #Users", transaction: trans);
+
+						foreach (var result in results)
+						{
+							var user = users.SingleOrDefault(u => u.users.ItemNumber == result.ItemNumber);
+							if (user != null)
+							{
+								user.users.ResourceID = result.ResourceID;
+								if (user.users.IsNew)
+								{
+									user.users.uid = result.uid;
+								}
+								else
+								{
+									user.users.uid = user.users.uid == Guid.Empty ? result.uid : user.users.uid;
+								}
+								user.users.CompanyResourceState = CompanyResourceState.Active;
 							}
 						}
 
@@ -822,13 +932,13 @@ from	CompanyResource CR
 
 			if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(currentPassword))
 			{
-				response = new(400, MemberShipErrors.MissingCurrentPasswordParameter);
+				response = new(400, Error.MissingCurrentPasswordParameter);
 				return response;
 			}
 
 			if (string.IsNullOrEmpty(newPassword) || string.IsNullOrWhiteSpace(newPassword))
 			{
-				response = new(400, MemberShipErrors.PasswordRule);
+				response = new(400, Error.PasswordRule);
 				return response;
 			}
 
@@ -837,7 +947,7 @@ from	CompanyResource CR
 			
 			if (currentPassword.Equals(newPassword))
 			{
-				response = new(400, MemberShipErrors.PasswordRule);
+				response = new(400, Error.PasswordRule);
 				return response;
 			}
 
@@ -850,7 +960,7 @@ from	CompanyResource CR
 
 				if (user.Password != currentPasswordHash)
 				{
-					response = new(400, MemberShipErrors.PasswordRule);
+					response = new(400, Error.PasswordRule);
 				}
 				else 
 				{
@@ -956,7 +1066,7 @@ select * from [Resource] where ID = @userId";
 				else
 				{
 					await connection.ExecuteAsync(
-						"insert into CompanyDigestExecution (CompanyID, InvocationID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
+						"insert into CompanyDigestExecution (CompanyID, InstanceID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
 						new { companyId, invocationId });
 				}
 			}
@@ -1000,6 +1110,7 @@ select * from [Resource] where ID = @userId";
 		}
 
 		#region "Company Setting"
+		
 		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId)
 		{
 			return (await ReadSettingsAsync(companyId)).ToDictionary(k => k.ID.ToString(), v => v.Value);
@@ -1087,30 +1198,6 @@ select * from [Resource] where ID = @userId";
 			}
 
 			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public async Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId)
-		{
-			SettingValuesForWorkflow wfsv;
-
-			string sql = $@"declare @defaultGroup nvarchar(10),
-							@fromName nvarchar(4000),
-							@fromEmail nvarchar(4000);
-							select @defaultGroup = [Value] from CompanySetting where CompanyId = @companyId and ID = @defaultid;
-							select @fromName = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromNameid;
-							select @fromEmail = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromEmailid;
-							select cast(COALESCE(try_cast(@defaultGroup as int),0) as nvarchar(10)) defaultGroup,
-								   @fromName fromName,
-								   @fromEmail fromEmail;";
-			using (var connection = (SqlConnection)Connect(true))
-			{
-				wfsv = await connection.QueryFirstOrDefaultAsync<SettingValuesForWorkflow>(sql, 
-						new { companyId, defaultid = (int)Setting.WorkflowCatchAllGroup, fromNameid = (int)Setting.WorkflowFromName,
-							fromEmailid = (int)Setting.WorkflowFromEmail
-						});
-			}
-
-			return wfsv;
 		}
 
 		public async Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting)

@@ -1,25 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Web.Http;
-
-using Moq;
-using Xunit;
-using FluentAssertions;
-using Newtonsoft.Json;
-
-using d360.core.entities.Workflow;
+﻿using d360.core.entities.Workflow;
+using d360.core.resources;
 using d360.web.Controllers.V2;
-using d360.web.Utilities;
 using d360.web.Services;
+using d360.web.Utilities;
+using FluentAssertions;
 using igx.UnitTests.Core;
-
-using Resources;
+using Moq;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-    [Trait("Unit tests", "Workflow controller")]
+	[Trait("Unit tests", "Workflow controller")]
     public class WorkflowControllerTest : BaseTest
     {
 		private readonly WorkflowController WorkflowController;
@@ -83,7 +80,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Assert
 			actionResult.Invoking(x => x.Should()
 										.ThrowAsync<NotFoundBusinessLayerException>()
-										.WithMessage(string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, workflowVersionUid.ToString())));
+										.WithMessage(string.Format(Error.WorkflowVersionUIDNotFound, workflowVersionUid.ToString())));
 		}
 
 		[Fact]

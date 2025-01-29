@@ -279,5 +279,7 @@ namespace d360.model
 		#endregion
 
 		void LogExecutionErrorToAppInsights(ApiExecution execution, Exception ex);
+
+		void CreateAssetReindexRequest(List<Guid> assets, ReindexBatchOperation operation);
 	}
 }

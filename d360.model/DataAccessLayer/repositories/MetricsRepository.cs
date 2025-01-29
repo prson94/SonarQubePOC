@@ -294,18 +294,18 @@ namespace d360.model.DataAccessLayer
 			bool changeWillEffectScore = false;
 
 			var operatorInfos = Operator.After.GetAsList();
-			var errorTitle = MetricsErrors.ErrorUpdatingMeasure;
+			var errorTitle = Error.ErrorUpdatingMeasure;
 			
 			if (model == null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.MetricNotNull);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.MetricNotNull);
 			}
 
 			isNew = model.Uid == null || model.Uid == Guid.Empty;
 
 			if (isNew)
 			{
-				errorTitle = MetricsErrors.ErrorCreatingMeasure;
+				errorTitle = Error.ErrorCreatingMeasure;
 			}
 
 			if (model.Uid != null && model.Uid != Guid.Empty)
@@ -314,7 +314,7 @@ namespace d360.model.DataAccessLayer
 				metricAsset = CompanyContext.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
 				if (metricAsset == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, string.Format(MetricsErrors.MetricUidNotExists, model.Uid.ToString()));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, string.Format(Error.MetricUidNotExists, model.Uid.ToString()));
 				}
 				Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
 				targetAssetType = CompanyContext.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
@@ -332,7 +332,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.AllocationUidInvalid);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.AllocationUidInvalid);
 				}
 			}
 
@@ -354,7 +354,7 @@ namespace d360.model.DataAccessLayer
 				}
 				if (definitionJsonToCheck.Length > 4000)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DefinitionNotExceed4000);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.DefinitionNotExceed4000);
 				}
 				definitionJsonToCheck = null;
 			}
@@ -369,11 +369,11 @@ namespace d360.model.DataAccessLayer
 				{
 					if (model.Definition.DataQuality != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DataQualityMustNotExternalCalc);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.DataQualityMustNotExternalCalc);
 					}
 					else if (model.Definition.Governance != null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.GovernanceMustNotExternalCalc);
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.GovernanceMustNotExternalCalc);
 					}
 				}
 			}
@@ -381,11 +381,11 @@ namespace d360.model.DataAccessLayer
 			{
 				if (model.Weight <= 0 || model.Weight > 1)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.WeightRangeCheck);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.WeightRangeCheck);
 				}
 				else if (decimal.Round(model.Weight, 2) != model.Weight)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.WeightDecimalCheck);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.WeightDecimalCheck);
 				}
 			}
 
@@ -475,15 +475,15 @@ namespace d360.model.DataAccessLayer
 				{
 					if (op.MinimumValueCount == 0 && op.MaximumValueCount == 0)
 					{
-						error = string.Format(MetricsErrors.OperatorNotAcceptAnyValue, checkType, valueCount.ToString());
+						error = string.Format(Error.OperatorNotAcceptAnyValue, checkType, valueCount.ToString());
 					}
 					else if (op.MinimumValueCount == op.MaximumValueCount)
 					{
-						error = string.Format(MetricsErrors.OperatorAcceptExactValue, checkType, valueCount.ToString(), op.MaximumValueCount.ToString());
+						error = string.Format(Error.OperatorAcceptExactValue, checkType, valueCount.ToString(), op.MaximumValueCount.ToString());
 					}
 					else
 					{
-						error = string.Format(MetricsErrors.OperatorAcceptRangeValue, checkType, valueCount.ToString(), op.MinimumValueCount.ToString(), op.MaximumValueCount.ToString());
+						error = string.Format(Error.OperatorAcceptRangeValue, checkType, valueCount.ToString(), op.MinimumValueCount.ToString(), op.MaximumValueCount.ToString());
 					}
 				}
 				return error;
@@ -496,13 +496,13 @@ namespace d360.model.DataAccessLayer
 				
 				if (checkOperatorInfo == null)
 				{
-					status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.GovernanceNotSupportOperator, check.GetDisplayName()));
+					status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.GovernanceNotSupportOperator, check.GetDisplayName()));
 				}
 				else
 				{
 					if (!checkOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == check))
 					{
-						status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.GovernanceNotSupportOperator, check.GetDisplayName()));
+						status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.GovernanceNotSupportOperator, check.GetDisplayName()));
 					}
 				}
 
@@ -514,7 +514,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (model.Definition == null)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.DefinitionObjectPropertyNotEmpty);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.DefinitionObjectPropertyNotEmpty);
 				}
 
 				switch (model.Allocation.ScoreType)
@@ -526,23 +526,23 @@ namespace d360.model.DataAccessLayer
 						
 						if (dq == null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ProvideDataQualityUnderDefinition);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ProvideDataQualityUnderDefinition);
 						}
 						
 						if (model.Definition.Governance != null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.NotProvideGovernanceUnderDefinition);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.NotProvideGovernanceUnderDefinition);
 						}
 						
 						if (model.Definition.DataQuality.ResultPathUid == Guid.Empty)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ResultPathUidNotEmpty);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ResultPathUidNotEmpty);
 						}
 						else
 						{
 							if (!CompanyContext.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID and [State] = 1", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ResultPathUidNotValid, model.Definition.DataQuality.ResultPathUid.ToString()));
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.ResultPathUidNotValid, model.Definition.DataQuality.ResultPathUid.ToString()));
 							}
 						}
 						
@@ -550,7 +550,7 @@ namespace d360.model.DataAccessLayer
 						{
 							if (model.Threshold <= 0 || model.Threshold > 1)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ThresholdRangeCheck);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ThresholdRangeCheck);
 							}
 						}
 
@@ -560,12 +560,12 @@ namespace d360.model.DataAccessLayer
 							{
 								if (dq.Filters.Any(f => f.AssetTypeUid == Guid.Empty))
 								{
-									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ValidAssetTypeUidWhenRuleResultFilterUse);
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ValidAssetTypeUidWhenRuleResultFilterUse);
 								}
 
 								if (dq.Filters.Any(f => string.IsNullOrEmpty(f.FieldTypeName)))
 								{
-									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ValidApiFieldNameWhenRuleResultFilterUse);
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ValidApiFieldNameWhenRuleResultFilterUse);
 								}
 
 								var query = @"
@@ -594,16 +594,16 @@ namespace d360.model.DataAccessLayer
 										if (dqFilterOperatorInfo == null)
 										{
 											isSuccess = false;
-											dqFilterErrorMessage += MetricsErrors.DataQualityInvalidOperator;
+											dqFilterErrorMessage += Error.DataQualityInvalidOperator;
 										}
 										else
 										{
 											if (!dqFilterOperatorInfo.AllowedDataTypes.Any(dt => dt.Name == dqFilterFieldType.Type))
 											{
 												isSuccess = false;
-												dqFilterErrorMessage += string.Format(MetricsErrors.DataQualityInvalidOperatorForDataType, dqFilterOperatorInfo.Name, dqFilterFieldType.Type);
+												dqFilterErrorMessage += string.Format(Error.DataQualityInvalidOperatorForDataType, dqFilterOperatorInfo.Name, dqFilterFieldType.Type);
 											}
-											var dqValueCountErrorMessage = checkValidValuesCount(f.Values, dqFilterOperatorInfo, MetricsErrors.DataQualityResultFilter);
+											var dqValueCountErrorMessage = checkValidValuesCount(f.Values, dqFilterOperatorInfo, Error.DataQualityResultFilter);
 											
 											if (!string.IsNullOrEmpty(dqValueCountErrorMessage))
 											{
@@ -617,13 +617,13 @@ namespace d360.model.DataAccessLayer
 										if (!dqValuesValidForType)
 										{
 											isSuccess = false;
-											dqFilterErrorMessage += string.Format(MetricsErrors.OneMoreValueDataQualityNotSupportDataType, dqFilterFieldType.Type);
+											dqFilterErrorMessage += string.Format(Error.OneMoreValueDataQualityNotSupportDataType, dqFilterFieldType.Type);
 										}
 									}
 									else
 									{
 										isSuccess = false;
-										dqFilterErrorMessage += MetricsErrors.ReferInvalidFieldDataQualityFilters;
+										dqFilterErrorMessage += Error.ReferInvalidFieldDataQualityFilters;
 									}
 
 
@@ -645,12 +645,12 @@ namespace d360.model.DataAccessLayer
 						
 						if (gov == null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ProvideGovernanceUnderDefinition);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ProvideGovernanceUnderDefinition);
 						}
 						
 						if (model.Definition.DataQuality != null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.NotProvideDataQualityUnderDefinition);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.NotProvideDataQualityUnderDefinition);
 						}
 						
 						var checkObjectCorrespondsToCheckErrorMessage = gov.ValidateCheckObjectCorrespondsToCheck();
@@ -664,7 +664,7 @@ namespace d360.model.DataAccessLayer
 						{
 							if (!string.IsNullOrEmpty(gov.External.Instructions) && gov.External.Instructions.Length > 500)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, isNew ? MetricsErrors.Erroraddingmetric : MetricsErrors.Errorupdatingmetric, MetricsErrors.InstrunctionExternalCheckMax500Char);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, isNew ? Error.Erroraddingmetric : Error.Errorupdatingmetric, Error.InstrunctionExternalCheckMax500Char);
 							}
 						}
 						else if (gov.Field != null)
@@ -673,7 +673,7 @@ namespace d360.model.DataAccessLayer
 							
 							if (governanceCheckFieldType == null)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.InvalidFieldTypeGovernanceFieldCheck, gov.Field.FieldTypeName));
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.InvalidFieldTypeGovernanceFieldCheck, gov.Field.FieldTypeName));
 							}
 
 							var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Field.Operator, gov.Check);
@@ -687,10 +687,10 @@ namespace d360.model.DataAccessLayer
 							
 							if (!operatorInfo.AllowedDataTypes.Any(t => t.Name == governanceCheckFieldType.Type))
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.InvalidOperatorGovernanceFieldCheck, model.Definition.Governance.Field.FieldTypeName));
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.InvalidOperatorGovernanceFieldCheck, model.Definition.Governance.Field.FieldTypeName));
 							}
 
-							var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, operatorInfo, MetricsErrors.GovernanceFieldCheck);
+							var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, operatorInfo, Error.GovernanceFieldCheck);
 							
 							if (!string.IsNullOrEmpty(governanceFieldCheckValueCountErrorMessage))
 							{
@@ -701,7 +701,7 @@ namespace d360.model.DataAccessLayer
 							
 							if (!governanceFieldCheckValuesValidForType)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.OneMoreValueGovernanceNotSupportDataType, governanceCheckFieldType.Type));
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.OneMoreValueGovernanceNotSupportDataType, governanceCheckFieldType.Type));
 							}
 						}
 						else if (gov.Owner != null)
@@ -716,7 +716,7 @@ namespace d360.model.DataAccessLayer
 																			).Any();
 							if (!governanceCheckResponsibilityTypeExists)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernanceOwnerCheck);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.UidGovernanceOwnerCheck);
 							}
 
 							var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Owner.Operator, gov.Check);
@@ -737,7 +737,7 @@ namespace d360.model.DataAccessLayer
 																	).Any();
 							if (!governanceCheckPredicateExists)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernancePredicateCheck);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.UidGovernancePredicateCheck);
 							}
 
 							var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Predicate.Operator, gov.Check);
@@ -757,7 +757,7 @@ namespace d360.model.DataAccessLayer
 																		).Any();
 							if (!governanceCheckIntersectTypeExists)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.UidGovernanceRelationCheck);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.UidGovernanceRelationCheck);
 							}
 
 							var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Relation.Operator, gov.Check);
@@ -768,7 +768,7 @@ namespace d360.model.DataAccessLayer
 							}
 							
 							var operatorInfo = gov.Relation.Operator.GetAsInfo();
-							var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, operatorInfo, MetricsErrors.GovernanceRelationCheck);
+							var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, operatorInfo, Error.GovernanceRelationCheck);
 							
 							if (!string.IsNullOrEmpty(relationCheckValueCountErrorMessage))
 							{
@@ -790,14 +790,14 @@ namespace d360.model.DataAccessLayer
 
 							if (!governanceRelationCheckValuesValidForType)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.OneMoreValueGovernanceRelationNotSupport);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.OneMoreValueGovernanceRelationNotSupport);
 							}
 						}
 
 						#endregion
 						break;
 					default:
-						throw new ArgumentException(string.Format(MetricsErrors.AllocationScoreTypeNotRecognised, model.Allocation.ScoreType));
+						throw new ArgumentException(string.Format(Error.AllocationScoreTypeNotRecognised, model.Allocation.ScoreType));
 				}
 			}
 
@@ -817,11 +817,11 @@ namespace d360.model.DataAccessLayer
 							case ScoreType.DataQuality:
 								if (group.Threshold <= 0 || group.Threshold > 1)
 								{
-									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionGroupThresholdValue, group.Position.ToString()));
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.ConditionGroupThresholdValue, group.Position.ToString()));
 								}
 								break;
 							default:
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ScoreDefinitionNotThresholdBased, group.Position.ToString()));
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.ScoreDefinitionNotThresholdBased, group.Position.ToString()));
 						}
 					}
 
@@ -845,12 +845,12 @@ namespace d360.model.DataAccessLayer
 
 						if (fieldType == null)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.FieldTypeNotFound);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.FieldTypeNotFound);
 						}
 						
 						if (targetAssetType.ID != fieldType.AssetTypeID)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.InvalidFieldTypeAsset);
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.InvalidFieldTypeAsset);
 						}
 
 						condition.ConditionFieldTypeID = fieldType.ID;
@@ -859,17 +859,17 @@ namespace d360.model.DataAccessLayer
 						
 						if (!operatorInfo.AllowedDataTypes.Any(dt => dt.Name == fieldType.Type))
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ConditionOperatorNotValid, operatorInfo.Name, fieldType.Type));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.ConditionOperatorNotValid, operatorInfo.Name, fieldType.Type));
 						}
 
 						var conditionValuesValidForType = checkValidValuesByDataType(condition.Values, fieldType.Type, fieldType.LookupObjectType, fieldType.LookupObjectID);
 						
 						if (!conditionValuesValidForType)
 						{
-							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ValueNotSupportByDataType, fieldType.Type));
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(Error.ValueNotSupportByDataType, fieldType.Type));
 						}
 
-						var conditionValueCountErrorMessage = checkValidValuesCount(condition.Values, operatorInfo, MetricsErrors.ConditionValue);
+						var conditionValueCountErrorMessage = checkValidValuesCount(condition.Values, operatorInfo, Error.ConditionValue);
 						
 						if (!string.IsNullOrEmpty(conditionValueCountErrorMessage))
 						{
@@ -881,7 +881,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(model.Name) && model.Name.Length > 250)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, isNew ? MetricsErrors.Erroraddingmetric : MetricsErrors.Errorupdatingmetric, MetricsErrors.NameMax250Char);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, isNew ? Error.Erroraddingmetric : Error.Errorupdatingmetric, Error.NameMax250Char);
 			}
 
 			int metricExistsCount = 0;
@@ -894,8 +894,8 @@ namespace d360.model.DataAccessLayer
 			{
 				return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle,
 					(model.ParentUid.HasValue && model.ParentUid != Guid.Empty) ?
-					MetricsErrors.DuplicateMetricSameGroup :
-					string.Format(MetricsErrors.MeasureNameAlreadyExists, model.Name));
+					Error.DuplicateMetricSameGroup :
+					string.Format(Error.MeasureNameAlreadyExists, model.Name));
 			}
 
 			if (CompanyContext.Connection.State != ConnectionState.Open)
@@ -933,7 +933,7 @@ namespace d360.model.DataAccessLayer
 
 							if (!parentExists)
 							{
-								throw new WorkStatusException(HttpStatusCode.NotFound, MetricsErrors.ParentMetricNotFound);
+								throw new WorkStatusException(HttpStatusCode.NotFound, Error.ParentMetricNotFound);
 							}
 
 							metricAsset.ParentUid = model.ParentUid;
@@ -960,13 +960,13 @@ namespace d360.model.DataAccessLayer
 						// If results, then you cannot change. 
 						if (existingAllVersionsResultCount > 0 && model.IsGroup && !metricAsset.IsGroup)
 						{
-							throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsErrors.ErrorConvertMetricToGroup);
+							throw new WorkStatusException(HttpStatusCode.BadRequest, Error.ErrorConvertMetricToGroup);
 						}
 
 						// If has child metrics, you cannot change.
 						if (childMetricCount > 0 && !model.IsGroup)
 						{
-							throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsErrors.ErrorConvertGroupToMetricChildExists);
+							throw new WorkStatusException(HttpStatusCode.BadRequest, Error.ErrorConvertGroupToMetricChildExists);
 						}
 
 						// If made it past above, then we can save the grouping change.
@@ -991,7 +991,7 @@ namespace d360.model.DataAccessLayer
 					{
 						if (maxEffectiveDate.Value > effectiveDate.Date)
 						{
-							throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsErrors.MetricBackDateEntryNotAllowed, maxEffectiveDate.Value.ToShortDateString()));
+							throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(Error.MetricBackDateEntryNotAllowed, maxEffectiveDate.Value.ToShortDateString()));
 						}
 					}
 
@@ -1146,22 +1146,22 @@ namespace d360.model.DataAccessLayer
 						{
 							if (metricAssetVersion.Weight != model.Weight)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorWeightalter);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ErrorWeightalter);
 							}
 
 							if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorConditionTypeAlter);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ErrorConditionTypeAlter);
 							}
 
 							if (existingDefinitionHash != newDefinitionHash)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorDefinitionAlter);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ErrorDefinitionAlter);
 							}
 
 							if (newConditionHash != existingConditionHash)
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.ErrorConditionAlter);
+								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.ErrorConditionAlter);
 							}
 						}
 
@@ -1588,7 +1588,7 @@ namespace d360.model.DataAccessLayer
 					catch
 					{
 					}
-					return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, AssetTypeErrors.UnhandledError);
+					return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, Error.UnhandledError);
 				}
 			}
 
@@ -2671,29 +2671,29 @@ namespace d360.model.DataAccessLayer
 
 			if (measure == null)
 			{
-				throw new GenericException(HttpStatusCode.NotFound, string.Format(MetricsErrors.MeasureUidNotFound, measureUid.ToString()));
+				throw new GenericException(HttpStatusCode.NotFound, string.Format(Error.MeasureUidNotFound, measureUid.ToString()));
 			}
 
 			if (measure.AllocationUid != allocationUid)
 			{
-				throw new GenericException(HttpStatusCode.NotFound, string.Format(MetricsErrors.MeasureNotAllocationUid, allocationUid.ToString()));
+				throw new GenericException(HttpStatusCode.NotFound, string.Format(Error.MeasureNotAllocationUid, allocationUid.ToString()));
 			}
 
 			if (measure.Allocation == null)
 			{
-				throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureInvalidAllocation);
+				throw new GenericException(HttpStatusCode.Conflict, Error.MeasureInvalidAllocation);
 			}
 
 			if (measure.Versions == null)
 			{
-				throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureWithNoVersion);
+				throw new GenericException(HttpStatusCode.Conflict, Error.MeasureWithNoVersion);
 			}
 
 			var latestVersion = measure.Versions.OrderByDescending(v => v.EffectiveDate).FirstOrDefault();
 
 			if (latestVersion == null)
 			{
-				throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureWithNoVersion);
+				throw new GenericException(HttpStatusCode.Conflict, Error.MeasureWithNoVersion);
 			}
 
 			CompanyContext.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);

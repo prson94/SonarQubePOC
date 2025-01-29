@@ -404,7 +404,16 @@ namespace d360.core
         }
     }
 
-    public class SortOrderAttribute : Attribute
+	public class SqlDataTypeAttribute : Attribute
+	{
+		public string Datatype { get; private set; }
+		public SqlDataTypeAttribute(string datatype = "nvarchar(max)")
+		{
+			Datatype = datatype;
+		}
+	}
+
+	public class SortOrderAttribute : Attribute
     {
         public int Order { get; private set; }
         public SortOrderAttribute(int order)

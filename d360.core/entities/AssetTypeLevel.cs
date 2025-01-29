@@ -11,7 +11,7 @@ namespace d360.core.entities
             DataMember, 
             Key, 
             Column(Order = 1), 
-            Display(ResourceType = typeof(resources.Fields), 
+            Display(ResourceType = typeof(resources.Label), 
                 Name = "AssetType_Name", 
                 Description = "AssetType_Description")
         ]
@@ -21,7 +21,7 @@ namespace d360.core.entities
             DataMember, 
             Key, 
             Column(Order = 2), 
-            Display(ResourceType = typeof(resources.Fields), 
+            Display(ResourceType = typeof(resources.Label), 
                 Name = "Level_Name", 
                 Description = "Level_Description")
         ]
@@ -29,11 +29,11 @@ namespace d360.core.entities
 
         [        
             DataMember, 
-            Display(ResourceType = typeof(resources.Fields), 
+            Display(ResourceType = typeof(resources.Label), 
                 Name = "Name_Name", 
                 Description = "Name_Description"),
             Required(AllowEmptyStrings = false, 
-                ErrorMessageResourceType = typeof(resources.Fields), 
+                ErrorMessageResourceType = typeof(resources.Label), 
                 ErrorMessageResourceName = "Name_ErrorRequired"), 
             StringLength(250)
         ]
@@ -41,7 +41,7 @@ namespace d360.core.entities
 
         [
             DataMember, 
-            Display(ResourceType = typeof(resources.Fields), 
+            Display(ResourceType = typeof(resources.Label), 
             Name = "Description_Name", 
             Description = "Description_Description")
         ]
@@ -52,7 +52,7 @@ namespace d360.core.entities
         [
             IgnoreDataMember, 
             ForeignKey("AssetTypeID"), 
-            Display(ResourceType = typeof(resources.Fields), 
+            Display(ResourceType = typeof(resources.Label), 
             Name = "AssetType_Name", 
             Description = "AssetType_Description")
         ]

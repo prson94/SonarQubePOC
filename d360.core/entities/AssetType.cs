@@ -103,20 +103,20 @@ namespace d360.core.entities
 			{
 				case "ArtifactType":
 					prefix = (Class == AssetTypeClass.TechnicalAsset) ? 
-						CommonNames.AssetTypeClass_Technical : 
-						CommonNames.AssetTypeClass_Business;
+						Label.AssetTypeClass_Technical : 
+						Label.AssetTypeClass_Business;
 					break;
 				case "PolicyType":
-					prefix = CommonNames.AssetTypeClass_Policy;
+					prefix = Label.AssetTypeClass_Policy;
 					break;
 				case "ReferenceItemType":
 					prefix = "Reference";
 					break;
 				case "RuleType":
-					prefix = CommonNames.AssetTypeClass_Rule;
+					prefix = Label.AssetTypeClass_Rule;
 					break;
 				case "TaxonomyType":
-					prefix = CommonNames.AssetTypeClass_Model;
+					prefix = Label.AssetTypeClass_Model;
 					break;
 				case "GroupType":
 					prefix = "Group";

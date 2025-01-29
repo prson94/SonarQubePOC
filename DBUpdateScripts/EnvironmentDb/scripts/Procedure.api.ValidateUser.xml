@@ -1,0 +1,149 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.api.ValidateUser-v1.2">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.ValidateUser
+	@lookupFieldsPassedByValue bit = 0
+as
+begin
+	set nocount on;
+	declare @UserAssetTypeID int = (select id from assettype where class = 11);
+	update  U
+	set     U.Success = 0,
+			U.Message = coalesce(U.Message,'') + 'Resource for this uid not found. '
+	from    #TempUser U
+	where   U.Success is null and U.IsNew = 0 and U.ResourceID is null ;
+
+	update  U
+	set     U.Success = 0,
+		U.Message = coalesce(U.Message,'') + 'One or more field values supplied is missing a field type. '
+	from  #TempUser U
+		cross apply (
+			select  count(*) as MissingCount 
+			from    #TempUserField F 
+			where   F.ItemNumber = U.ItemNumber 
+					and F.FieldTypeID is null
+		) C
+	where U.Success is null and C.MissingCount > 0;
+
+	update  U
+	set U.Success = 0,
+		U.Message = coalesce(U.Message,'') + coalesce(C.MissingField,'') + ' is a required field.'
+	from #TempUser U
+	cross apply (
+			select  count(*) as MissingCount,
+					STRING_AGG(F.Name, ',') MissingField
+			from    FieldType F
+			where   Assettypeid = @UserAssetTypeID and F.IsRequired = 1
+					and not exists (
+						select  1 
+						from    #TempUserField R 
+						where   R.ItemNumber = U.ItemNumber 
+								and R.FieldTypeID = F.ID
+					)
+		) C
+	where U.Success is null and C.MissingCount > 0;
+	
+	if (@lookupFieldsPassedByValue = 1)
+		begin
+			update	T
+			set		T.LookupValue = T.[FieldValue]
+			from	#TempUserField T
+			inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup' 
+			Where exists(select 1 from #TempUser U where U.ItemNumber = T.ItemNumber and U.Success is null)
+		end
+	else
+		begin
+			drop table if exists #RelevantLookupValues;
+			create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+
+			drop table if exists #temp_field_type_ids
+			select distinct F.Id 
+			into #temp_field_type_ids
+			from #TempUserField T
+			inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' 
+			where exists(select 1 from #TempUser U 
+						where U.ItemNumber = T.ItemNumber 
+						and U.Success is null)
+
+
+			declare @fieldTypeId int = (select top 1 Id from #temp_field_type_ids)
+
+			while @fieldTypeId is not null
+			begin
+				insert into #RelevantLookupValues WITH(TABLOCK)
+				select FieldTypeId,[Text],[Value] from FieldLookupValue FLV where FLV.FieldTypeID = @fieldTypeId
+
+				delete top (1) from #temp_field_type_ids
+				set @fieldTypeId = (select top 1 Id from #temp_field_type_ids)
+			end
+
+			declare @maxlen int;
+			select @maxlen = max(len(text)) from #RelevantLookupValues
+
+			if (@maxlen <= 400)
+			begin
+				alter table #RelevantLookupValues alter column text nvarchar(440);
+				CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC,[Text] )
+			end
+			else
+			begin
+				CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC )
+			end
+
+
+			drop table if exists #LookupValues
+			create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
+
+			;with cte_fieldvalues_multi as (select distinct T.fieldvalue, F.Id, FLV.Value
+				from #TempUserField  T
+				cross apply string_split(T.FieldValue, ',') MV
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 1 
+				left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(MV.value) = FLV.Text
+				where exists(select 1 from #TempUser U 
+				where U.ItemNumber = T.ItemNumber 
+				and U.Success is null)
+			)
+			insert into #LookupValues WITH(TABLOCK)
+			select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
+			group by fieldvalue, Id
+
+			;insert into #LookupValues WITH(TABLOCK)
+			select distinct T.fieldvalue, F.Id, FLV.Value
+				from #TempUserField  T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0
+				left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
+				where T.FieldValue is not null 
+				and exists(select 1 from #TempUser U 
+				where U.ItemNumber = T.ItemNumber 
+				and U.Success is null);
+
+			update	T
+			set		T.[Value] = '0'
+			from	#LookupValues T
+					inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
+
+			update	T
+			set		T.LookupValue = LV.Value
+			from	#TempUserField T
+			inner join #LookupValues LV on LV.FieldValue = T.FieldValue and T.FieldTypeID = LV.FieldTypeID;
+		end
+		
+		update  U
+		set     U.Success = 0,
+		U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
+		from    #TempUser U
+		inner join #TempUserField F on F.ItemNumber = U.ItemNumber
+		inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+		where F.LookupValue is null and F.FieldValue is not null and U.Success is null
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

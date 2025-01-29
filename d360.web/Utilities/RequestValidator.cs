@@ -1,14 +1,12 @@
-﻿using System;
+﻿using d360.core.resources;
+using d360.core.types;
+using System;
 using System.Linq;
 using System.Net.Http;
 
-using d360.core.types;
-
-using Resources;
-
 namespace d360.web.Utilities
 {
-    public class RequestValidator : IRequestValidator
+	public class RequestValidator : IRequestValidator
     {
         private ITypeServiceProvider TypeServiceProvider { get; }
         private const int DefaultPageSize = 200;
@@ -53,7 +51,7 @@ namespace d360.web.Utilities
                 }
                 else
                 {
-                    throw new ArgumentException(ApiMessages.NumberValueMessage, nameof(pageSize));
+                    throw new ArgumentException(Error.NumberValueMessage, nameof(pageSize));
                 }
             }
 
@@ -68,12 +66,12 @@ namespace d360.web.Utilities
             {
                 if (pageSize > pageSizeLimit)
                 {
-                    throw new ArgumentException(ApiMessages.InvalidNumberTooLarge, nameof(pageSize));
+                    throw new ArgumentException(Error.InvalidNumberTooLarge, nameof(pageSize));
                 }
 
                 if (pageSize <= 0)
                 {
-                    throw new ArgumentException(ApiMessages.MinLengthCheckGTZero, nameof(pageSize));
+                    throw new ArgumentException(Error.MinLengthCheckGTZero, nameof(pageSize));
                 }
 
                 result = pageSize.Value;
@@ -104,7 +102,7 @@ namespace d360.web.Utilities
                 }
                 else
                 {
-                    throw new ArgumentException(ApiMessages.NumberValueMessage, nameof(pageNumber));
+                    throw new ArgumentException(Error.NumberValueMessage, nameof(pageNumber));
                 }
             }
 
@@ -119,12 +117,12 @@ namespace d360.web.Utilities
             {
                 if (pageNumber > pageIndexLimit)
                 {
-                    throw new ArgumentException(ApiMessages.InvalidNumberTooLarge, nameof(pageNumber));
+                    throw new ArgumentException(Error.InvalidNumberTooLarge, nameof(pageNumber));
                 }
 
                 if (pageNumber <= 0)
                 {
-                    throw new ArgumentException(ApiMessages.MinLengthCheckGTZero, nameof(pageNumber));
+                    throw new ArgumentException(Error.MinLengthCheckGTZero, nameof(pageNumber));
                 }
 
                 result = pageNumber.Value;

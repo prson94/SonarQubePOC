@@ -108,7 +108,7 @@ namespace d360.model.DataAccessLayer
 				{
 					return new APIExecutionAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidDirection,
+						Message = Error.InvalidDirection,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -132,7 +132,7 @@ namespace d360.model.DataAccessLayer
 				{
 					return new APIExecutionAPIModelResult
 					{
-						Message = AssetTypeErrors.InvalidOrderPassed,
+						Message = Error.InvalidOrderPassed,
 						StatusCode = HttpStatusCode.BadRequest
 					};
 				}
@@ -275,7 +275,7 @@ namespace d360.model.DataAccessLayer
 			if (dbExecutionItem == null)
 			{
 				response.Code = HttpStatusCode.NotFound;
-				response.Message = AssetTypeErrors.ExecutionUIDNotFound;
+				response.Message = Error.ExecutionUIDNotFound;
 				response.Payload = null;
 				return response;
 			}

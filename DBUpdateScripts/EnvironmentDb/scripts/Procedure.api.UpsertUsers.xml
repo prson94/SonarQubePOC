@@ -5,35 +5,40 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertUsers-v1.7">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-create or alter procedure api.UpsertUsers
+create or alter procedure [api].[UpsertUsers]
 	@executionId int,
-	@lookupFieldsPassedByValue bit = 0
+	@lookupFieldsPassedByValue bit = 0,
+	@syncwithcommunity bit = 0
 as
 begin
 	set nocount on;
-	declare @userId int,
-			@date datetime,
+	declare @errormessage nvarchar(4000)='';
+	declare @userId int = 0,
+			@date datetime = getutcdate(),
 			@object varchar(50) = 'Resource',
 			@assetTypeId int,
 			@transactionCompleted bit = 0;
 	
 	select @assetTypeId = ID from AssetType where Object = 'ResourceType';
 	
-	select	@userId = ResourceID,
-			@date = StartedOn
-	from	api.Execution 
-	where	ID = @executionId;
-
+	if (@syncwithcommunity = 0)
+	begin
+		select	@userId = ResourceID,
+				@date = StartedOn
+		from	api.Execution 
+		where	ID = @executionId;
+	end
+	
 	drop table if exists #Items;
 	create table #Items (
 		ItemNumber int, 
 		[Uid] uniqueidentifier, 
 		IsValid bit, IsSuccess bit, 
 		ObjectID int, AssetID bigint, 
-		Username nvarchar(500), Email nvarchar(500), FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit, 
+		Username nvarchar(500), Email nvarchar(500), FirstName nvarchar(250), LastName nvarchar(250), [State] int, IsAdministrator bit, LastLoggedInOn datetime, UpdatedOn datetime,
 		[Message] nvarchar(max)
 	);
 	
@@ -42,53 +47,96 @@ begin
 	drop table if exists #Fields;
 	create table #Fields (ItemNumber int, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max));	
 
-	-- Get data from JSON columns in api.ExecutionItem
-	insert into #Items (ItemNumber, Uid, ObjectID, Username, Email, FirstName, LastName, State, IsAdministrator)
-		select	ItemNumber,
-				JSON_VALUE(Properties, '$.Uid'),
-				cast(JSON_VALUE(Properties, '$.ObjectID') as int),
-				JSON_VALUE(Properties, '$.Username'),
-				JSON_VALUE(Properties, '$.Email'),
-				JSON_VALUE(Properties, '$.FirstName'),
-				JSON_VALUE(Properties, '$.LastName'),
-				cast(coalesce(JSON_VALUE(Properties, '$.State'), 1) as int),
-				cast(coalesce(JSON_VALUE(Properties, '$.IsAdministrator'), 'false') as bit)
-		from	api.ExecutionItem
-		where	ExecutionId = @executionId;
+	if (@syncwithcommunity = 0)	
+		begin
+			-- Get data from JSON columns in api.ExecutionItem
+			insert into #Items (ItemNumber, Uid, ObjectID, Username, Email, FirstName, LastName, State, IsAdministrator, LastLoggedInOn, UpdatedOn)
+				select	ItemNumber,
+						JSON_VALUE(Properties, '$.Uid'),
+						cast(JSON_VALUE(Properties, '$.ObjectID') as int),
+						JSON_VALUE(Properties, '$.Username'),
+						JSON_VALUE(Properties, '$.Email'),
+						JSON_VALUE(Properties, '$.FirstName'),
+						JSON_VALUE(Properties, '$.LastName'),
+						cast(coalesce(JSON_VALUE(Properties, '$.State'), 1) as int),
+						cast(coalesce(JSON_VALUE(Properties, '$.IsAdministrator'), 'false') as bit),
+						cast(coalesce(JSON_VALUE(Properties, '$.LastLoggedInOn'), '1/1/1900') as datetime),
+						cast(coalesce(JSON_VALUE(Properties, '$.UpdatedOn'), '1/1/1900') as datetime)
+				from	api.ExecutionItem
+				where	ExecutionId = @executionId
+				and coalesce(Success,1) = 1;
 
-	insert into #Fields (ItemNumber, FieldName, FieldTypeID, FieldValue, LookupValue)
-		select	i.ItemNumber,
-				f.FieldName,
-				f.FieldTypeID,
-				f.FieldValue,
-				f.LookupValue
-		from	api.ExecutionItem i
-				cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)) f
-		where	ExecutionId = @executionId;
+				insert into #Fields (ItemNumber, FieldName, FieldTypeID, FieldValue, LookupValue)
+				select	i.ItemNumber,
+						f.FieldName,
+						f.FieldTypeID,
+						f.FieldValue,
+						f.LookupValue
+				from	api.ExecutionItem i
+						cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max)) f
+				where	ExecutionId = @executionId and coalesce(Success,1) = 1;
+
+		end
+	else
+		begin
+			insert into #Items (ItemNumber, Uid, ObjectID, Username, Email, FirstName, LastName, State, IsAdministrator, LastLoggedInOn, UpdatedOn)
+				select	ItemNumber,
+						JSON_VALUE(Properties, '$.Uid'),
+						cast(JSON_VALUE(Properties, '$.ObjectID') as int),
+						JSON_VALUE(Properties, '$.Username'),
+						JSON_VALUE(Properties, '$.Email'),
+						JSON_VALUE(Properties, '$.FirstName'),
+						JSON_VALUE(Properties, '$.LastName'),
+						cast(coalesce(JSON_VALUE(Properties, '$.State'), 1) as int),
+						cast(coalesce(JSON_VALUE(Properties, '$.IsAdministrator'), 'false') as bit),
+						cast(coalesce(JSON_VALUE(Properties, '$.LastLoggedInOn'), '1/1/1900') as datetime),
+						cast(coalesce(JSON_VALUE(Properties, '$.UpdatedOn'), '1/1/1900') as datetime)
+				from	#TempExecItemsUsers
+				where coalesce(Success,1) = 1;
+
+				drop table if exists #itemsnotchange;
+
+				select distinct S.ItemNumber
+				into #itemsnotchange
+				from #Items S
+				inner join reporting.Global_Resource as T on T.ResourceID = S.ObjectID
+				where ((coalesce(T.UpdatedOn, '1/1/1900') >= S.UpdatedOn) and (coalesce(T.LastLoggedInOn, '1/1/1900') >= S.LastLoggedInOn));		
+
+				create clustered index cx_itemsnotchange on #itemsnotchange(ItemNumber);
+				
+				delete S
+				from #Items S
+				inner join #itemsnotchange sc on sc.ItemNumber = S.ItemNumber;
+				
+				delete E 
+				from #TempExecItemsUsers E
+				inner join #itemsnotchange sc on sc.ItemNumber = E.ItemNumber;
+
+		end
+
+		
 		
 	--Validate Request
 	drop table if exists #tempdupusername;
 	
-	select Username
-	into #tempdupusername
-	from #Items
-	where IsValid is null
+	select	Username
+	into	#tempdupusername
+	from	#Items
+	where	IsValid is null
 	group by Username
 	having count(1)>1;
 	
-	update t
-	set [Message] = 'Username must be unique within the request.',
-	IsValid = 0
-	from #Items t
-	inner join #tempdupusername tu on t.Username = tu.Username
-	where IsValid is null;
-	
+	update	t
+	set		[Message] = 'Username must be unique within the request.',
+			IsValid = 0
+	from	#Items t
+			inner join #tempdupusername tu on t.Username = tu.Username
+	where	IsValid is null;
 	
 	--Remove record from Field table because record already mark as invalid and execution record mark sucess = 0
-	
-	delete f
-	from #Fields f
-	inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
+	delete	f
+	from	#Fields f
+			inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
 
 	-- Start load sucessfull record.
 	begin try
@@ -110,6 +158,18 @@ begin
 		insert	(ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, State, Uid, UpdatedOn, MostRecentExecutionId)
 		values	(S.ObjectID, S.FirstName, S.LastName, S.Email, S.IsAdministrator, @date, S.State, S.Uid, @date, @executionId);
 
+
+		if (@syncwithcommunity = 1)
+		begin
+		
+			update T
+			Set T.UpdatedOn = coalesce(S.UpdatedOn,T.UpdatedOn,@date),
+				T.CreatedOn = coalesce(T.CreatedOn,@date),
+				T.LastLoggedInOn = coalesce(S.LastLoggedInOn,T.LastLoggedInOn)
+			from reporting.Global_Resource as T
+			inner join #Items S on (T.ResourceID = S.ObjectID and S.IsValid is null)
+		end
+
 		-- Asset
 		merge	dbo.Asset as T
 		using	(select * from #Items where IsValid is null) as S
@@ -126,7 +186,7 @@ begin
 		set		T.AssetID = A.ID
 		from	#Items T
 				inner join dbo.Asset A on A.Object = @object and A.ObjectID = T.ObjectID
-		where IsValid is null;
+		where	IsValid is null;
 
 		-- Asset Path
 		merge	dbo.AssetPath as T
@@ -169,55 +229,72 @@ begin
 		insert	(AssetID, DisplayValue, DisplayValuePrefix)
 		values	(S.ID, S.DisplayValue, substring(S.DisplayValue, 1, 250));			
 
-		-- Resolve lookup field values and process data.
-		exec api.UpsertItemFields @userId, @date, @object, @lookupFieldsPassedByValue;
-	
-		exec api.UpsertChangeLog @executionId, @object;
+		if (@syncwithcommunity = 0)
+			begin
+				-- Resolve lookup field values and process data.
+				exec api.UpsertItemFields @userId, @date, @object, @lookupFieldsPassedByValue;
 
+				exec api.UpsertChangeLog @executionId, @object;
+			end
 		commit transaction;
 		set @transactionCompleted = 1;
 	end try
 	begin catch
 		rollback transaction;
+		set @errormessage = substring(ERROR_MESSAGE(),1,4000);
 	end catch
 
-	if @transactionCompleted = 1
-	begin
-		-- Updated the messaging.
-		update	#Items
-		set		Message = 'Successfully upserted user.',
-				IsValid = 1
-		where	IsValid is null
+	if (@transactionCompleted = 1 and @syncwithcommunity = 0)
+		begin
+			-- Updated the messaging.
+			update	#Items
+			set		Message = 'Successfully upserted user.',
+					IsValid = 1
+			where	IsValid is null
 
-		-- Update api.ExecutionItem
-		update	t
-		set		t.Success = s.IsValid,
-				t.Message = s.Message
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId
-		where t.Success is null and t.Message is null;
+			-- Update api.ExecutionItem
+			update	t
+			set		t.Success = s.IsValid,
+					t.Message = s.Message
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId
+			where t.Success is null and coalesce(t.Message,'')  = '';
 
-		update	t
-		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.AssetID is not null;
+			update	t
+			set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.AssetID is not null;
 
-		update	t
-		set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+			update	t
+			set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
 
-		update	t
-		set		t.Properties = JSON_MODIFY(t.Properties, '$.Uid', cast(s.Uid as nvarchar(50)))
-		from	api.ExecutionItem t
-				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.Uid is not null;
+			update	t
+			set		t.Properties = JSON_MODIFY(t.Properties, '$.Uid', cast(s.Uid as nvarchar(50)))
+			from	api.ExecutionItem t
+					inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.Uid is not null;
 
-		exec api.CompleteExecution @executionId, @date, '';
-	end
-	else
-	begin 
-		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
-	end
+			exec api.CompleteExecution @executionId, @date, '';
+		end
+	else if (@transactionCompleted = 0 and @syncwithcommunity = 0)
+		begin 
+			if (@errormessage is not null)
+			begin
+				exec api.CompleteExecution @executionId, @date, @errormessage;
+			end
+			else
+			begin
+				exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+			end
+		end
+	else if (@transactionCompleted = 0 and @syncwithcommunity = 1 and OBJECT_ID('tempdb..#TempExecItemsUsers') IS NOT NULL)
+		begin
+			update	t
+			set		t.Success = 0,
+					t.Message = coalesce(@errormessage,'Transaction failed to complete.')
+			from	#TempExecItemsUsers t
+		end
 end
 ]]>
     </sql>

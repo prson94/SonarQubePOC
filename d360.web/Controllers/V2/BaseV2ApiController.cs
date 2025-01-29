@@ -1,18 +1,17 @@
-﻿using ComponentSpace.SAML2.Protocols;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 using d360.core.validators;
-using d360.extensions;
 using d360.utils.excel;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
-using Resources;
 using SpreadsheetLight;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
+using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
 namespace d360.web.Controllers.V2
@@ -189,14 +189,14 @@ namespace d360.web.Controllers.V2
 				{
 					if (!f.LookupObjectID.HasValue)
 					{
-						throw new ArgumentNullException(OthersMessages.NoRelationshipTypeFoundToLookup);
+						throw new ArgumentNullException(Error.NoRelationshipTypeFoundToLookup);
 					}
 
 					var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
 					if (intersectType == null)
 					{
-						throw new ArgumentNullException(OthersMessages.InvalidOrDeletedRelationshipType);
+						throw new ArgumentNullException(Error.InvalidOrDeletedRelationshipType);
 					}
 
 					fieldJoins.Add($@"
@@ -285,26 +285,39 @@ namespace d360.web.Controllers.V2
 
 				if (_pageSize.Length > 10)
 				{
-					return OthersMessages.InvalidPageSize;
+					return Error.InvalidPageSize;
 				}
 
 				if (long.TryParse(_pageSize, out pageSize))
 				{
-					int maxRows = validateForExport ? Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).GetAwaiter().GetResult() : 200000;
+					string cacheKey = "ValidForExport";
+					int maxRows = 200000;
+					if (validateForExport)
+					{
+						if (Cache.ListItemExists<int, int>(cacheKey, SecurityContext.CompanyID))
+						{
+							maxRows = Cache.GetItemInListByID<int, int>(cacheKey, SecurityContext.CompanyID);
+						}
+						else
+						{
+							maxRows = Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).Result;
+							Cache.SetItemInListByID(cacheKey, SecurityContext.CompanyID, maxRows, true, 5);
+						}
+					}
 
 					if (pageSize > maxRows)
 					{
-						return OthersMessages.InvalidpageSizeNumberLarge;
+						return Error.InvalidpageSizeNumberLarge;
 					}
 
 					if (pageSize <= 0)
 					{
-						return OthersMessages.InvalidpageSizeGT0;
+						return Error.InvalidpageSizeGT0;
 					}
 				}
 				else
 				{
-					return OthersMessages.InvalidpageSizeNumberValue;
+					return Error.InvalidpageSizeNumberValue;
 				}
 			}
 
@@ -314,19 +327,19 @@ namespace d360.web.Controllers.V2
 
 				if (_pageNum.Length > 10)
 				{
-					return OthersMessages.InvalidpageNum;
+					return Error.InvalidPageNum;
 				}
 
 				if (long.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
-						return OthersMessages.InvalidpageNumGT0;
+						return Error.InvalidpageNumGT0;
 					}
 				}
 				else
 				{
-					return OthersMessages.InvalidpageNumNumberValue;
+					return Error.InvalidpageNumNumberValue;
 				}
 			}
 
@@ -938,9 +951,9 @@ namespace d360.web.Controllers.V2
 
 			if (!Guid.TryParse(allocationUid, out uid))
 			{
-				status.Error = OthersMessages.AnErrorOccurred;
+				status.Error = Error.AnErrorOccurred;
 				status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-				status.Message = string.Format(OthersMessages.AllocationUidNotCorrectlyFormatted, allocationUid);
+				status.Message = string.Format(Error.AllocationUidNotCorrectlyFormatted, allocationUid);
 			}
 			else
 			{
@@ -948,9 +961,9 @@ namespace d360.web.Controllers.V2
 
 				if (!Company.Any<core.entities.Metric.MetricAllocation>(i => i.Uid == auid))
 				{
-					status.Error = OthersMessages.AnErrorOccurred;
+					status.Error = Error.AnErrorOccurred;
 					status.StatusCode = System.Net.HttpStatusCode.NotFound;
-					status.Message = string.Format(OthersMessages.AllocationIdentifierDoesnotValidAllocation, uid.ToString());
+					status.Message = string.Format(Error.AllocationIdentifierDoesnotValidAllocation, uid.ToString());
 				}
 			}
 
@@ -959,13 +972,13 @@ namespace d360.web.Controllers.V2
 
 		protected internal WorkHttpStatus validateAsset(string assetUid, Permission permission, out Guid uid)
 		{
-			var status = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+			var status = new WorkHttpStatus(HttpStatusCode.OK, "", "");
 
 			if (!Guid.TryParse(assetUid, out uid))
 			{
-				status.Error = ApiMessages.BadRequest;
-				status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-				status.Message = string.Format(OthersMessages.AssetuidNotCorrectlyFormatted, assetUid);
+				status.Error = Error.BadRequest;
+				status.StatusCode = HttpStatusCode.BadRequest;
+				status.Message = string.Format(Error.AssetuidNotCorrectlyFormatted, assetUid);
 			}
 			else
 			{
@@ -974,9 +987,9 @@ namespace d360.web.Controllers.V2
 
 				if (asset == null)
 				{
-					status.Error = ApiMessages.BadRequest;
-					status.StatusCode = System.Net.HttpStatusCode.BadRequest;
-					status.Message = string.Format(OthersMessages.AssetIdentifierDoesnotValidAsset, uid.ToString());
+					status.Error = Error.BadRequest;
+					status.StatusCode = HttpStatusCode.BadRequest;
+					status.Message = string.Format(Error.AssetIdentifierDoesnotValidAsset, uid.ToString());
 				}
 				else
 				{
@@ -984,9 +997,9 @@ namespace d360.web.Controllers.V2
 
 					if (!canRead)
 					{
-						status.Error = ApiMessages.Forbidden;
+						status.Error = Error.Forbidden;
 						status.StatusCode = System.Net.HttpStatusCode.Forbidden;
-						status.Message = OthersMessages.NoPremissiontoviewScoreHistory;
+						status.Message = Error.NoPremissiontoviewScoreHistory;
 					}
 				}
 			}
@@ -1038,19 +1051,19 @@ namespace d360.web.Controllers.V2
 
 		internal async Task<IHttpActionResult> sendConflictNotAccessible()
 		{
-			return await Task.FromResult(errorMessageResponse(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible)).ConfigureAwait(false);
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.Conflict, Error.ErrorOnRequest, Error.EndpointNotAccessible)).ConfigureAwait(false);
 		}
 
 		internal async Task<IHttpActionResult> sendExecutionProcessingResponse(ApiExecutionInfo execution, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			var message = new ResponseMessageResult(Request.CreateResponse(statusCode));
 			message.Response.Headers.Location = new Uri($"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}");
-			message.Response.ReasonPhrase = ApiMessages.ExecutionIDStatus;
+			message.Response.ReasonPhrase = Error.ExecutionIDStatus;
 
 			var content = new ApiExecutionRecievedResponse
 			{
 				ExecutionID = execution.ExecutionID,
-				Message = ApiMessages.ExecutionIDStatus,
+				Message = Error.ExecutionIDStatus,
 				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}"
 			};
 
