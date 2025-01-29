@@ -1480,4 +1480,43 @@ WHERE JobToken = 1;
 	</rollback>
   </changeSet>
 
+
+
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-36443-2">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+drop table if exists #tempdata_36443;
+
+select ga.id AuditID
+into #tempdata_36443
+from reporting.Global_Audit ga
+where Object= 'Resource' and Date >= '2025-01-17'
+
+-- Delete Audit record from audit table if entry exists in audit field table 
+
+delete tga
+from #tempdata_36443 tga
+inner join reporting.Global_FieldAudit fa on tga.auditid = fa.AuditID;
+
+create index idx_#tempdata_36443 on #tempdata_36443(AuditID);
+
+if exists (select 1 from #tempdata_36443)
+begin
+	delete ga
+	from reporting.Global_Audit ga
+	inner join #tempdata_36443 tga on ga.ID = tga.AuditID and ga.Object = 'Resource';
+end
+
+drop table if exists #tempdata_36443;
+
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
