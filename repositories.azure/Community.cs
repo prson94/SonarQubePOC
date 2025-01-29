@@ -528,8 +528,8 @@ from	CompanyDomainSetting u
 			clientSecret nvarchar(500), 
 			audience nvarchar(500), 
 			nameClaimType nvarchar(500), 
-			scopesJson nvarchar(max) as json,
-			extraParametersJson nvarchar(max) as json
+			scopesJson nvarchar(max) '$.scopes' as json,
+			extraParametersJson nvarchar(max) '$.extraParameters' as json
 		) oidc
 where	u.UrlPrefix = @prefix",
 					new { prefix }

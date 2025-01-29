@@ -13,5 +13,5 @@ namespace d360.core.entities
 
         [DataMember]
         public string TagName { get; set; }
-    }
+	}
 }

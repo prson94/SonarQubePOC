@@ -12,7 +12,7 @@ namespace repositories
 
 		Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge);
 
-		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId);
+		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
 		Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model);
 
@@ -59,7 +59,7 @@ namespace repositories
 		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync();
 		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid,string name);
 
-		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId);
+		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
 		Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
