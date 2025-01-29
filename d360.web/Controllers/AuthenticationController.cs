@@ -266,7 +266,8 @@ namespace d360.web.Controllers
 							var isAdmin = isCompanyAdministrator ? isCompanyAdministrator : companyResource.IsAdministrator; 
 							var loggedInOn = DateTime.UtcNow;
 							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, isAdmin, loggedInOn, AuthenticationMethod.UI);
-                        }
+							saveUserAsLocalResource(resource, loggedInOn);
+						}
                         else
                         {
                             // The company resource account is not active, so ensure that user is NOT able to log in.
@@ -1035,7 +1036,11 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
-                    if (!string.IsNullOrEmpty(ReturnUrl))
+
+					var loggedInOn = DateTime.UtcNow;
+					saveUserAsLocalResource(resource, loggedInOn);
+
+					if (!string.IsNullOrEmpty(ReturnUrl))
                     {
                         Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out Uri testUri);
 

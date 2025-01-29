@@ -5,190 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.Deletions.Group-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			DROP TRIGGER IF EXISTS [dbo].[Group_AfterInsert]
-		]]>
-    </sql>
-  </changeSet>
-
-  <changeSet author="tduric" id="Table.Deletions-v4">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-drop table if exists dbo.ContractAcceptance
-GO
-drop table if exists dbo.Contract
-GO
-drop table if exists dbo.OrganizationDomain
-GO
-drop table if exists dbo.OrganizationInvitation
-GO
-drop table if exists dbo.OrganizationRegistration
-GO
-drop table if exists dbo.OrganizationResource
-GO
-drop table if exists dbo.Organization
-GO
-drop table if exists dbo.OrganizationType
-GO
-
-]]>
-    </sql>
-		<![CDATA[
-		]]>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.Deletions.Rule-v1.1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TRIGGER IF EXISTS [dbo].[Rule_AfterDelete]
-GO
-
-DROP TRIGGER IF EXISTS [dbo].[Rule_AfterInsert]
-GO
-
-DROP TRIGGER IF EXISTS [dbo].[Rule_AfterUpdate]
-GO
-
-if exists (select 1 from [INFORMATION_SCHEMA].[REFERENTIAL_CONSTRAINTS] where constraint_name = 'FK_Rule_RuleType')
-begin
-	ALTER TABLE [dbo].[Rule] DROP CONSTRAINT [FK_Rule_RuleType]
-end
-GO
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Rule]') AND type in (N'U'))
-DROP TABLE [dbo].[Rule]
-GO
-		]]>
-    </sql>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.Deletions.RuleType-v1.1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterDelete]
-GO
-
-DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterInsert]
-GO
-
-DROP TRIGGER IF EXISTS [dbo].[RuleType_AfterUpdate]
-GO
-
-if exists (select * from [sys].[default_constraints] where [type] = 'D' and name = 'DF_RuleType_DisplayFormat')
-begin
-	ALTER TABLE [dbo].[RuleType] DROP CONSTRAINT [DF_RuleType_DisplayFormat]
-end
-GO
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RuleType]') AND type in (N'U'))
-DROP TABLE [dbo].[RuleType]
-GO
-		]]>
-    </sql>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.Deletions.CustomAPI-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-drop table if exists api.EntityUri
-GO
-drop table if exists api.EntityFieldTypeMultiSelectField
-GO
-drop table if exists api.EntityFieldType
-GO
-drop table if exists api.Entity
-GO
-drop table if exists api.EndpointVersion
-GO
-drop table if exists api.[Endpoint]
-GO
-drop table if exists api.[Namespace]
-GO
-drop table if exists api.[Service]
-GO
-		]]>
-    </sql>
-  </changeSet>
-
- <changeSet author="Pappas" id="Table.Deletions.OldAnalytics-v1">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop table if exists [analytics].[Statistic]
-GO
-drop table if exists [analytics].[UserAgent]
-GO
-drop table if exists [analytics].[Object]
-GO
-drop table if exists [analytics].[Ip]
-GO
-drop table if exists [analytics].[Host]
-GO
-drop table if exists [analytics].[BrowserLanguage]
-GO
-drop table if exists [analytics].[Action]
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.Deletions.ShoppingCart-v1">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop table if exists [dbo].[ShoppingCartItem]
-GO
-drop table if exists [dbo].[ShoppingCart]
-GO
-drop table if exists [dbo].[ShoppingCartType]
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.Deletions.Survey-v1.0">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop table if exists [dbo].QuestionOption
-GO
-drop table if exists [dbo].QuestionTypeOption
-GO
-drop table if exists [dbo].Question
-GO
-drop table if exists [dbo].Survey
-GO
-drop table if exists [dbo].QuestionType
-GO
-drop table if exists [dbo].SurveyType
-GO
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="AmitYadav" id="Table.Deletions.[graph].Filter">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop table if exists [graph].Filter
-GO
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.Deletions.APIExecutionTables-v1">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+  <changeSet author="Pappas" id="Table.Deletions-v10">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 drop table if exists [api].ExecutionGroup
 GO
@@ -196,8 +14,24 @@ drop table if exists [api].ExecutionUser
 GO
 drop table if exists [api].ExecutionDeletedGroup
 GO
+drop table if exists [graph].Filter
+GO
+drop table if exists [queue].[Task]
+GO
 ]]>
   </sql>
  </changeSet>
+ 
+   <changeSet author="PuneetGupta" id="Table.Deletions.Setting-v1">
+   <comment>GOV-36379</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			drop table if exists [dbo].[Setting]
+		]]>
+    </sql>
+  </changeSet>
 	
 </databaseChangeLog>

@@ -275,21 +275,24 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 			foreach (var user in users)
 			{
-				var row = tbl.NewRow();
-				row["ItemNumber"] = user.users.ItemNumber;
-				row["Username"] = user.users.Username ?? (object)DBNull.Value;
-				row["Email"] = user.users.Email ?? (object)DBNull.Value;
-				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
-				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-				row["Password"] = user.users.Password ?? (object)DBNull.Value;
-				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
-				row["IsAdministrator"] = user.users.IsAdministrator;
-				row["State"] = user.users.State ?? CompanyResourceState.Active;
-				row["uid"] = user.users.uid ?? (object)DBNull.Value;
-				row["Success"] = user.Success ?? (object)DBNull.Value;
-				row["Message"] = user.Message;
+				if (user.Success ?? true)
+				{
+					var row = tbl.NewRow();
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username ?? (object)DBNull.Value;
+					row["Email"] = user.users.Email ?? (object)DBNull.Value;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["State"] = user.users.State ?? CompanyResourceState.Active;
+					row["uid"] = user.users.uid ?? (object)DBNull.Value;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message;
 
-				tbl.Rows.Add(row);
+					tbl.Rows.Add(row);
+				}
 			}
 
 			using (var connection = Connect())
@@ -1063,7 +1066,7 @@ select * from [Resource] where ID = @userId";
 				else
 				{
 					await connection.ExecuteAsync(
-						"insert into CompanyDigestExecution (CompanyID, InvocationID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
+						"insert into CompanyDigestExecution (CompanyID, InstanceID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
 						new { companyId, invocationId });
 				}
 			}
@@ -1107,6 +1110,7 @@ select * from [Resource] where ID = @userId";
 		}
 
 		#region "Company Setting"
+		
 		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId)
 		{
 			return (await ReadSettingsAsync(companyId)).ToDictionary(k => k.ID.ToString(), v => v.Value);
@@ -1194,30 +1198,6 @@ select * from [Resource] where ID = @userId";
 			}
 
 			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public async Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId)
-		{
-			SettingValuesForWorkflow wfsv;
-
-			string sql = $@"declare @defaultGroup nvarchar(10),
-							@fromName nvarchar(4000),
-							@fromEmail nvarchar(4000);
-							select @defaultGroup = [Value] from CompanySetting where CompanyId = @companyId and ID = @defaultid;
-							select @fromName = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromNameid;
-							select @fromEmail = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromEmailid;
-							select cast(COALESCE(try_cast(@defaultGroup as int),0) as nvarchar(10)) defaultGroup,
-								   @fromName fromName,
-								   @fromEmail fromEmail;";
-			using (var connection = (SqlConnection)Connect(true))
-			{
-				wfsv = await connection.QueryFirstOrDefaultAsync<SettingValuesForWorkflow>(sql, 
-						new { companyId, defaultid = (int)Setting.WorkflowCatchAllGroup, fromNameid = (int)Setting.WorkflowFromName,
-							fromEmailid = (int)Setting.WorkflowFromEmail
-						});
-			}
-
-			return wfsv;
 		}
 
 		public async Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting)

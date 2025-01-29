@@ -370,8 +370,13 @@ namespace d360.web.Controllers.Services
 				else
 				{
 					var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-					SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(SecurityContext.CompanyID);
-					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, SecurityContext.ResourceID, wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail, sendFormEmails, clearAssignments);
+
+					var settings = await Community.ReadSettingsAsync(SecurityContext.CompanyID);
+					var defaultGroup = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowCatchAllGroup).Value;
+					var fromEmail = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowFromEmail).Value;
+					var fromName = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowFromName).Value;
+
+					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, SecurityContext.ResourceID, defaultGroup, fromName, fromEmail, sendFormEmails, clearAssignments);
 				}
 
 				return Request.CreateResponse(HttpStatusCode.Accepted, -1);
@@ -4243,9 +4248,12 @@ namespace d360.web.Controllers.Services
 
 			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).Include(x => x.Step.Version).Include(x => x.Step.Version.Type).ToList();
 
-			SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(SecurityContext.CompanyID);
+			var settings = await Community.ReadSettingsAsync(SecurityContext.CompanyID);
+			var defaultGroup = settings.Single(o => o.ID == Setting.WorkflowCatchAllGroup).Value;
+			var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
+			var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
 
-			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID,wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail, model.SendFormEmails, model.ClearOtherAssignments);
+			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, defaultGroup, fromName, fromEmail, model.SendFormEmails, model.ClearOtherAssignments);
 
 			return Ok(new { 
 				type = Error.Success, 

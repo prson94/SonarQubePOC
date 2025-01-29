@@ -9,7 +9,6 @@ using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
-using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -289,6 +288,9 @@ namespace igx.jobs.apiexecutionprocessor
 										UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
 										List<UserUpsertValidateModel> validuser;
 										var users = model.Users.ToList();
+										users.ForEach(u => {
+											u.IsNew = model.IsInsert ? true : false;
+										});
 										await Community.GetUsersInTenantAsync(info.CompanyID, users);
 										validuser = await workspace.ValidateUserData(users, true, context.IsAdministrator, model.LookupFieldsPassedByValue);
 										await Community.CreateUsersInTenantAsync(info.CompanyID, validuser);
