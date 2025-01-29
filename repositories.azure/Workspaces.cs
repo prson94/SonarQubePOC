@@ -225,7 +225,7 @@ where	g.id = @groupId;
 			bool isUidValid = queryParams.CheckForQueryParameter<Guid>("uid", "g.Uid", "@uid", ref dbArgs, ref queryFilters);
 			if (!isUidValid)
 			{
-				return new(400, "The Uid provided is invalid.");
+				return new(400, Error.GroupUidNotExists);
 			}
 			queryParams.CheckForQueryParameter<string>("name", "g.Name", "@name", ref dbArgs, ref queryFilters);
 			if (queryParams.Any(q => q.Key.ToLower() == "resourceuid"))
