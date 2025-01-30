@@ -893,6 +893,19 @@ from	CompanyResource CR
 			return response;
 		}
 
+		public async Task<bool> RemoveOldOpenIdRequestsAsync()
+		{
+			bool success = false;
+
+			using (var connection = Connect())
+			{
+				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where CreatedOn < @dt", new { dt = DateTime.UtcNow.AddMinutes(-30) });
+				success = recordsCount > 0;
+			}
+
+			return success;
+		}
+
 		public async Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request)
 		{
 			bool success = false;
