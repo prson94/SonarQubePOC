@@ -343,6 +343,21 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
 
 						await connection.ExecuteAsync(@"
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Email already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Email = T.Email
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Username already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Username = T.Username
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
 update	T
 set		T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
@@ -411,6 +426,14 @@ end
 									user.users.uid = user.users.uid == Guid.Empty ? result.uid : user.users.uid;
 								}
 								user.users.CompanyResourceState = CompanyResourceState.Active;
+								if (user.Success ?? true)
+								{
+									if (!result.Success ?? true)
+									{
+										user.Success = false;
+										user.Message = result?.Message ?? "User record not validate";
+									}
+								}
 							}
 						}
 
