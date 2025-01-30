@@ -592,7 +592,7 @@ order by	lvl";
 				tagTypeId = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new {tagTypeUID });
 			}
 
-			tagTypeId = tagTypeId.ID;
+			tagTypeId = tagTypeId?.ID;
 
 			string sql;
 

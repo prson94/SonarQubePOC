@@ -196,7 +196,7 @@
                        [minSize]="getSidePanelMinWidth()"
                        [maxSize]="getSidePanelMaxWidth()"
                        class="tile tile-detail side-panel">
-            <side-panel [selectedItem]="selected[0]"
+            <side-panel [selectedItem]="itemToEdit"
                         [setMinMaxWidth]="false"
                         [storageKey]="sidePanelStorageKey"
                         [expanded]="true"
@@ -205,8 +205,8 @@
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen">
                     <ng-container *ngIf="selected.length > 0">
-                        <ig-tag-detail [selectedItem]="selected[0]"
-                                       [selectedTagType]="selected[0]"
+                        <ig-tag-detail [selectedItem]="itemToEdit"
+                                       [selectedTagType]="itemToEdit"
                                        [useAccordion]="true"
                                        [shouldBePadded]="false"
                                        [showHeader]="true"
@@ -218,7 +218,7 @@
                                        [hideLinks]="true"
                                        [hideClassName]="this.selected ? false : true"
                                        [groupMembersReadOnlyMode]="false"
-                                       [baseTagUid]="selected[0].uid"
+                                       [baseTagUid]="itemToEdit.uid"
                                        [showTabs]="false">
                         </ig-tag-detail>
                     </ng-container>
