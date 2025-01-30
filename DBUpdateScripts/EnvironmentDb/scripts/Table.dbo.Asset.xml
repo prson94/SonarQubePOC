@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Asset-v7">
+  <changeSet author="Pappas" id="Table.dbo.Asset-v8">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Asset')
@@ -13,7 +13,11 @@ BEGIN
 	CREATE TABLE [dbo].[Asset](
 		[ID] [bigint] IDENTITY(1,1) NOT NULL,
 		[AssetTypeID] [int] NOT NULL,
+		[ParentID] bigint null,
+		[Level] int constraint DF_Asset_Level default(1) not null,
 		[State] [int] CONSTRAINT [DF_Asset_State] DEFAULT (1) NOT NULL,
+		[Path] xml constraint DF_Asset_Path default('<path />') not null,
+		[DisplayValue] nvarchar(850) null,
 		[Object] [varchar](50) NOT NULL,
 		[ObjectID] [int] CONSTRAINT [DF_Asset_ObjectId] DEFAULT (NEXT VALUE FOR [dbo].[Asset_ObjectID_Seq]) NOT NULL,
 		[SourceID] [nvarchar](500) NULL,
@@ -37,6 +41,26 @@ BEGIN
 	ALTER TABLE [dbo].[Asset] WITH CHECK ADD  CONSTRAINT [FK_Asset_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID])
 	ALTER TABLE [dbo].[Asset] CHECK CONSTRAINT [FK_Asset_AssetType]
 END
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'ParentID')
+begin 
+	alter table dbo.Asset add ParentID bigint null
+end
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'Level')
+begin 
+	alter table dbo.Asset add [Level] int constraint DF_Asset_Level default(1) not null
+end
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'Path')
+begin 
+	alter table dbo.Asset add [Path] xml constraint DF_Asset_Path default('<path />') not null;
+end
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'DisplayValue')
+begin 
+	alter table dbo.Asset add DisplayValue nvarchar(850) null;
+end
 		]]>
     </sql>
   </changeSet>

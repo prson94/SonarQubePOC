@@ -1,0 +1,42 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.dbo.IssueField-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IssueField')
+BEGIN
+	create table [dbo].[IssueField] (
+		[ID] bigint identity(1, 1) NOT NULL,
+		[IssueID] int NOT NULL,
+		[FieldTypeID] int NOT NULL,
+		[Value] sql_variant NOT NULL,
+		[LongText] nvarchar(max) NULL,
+		constraint PK_IssueField primary key clustered ( [ID] asc )
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Indices.dbo.IssueField-v1" runInTransaction="false">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+	if not exists (select * from sys.indexes where name = 'IX_IssueField_Primary')
+	begin
+		create unique nonclustered index [IX_IssueField_Primary] ON [dbo].[IssueField] ( IssueID ASC, FieldTypeID ASC, [Value] ASC )
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_IssueField_Secondary')
+	begin
+		create nonclustered index [IX_IssueField_Secondary] ON [dbo].[IssueField] ( IssueID ASC, FieldTypeID ASC )
+	end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

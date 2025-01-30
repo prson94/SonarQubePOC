@@ -1,0 +1,35 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.dbo.ResourceField-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResourceField')
+BEGIN
+
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Indices.dbo.ResourceField-v1" runInTransaction="false">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+	if not exists (select * from sys.indexes where name = 'IX_ResourceField_Primary')
+	begin
+		create unique nonclustered index [IX_ResourceField_Primary] ON [dbo].[ResourceField] ( ResourceID ASC, FieldTypeID ASC, [Value] ASC )
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_ResourceField_Secondary')
+	begin
+		create nonclustered index [IX_ResourceField_Secondary] ON [dbo].[ResourceField] ( ResourceID ASC, FieldTypeID ASC )
+	end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>
