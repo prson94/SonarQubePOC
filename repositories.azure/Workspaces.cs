@@ -660,6 +660,85 @@ end";
 			return response;
 		}
 
+		public async Task<RepositoryResponse<long?>> UpsertSingleUserAsync(Resource user)
+		{
+			RepositoryResponse<long?> response = new(null, 200, true);
+
+			string sql = @"
+if exists (select 1 from reporting.Global_Resource where ResourceID = @ID)
+begin
+	update	reporting.Global_Resource
+	set		FirstName = @FirstName,
+			LastName = @LastName,
+			UpdatedOn = @UpdatedOn,
+			LastLoggedInOn = getutcdate()
+	where	ResourceID = @ID
+end
+else
+begin
+	insert into reporting.Global_Resource (ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, [State], LastLoggedInOn, [uid], UpdatedOn)
+	values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, 1, getutcdate(), @Uid, @UpdatedOn)
+end
+
+declare @assetTypeId int,
+		@assetId bigint,
+		@FullName nvarchar(500) = @FirstName + ' ' + @LastName;
+select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+if exists (select 1 from Asset where Uid = @Uid)
+begin
+	select @assetId = ID from dbo.Asset where Uid = @Uid;
+end
+else
+begin
+	insert into dbo.Asset (AssetTypeID, [State], Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, uid)
+	values (@assetTypeId, 1, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
+	set @assetId = SCOPE_IDENTITY();
+end
+
+declare @pathXml xml;
+set @pathXml =	(
+				select	1 as '@level',
+						1 as '@position',
+						@assetTypeId as '@assetTypeId',
+						@assetId as '@assetId',
+						@FullName as 'data()'
+				for xml path('segments'),root('path')
+				)
+if exists (select 1 from AssetPath where ID = @assetId)
+begin
+	update	AssetPath 
+	set		Segments = @pathXml
+	where	ID = @assetId;
+end
+else
+begin
+	insert into AssetPath (ID, Segments) values (@assetId, @pathXml);
+end
+
+if exists (select 1 from AssetDisplayValue where AssetID = @assetId)
+begin
+	update	AssetDisplayValue 
+	set		DisplayValue = @FullName,
+			DisplayValuePrefix = @FullName
+	where	AssetID = @assetId;
+end
+else
+begin
+	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValuePrefix) values (@assetId, @FullName, @FullName);
+end
+
+select @assetId;
+";
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				response.Data = await connection.ExecuteScalarAsync<long>(sql, user);
+			}
+
+			return response;
+		}
+
 
 		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false)
 		{
