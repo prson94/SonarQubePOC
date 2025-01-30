@@ -76,6 +76,8 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
 
+		Task<bool> RemoveOldOpenIdRequestsAsync();
+
 		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
 
 		Task<RepositoryResponse<int>> RemoveUsersFromTenantAsync(int companyId, List<Guid> resourceUids);

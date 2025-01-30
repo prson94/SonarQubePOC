@@ -698,7 +698,7 @@ namespace d360.web.Controllers
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
+                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow });
 
 					var client = new HttpClient();
 					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
