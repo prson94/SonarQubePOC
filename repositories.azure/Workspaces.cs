@@ -1049,7 +1049,7 @@ end";
 										[IsNew] [bit],
 										[Success] [bit],
 										[Message] [nvarchar](4000) not null,
-										CONSTRAINT [PK_TempUser] PRIMARY KEY CLUSTERED ([ItemNumber] ASC )
+										PRIMARY KEY CLUSTERED ([ItemNumber] ASC )
 									);
 
 									IF OBJECT_ID('tempdb..#TempUserField') IS NOT NULL
@@ -1060,9 +1060,11 @@ end";
 											[FieldName] [nvarchar](250),
 											[FieldValue] [nvarchar](max),
 											[LookupValue] [nvarchar](max),
-											[FieldTypeID] [int],
-											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber], FieldTypeID)
-									);"
+											[FieldTypeID] [int]
+									);
+									
+									CREATE	INDEX IX_TempUserField ON #TempUserField ([ItemNumber]) INCLUDE (FieldTypeID)
+									"
 					,
 						transaction: trans);
 					try

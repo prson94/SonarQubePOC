@@ -428,7 +428,7 @@ end
 								user.users.CompanyResourceState = CompanyResourceState.Active;
 								if (user.Success ?? true)
 								{
-									if (!result.Success ?? true)
+									if (!(result.Success ?? true))
 									{
 										user.Success = false;
 										user.Message = result?.Message ?? "User record not validate";
