@@ -551,50 +551,6 @@ namespace d360.web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
         }
 
-		async Task saveUserAsAsset(Resource resource)
-		{
-			//if there is no asset record call UpsertUsers method which will update both community and company
-			if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
-			{
-				var execution = new ApiExecution
-				{
-					ExecutionID = Guid.NewGuid(),
-					StartedOn = DateTime.UtcNow,
-					Action = ApiExecutionAction.UpsertUsers,
-					Route = "",
-					Method = "",
-					ResourceID = resource.ID,
-					Total = 1,
-					Fields = "",
-					Error = 0,
-					Processed = 0,
-					ApplicationId = "AllowNewUserLogin"
-				};
-				var users = new UserApiModel
-									{
-										FirstName = resource.FirstName,
-										LastName = resource.LastName,
-										ResourceID = resource.ID,
-										uid = resource.Uid,
-										Username = resource.Username,
-										Email = resource.Email,
-										IsNew = true
-								};
-				
-				var usersvalid = new List<UserUpsertValidateModel>
-								{
-									new UserUpsertValidateModel
-									{
-										users = users,
-										Success = true,
-										Message = ""
-									}
-								};
-
-				await Workspace.UpsertUsersAsync(execution.Id, usersvalid, true);
-			}
-		}
-
 		void saveUserAsLocalResource(Resource resource, DateTime loggedInOn)
 		{
 			var globalresource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == resource.ID).FirstOrDefault();
@@ -704,7 +660,9 @@ namespace d360.web.Controllers
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow });
+					var openIdRequest = new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow };
+                    await Community.CreateOpenIdRequestAsync(openIdRequest);
+					Cache.SetItemInListByID("openid", state, openIdRequest);
 
 					var client = new HttpClient();
 					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
@@ -909,9 +867,19 @@ namespace d360.web.Controllers
             }
 
             var baseUri = oidc.baseUri;
-            var openIdRequest = await Community.GetOpenIdRequestAsync(state);
 
-            if (openIdRequest == null)
+			OpenIdRequest openIdRequest = null;
+			openIdRequest = Cache.GetItemInListByID<OpenIdRequest, string>("openid", state);	// Read from machine cache.
+			if (openIdRequest == null)
+			{
+				openIdRequest = await Community.GetOpenIdRequestAsync(state);					// Read from secondary
+			}
+			if (openIdRequest == null)
+			{
+				openIdRequest = await Community.GetOpenIdRequestAsync(state, false);			// Read from primary
+			}
+
+			if (openIdRequest == null)
             {
 				Log.LogError($"Could not find openIdRequest.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);

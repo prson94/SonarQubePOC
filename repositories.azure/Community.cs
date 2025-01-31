@@ -501,15 +501,15 @@ end
 			return connectionString;
 		}
 
-		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state)
+		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true)
 		{
 			OpenIdRequest model = null;
 
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@state", state);
-			using (var connection = Connect(true))
+			using (var connection = Connect(fromSecondary))
 			{
-				model = await connection.QuerySingleAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
+				model = await connection.QueryFirstOrDefaultAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
 			}
 
 			return model;
