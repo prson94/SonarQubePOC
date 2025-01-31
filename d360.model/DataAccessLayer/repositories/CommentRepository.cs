@@ -212,7 +212,8 @@ namespace d360.model.DataAccessLayer
 
 			if (dbComment == null)
 			{
-				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+				var msg  = string.Format(Error.CommentNotFound, commentUid.ToString());
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, msg, msg);
 			}
 
 			if (dbComment.CreatedBy != SecurityContext.ResourceID && !SecurityContext.IsAdministrator)
