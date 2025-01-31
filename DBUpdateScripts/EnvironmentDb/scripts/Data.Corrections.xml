@@ -205,21 +205,6 @@ end
 	</rollback>
   </changeSet>
 
-   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
-  <comment>GOV-19236 - remove the Custom API environment setting</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-delete [Setting] where ID = 50
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[]]>
-	</rollback>
-  </changeSet>
-  
   <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
   	<preConditions onFail="MARK_RAN">
 		<columnExists tableName="Favorite" schemaName="dbo" columnName="Object" />
@@ -345,28 +330,6 @@ from	workflow.EventRegistration T
 	</sql>
   </changeSet>
 
-
-
-      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-3">
-	<comment>GOV-17952 - remove organizations from Govern</comment>	
-	<sql dbms="mssql"
-            endDelimiter="GO"
-            splitStatements="true"
-            stripComments="false">
-	<![CDATA[
-		delete from Asset where object = 'Organization'
-		
-		delete ATS
-		from AssetTypeStyle ATS
-		inner join AssetType AT on AT.ID = ATS.ID
-		where AT.Object = 'OrganizationType'
-
-		delete from AssetType where object = 'OrganizationType'
-		
-		delete from dbo.Setting where id = 19
-	]]>
-	</sql>
-  </changeSet>
   <changeSet author="Quinlivan/Pappas" id="Data.Corrections.GOV-18447-Issue">
 	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
 	<sql dbms="mssql"
