@@ -420,7 +420,7 @@ namespace d360.web.Controllers.V2
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 				if (assetType == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidNotFound, assetTypeUid.ToString()));
 				}
 				else if (assetType.Class == AssetTypeClass.Diagram)
 				{

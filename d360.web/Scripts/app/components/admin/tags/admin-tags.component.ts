@@ -67,6 +67,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     private lastSelectedElement: TagType;
 	menuItems: any = [];
 	menuItemsForDelete: any = [];
+	itemToEdit: TagType;
 	@ViewChild('tagDetail', { static: false }) tagDetails: TagDetailComponent;
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
@@ -238,31 +239,31 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.selected = this.selected.slice();
     }
 
-    selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
+	selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
-        if (event && element) {
+		if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                 this.lastSelectedElement = item;
                 return;
             }
             if (event.shiftKey) {
                 this.cdRef.detectChanges();
-                var lastIndex = this.tags.indexOf(this.lastSelectedElement);
+                let lastIndex = this.tags.indexOf(this.lastSelectedElement);
                 if (lastIndex === -1 && this.selected.length === 1) {
                     lastIndex = this.tags.indexOf(this.selected[0]);
                 }
-                var currentIndex = this.tags.indexOf(item);
+                let currentIndex = this.tags.indexOf(item);
 
                 if (lastIndex > currentIndex) {
                     lastIndex += currentIndex;
                     currentIndex = lastIndex - currentIndex;
                     lastIndex -= currentIndex;
                 }
-                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
-                for (var i = lastIndex; i <= currentIndex; i++) {
-                    if (!tableRows[i].classList.contains('p-highlight')) {
+                const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+				for (let i = lastIndex; i <= currentIndex; i++) {
+					if (!tableRows[i].classList.contains('p-highlight')) {
                         if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
                             this.selected.push(this.tags[i]);
                         }
@@ -280,14 +281,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
 	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
 		if (event === null) {
-			this.selected[0] = item;
+			this.itemToEdit = item;
+			//this.selected[0] = item;
 			return;
 		}
 
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
-        if (event && element) {
+		if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                 if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
                     this.selected = this.selected.filter((x) => x.uid !== item.uid);
@@ -302,11 +304,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 return;
             }
             if (event.shiftKey) {
-                var lastIndex = this.tags.indexOf(this.lastSelectedElement);
+                let lastIndex = this.tags.indexOf(this.lastSelectedElement);
                 if (lastIndex === -1 && this.selected.length === 1) {
                     lastIndex = this.tags.indexOf(this.selected[0]);
                 }
-                var currentIndex = this.tags.indexOf(item);
+                let currentIndex = this.tags.indexOf(item);
 
                 if (lastIndex > currentIndex) {
                     lastIndex += currentIndex;
@@ -314,8 +316,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     lastIndex -= currentIndex;
                 }
 
-                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
-                for (var i = lastIndex; i <= currentIndex; i++) {
+                const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+                for (let i = lastIndex; i <= currentIndex; i++) {
                     if (!tableRows[i].classList.contains('p-highlight')) {
                         if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
                             this.selected.push(this.tags[i]);
@@ -330,15 +332,18 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
         this.selected = [];
         this.selected.push(item);
-        this.triggerRerenderOfSelection();
-        this.lastSelectedElement = item;
+		this.triggerRerenderOfSelection();
+		this.lastSelectedElement = item;
     }
 
     closeEditor() {
         this.showEditor = false;
     }
 
-    openEditor() {
+	openEditor() {
+		if (this.itemToEdit !== undefined) {
+			this.selected[0] = this.itemToEdit;
+		}
         this.showEditor = true;
     }
 
@@ -400,17 +405,20 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	openDeleteModal() {
+		if (this.itemToEdit !== undefined) {
+			this.selected[0] = this.itemToEdit;
+		}
         window.setTimeout(() => {
             this.deletePopupTitle = this.selected.length === 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100);
     }
 
-    openConsolidateModal() {
+	openConsolidateModal() {
         this.showConsolidate = true;
     }
 
-    consolidateTags(parentUid: string, childrenUids: string[]) {
+	consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
             .subscribe((result) => {
 
@@ -435,8 +443,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     findTagIndex(uid: string) {
-        var index: number = -1;
-        for (var tag of this.tags) {
+        let index: number = -1;
+        for (const tag of this.tags) {
             index++;
             if (tag.uid === uid) { return index; }
         }
@@ -468,9 +476,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	}
 
 	loadMenuItems() {
-		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = this.selected[0]; this.expandPanel(); } });
-		this.menuItems.push({ "title": $localize`Open`, callback: () => this.openTagDetails(this.selected[0]) });
-		this.menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.openTagDetails(this.selected[0],true) });
+		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = this.itemToEdit; this.expandPanel(); } });
+		this.menuItems.push({ "title": $localize`Open`, callback: () => this.openTagDetails(this.itemToEdit) });
+		this.menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.openTagDetails(this.itemToEdit,true) });
 		this.menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditor() });
 		this.menuItems.push({ "title": $localize`Delete`, callback: () => this.openDeleteModal() });
 	}
@@ -481,13 +489,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	}
 
 	showEmptyOverlay() {
-		var selectedNodeData = this.selected || this.tags;
+		const selectedNodeData = this.selected || this.tags;
 		return !selectedNodeData;
 	}
 
 	expandPanel() {
 		this.sidePanelService.setSidePanelState({ expanded: true });
 	}
-
-
 }

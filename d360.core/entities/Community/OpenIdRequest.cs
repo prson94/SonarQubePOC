@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
@@ -12,5 +13,7 @@ namespace d360.core.entities
         public string Nonce { get; set; }
 
         public string RedirectUrl { get; set; }
-    }
+
+		public DateTime CreatedOn { get; set; }
+	}
 }

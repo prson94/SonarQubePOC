@@ -78,8 +78,8 @@ export class DataProfileService extends BaseObservableService {
             .get(`/api/v2/dataprofiles/${assetUid}/similar/${matchType}/count`, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => {
-                    if ((err?.error?.message as string).indexOf('signature not found') !== -1) {
+				catchError((err) => {
+                    if (err?.status === 404) {
                         return of(0);
                     }
                     return this.handleError(err, true);

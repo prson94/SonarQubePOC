@@ -8,7 +8,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract]
+    [DataContract, Table("Resource", Schema = "dbo")]
     public class Resource : BaseIntObject, IIntObject, IFieldsObject
     {
         #region Properties
