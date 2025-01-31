@@ -39,12 +39,17 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityTypeRelation-ResponsibilityTypeRelation_AfterUpdate-v1">
+  <changeSet author="TKlok" id="Table.dbo.ResponsibilityTypeRelation-ResponsibilityTypeRelation_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXiSTS [dbo].[ResponsibilityTypeRelation_AfterUpdate]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelation_AfterUpdate]
    ON  [dbo].[ResponsibilityTypeRelation] 
    AFTER UPDATE
@@ -88,10 +93,6 @@ BEGIN
 	
 	END;
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>
