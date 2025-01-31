@@ -96,6 +96,8 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<int>> CreateUserAsync(Resource user)
 		{
 			RepositoryResponse<int> response = new(400);
+			user.APIPublicKey = GenerateOpenIdRequestValue(25);
+			user.APIPrivateKey = GenerateOpenIdRequestValue(50);
 			user.Password = PasswordHelper.HashPassword(user.Password);
 			user.UpdatedOn = DateTime.UtcNow;
 			using (var connection = Connect())
@@ -114,7 +116,7 @@ namespace repositories.azure
 			var sql = 
 				"insert into CompanyResource (CompanyID, ResourceID, IsAdministrator, LastLoggedInOn, [State]) " +
 				"values (@companyId, @resourceId, @isAdministrator, @loggedInOn, @state); " +
-				"insert into CompanyResourceState (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
 				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
@@ -1072,7 +1074,9 @@ select * from [Resource] where ID = @userId";
 				"update CompanyResource " +
 				"set	IsAdministrator = @isAdministrator, " +
 				"		LastLoggedInOn = @loggedInOn " +
-				"where	CompanyID = @companyId and ResourceID = @resourceId; ";
+				"where	CompanyID = @companyId and ResourceID = @resourceId; " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
 				int recordsCount = await connection.ExecuteAsync(

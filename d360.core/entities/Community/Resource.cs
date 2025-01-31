@@ -50,8 +50,6 @@ namespace d360.core.entities
 
         #endregion
 
-        public ICollection<CompanyResource> CompanyResources { get; set; }
-
         public string FormatDisplayName()
         {
             return string.Format("{0} {1}", FirstName, LastName);

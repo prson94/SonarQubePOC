@@ -31,6 +31,11 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
+		/// <summary>
+		/// Add or updated a user to the local reporting.Global_Resources table as well as relevant Asset tables.
+		/// </summary>
+		Task<RepositoryResponse<long?>> UpsertSingleUserAsync(Resource user);
+
 		Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false);
 
 		Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue);
