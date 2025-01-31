@@ -263,7 +263,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.RestrictVoteRemove, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 		}
 
