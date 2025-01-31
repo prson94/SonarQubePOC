@@ -351,7 +351,7 @@ export class LazyMultiSelectItem {
 	providers: [MULTISELECT_VALUE_ACCESSOR],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
-	styleUrls: ['./lazy-multiselect.css']
+	styleUrls: ['./lazy-multiselect.less']
 })
 export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, ControlValueAccessor {
 	/**
