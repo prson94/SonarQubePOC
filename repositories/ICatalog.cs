@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace repositories
 {
-	public interface ICatalog
+	public interface ICatalog : IConnectorLabelRepository, IProcessRepository
 	{
 		Platform Platform { get; }
 
@@ -57,7 +58,8 @@ namespace repositories
 		Task<RepositoryResponse<TagTypeApiModel>> ReadTagTypeAsync(Guid uid);
 
 		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync();
-		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid,string name);
+
+		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name);
 
 		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
@@ -76,5 +78,17 @@ namespace repositories
 		Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value);
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
+
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+
+		Task<Asset> GetAsset(Guid? assetUid);
+
+		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
+
+		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
+
+		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
+
+		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 	}
 }

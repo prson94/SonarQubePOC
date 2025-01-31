@@ -13,6 +13,11 @@
 	  <Reference Include="System.Web" />
 	  <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
+    <Compile Remove="DataAccessLayer\repositories\ProcessRepository.cs" />
+  </ItemGroup>
 	
   <ItemGroup>	  
     <ProjectReference Include="..\constants\constants.csproj" />	  
