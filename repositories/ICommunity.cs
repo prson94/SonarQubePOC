@@ -30,7 +30,7 @@ namespace repositories
 
 		string GetConnectionStringForTenant(int companyId);
 
-		Task<OpenIdRequest> GetOpenIdRequestAsync(string state);
+		Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true);
 
 		Task<RepositoryResponse<ClaimMapping>> ReadClaimMappingById(int id);
 
