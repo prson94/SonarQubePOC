@@ -2431,7 +2431,9 @@
     <None Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <None Include="Scripts\app\components\tag\tag-item.component.less" />
     <None Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.less" />
-    <None Include="Scripts\app\**\*.css" />
+    <None Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.less" />
+    <None Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.less" />
+	<None Include="Scripts\app\**\*.css" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Authentication\Login.cshtml" />

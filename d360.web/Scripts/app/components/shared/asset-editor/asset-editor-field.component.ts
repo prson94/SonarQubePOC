@@ -948,7 +948,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
 	onChangeMultiselect($event) {
-		console.log('onChangeMultiselect', $event);
         var values = this.form.controls[this.field.FieldName].value as any[];
         var newValues = [];
         this.lookupSelectedValue.forEach((item) => {

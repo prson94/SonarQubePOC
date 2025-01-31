@@ -299,7 +299,7 @@ export class LazyDropdownItem {
 	providers: [DROPDOWN_VALUE_ACCESSOR],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
-	styleUrls: ['./lazy-dropdown.css']
+	styleUrls: ['./lazy-dropdown.less']
 })
 export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, ControlValueAccessor {
 	/**
