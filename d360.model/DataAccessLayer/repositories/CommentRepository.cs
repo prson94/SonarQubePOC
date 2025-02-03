@@ -213,12 +213,12 @@ namespace d360.model.DataAccessLayer
 			if (dbComment == null)
 			{
 				var msg  = string.Format(Error.CommentNotFound, commentUid.ToString());
-				throw new GenericException(System.Net.HttpStatusCode.NotFound, msg, msg);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.ErrorDeletingComment, msg);
 			}
 
 			if (dbComment.CreatedBy != SecurityContext.ResourceID && !SecurityContext.IsAdministrator)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermissionAdmin, Error.CommentUpdatePermissionAdmin);
+				throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.ErrorDeletingComment, Error.CommentUpdatePermissionAdmin);
 			}
 
 			bool commentUpdated = false;
