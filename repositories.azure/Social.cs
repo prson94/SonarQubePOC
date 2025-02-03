@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -12,6 +13,8 @@ using d360.core.resources;
 using d360.extensions;
 using d360.model.helpers.filters;
 using Dapper;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Office2019.Word.Cid;
 using static LaunchDarkly.Logging.LogCapture;
 
 namespace repositories.azure
@@ -207,6 +210,126 @@ namespace repositories.azure
 					catch (Exception ex)
 					{
 
+						transaction.Rollback();
+						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.UnableCreateComment);
+					}
+				}
+			}
+		}
+		public int InsertComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
+		{
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				{
+					try
+					{
+						validateComment(comment);
+
+						long? commentedOnAssetId = null;
+						int? parentId = null;
+						long? assetId = null;
+						Asset commentAsset = null;
+
+						if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
+						{
+							var sqlQuery = @"SELECT c.*, a.* FROM Comment c
+												LEFT JOIN Asset a ON c.AssetId = a.Id
+												WHERE c.Uid = @ParentUid";
+
+							var parentComment = connection.Query<Comment, Asset, Comment>(
+								sqlQuery,
+								(comment, asset) =>
+								{
+									comment.Asset = asset;
+									return comment;
+								},
+								new { ParentUid = comment.ParentUid.Value }, transaction,
+								splitOn: "Id"
+							).SingleOrDefault();
+
+							if (parentComment == null)
+							{
+								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.ParentCommentNotFound);
+							}
+							else
+							{
+								commentedOnAssetId = connection.Query<Asset>("SELECT ID FROM Asset WHERE Uid = @AssetUid", new { comment.AssetUid }, transaction).FirstOrDefault()?.ID;
+
+								parentId = parentComment.ID;
+								comment.AssetUid = parentComment.Asset.uid;
+								assetId = parentComment.Asset.ID;
+
+								commentAsset = parentComment.Asset;
+							}
+						}
+
+						if (comment.AssetUid == Guid.Empty)
+						{
+							throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetUid);
+						}
+
+						if (!assetId.HasValue)
+						{
+							var assetQuery = @"
+						SELECT a.*, t.*
+						FROM Asset a
+						JOIN AssetType t ON a.AssetTypeId = t.Id
+						WHERE a.uid = @AssetUid";
+							commentAsset = connection.Query<Asset, AssetType, Asset>(
+								assetQuery,
+								(asset, assetType) =>
+								{
+									asset.AssetType = assetType;
+									return asset;
+								},
+								new { comment.AssetUid }, transaction,
+								splitOn: "AssetTypeId"
+							).FirstOrDefault();
+
+							if (commentAsset == null)
+							{
+								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+							}
+
+							if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
+							{
+								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.RestrictedAssetUid);
+							}
+							assetId = commentAsset.ID;
+						}
+
+						if (commentAsset != null)
+						{
+							if (!HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+							{
+								throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.Forbidden, Error.CommentAddPermission);
+							}
+						}
+
+						string query = "INSERT INTO Comment (CommentType, CreatedBy, CreatedOn, IsDeleted, AssetID, Body, ParentID, Uid, UpdatedBy, UpdatedOn) " +
+								"VALUES (@CommentType, @CreatedBy , @CreatedOn, @IsDeleted, @AssetID,@Body,@ParentID,@Uid,@UpdatedBy,@UpdatedOn);SELECT CAST(SCOPE_IDENTITY() as int);";
+
+						var dbComment =  new Comment
+						{
+							CommentType = commentType,
+							CreatedBy = CurrentUserId,
+							CreatedOn = DateTime.UtcNow,
+							IsDeleted = false,
+							AssetID = assetId.Value,
+							Body = comment.Body,
+							ParentID = parentId,
+							Uid = Guid.NewGuid(),
+							UpdatedBy = CurrentUserId,
+							UpdatedOn = DateTime.UtcNow
+						};
+
+						var commentAdded = connection.QuerySingle<int>(query, dbComment, transaction);
+						return commentAdded;
+					}
+					catch (Exception ex)
+					{
 						transaction.Rollback();
 						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.UnableCreateComment);
 					}
@@ -1012,7 +1135,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 		}
 
-		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
+		public void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
 		{
 			if (taggedAssets.Any(a => a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Group.ToString()))
 			{
@@ -1024,6 +1147,116 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 						Queue.CreateMessage(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyId, CompanyPrefix = CompanyPrefix, Payload = comment.ID });
 					}
 				}
+			}
+		}
+
+		public List<Asset> AddCommentRelation(List<Guid> tags,  int commentId)
+		{
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				{
+					var query1 = "SELECT * FROM Asset WHERE uid IN @Tags";
+
+					var taggedAssets = connection.Query<Asset>(query1, new { Tags = tags }, transaction).ToList();
+					foreach (var r in taggedAssets)
+					{
+						string commentReln = "INSERT INTO CommentRelation (CommentID, AssetID) VALUES (@CommentID, @AssetID)";
+
+						var parameters = new
+						{
+							CommentID = commentId,
+							AssetID = r.ID
+						};
+
+						connection.Execute(commentReln, parameters, transaction);
+					};
+					return taggedAssets;
+				}
+			}
+
+		}
+
+		public void DeleteCommentRelation(int commentId)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				{
+					connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId }, transaction);
+					transaction.Commit();
+				}
+			}
+		}
+
+		public int UpdateComment(Guid commentUid, CommentApiPutModel comment)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				try
+				{
+					var dbComment = GetCommentByCommentUid(commentUid);
+
+					if (dbComment == null)
+					{
+						throw new NotFoundException(Error.comment);
+					}
+
+					if (dbComment.CreatedBy != CurrentUserId)
+					{
+						throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermission, Error.CommentUpdatePermission);
+					}
+
+					dbComment.Body = comment.Body;
+					dbComment.UpdatedBy = CurrentUserId;
+					dbComment.UpdatedOn = DateTime.UtcNow;
+
+					var sql = @"UPDATE Comment SET Body = @Body,UpdatedBy = @UpdatedBy,UpdatedOn = @UpdatedOn WHERE Id = @Id";
+
+					var affectedRows = connection.Execute(sql, new
+					{
+						Body = dbComment.Body,
+						UpdatedBy = dbComment.UpdatedBy,
+						UpdatedOn = dbComment.UpdatedOn,
+						Id = dbComment.ID
+					});
+
+					var commentUpdated = affectedRows > 0;
+
+					if (commentUpdated)
+					{
+						return dbComment.ID;
+					}
+					else
+					{
+						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.CommentNotUpdated);
+					}
+					}
+				catch (Exception)
+				{
+
+					throw;
+				}
+			}
+		}
+
+		public void DeleteCommentRelationByCommentId(int commentId)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
+			}
+		}
+
+		public Comment GetCommentByCommentUid(Guid commentUid)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				var selectQuery = "SELECT * FROM Comment WHERE Uid = @CommentUid";
+				var dbComment = connection.QuerySingleOrDefault<Comment>(selectQuery, new { CommentUid = commentUid });
+				return dbComment;
 			}
 		}
 	}

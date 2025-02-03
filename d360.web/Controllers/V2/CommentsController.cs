@@ -1,8 +1,11 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
 using d360.core.resources;
+using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
+using DocumentFormat.OpenXml.Office2019.Word.Cid;
 using Microsoft.Web.Http;
 using repositories;
 using Swashbuckle.Swagger.Annotations;
@@ -23,10 +26,12 @@ namespace d360.web.Controllers.V2
         #region DI
 
         private readonly ISocial Comments;
+		private readonly IQueueSource QueueSource;
 
-        public CommentsController(ICoreComponentSet set, ISocial comments) : base(set)
+		public CommentsController(ICoreComponentSet set, ISocial comments, IQueueSource queue) : base(set)
         {
             Comments = comments;
+			QueueSource = queue;
         }
 
         #endregion
@@ -48,9 +53,23 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
         {
-            var detail = await Comments.AddComment(comment);
-            return Created("", detail);
-        }
+			int commentId = Comments.InsertComment(comment);
+            
+			if (comment.Tags != null && comment.Tags.Count > 0)
+			{
+				Comments.AddCommentRelation(comment.Tags, commentId);
+				await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+				{
+					CompanyId = SecurityContext.CompanyID,
+					CompanyPrefix = SecurityContext.CompanyPrefix,
+					Payload = commentId
+				});
+			}
+
+			Comments.DeleteCommentRelation(commentId);
+			var detail = Comments.GetCommentDetailByUid(Guid.Empty);
+			return Created("", detail);
+		}
 
         /// <summary>
         /// Use this endpoint to register your vote for a particular comment using one of the available emoji.
@@ -154,9 +173,21 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
         {
-            var detail = await Comments.EditComment(commentUid, comment);
-            return Ok(detail);
-        }
+			int commentUpdate = Comments.UpdateComment(commentUid, comment);
+			var dbComment = Comments.GetCommentByCommentUid(commentUid);
+			if (commentUpdate > 0)
+			{
+				Comments.DeleteCommentRelationByCommentId(commentUpdate);
+				if (comment.Tags != null && comment.Tags.Count > 0)
+				{
+					var taggedAssets = Comments.AddCommentRelation(comment.Tags, commentUpdate);
+					Comments.SendCommentNotification(taggedAssets, dbComment);
+				}
+			}
+
+			var detail = Comments.GetCommentDetailByUid(dbComment.Uid);
+			return Ok(detail);
+		}
 
         /// <summary>
         /// Returns an array of comments along with the total number and the current page number and size.
