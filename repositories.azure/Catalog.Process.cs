@@ -66,7 +66,7 @@ namespace repositories.azure
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				targetAsset = await connection.QueryFirstOrDefaultAsync<Asset>(
-					$"Select * from dbo.Asset a Where Where a.uid = @assetUid", new { assetUid },
+					$"Select * from dbo.Asset a Where a.uid = @assetUid", new { assetUid },
 					commandTimeout: CommandTimeout);
 			}
 
