@@ -277,6 +277,13 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 			foreach (var user in users)
 			{
+				string password = user.users.Password ?? string.Empty;
+
+				if (!string.IsNullOrEmpty(password))
+				{
+					password = PasswordHelper.HashPassword(password);
+				}
+
 				if (user.Success ?? true)
 				{
 					var row = tbl.NewRow();
@@ -285,7 +292,7 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 					row["Email"] = user.users.Email ?? (object)DBNull.Value;
 					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
 					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["Password"] = password ?? (object)DBNull.Value;
 					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
 					row["IsAdministrator"] = user.users.IsAdministrator;
 					row["State"] = user.users.State ?? CompanyResourceState.Active;
