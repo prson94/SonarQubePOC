@@ -202,7 +202,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.VotingOnCommentUsingEmoji, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 		}
 
@@ -275,7 +275,7 @@ namespace d360.model.DataAccessLayer
 
 			if (dbComment == null)
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.ErrorUpdateComment, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 
 			if (dbComment.CreatedBy != SecurityContext.ResourceID)
@@ -792,7 +792,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 			if (string.IsNullOrEmpty(comment.Body))
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.BodyNotEmpty);
+				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.ErrorAddingComment, Error.BodyNotEmpty);
 			}
 
 			if (comment.Tags != null && comment.Tags.Count > 50)
