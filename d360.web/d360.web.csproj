@@ -694,9 +694,24 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Scripts\app\components\admin\groups\log.html" />
     <Content Include="Scripts\app\components\admin\groups\fields.html" />
+    <Content Include="Scripts\app\components\admin\security\policies.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-delete.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-editor.html" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-list.html" />
+    <Content Include="Scripts\app\components\admin\security\roles.html" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-delete.html" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-detail.html" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-editor.html" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
+    <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
     <Content Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.html" />
     <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.html" />
     <Content Include="Scripts\app\components\shared\security\owner-list.html" />
     <Content Include="Scripts\app\components\shared\security\modals\owner-form.html" />
@@ -901,6 +916,14 @@
     <Content Include="Views\Shared\Unsupported.cshtml" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
     <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.less" />
+    <Content Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.less" />
+    <Content Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.less" />
+    <Content Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.less" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
+    <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
+    <Content Include="Scripts\app\components\admin\security\policy.less" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
+    <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -910,11 +933,31 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\_base.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\log.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\fields.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-types\tag-types.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-types\tag-types.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.interface.ts" />
@@ -2431,6 +2474,8 @@
     <None Include="Scripts\app\components\sidebar\audit\audit.component.less" />
     <None Include="Scripts\app\components\tag\tag-item.component.less" />
     <None Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.less" />
+    <None Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.less" />
+    <None Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.less" />
     <None Include="Scripts\app\**\*.css" />
   </ItemGroup>
   <ItemGroup>
