@@ -7900,7 +7900,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Responsibility type rule.
         /// </summary>
         public static string ResponsibilityTypeRule {
             get {
@@ -8881,7 +8881,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Uid.
         /// </summary>
         public static string UidConstant {
             get {

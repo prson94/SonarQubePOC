@@ -3292,10 +3292,10 @@
     <value>Parent metric must be an active group.</value>
   </data>
   <data name="ResponsibilityTypeRule" xml:space="preserve">
-    <value />
+    <value>Responsibility type rule</value>
   </data>
   <data name="UidConstant" xml:space="preserve">
-    <value />
+    <value>Uid</value>
   </data>
   <data name="ErrorAddingComment" xml:space="preserve">
     <value>Error adding comment</value>
