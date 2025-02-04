@@ -96,6 +96,8 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<int>> CreateUserAsync(Resource user)
 		{
 			RepositoryResponse<int> response = new(400);
+			user.APIPublicKey = GenerateOpenIdRequestValue(25);
+			user.APIPrivateKey = GenerateOpenIdRequestValue(50);
 			user.Password = PasswordHelper.HashPassword(user.Password);
 			user.UpdatedOn = DateTime.UtcNow;
 			using (var connection = Connect())
@@ -114,7 +116,7 @@ namespace repositories.azure
 			var sql = 
 				"insert into CompanyResource (CompanyID, ResourceID, IsAdministrator, LastLoggedInOn, [State]) " +
 				"values (@companyId, @resourceId, @isAdministrator, @loggedInOn, @state); " +
-				"insert into CompanyResourceState (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
 				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
@@ -275,6 +277,13 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 			foreach (var user in users)
 			{
+				string password = user.users.Password ?? string.Empty;
+
+				if (!string.IsNullOrEmpty(password))
+				{
+					password = PasswordHelper.HashPassword(password);
+				}
+
 				if (user.Success ?? true)
 				{
 					var row = tbl.NewRow();
@@ -283,7 +292,7 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 					row["Email"] = user.users.Email ?? (object)DBNull.Value;
 					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
 					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["Password"] = password ?? (object)DBNull.Value;
 					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
 					row["IsAdministrator"] = user.users.IsAdministrator;
 					row["State"] = user.users.State ?? CompanyResourceState.Active;
@@ -343,6 +352,21 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
 
 						await connection.ExecuteAsync(@"
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Email already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Email = T.Email
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Username already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Username = T.Username
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
 update	T
 set		T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
@@ -411,6 +435,15 @@ end
 									user.users.uid = user.users.uid == Guid.Empty ? result.uid : user.users.uid;
 								}
 								user.users.CompanyResourceState = CompanyResourceState.Active;
+								if (user.Success ?? true)
+								{
+									bool isSuccess = result.Success ?? true;
+									if (isSuccess == false)
+									{
+										user.Success = false;
+										user.Message = result?.Message ?? "User record not validate";
+									}
+								}
 							}
 						}
 
@@ -475,15 +508,15 @@ end
 			return connectionString;
 		}
 
-		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state)
+		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true)
 		{
 			OpenIdRequest model = null;
 
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@state", state);
-			using (var connection = Connect(true))
+			using (var connection = Connect(fromSecondary))
 			{
-				model = await connection.QuerySingleAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
+				model = await connection.QueryFirstOrDefaultAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
 			}
 
 			return model;
@@ -1048,7 +1081,9 @@ select * from [Resource] where ID = @userId";
 				"update CompanyResource " +
 				"set	IsAdministrator = @isAdministrator, " +
 				"		LastLoggedInOn = @loggedInOn " +
-				"where	CompanyID = @companyId and ResourceID = @resourceId; ";
+				"where	CompanyID = @companyId and ResourceID = @resourceId; " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
 				int recordsCount = await connection.ExecuteAsync(

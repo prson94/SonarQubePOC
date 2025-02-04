@@ -6,6 +6,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Catalog.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
 	</ItemGroup>
 

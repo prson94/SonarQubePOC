@@ -205,21 +205,6 @@ end
 	</rollback>
   </changeSet>
 
-   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
-  <comment>GOV-19236 - remove the Custom API environment setting</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-delete [Setting] where ID = 50
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[]]>
-	</rollback>
-  </changeSet>
-  
   <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
   	<preConditions onFail="MARK_RAN">
 		<columnExists tableName="Favorite" schemaName="dbo" columnName="Object" />
@@ -345,28 +330,6 @@ from	workflow.EventRegistration T
 	</sql>
   </changeSet>
 
-
-
-      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-3">
-	<comment>GOV-17952 - remove organizations from Govern</comment>	
-	<sql dbms="mssql"
-            endDelimiter="GO"
-            splitStatements="true"
-            stripComments="false">
-	<![CDATA[
-		delete from Asset where object = 'Organization'
-		
-		delete ATS
-		from AssetTypeStyle ATS
-		inner join AssetType AT on AT.ID = ATS.ID
-		where AT.Object = 'OrganizationType'
-
-		delete from AssetType where object = 'OrganizationType'
-		
-		delete from dbo.Setting where id = 19
-	]]>
-	</sql>
-  </changeSet>
   <changeSet author="Quinlivan/Pappas" id="Data.Corrections.GOV-18447-Issue">
 	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
 	<sql dbms="mssql"
@@ -476,22 +439,6 @@ from	workflow.EventRegistration T
 	<![CDATA[
 		update ResponsibilityTypeRelationRule
 		set LastRunOn = '1900-01-01'
-	]]>
-	</sql>
-  </changeSet>
-
-  <changeSet author="TKlok" id="Data.Corrections.GOV-20459">
-	<comment>GOV-20459 - Queue reindexing of Users and Reference Lists to update URL</comment>	
-	<sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-	<![CDATA[
-		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
-		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'User', 0;
-		
-		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
-		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'ReferenceItemType', 0;
 	]]>
 	</sql>
   </changeSet>
@@ -705,18 +652,6 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-  <changeSet author="TKlok" id="Data.Corrections.GOV-21437">
-	<comment>GOV-21437 - Queue update to SearchIndex mapping</comment>	
-	<sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-	<![CDATA[
-		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
-		SELECT 'QueueRebuild', 'SearchIndex', getdate(), 'UpdateMapping', 0;
-	]]>
-	</sql>
-  </changeSet>
    <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v4">
   <comment>Parse Relation Lookup Filters</comment>
   <sql dbms="mssql"
@@ -835,25 +770,6 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-  <changeSet author="TKlok" id="Data.Corrections.GOV-28446">
-	<comment>GOV-28446 - Queue update to SearchIndex of assets with Responsibility Override</comment>	
-	<sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-	<![CDATA[
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID], [Date])
-		SELECT DISTINCT 'ObjectIndex', 
-				'U',
-				A.Object, 
-				A.ObjectID,
-				oride.AssetID,
-				DATEADD(minute, 10, getdate())
-		FROM ResponsibilityTypeRelationOverrideItem oride
-		INNER JOIN [dbo].[Asset] A ON oride.AssetID = A.ID
-	]]>
-	</sql>
-  </changeSet>
 
   <changeSet author="Pappas" id="Data.Corrections.GOV-28445">
 	<comment>GOV-28445 - Change the execution table to include the Action being performed</comment>	
@@ -930,51 +846,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	</sql>
   </changeSet>
 
-	<changeSet author="tduric" id="Data.Corrections.GOV-29264">
-		<comment>GOV-29264 - Fix missing users not being added correctly by first SSO login</comment>
-		<sql dbms="mssql"
-				endDelimiter="\nGO"
-				splitStatements="true"
-				stripComments="false">
-			<![CDATA[
-				drop table if exists #forInsertMissingUsers;
 
-				with missing_users as (select 
-				gr.*
-				from reporting.Global_Resource GR
-				left join Asset A on a.Object = 'Resource' and A.ObjectID = GR.ResourceID
-				where a.ID is null)
-				SELECT	T.ID as AssetTypeID, 
-											1 as [State], 
-											O.ResourceID as SourceID, 
-											'Resource' as Object, 
-											O.ResourceID as ObjectID,
-											O.[uid],
-											O.UpdatedOn, 
-											0 as UpdatedBy
-				into #forInsertMissingUsers
-									FROM	missing_users O
-											inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
-
-				insert into dbo.Asset
-				([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
-				select 
-				U.AssetTypeID, U.State, U.SourceID, U.Object, U.ObjectID, U.UpdatedOn, U.UpdatedBy, U.UpdatedOn, U.UpdatedBy, U.[uid]
-				from #forInsertMissingUsers U
-
-				INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-				SELECT 'ObjectIndex', 
-						'D',
-						A.Object, 
-						A.ObjectID,
-						A.ID
-				FROM #forInsertMissingUsers O 
-				INNER JOIN [dbo].[Asset] A
-				ON O.ObjectID = A.ObjectID AND 'Resource' = A.Object
-				WHERE O.State <> 1;
-	]]>
-		</sql>
-	</changeSet>
 	<changeSet author="tklok" id="Data.Corrections.GOV-29274">
 		<comment>GOV-29274 - Fix missing asset paths for Resource assets</comment>
 		<sql dbms="mssql"
@@ -1068,20 +940,6 @@ end
 		</rollback>
 	</changeSet>
 
-
-	<changeSet author="TKlok" id="Data.Corrections.GOV-31250">
-		<comment>GOV-31250 - Queue reindexing of synonyms</comment>
-		<sql dbms="mssql"
-				endDelimiter="\nGO"
-				splitStatements="true"
-				stripComments="false">
-			<![CDATA[
-		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
-		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 1, getdate()), 'Synonym', 0;
-	]]>
-		</sql>
-	</changeSet>
-	
 		<changeSet author="TDuric" id="Data.Corrections.GOV-31336-2">
 		<comment>GOV-31336/GOV-31350 - Remove empty change log records.</comment>
 		<sql dbms="mssql"

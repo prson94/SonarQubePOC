@@ -42,13 +42,13 @@ namespace d360.web.Controllers
 		private readonly ICommentRepository commentsRepository;
 		private readonly ISecurityContextProvider SecProvider;
 		private readonly ITagRepository tagRepository;
-		private readonly IConnectorLabelRepository connectorLabelRepository;
+		private readonly ICatalog connectorLabelRepository;
 		private readonly IFieldsRepository fieldsRepository;
 
 		public D3SApiController(ICoreComponentSet set,
 			ICommentRepository comments,
 			ITagRepository tagRepository,
-			IConnectorLabelRepository connectorLabelRepository,
+			ICatalog connectorLabelRepository,
 			ISecurityContextProvider secProvider,
 			IFieldsRepository fieldsRepository)
 			: base(set)
@@ -4896,7 +4896,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
 
 		[Route("{type}/{uid}/permissions")]
-		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
+		public async Task<List<PermissionInfo>> GetPermissionsByObject(SystemObjects type, Guid uid)
 		{
 			if (type == SystemObjects.Tag)
 			{
@@ -4914,7 +4914,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			{
 				List<PermissionInfo> ret = new List<PermissionInfo>();
 
-				if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
+				if (await connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
 				{
 					ret.AddRange(Permission.DeleteAsset.GetList());
 				}

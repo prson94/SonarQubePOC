@@ -212,12 +212,13 @@ namespace d360.model.DataAccessLayer
 
 			if (dbComment == null)
 			{
-				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+				var msg  = string.Format(Error.CommentNotFound, commentUid.ToString());
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.ErrorDeletingComment, msg);
 			}
 
 			if (dbComment.CreatedBy != SecurityContext.ResourceID && !SecurityContext.IsAdministrator)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermissionAdmin, Error.CommentUpdatePermissionAdmin);
+				throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.ErrorDeletingComment, Error.CommentUpdatePermissionAdmin);
 			}
 
 			bool commentUpdated = false;
@@ -262,7 +263,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.RestrictVoteRemove, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 		}
 
@@ -745,7 +746,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 			else
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.ErrorGetVoterBasedOnComment, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 		}
 
@@ -766,7 +767,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 			else
 			{
-				throw new NotFoundException(Error.comment);
+				throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.ErrorGetVoterBasedOnCommentEmoji, string.Format(Error.CommentNotFound, commentUid.ToString()));
 			}
 		}
 

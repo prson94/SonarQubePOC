@@ -143,6 +143,8 @@ namespace d360.web.Controllers
             Resource resource = null;
 			RepositoryResponse<Resource> response = null;
 
+			long? assetId = null;
+
 			if (!string.IsNullOrEmpty(eMail))
             {
 				eMail = eMail.ToLowerInvariant();
@@ -248,8 +250,8 @@ namespace d360.web.Controllers
 							var loggedInOn = DateTime.UtcNow;
 
 							await Community.CreateUserInTenantAsync(SecurityContext.CompanyID, resource.ID, isCompanyAdministrator, loggedInOn, AuthenticationMethod.UI);
-							saveUserAsLocalResource(resource, loggedInOn);
-							await saveUserAsAsset(resource);
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
 						}
                         else
                         {
@@ -266,7 +268,8 @@ namespace d360.web.Controllers
 							var isAdmin = isCompanyAdministrator ? isCompanyAdministrator : companyResource.IsAdministrator; 
 							var loggedInOn = DateTime.UtcNow;
 							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, isAdmin, loggedInOn, AuthenticationMethod.UI);
-							saveUserAsLocalResource(resource, loggedInOn);
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
 						}
                         else
                         {
@@ -419,46 +422,49 @@ namespace d360.web.Controllers
                             }
                         }
                     }
-                    #endregion
+                    
+					#endregion
 
                     #region Process custom claims
 
                     try
                     {
-						var resourceAssetType = Company.Filter<AssetType>(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
-                        
-						var resourceTypeFields = Company.Filter<FieldType>(i => i.AssetTypeID.HasValue && resourceAssetType.Contains(i.AssetTypeID.Value)).ToList();
+						if (assetId.HasValue)
+						{ 
+							var resourceAssetType = Company.Filter<AssetType>(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
+							var resourceTypeFields = Company.Filter<FieldType>(i => i.AssetTypeID.HasValue && resourceAssetType.Contains(i.AssetTypeID.Value)).ToList();
 						
-						var resourceAsset = Company.Filter<Asset>(a => a.uid == resource.Uid).FirstOrDefault();
-						var resourceFields = Company.Filter<Field>(i => i.AssetID == resourceAsset.ID).ToList();
+							var resourceFields = Company.Filter<Field>(i => i.AssetID == assetId).ToList();
 
-						var shouldSaveFields = false;
+							var shouldSaveFields = false;
 
-                        foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))
-                        {
-                            var claimName = f.Name.Trim().ToLower();
+							foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))
+							{
+								var claimName = f.Name.Trim().ToLower();
 
-                            var rf = resourceFields.FirstOrDefault(i => i.FieldTypeID == f.ID);
-                            if (rf != null)
-                            {
-                                if (rf.Value != customClaims[claimName])
-                                {
-                                    rf.Value = customClaims[claimName];
-                                    shouldSaveFields = true;
-                                }
-                            }
-                            else
-                            {
-                                rf = new Field { FieldTypeID = f.ID, AssetID = resourceAsset.ID, Value = customClaims[claimName] };
-                                Company.Fields.Add(rf);
-                                shouldSaveFields = true;
-                            }
-                        }
+								var rf = resourceFields.FirstOrDefault(i => i.FieldTypeID == f.ID);
+								if (rf != null)
+								{
+									if (rf.Value != customClaims[claimName])
+									{
+										rf.Value = customClaims[claimName];
+										shouldSaveFields = true;
+									}
+								}
+								else
+								{
+									rf = new Field { FieldTypeID = f.ID, AssetID = assetId, Value = customClaims[claimName] };
+									Company.Fields.Add(rf);
+									shouldSaveFields = true;
+								}
+							}
 
-                        if (shouldSaveFields)
-                        {
-                            Company.SaveChanges();
-                        }
+							if (shouldSaveFields)
+							{
+								Company.SaveChanges();
+							}						
+						}
+
                     }
                     catch (Exception ex)
                     {
@@ -544,50 +550,6 @@ namespace d360.web.Controllers
 
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
         }
-
-		async Task saveUserAsAsset(Resource resource)
-		{
-			//if there is no asset record call UpsertUsers method which will update both community and company
-			if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
-			{
-				var execution = new ApiExecution
-				{
-					ExecutionID = Guid.NewGuid(),
-					StartedOn = DateTime.UtcNow,
-					Action = ApiExecutionAction.UpsertUsers,
-					Route = "",
-					Method = "",
-					ResourceID = resource.ID,
-					Total = 1,
-					Fields = "",
-					Error = 0,
-					Processed = 0,
-					ApplicationId = "AllowNewUserLogin"
-				};
-				var users = new UserApiModel
-									{
-										FirstName = resource.FirstName,
-										LastName = resource.LastName,
-										ResourceID = resource.ID,
-										uid = resource.Uid,
-										Username = resource.Username,
-										Email = resource.Email,
-										IsNew = true
-								};
-				
-				var usersvalid = new List<UserUpsertValidateModel>
-								{
-									new UserUpsertValidateModel
-									{
-										users = users,
-										Success = true,
-										Message = ""
-									}
-								};
-
-				await Workspace.UpsertUsersAsync(execution.Id, usersvalid, true);
-			}
-		}
 
 		void saveUserAsLocalResource(Resource resource, DateTime loggedInOn)
 		{
@@ -698,7 +660,9 @@ namespace d360.web.Controllers
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow });
+					var openIdRequest = new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow };
+                    await Community.CreateOpenIdRequestAsync(openIdRequest);
+					Cache.SetItemInListByID("openid", state, openIdRequest);
 
 					var client = new HttpClient();
 					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
@@ -903,9 +867,19 @@ namespace d360.web.Controllers
             }
 
             var baseUri = oidc.baseUri;
-            var openIdRequest = await Community.GetOpenIdRequestAsync(state);
 
-            if (openIdRequest == null)
+			OpenIdRequest openIdRequest = null;
+			openIdRequest = Cache.GetItemInListByID<OpenIdRequest, string>("openid", state);	// Read from machine cache.
+			if (openIdRequest == null)
+			{
+				openIdRequest = await Community.GetOpenIdRequestAsync(state);					// Read from secondary
+			}
+			if (openIdRequest == null)
+			{
+				openIdRequest = await Community.GetOpenIdRequestAsync(state, false);			// Read from primary
+			}
+
+			if (openIdRequest == null)
             {
 				Log.LogError($"Could not find openIdRequest.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);

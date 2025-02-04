@@ -1,4 +1,6 @@
-﻿.p-dropdown {
+﻿@import (reference) '../../../../../../Content/styles/_Variables.less';
+
+.p-dropdown {
 	display: inline-flex;
 	cursor: pointer;
 	position: relative;
@@ -93,4 +95,8 @@ ig-lazydropdownitem li {
 
 .p-dropdown-label .item-value {
 	width: calc(100% - 28px);
+}
+
+.p-inputwrapper.ng-invalid[required] .p-dropdown-label.p-inputtext.p-placeholder {
+	background: @ig-lightblue-t4;
 }

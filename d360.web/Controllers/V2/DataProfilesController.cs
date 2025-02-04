@@ -1379,14 +1379,14 @@ namespace d360.web.Controllers.V2
                 response = Request.CreateResponse(HttpStatusCode.OK, apiModels);
             }
 
-            return Ok(response);
-        }
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+		}
 
-        /// <summary>
-        /// Gets a list of versions for a given semantic type qualifier.
-        /// </summary>
-        /// <returns>A list of semantic type versions.</returns>
-        [
+		/// <summary>
+		/// Gets a list of versions for a given semantic type qualifier.
+		/// </summary>
+		/// <returns>A list of semantic type versions.</returns>
+		[
             HttpGet,
             Route("semantictypes/{qualifier}/versions"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),

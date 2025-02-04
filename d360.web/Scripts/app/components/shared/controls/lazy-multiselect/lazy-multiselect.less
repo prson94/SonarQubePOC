@@ -1,4 +1,6 @@
-﻿.p-multiselect {
+﻿@import (reference) '../../../../../../Content/styles/_Variables.less';
+
+.p-multiselect {
 	display: inline-flex;
 	cursor: pointer;
 	position: relative;
@@ -128,4 +130,8 @@
 
 .p-multiselect-panel .p-multiselect-item span {
 	white-space: nowrap;
+}
+
+.p-inputwrapper.ng-invalid[required] .p-multiselect-label.p-placeholder {
+	background: @ig-lightblue-t4;
 }
