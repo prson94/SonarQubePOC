@@ -1987,6 +1987,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error adding comment.
+        /// </summary>
+        public static string ErrorAddingComment {
+            get {
+                return ResourceManager.GetString("ErrorAddingComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error adding metric.
         /// </summary>
         public static string Erroraddingmetric {
@@ -7891,6 +7900,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility type rule.
+        /// </summary>
+        public static string ResponsibilityTypeRule {
+            get {
+                return ResourceManager.GetString("ResponsibilityTypeRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsibility type with UID &apos;{0}&apos; does not exist..
         /// </summary>
         public static string ResponsibilityTypeUidNotExist {
@@ -8859,6 +8877,15 @@ namespace d360.core.resources {
         public static string UID_not_Found {
             get {
                 return ResourceManager.GetString("UID_not_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uid.
+        /// </summary>
+        public static string UidConstant {
+            get {
+                return ResourceManager.GetString("UidConstant", resourceCulture);
             }
         }
         

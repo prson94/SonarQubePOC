@@ -3291,4 +3291,13 @@
   <data name="MeasureGroupStateMustBeActive" xml:space="preserve">
     <value>Parent metric must be an active group.</value>
   </data>
+  <data name="ResponsibilityTypeRule" xml:space="preserve">
+    <value>Responsibility type rule</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>Uid</value>
+  </data>
+  <data name="ErrorAddingComment" xml:space="preserve">
+    <value>Error adding comment</value>
+  </data>
 </root>
