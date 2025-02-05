@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -924,7 +925,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid);
                 }
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
@@ -932,10 +933,10 @@ namespace d360.web.Controllers.V2
                     string[] allowedValues = new[] { "asc", "desc" };
                     var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
-                    if (!allowedValues.Contains(directionFilter))
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
-                    }
+					if (!allowedValues.Contains(directionFilter))
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection);
+					}
                 }
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
@@ -945,27 +946,26 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid)).ConfigureAwait(false);
+                        return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid);
                     }
                 }
 
                 if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid)).ConfigureAwait(false);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid);
                 }
 
 				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
+                    return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier));
                 }
 
                 if (minConfidence <= 0 || minConfidence > 1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid)).ConfigureAwait(false);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid);
                 }
 
                 var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
-                HttpResponseMessage response;
 
                 if (isStreamResponse)
                 {
@@ -974,16 +974,23 @@ namespace d360.web.Controllers.V2
                     document.SelectWorksheet(Label.Common_ItemsSheetName);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
 
-                    response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeAssetExportFilename, semantic.Name, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+					var result = new HttpResponseMessage(HttpStatusCode.OK)
+					{
+						Content = new ByteArrayContent(stream.GetBuffer())
+					};
+					result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+					{
+						FileName = string.Format(Label.SemanticTypeAssetExportFilename, semantic.Name, DateTime.Now.ToString("ddd MMM dd yyyy"))
+					};
+					result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+					return ResponseMessage(result);
                 }
                 else
                 {
-                    response = Request.CreateResponse(HttpStatusCode.OK, results);
+					return Ok(results);
                 }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
             catch (FilterExpressionParserException ex)
             {
@@ -1447,7 +1454,7 @@ namespace d360.web.Controllers.V2
             SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type statuses.", typeof(List<SemanticStatusInfo>)),
         ]
-        public async Task<IHttpActionResult> GetSemanticTypeStatuses()
+        public async Task<HttpResponseMessage> GetSemanticTypeStatuses()
         {
             var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
             List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
@@ -1482,13 +1489,14 @@ namespace d360.web.Controllers.V2
                 byte[] bytes = stream.ToArray();
 
                 response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+
             }
             else
             {
                 response = Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList());
             }
 
-            return Ok(response);
+            return response;
         }
 
         /// <summary>

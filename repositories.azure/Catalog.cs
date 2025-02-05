@@ -586,9 +586,11 @@ order by	lvl";
 				}
 			}
 
-			string query = string.Empty;
-			query = $@"
-				SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+			string query = $@"SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+			if (tagTypeUID == Guid.Empty)
+			{
+				query = $@"SELECT top 1 ID FROM TagType order by CreatedOn asc";
+			}
 
 			dynamic tagTypeId;
 			using (var connection = ConnectionProvider.Connect())
