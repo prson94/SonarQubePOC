@@ -240,8 +240,27 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
-        this.editPopupTitle = $localize`Edit Tag`;
+		const target = event.target as HTMLElement;
+		const selectedRow = target.closest('tr');
+		if (selectedRow) {
+			if (target.classList.contains('p-checkbox-box')) {
+				selectedRow.classList.add('p-highlight');
+			}
+			else {
+				selectedRow.classList.remove('p-highlight');
+			}
+		}
 
+		this.editPopupTitle = $localize`Edit Tag`;
+		if (this.selected.length === 1) {
+			this.itemToEdit = this.selected[0];
+			return;
+		}
+		if (this.selected.length === 0) {
+			this.itemToEdit = undefined;
+			return;
+		}
+		
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
 		if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
@@ -282,7 +301,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
 		if (event === null) {
 			this.itemToEdit = item;
-			//this.selected[0] = item;
 			return;
 		}
 
@@ -334,7 +352,27 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.selected.push(item);
 		this.triggerRerenderOfSelection();
 		this.lastSelectedElement = item;
-    }
+	}
+
+	selectAllCheckboxes(event: MouseEvent) {
+		const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+		const target = (event.target as HTMLInputElement);
+		if (target.classList.contains('p-checkbox-box')) {
+			for (let i = 0; i < tableRows.length; i++) {
+				tableRows[i].classList.add('p-highlight');
+			}
+		}
+		else {
+			for (let i = 0; i < tableRows.length; i++) {
+				tableRows[i].classList.remove('p-highlight');
+			}
+		}
+
+		if (this.selected.length === 0) {
+			this.itemToEdit = undefined;
+			return;
+		}
+	}
 
     closeEditor() {
         this.showEditor = false;
