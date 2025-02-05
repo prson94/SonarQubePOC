@@ -352,7 +352,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -433,7 +433,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)

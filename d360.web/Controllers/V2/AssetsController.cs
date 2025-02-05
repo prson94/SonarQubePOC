@@ -1589,6 +1589,63 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
+		private async Task<IHttpActionResult> upsertAssetsAsync<T>(bool isInsert, Guid assetTypeUid, List<T> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, string applicationId = null)
+		{
+			if (applicationId != null && applicationId.Length > 200)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
+			}
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+			}
+
+			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.AddAsset))
+			{
+				return errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, Error.AssetTypeAddAssetPermissionsDenied);
+			}
+
+			if (assets == null)
+			{
+				assets = readRequestJsonContent<List<T>>(Request).Result;
+			}
+
+			if (assets == null || assets.Count == 0)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			ApiExecution execution = isInsert ? 
+				getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets): 
+				getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
+
+			ExecutionsRepository.UpsertExecution(execution);
+
+			bool enableJsonAttributes = false;
+			try
+			{
+				enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
+			}
+			catch
+			{
+				// Safely ignore. Just assume it is false.
+			}
+
+			List<DatabaseBulkAssetResult> results = isInsert ?
+				AssetRepository.PostAssets(assets as List<AssetInsert>, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes) :
+				AssetRepository.PutAssets(assets as List<AssetUpdate>, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
+
+			return Ok(results);
+		}
+
 		/// <summary>
 		/// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
 		/// </summary>
@@ -1624,70 +1681,7 @@ namespace d360.web.Controllers.V2
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PostBulkAssetsAsync => ";
-
-			try
-			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.AddAsset))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, Error.AssetTypeAddAssetPermissionsDenied));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
-				}
-
-				if (assets == null || assets.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
-				ExecutionsRepository.UpsertExecution(execution);
-
-				bool enableJsonAttributes = false;
-				try
-				{
-					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
-				}
-				catch
-				{
-					// Safely ignore. Just assume it is false.
-				}
-				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return await upsertAssetsAsync(true, assetTypeUid, assets, triggersWorkflow, lookupFieldsPassedByValue, applicationId);
 		}
 
 		/// <summary>
@@ -1725,63 +1719,7 @@ namespace d360.web.Controllers.V2
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PutAssetsAsync => ";
-			try
-			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
-				}
-
-				if (assets == null || assets.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
-				}
-
-				bool enableJsonAttributes = false;
-				try
-				{
-					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
-				}
-				catch
-				{
-					// Safely ignore. Just assume it is false.
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
-				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return await upsertAssetsAsync(false, assetTypeUid, assets, triggersWorkflow, lookupFieldsPassedByValue, applicationId);
 		}
 
 		/// <summary>
@@ -2678,48 +2616,40 @@ namespace d360.web.Controllers.V2
 			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PostBulkAssetsAsync => ";
-
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
+			}
 
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+			}
 
-				if (assets == null)
+			if (assets == null)
+			{
+				try
 				{
 					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 				}
-
-				if (assets == null)
+				catch
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
+					// Do nothing. Error reading body content.
 				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
-
-				ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
 			}
-			catch (Exception ex)
+
+			if (assets == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
 			}
+
+			var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
+
+			ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
+			
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -2755,46 +2685,39 @@ namespace d360.web.Controllers.V2
 			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PutBulkAssetsAsync => ";
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
+			}
 
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+			}
 
-				if (assets == null)
+			if (assets == null)
+			{
+				try
 				{
 					assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 				}
-
-				if (assets == null)
+				catch
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
+					// Do nothing. Error reading body content.
 				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
-				var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
 			}
-			catch (Exception ex)
+
+			if (assets == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
 			}
+
+			var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
+			var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
+			
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>

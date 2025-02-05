@@ -53,6 +53,7 @@
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
+	<include file="scripts/Table.dbo.AssetField.xml"/>
 	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
@@ -74,13 +75,16 @@
 	<include file="scripts/Table.dbo.FieldCounterValue.xml"/>
 	<include file="scripts/Table.dbo.Follow.xml"/>
 	<include file="scripts/Table.dbo.Group.xml"/>
+	<include file="scripts/Table.dbo.GroupField.xml"/>
 	<include file="scripts/Table.dbo.HelpResource.xml"/>
 	<include file="scripts/Table.dbo.Predicate.xml"/>
 	<include file="scripts/Table.dbo.IntersectType.xml"/>
 	<include file="scripts/Table.dbo.Intersect.xml"/>
+	<include file="scripts/Table.dbo.IntersectField.xml"/>
 	<include file="scripts/Table.dbo.IssueType.xml"/>
 	<include file="scripts/Table.dbo.IssueTypeRelation.xml"/>	
 	<include file="scripts/Table.dbo.Issue.xml"/>
+	<include file="scripts/Table.dbo.IssueField.xml"/>
 	<include file="scripts/Table.dbo.Load.xml"/>
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
 	<include file="scripts/Table.dbo.LoadItem.xml"/>
@@ -90,6 +94,7 @@
 	<include file="scripts/Table.dbo.Color.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
+	<include file="scripts/Table.dbo.ResourceField.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
 	<include file="scripts/Table.dbo.ResourceSetting.xml"/>
