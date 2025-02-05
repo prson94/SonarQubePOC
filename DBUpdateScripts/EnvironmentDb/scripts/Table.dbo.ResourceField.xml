@@ -10,7 +10,14 @@
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResourceField')
 BEGIN
-
+	CREATE TABLE [dbo].[ResourceField](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		[Value] [sql_variant] NOT NULL,
+		[LongText] [nvarchar](max) NULL,
+		CONSTRAINT [PK_ResourceField] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
 END
 ]]>
   </sql>
