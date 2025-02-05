@@ -769,6 +769,7 @@ select @assetId;
 			// Load user and field data into data tables.
 			int itemNumber = 0;
 			users.ForEach(u => {
+
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
 				Guid? executionItemUid = null;
@@ -796,17 +797,26 @@ select @assetId;
 				jsonObject.Add("IsAdministrator", u.users.IsAdministrator);
 
 				row["Properties"] = jsonObject.ToString();
-				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.users.Fields);
 
 				var message = "";
-				if (u.Success != null)
+
+				if (u.Success == null)
 				{
-					message = u.Message;
+					var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.users.Fields);
+
+					if (u.Success != null)
+					{
+						message = u.Message;
+					}
+					if (!fieldProcessingResult.Item1)
+					{
+						u.Success = false;
+						message += string.Join("; ", fieldProcessingResult.Item2);
+					}
 				}
-				if (!fieldProcessingResult.Item1)
+				else 
 				{
-					u.Success = false;
-					message += string.Join("; ", fieldProcessingResult.Item2);
+					message = u.Message + "";
 				}
 
 				if (u.Success == null || u.Success == true)
@@ -819,6 +829,7 @@ select @assetId;
 				{   // Add error to outgoing.
 					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false, ExecutionItemUid = executionItemUid });
 				}
+
 			});
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect()) 
