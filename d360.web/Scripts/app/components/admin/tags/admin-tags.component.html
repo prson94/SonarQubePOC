@@ -81,7 +81,7 @@
                                  [(selection)]="selected">
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th style="width: 5%;">
+                                    <th style="width: 5%;" (click)="selectAllCheckboxes($event);" class="enable-pointer-events">
                                         <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                                     </th>
                                     <th [pSortableColumn]="'Value'" style="width: 50%">
@@ -200,11 +200,11 @@
                         [setMinMaxWidth]="false"
                         [storageKey]="sidePanelStorageKey"
                         [expanded]="true"
-                        [showEmptyOverlay]="selected.length == 0"
+                        [showEmptyOverlay]="itemToEdit == undefined"
                         (expandedChange)="sidePanelOpen=$event"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen">
-                    <ng-container *ngIf="selected.length > 0">
+                    <ng-container *ngIf="itemToEdit != undefined">
                         <ig-tag-detail [selectedItem]="itemToEdit"
                                        [selectedTagType]="itemToEdit"
                                        [useAccordion]="true"
