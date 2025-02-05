@@ -1096,6 +1096,8 @@ namespace d360.web.Controllers.V2
 			
 			var validatedUsers = await Workspace.ValidateUserData(users, true, SecurityContext.IsAdministrator, lookupFieldsPassedByValue);
 
+			await Community.CreateUsersInTenantAsync(SecurityContext.CompanyID, validatedUsers);
+
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 			Company.Add(execution);
 

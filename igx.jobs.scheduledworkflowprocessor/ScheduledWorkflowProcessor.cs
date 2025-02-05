@@ -59,7 +59,10 @@ namespace igx.jobs.scheduledworkflowprocessor
 						{ "UrlPrefix", c.UrlPrefix }
 					};
 
-					SettingValuesForWorkflow wfsv = Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(c.CompanyID).GetAwaiter().GetResult();
+					
+					var settings = Community.ReadSettingsAsync(c.CompanyID).Result;
+					var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
+					var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
 
 					using (log.BeginScope(logProperties))
 					{
@@ -81,7 +84,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 								foreach (var registration in scheduledWorkflows)
 								{
 									// If the registration applies fire of the workflow and break if not go to the next one.
-									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId, wfsv.fromName, wfsv.fromEmail).Result)
+									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId, fromName, fromEmail).Result)
 									{
 										break;
 									}

@@ -48,76 +48,28 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityType_AfterDelete]
-   ON  [dbo].[ResponsibilityType] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Delete', [queue].WriteIndexXml('Removed', 'ResponsibilityType', ID, coalesce(UpdatedBy, 0)), 'ResponsibilityType', ID from deleted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterDelete-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[ResponsibilityType_AfterDelete]
+]]>
+  </sql>
+ </changeSet>
 
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterInsert-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[ResponsibilityType_AfterInsert]
+]]>
+  </sql>
+ </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityType_AfterInsert]
-   ON  [dbo].[ResponsibilityType] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Add', [queue].WriteIndexXml('', 'ResponsibilityType', ID, coalesce(UpdatedBy, 0)), 'ResponsibilityType', ID from inserted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[ResponsibilityType_AfterUpdate]
-   ON  [dbo].[ResponsibilityType] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Update', [queue].WriteIndexXml('', 'ResponsibilityType', ID, coalesce(UpdatedBy, 0)), 'ResponsibilityType', ID from inserted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityType-ResponsibilityType_AfterUpdate-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[ResponsibilityType_AfterUpdate]
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

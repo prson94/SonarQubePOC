@@ -3,6 +3,7 @@ using d360.core.entities.Process;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
+using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
@@ -33,14 +34,18 @@ namespace d360.web.Controllers.V2
 	{
 		private readonly IAssetRepository AssetRepository;
 		private readonly ICatalog ProcessRepository;
+		private readonly IQueueSource QueueSource;
 
 		public ProcessController(
 			ICoreComponentSet set, 
-			IAssetRepository assetRepository, 
-			ICatalog processRepository) : base(set)
+			IAssetRepository assetRepository,
+			ICatalog processRepository,
+			IQueueSource queueSource
+			) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
+			QueueSource = queueSource;
 		}
 
 		/// <summary>
@@ -447,6 +452,8 @@ namespace d360.web.Controllers.V2
 				toAdd, toUpdate, toDelete,
 				targetAsset.ID, isDiagramReplace,
 				copyRelationshipModel, pdCopyMapper);
+
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			if (validationRes.Count > 0)
 			{

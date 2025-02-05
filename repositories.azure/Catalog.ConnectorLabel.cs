@@ -188,7 +188,8 @@ namespace repositories.azure
 					{
 						State = (int)State.Deleted,
 						Uid = Guid.NewGuid(),
-						Value = model.Value.Trim()
+						Value = model.Value.Trim(),
+						CurrentUserId
 					};
 
 					var label = await connection.QueryFirstOrDefaultAsync<ConnectorLabel>("select c.uid, c.Value, c.State from dbo.ConnectorLabel c where c.Value = @Value and c.State = @State", parameters, commandTimeout: CommandTimeout);
@@ -196,7 +197,7 @@ namespace repositories.azure
 					if (label == null)
 					{
 						label = new ConnectorLabel { Value = model.Value };
-						await connection.ExecuteAsync("insert into dbo.ConnectorLabel (uid, Value) values (@Uid, @Value)", parameters, commandTimeout: CommandTimeout);
+						await connection.ExecuteAsync("insert into dbo.ConnectorLabel (uid, Value, CreatedBy, UpdatedBy) values (@Uid, @Value, @CurrentUserId, @CurrentUserId)", parameters, commandTimeout: CommandTimeout);
 						label.uid = parameters.Uid;
 					}
 					else
@@ -594,7 +595,7 @@ namespace repositories.azure
 				}
 				var parameters = new
 				{
-					q = q
+					q
 				};
 
 				using (var connection = (SqlConnection)ConnectionProvider.Connect())

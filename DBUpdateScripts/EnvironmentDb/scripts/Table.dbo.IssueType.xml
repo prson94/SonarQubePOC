@@ -58,78 +58,28 @@ END
 	</rollback>
   </changeSet>   
 
-  <changeSet author="Core" id="Table.dbo.IssueType-IssueType_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[IssueType_AfterDelete]
-   ON  [dbo].[IssueType] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		select 'Delete', [queue].WriteIndexXml('Removed', 'IssueType', ID, coalesce(UpdatedBy, 0)), 'IssueType', ID from deleted
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+ <changeSet author="Pappas" id="Table.dbo.IssueType-IssueType_AfterDelete-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[IssueType_AfterDelete]
+]]>
+  </sql>
+ </changeSet>
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.IssueType-IssueType_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[IssueType_AfterInsert]
-	ON [dbo].[IssueType]
-	FOR INSERT
-AS
-BEGIN
-	SET NOCOUNT ON;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', 'IssueType', ID, UpdatedBy), 'IssueType', ID from inserted;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.IssueType-IssueType_AfterUpdate-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[IssueType_AfterUpdate]
-	ON [dbo].[IssueType]
-	FOR UPDATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', 'IssueType', ID, UpdatedBy), 'IssueType', ID from inserted;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.IssueType-IssueType_AfterInsert-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[IssueType_AfterInsert]
+]]>
+  </sql>
+ </changeSet>	
+	
+ <changeSet author="Pappas" id="Table.dbo.IssueType-IssueType_AfterUpdate-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[IssueType_AfterUpdate]
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

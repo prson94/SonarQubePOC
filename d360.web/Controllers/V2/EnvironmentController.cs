@@ -2678,6 +2678,9 @@ select	r.uid as ResourceUid,
 			{
 				await this.ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage", model.LanguageCode);
 			}
+			string langKey = "ResourceLanguages";
+			string resourceKey = $"{SecurityContext.CompanyID}_{SecurityContext.ResourceID}";
+			Cache.SetItemInListByID(langKey, resourceKey, model.LanguageCode);
 
 			return Request.CreateResponse(HttpStatusCode.OK);
 		}

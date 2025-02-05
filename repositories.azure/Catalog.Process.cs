@@ -66,7 +66,7 @@ namespace repositories.azure
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				targetAsset = await connection.QueryFirstOrDefaultAsync<Asset>(
-					$"Select * from dbo.Asset a Where Where a.uid = @assetUid", new { assetUid },
+					$"Select * from dbo.Asset a Where a.uid = @assetUid", new { assetUid },
 					commandTimeout: CommandTimeout);
 			}
 
@@ -255,7 +255,6 @@ namespace repositories.azure
 
 			foreach (var item in toAdd)
 			{
-				var executionUid = Guid.NewGuid();
 				var row = assetTable.NewRow();
 				row["ExecutionID"] = execution.ExecutionID;
 				row["ExecutionItemUid"] = item.AssetUid;
@@ -488,12 +487,12 @@ namespace repositories.azure
 							//Copy relationship from source asset to target asset
 							if (copyRelationshipModel.Count > 0)
 							{
-								CopyRelationships(execution, copyRelationshipModel, conn, trans);
+								await CopyRelationships(execution, copyRelationshipModel, conn, trans);
 							}
 
 							if (pdCopyMapper.Count > 0)
 							{
-								CopyTags(execution, pdCopyMapper, conn, trans);
+								await CopyTags(execution, pdCopyMapper, conn, trans);
 							}
 						}
 
@@ -596,23 +595,18 @@ namespace repositories.azure
 					{
 						try
 						{
-							if (trans != null)
-							{
-								trans.Rollback();
-							}
+							trans?.Rollback();
 						}
 						catch
 						{
 						}
-						//TODO: Chetan -> UnComment & write equivalent using Dapper
-						//using (var connection = (SqlConnection)ConnectionProvider.Connect())
-						//CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+						await UpdateExecutionWithErrorFromException(execution, ex);
 						validationRes.Add(new ValidationError() { Error = ex.Message });
 					}
 				}
 
-				List<DatabaseBulkAssetResult> assetResults = new List<DatabaseBulkAssetResult>();
-				List<DatabaseBulkAssetResult> intersectResults = new List<DatabaseBulkAssetResult>();
+				var assetResults = new List<DatabaseBulkAssetResult>();
+				var intersectResults = new List<DatabaseBulkAssetResult>();
 
 				//All added, updated and deleted nodes needs graph events
 				assetResults.AddRange(addedAssets.Select(uid => new DatabaseBulkAssetResult()
@@ -661,9 +655,6 @@ namespace repositories.azure
 						});
 					}
 				}
-
-				//TODO: Chetan -> Move this piece of Code to Controller layer (IQueueSource QueueSource)
-				//QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 				return validationRes;
 			}
 		}
@@ -796,10 +787,18 @@ namespace repositories.azure
 				select count(*) from [Intersect] I where A.ID = I.SubjectAssetID
 				)Rels(cnt)
 			group by a.uid";
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			try
 			{
-				var response = await connection.QueryAsync<ProcessDiagramBadge>(badgesSql, new { assetUid }, commandTimeout: CommandTimeout);
-				return response;
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var response = await connection.QueryAsync<ProcessDiagramBadge>(badgesSql, new { assetUid }, commandTimeout: CommandTimeout);
+					return response;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
 			}
 		}
 
@@ -851,16 +850,15 @@ namespace repositories.azure
 																select touid as assetuid from processexpandeddata pxd
 																where pxd.diagramassetuid = @assetuid
 
-
 															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
+																 inner join Asset a on a.uid = ass.assetuid
+																 inner join [Intersect] i on i.ObjectAssetID = a.ID
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
 															 union
 															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
+																 inner join Asset a on a.uid = ass.assetuid
+																 inner join [Intersect] i on i.SubjectAssetID = a.ID
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
 															", new { assetUid });
 
 						return copyRelationshipModel;
@@ -871,7 +869,6 @@ namespace repositories.azure
 			}
 			catch (Exception)
 			{
-
 				throw;
 			}
 		}
@@ -883,7 +880,7 @@ namespace repositories.azure
 				using (var connection = (SqlConnection)ConnectionProvider.Connect())
 				{
 					var result = await connection.QueryFirstOrDefaultAsync<Guid>(@"
-					select top 1 diagramassetuid from processexpandeddata 
+					select top 1 diagramassetuid from processexpandeddata
 					where fromuid = @assetUid or touid = @assetUid", new { assetUid });
 
 					return result;
@@ -891,11 +888,9 @@ namespace repositories.azure
 			}
 			catch (Exception)
 			{
-
 				throw;
 			}
 		}
-
 
 		private class DiagramAssetRelationshipModel
 		{
@@ -985,8 +980,8 @@ namespace repositories.azure
 					}
 
 					var typesToAvoid = new List<string>() {
-					DataType.ComplexRelationLookup.ToString(),
-					DataType.OwnershipLookup.ToString()
+					nameof(DataType.ComplexRelationLookup),
+					nameof(DataType.OwnershipLookup)
 					};
 
 					List<FieldType> fields = new List<FieldType>();

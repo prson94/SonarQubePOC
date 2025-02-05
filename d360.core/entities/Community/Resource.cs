@@ -8,7 +8,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract]
+    [DataContract, Table("Resource", Schema = "dbo")]
     public class Resource : BaseIntObject, IIntObject, IFieldsObject
     {
         #region Properties
@@ -49,8 +49,6 @@ namespace d360.core.entities
         public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
 
         #endregion
-
-        public ICollection<CompanyResource> CompanyResources { get; set; }
 
         public string FormatDisplayName()
         {

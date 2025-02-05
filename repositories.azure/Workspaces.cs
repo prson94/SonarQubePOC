@@ -139,6 +139,39 @@ namespace repositories.azure
 					}				
 				}
 
+				//
+				if (response == null)
+				{
+					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
+						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						   from ResourceGroup s
+						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
+						   where groupid = @groupid 
+						   and r.Uid in @userUids",
+						new { userUids, groupId });
+
+					if (!string.IsNullOrWhiteSpace(useruIdsstring))
+					{
+						response = new(400, string.Format(Error.UserAlreadyMemberOfGroup, useruIdsstring));
+					}
+			}
+
+				if (response == null)
+				{
+					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
+						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						   from ResourceGroup s
+						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
+						   where groupid = @groupid 
+						   and r.Uid in @userUids",
+						new { userUids, groupId });
+
+					if (!string.IsNullOrWhiteSpace(useruIdsstring))
+					{
+						response = new(400, string.Format(Error.UserAlreadyMemberOfGroup, useruIdsstring));
+					}
+			}
+
 				if (response == null)
 				{
 					var rowsUpdated = await connection.ExecuteAsync(@"
@@ -192,7 +225,7 @@ where	g.id = @groupId;
 			bool isUidValid = queryParams.CheckForQueryParameter<Guid>("uid", "g.Uid", "@uid", ref dbArgs, ref queryFilters);
 			if (!isUidValid)
 			{
-				return new(400, "The Uid provided is invalid.");
+				return new(400, Error.GroupUidNotExists);
 			}
 			queryParams.CheckForQueryParameter<string>("name", "g.Name", "@name", ref dbArgs, ref queryFilters);
 			if (queryParams.Any(q => q.Key.ToLower() == "resourceuid"))
@@ -244,14 +277,14 @@ where	g.id = @groupId;
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 						fieldColumns.Add($"{prefix}.FormattedValue as [{ft.Name}]");
-						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
+						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
 					}
 					else
 					{
 						string sqlDataType = dt.AsSqlDataType();
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
-						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.[ObjectType] = 'Group' and {prefix}.ObjectID = G.ID)");
+						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
 					{
@@ -264,6 +297,7 @@ where	g.id = @groupId;
 			
 			if (simpleQueryFilters.Count > 0)
 			{
+				countSql += Environment.NewLine + " inner join dbo.Asset ag on ag.Object = 'Group' and ag.ObjectID = g.ID "; 
 				queryFilters.Add(string.Join(" or ", simpleQueryFilters));
 				countSql += $" {string.Join("\n", fieldJoins)}";
 			}
@@ -273,6 +307,7 @@ where	g.id = @groupId;
 			var sql = $@"
 select	{string.Join(", ", fieldColumns)}
 from	[Group] G
+		inner join dbo.Asset ag on ag.Object = 'Group' and ag.ObjectID = g.ID
 		left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
 		left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
 		{string.Join("\n", fieldJoins)}";
@@ -625,6 +660,85 @@ end";
 			return response;
 		}
 
+		public async Task<RepositoryResponse<long?>> UpsertSingleUserAsync(Resource user)
+		{
+			RepositoryResponse<long?> response = new(null, 200, true);
+
+			string sql = @"
+if exists (select 1 from reporting.Global_Resource where ResourceID = @ID)
+begin
+	update	reporting.Global_Resource
+	set		FirstName = @FirstName,
+			LastName = @LastName,
+			UpdatedOn = @UpdatedOn,
+			LastLoggedInOn = getutcdate()
+	where	ResourceID = @ID
+end
+else
+begin
+	insert into reporting.Global_Resource (ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, [State], LastLoggedInOn, [uid], UpdatedOn)
+	values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, 1, getutcdate(), @Uid, @UpdatedOn)
+end
+
+declare @assetTypeId int,
+		@assetId bigint,
+		@FullName nvarchar(500) = @FirstName + ' ' + @LastName;
+select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+if exists (select 1 from Asset where Uid = @Uid)
+begin
+	select @assetId = ID from dbo.Asset where Uid = @Uid;
+end
+else
+begin
+	insert into dbo.Asset (AssetTypeID, [State], Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, uid)
+	values (@assetTypeId, 1, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
+	set @assetId = SCOPE_IDENTITY();
+end
+
+declare @pathXml xml;
+set @pathXml =	(
+				select	1 as '@level',
+						1 as '@position',
+						@assetTypeId as '@assetTypeId',
+						@assetId as '@assetId',
+						@FullName as 'data()'
+				for xml path('segments'),root('path')
+				)
+if exists (select 1 from AssetPath where ID = @assetId)
+begin
+	update	AssetPath 
+	set		Segments = @pathXml
+	where	ID = @assetId;
+end
+else
+begin
+	insert into AssetPath (ID, Segments) values (@assetId, @pathXml);
+end
+
+if exists (select 1 from AssetDisplayValue where AssetID = @assetId)
+begin
+	update	AssetDisplayValue 
+	set		DisplayValue = @FullName,
+			DisplayValuePrefix = @FullName
+	where	AssetID = @assetId;
+end
+else
+begin
+	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValuePrefix) values (@assetId, @FullName, @FullName);
+end
+
+select @assetId;
+";
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				response.Data = await connection.ExecuteScalarAsync<long>(sql, user);
+			}
+
+			return response;
+		}
+
 
 		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false)
 		{
@@ -713,6 +827,9 @@ end";
 
 				if (table.Rows.Count > 0)
 				{
+					await connection.ExecuteAsync(@"delete from api.ExecutionItem where executionid = @executionId", new { executionId});
+
+
 					SqlBulkCopy bulkCopy = connection.CreateBulkCopy("api.ExecutionItem", 1000, 1200);
 					bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
@@ -760,6 +877,7 @@ end";
 			{
 				var success = true;
 				var messages = new List<string>();
+				Guid orgUid = user.uid ?? Guid.Empty;
 
 				UserApiModel userrow = new UserApiModel();
 
@@ -792,6 +910,13 @@ end";
 				userrow.uid = user.uid;
 
 				#region "Validatation"
+
+				if (!user.IsNew && !user.ResourceID.HasValue)
+				{
+					success = false;
+					messages.Add(string.Format(Error.UserUidNotFound, orgUid));
+				}
+
 
 				if (string.IsNullOrEmpty((user.Username ?? "").Trim()))
 				{
@@ -906,6 +1031,8 @@ end";
 
 				usersvalidaterow.Message = messages.Any() ? string.Join(". ", messages) + ". " : "";
 
+				usersvalidaterow.Message = usersvalidaterow.Message.Replace("..", ".").Trim();
+
 				usersvalidate.Add(usersvalidaterow);
 			}
 
@@ -937,41 +1064,44 @@ end";
 
 			foreach (var user in usersvalidate)
 			{
-				var row = userTable.NewRow();
-				row["uid"] = user.users.uid;
-				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
-				row["ItemNumber"] = user.users.ItemNumber;
-				row["Username"] = user.users.Username;
-				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
-				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-				row["Password"] = user.users.Password ?? (object)DBNull.Value;
-				row["State"] = user.users.State;
-				row["IsAdministrator"] = user.users.IsAdministrator;
-				row["IsNew"] = user.users.IsNew;
-				row["Success"] = user.Success ?? (object)DBNull.Value;
-				row["Message"] = user.Message ?? "";
-				userTable.Rows.Add(row);
-
-				if (user.users.Fields != null)
+				if (user.Success ?? true)
 				{
-					foreach (var field in user.users.Fields.Keys)
-					{
-						var fieldRow = fieldTable.NewRow();
-						fieldRow["ItemNumber"] = user.users.ItemNumber;
-						fieldRow["FieldName"] = field ?? (object)DBNull.Value;
-						fieldRow["FieldValue"] = user.users.Fields[field] ?? (object)DBNull.Value;
-						var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
-						if (fieldType != null)
-						{
-							fieldRow["FieldTypeID"] = fieldType.ID;
-						}
-						else
-						{
-							fieldRow["FieldTypeID"] = (object)DBNull.Value;
-						}
-						fieldRow["LookupValue"] = (object)DBNull.Value;
+					var row = userTable.NewRow();
+					row["uid"] = user.users.uid;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = user.users.Password ?? (object)DBNull.Value;
+					row["State"] = user.users.State;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["IsNew"] = user.users.IsNew;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message ?? "";
+					userTable.Rows.Add(row);
 
-						fieldTable.Rows.Add(fieldRow);
+					if (user.users.Fields != null)
+					{
+						foreach (var field in user.users.Fields.Keys)
+						{
+							var fieldRow = fieldTable.NewRow();
+							fieldRow["ItemNumber"] = user.users.ItemNumber;
+							fieldRow["FieldName"] = field ?? (object)DBNull.Value;
+							fieldRow["FieldValue"] = user.users.Fields[field] ?? (object)DBNull.Value;
+							var fieldType = fieldTypes.FirstOrDefault(f => f.Name == field);
+							if (fieldType != null)
+							{
+								fieldRow["FieldTypeID"] = fieldType.ID;
+							}
+							else
+							{
+								fieldRow["FieldTypeID"] = (object)DBNull.Value;
+							}
+							fieldRow["LookupValue"] = (object)DBNull.Value;
+
+							fieldTable.Rows.Add(fieldRow);
+						}
 					}
 				}
 			}
@@ -992,13 +1122,13 @@ end";
 										[Username] [nvarchar](250),
 										[FirstName] [nvarchar](250),
 										[LastName] [nvarchar](250),
-										[Password] [nvarchar](50) MASKED WITH (FUNCTION = 'default()'),
+										[Password] [nvarchar](50),
 										[State] [int],
 										[IsAdministrator] [bit],
 										[IsNew] [bit],
 										[Success] [bit],
 										[Message] [nvarchar](4000) not null,
-										CONSTRAINT [PK_TempUser] PRIMARY KEY CLUSTERED ([ItemNumber] ASC )
+										PRIMARY KEY CLUSTERED ([ItemNumber] ASC )
 									);
 
 									IF OBJECT_ID('tempdb..#TempUserField') IS NOT NULL
@@ -1009,9 +1139,11 @@ end";
 											[FieldName] [nvarchar](250),
 											[FieldValue] [nvarchar](max),
 											[LookupValue] [nvarchar](max),
-											[FieldTypeID] [int],
-											CONSTRAINT [PK_TempUserField] PRIMARY KEY CLUSTERED ([ItemNumber], FieldTypeID)
-									);"
+											[FieldTypeID] [int]
+									);
+									
+									CREATE	INDEX IX_TempUserField ON #TempUserField ([ItemNumber]) INCLUDE (FieldTypeID)
+									"
 					,
 						transaction: trans);
 					try

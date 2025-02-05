@@ -722,6 +722,13 @@ namespace d360.model.DataAccessLayer
 
 				// Scoring - get asset measures that are impacted
 				var impactedAssets = CompanyContext.GetScoreImpactedAssetsBasedOnResponsibilityAllocation(assetType, responsibility);
+				var reindexAssets = CompanyContext.Query<Guid>(@"
+					select	distinct 
+							A.Uid
+					from    ResponsibilityDetailByAssetTypeID (@ID) O 
+							inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
+							inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID",
+					new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID }).ToList();
 
 				//check is there responsibility rules for this responsibility type
 				var ruleUids = CompanyContext.Filter<ResponsibilityTypeRelationRule>(i => i.ResponsibilityTypeID == responsibility.ID && i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).Select(i => i.UID.Value).ToList();
@@ -742,6 +749,7 @@ namespace d360.model.DataAccessLayer
 
 						// If you made it this far, then send to scoring engine.
 						CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
+						CompanyContext.CreateAssetReindexRequest(reindexAssets, ReindexBatchOperation.Update);
 
 						return new ResponsibilityTypeAllocationResponseModel()
 						{
@@ -767,6 +775,7 @@ namespace d360.model.DataAccessLayer
 
 					// If you made it this far, then send to scoring engine.
 					CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
+					CompanyContext.CreateAssetReindexRequest(reindexAssets, ReindexBatchOperation.Update);
 
 					return new ResponsibilityTypeAllocationResponseModel()
 					{
@@ -941,6 +950,7 @@ from    Asset A
 			new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today }).ToList();
 
 			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+			CompanyContext.CreateAssetReindexRequest(new List<Guid> { asset.uid }, ReindexBatchOperation.Update);
 		}
 
 		public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
@@ -1149,6 +1159,22 @@ from    Asset A
 				and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
 				and V.Definition <> '{}'", new { today = DateTime.UtcNow.Date }, transaction: trans).ToList();
 
+				// Get the impacted assets that we need to re-index.
+				var assetsForIndex = CompanyContext.Connection.Query<Guid>(@"
+	select  A.AssetUid
+	from    #results Ru
+			inner join ResponsibilityTypeRelationRule R on R.Uid = Ru.Uid and Ru.Success is null
+			cross apply (
+						select  A.Uid as AssetUid, T.Uid as AssetTypeUid
+						from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
+								inner join ResponsibilityRuleResultAsset RA on RA.RuleID = R.ID and RA.AssetID = A.ID and RA.AssetTypeID = 0
+						union 
+						select  A.Uid as AssetUid, T.Uid as AssetTypeUid
+						from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
+								inner join ResponsibilityRuleResultAsset RA on RA.RuleID = R.ID and RA.AssetTypeID = T.ID and RA.AssetTypeID <> 0
+						) A 
+			inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID ", transaction: trans).ToList();
+
 				// Perform deletes on impacted tables and save results to temporary table.
 				await CompanyContext
 					.Connection
@@ -1180,6 +1206,8 @@ from    Asset A
 				trans.Commit();
 
 				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+				CompanyContext.CreateAssetReindexRequest(assetsForIndex, ReindexBatchOperation.Update);
+
 			}
 			catch (Exception)
 			{
@@ -1383,6 +1411,7 @@ from    Asset A
 		public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
 		{
 			CompanyContext.CreateRescoreRequests(new List<Guid> { uid }, ScoreType.Governance);
+			CompanyContext.CreateAssetReindexRequest(new List<Guid> { uid }, ReindexBatchOperation.Update);
 
 			return CompanyContext.Connection.ExecuteAsync(@"
                 DELETE FROM source

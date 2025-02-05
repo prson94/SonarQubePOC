@@ -96,6 +96,8 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<int>> CreateUserAsync(Resource user)
 		{
 			RepositoryResponse<int> response = new(400);
+			user.APIPublicKey = GenerateOpenIdRequestValue(25);
+			user.APIPrivateKey = GenerateOpenIdRequestValue(50);
 			user.Password = PasswordHelper.HashPassword(user.Password);
 			user.UpdatedOn = DateTime.UtcNow;
 			using (var connection = Connect())
@@ -114,7 +116,7 @@ namespace repositories.azure
 			var sql = 
 				"insert into CompanyResource (CompanyID, ResourceID, IsAdministrator, LastLoggedInOn, [State]) " +
 				"values (@companyId, @resourceId, @isAdministrator, @loggedInOn, @state); " +
-				"insert into CompanyResourceState (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
 				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
@@ -275,21 +277,31 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 
 			foreach (var user in users)
 			{
-				var row = tbl.NewRow();
-				row["ItemNumber"] = user.users.ItemNumber;
-				row["Username"] = user.users.Username ?? (object)DBNull.Value;
-				row["Email"] = user.users.Email ?? (object)DBNull.Value;
-				row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
-				row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
-				row["Password"] = user.users.Password ?? (object)DBNull.Value;
-				row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
-				row["IsAdministrator"] = user.users.IsAdministrator;
-				row["State"] = user.users.State ?? CompanyResourceState.Active;
-				row["uid"] = user.users.uid ?? (object)DBNull.Value;
-				row["Success"] = user.Success ?? (object)DBNull.Value;
-				row["Message"] = user.Message;
+				string password = user.users.Password ?? string.Empty;
 
-				tbl.Rows.Add(row);
+				if (!string.IsNullOrEmpty(password))
+				{
+					password = PasswordHelper.HashPassword(password);
+				}
+
+				if (user.Success ?? true)
+				{
+					var row = tbl.NewRow();
+					row["ItemNumber"] = user.users.ItemNumber;
+					row["Username"] = user.users.Username ?? (object)DBNull.Value;
+					row["Email"] = user.users.Email ?? (object)DBNull.Value;
+					row["FirstName"] = user.users.FirstName ?? (object)DBNull.Value;
+					row["LastName"] = user.users.LastName ?? (object)DBNull.Value;
+					row["Password"] = password ?? (object)DBNull.Value;
+					row["ResourceID"] = user.users.ResourceID ?? (object)DBNull.Value;
+					row["IsAdministrator"] = user.users.IsAdministrator;
+					row["State"] = user.users.State ?? CompanyResourceState.Active;
+					row["uid"] = user.users.uid ?? (object)DBNull.Value;
+					row["Success"] = user.Success ?? (object)DBNull.Value;
+					row["Message"] = user.Message;
+
+					tbl.Rows.Add(row);
+				}
 			}
 
 			using (var connection = Connect())
@@ -340,6 +352,21 @@ where U.[uid] = '00000000-0000-0000-0000-000000000000';
 						// NOTE: Check to ensure we are not trying to insert duplicate usernames.
 
 						await connection.ExecuteAsync(@"
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Email already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Email = T.Email
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
+update	S
+set		S.Success = 0,
+		S.Message = 'Username already exists for different user'
+from	#Users S
+		inner join [Resource] T on S.Username = T.Username
+where coalesce(S.Success,1) = 1 and coalesce(S.ResourceID,0) != T.ID;
+
 update	T
 set		T.FirstName = S.FirstName,
 		T.LastName = S.LastName,
@@ -408,6 +435,15 @@ end
 									user.users.uid = user.users.uid == Guid.Empty ? result.uid : user.users.uid;
 								}
 								user.users.CompanyResourceState = CompanyResourceState.Active;
+								if (user.Success ?? true)
+								{
+									bool isSuccess = result.Success ?? true;
+									if (isSuccess == false)
+									{
+										user.Success = false;
+										user.Message = result?.Message ?? "User record not validate";
+									}
+								}
 							}
 						}
 
@@ -472,15 +508,15 @@ end
 			return connectionString;
 		}
 
-		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state)
+		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true)
 		{
 			OpenIdRequest model = null;
 
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@state", state);
-			using (var connection = Connect(true))
+			using (var connection = Connect(fromSecondary))
 			{
-				model = await connection.QuerySingleAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
+				model = await connection.QueryFirstOrDefaultAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
 			}
 
 			return model;
@@ -514,22 +550,24 @@ end
 			using (var connection = Connect(true))
 			{
 				response = await connection.QuerySingleOrDefaultAsync<OidcAuthenticationSettings>($@"
-select	oidc.*
+declare @json nvarchar(max)
+select	@json = d.AuthenticationSettings
 from	CompanyDomainSetting u
 		inner join DomainSetting d on d.ID = u.DomainSettingID 
-		cross apply openjson(d.AuthenticationSettings) with (
-			baseUri nvarchar(500), 
-			discoveryUri nvarchar(500), 
-			jwtAuthorityUri nvarchar(500),
-			clientId nvarchar(500), 
-			clientSecret nvarchar(500), 
-			audience nvarchar(500), 
-			nameClaimType nvarchar(500), 
-			scopesJson nvarchar(max) as json,
-			extraParametersJson nvarchar(max) as json
-		) oidc
-where	u.UrlPrefix = @prefix",
-					new { prefix }
+where	u.UrlPrefix = @prefix
+
+select	oidc.* 
+from	openjson(@json) with (
+	baseUri nvarchar(500), 
+	discoveryUri nvarchar(500), 
+	jwtAuthorityUri nvarchar(500),
+	clientId nvarchar(500), 
+	clientSecret nvarchar(500), 
+	audience nvarchar(500), 
+	nameClaimType nvarchar(500),
+	scopesJson nvarchar(max) '$.scopes' as json,
+	extraParametersJson nvarchar(max) '$.extraParameters' as json
+) oidc", new { prefix }
 				);
 			}
 
@@ -888,6 +926,19 @@ from	CompanyResource CR
 			return response;
 		}
 
+		public async Task<bool> RemoveOldOpenIdRequestsAsync()
+		{
+			bool success = false;
+
+			using (var connection = Connect())
+			{
+				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where CreatedOn < @dt", new { dt = DateTime.UtcNow.AddMinutes(-30) });
+				success = recordsCount > 0;
+			}
+
+			return success;
+		}
+
 		public async Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request)
 		{
 			bool success = false;
@@ -1030,7 +1081,9 @@ select * from [Resource] where ID = @userId";
 				"update CompanyResource " +
 				"set	IsAdministrator = @isAdministrator, " +
 				"		LastLoggedInOn = @loggedInOn " +
-				"where	CompanyID = @companyId and ResourceID = @resourceId; ";
+				"where	CompanyID = @companyId and ResourceID = @resourceId; " +
+				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
+				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
 			using (var connection = Connect())
 			{
 				int recordsCount = await connection.ExecuteAsync(
@@ -1063,7 +1116,7 @@ select * from [Resource] where ID = @userId";
 				else
 				{
 					await connection.ExecuteAsync(
-						"insert into CompanyDigestExecution (CompanyID, InvocationID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
+						"insert into CompanyDigestExecution (CompanyID, InstanceID, LastExecuted) values (@companyId, @invocationId, getutcdate())", 
 						new { companyId, invocationId });
 				}
 			}
@@ -1107,6 +1160,7 @@ select * from [Resource] where ID = @userId";
 		}
 
 		#region "Company Setting"
+		
 		public async Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId)
 		{
 			return (await ReadSettingsAsync(companyId)).ToDictionary(k => k.ID.ToString(), v => v.Value);
@@ -1194,30 +1248,6 @@ select * from [Resource] where ID = @userId";
 			}
 
 			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public async Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId)
-		{
-			SettingValuesForWorkflow wfsv;
-
-			string sql = $@"declare @defaultGroup nvarchar(10),
-							@fromName nvarchar(4000),
-							@fromEmail nvarchar(4000);
-							select @defaultGroup = [Value] from CompanySetting where CompanyId = @companyId and ID = @defaultid;
-							select @fromName = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromNameid;
-							select @fromEmail = [Value] from  CompanySetting where CompanyId = @companyId and ID = @fromEmailid;
-							select cast(COALESCE(try_cast(@defaultGroup as int),0) as nvarchar(10)) defaultGroup,
-								   @fromName fromName,
-								   @fromEmail fromEmail;";
-			using (var connection = (SqlConnection)Connect(true))
-			{
-				wfsv = await connection.QueryFirstOrDefaultAsync<SettingValuesForWorkflow>(sql, 
-						new { companyId, defaultid = (int)Setting.WorkflowCatchAllGroup, fromNameid = (int)Setting.WorkflowFromName,
-							fromEmailid = (int)Setting.WorkflowFromEmail
-						});
-			}
-
-			return wfsv;
 		}
 
 		public async Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting)

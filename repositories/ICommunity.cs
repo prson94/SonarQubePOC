@@ -30,7 +30,7 @@ namespace repositories
 
 		string GetConnectionStringForTenant(int companyId);
 
-		Task<OpenIdRequest> GetOpenIdRequestAsync(string state);
+		Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true);
 
 		Task<RepositoryResponse<ClaimMapping>> ReadClaimMappingById(int id);
 
@@ -54,8 +54,6 @@ namespace repositories
 
 		Task<T> ReadSettingValueAsync<T>(int companyId, Setting setting);
 
-		Task<SettingValuesForWorkflow> ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(int companyId);
-
 		Task<bool> ReadShouldUserBeAutoAdminByGroupMembershipAsync(int companyId, int domainSettingId, List<string> groups);
 
 		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null);
@@ -77,6 +75,8 @@ namespace repositories
 		Task<ClientUserModel> ReadUserFeatureFlagContext(int companyId, int userId);
 
 		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
+
+		Task<bool> RemoveOldOpenIdRequestsAsync();
 
 		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
 

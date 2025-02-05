@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
 using SpreadsheetLight;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
+using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
 namespace d360.web.Controllers.V2
@@ -114,7 +116,7 @@ namespace d360.web.Controllers.V2
 						{
 							if (fieldDataType == "bit")
 							{
-								fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+								fieldColumns.Add($"cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
 							}
 							else
 							{
@@ -288,7 +290,20 @@ namespace d360.web.Controllers.V2
 
 				if (long.TryParse(_pageSize, out pageSize))
 				{
-					int maxRows = validateForExport ? Task.Run(() => Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows)).GetAwaiter().GetResult() : 200000;
+					string cacheKey = "ValidForExport";
+					int maxRows = 200000;
+					if (validateForExport)
+					{
+						if (Cache.ListItemExists<int, int>(cacheKey, SecurityContext.CompanyID))
+						{
+							maxRows = Cache.GetItemInListByID<int, int>(cacheKey, SecurityContext.CompanyID);
+						}
+						else
+						{
+							maxRows = Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).Result;
+							Cache.SetItemInListByID(cacheKey, SecurityContext.CompanyID, maxRows, true, 5);
+						}
+					}
 
 					if (pageSize > maxRows)
 					{

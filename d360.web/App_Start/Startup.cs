@@ -222,7 +222,9 @@ namespace d360.web
 					return new DapperConnectionProvider
 					{
 						ReadOnlyConnectionString = $"{connectionString}",//ApplicationIntent = ReadOnly",
-						ReadWriteConnectionString = $"{connectionString}"//ApplicationIntent=ReadWrite"
+						ReadWriteConnectionString = $"{connectionString}",//ApplicationIntent=ReadWrite",
+						CommandTimeOut = Config.GetValue<string>("DbConnectionTimeout"),
+
 					};
 				}).InstancePerRequest();
 
@@ -244,7 +246,6 @@ namespace d360.web
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
-				//builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
 
 				builder.RegisterType<History>().As<IHistory>()
 					.InstancePerRequest().OnActivating(i => {

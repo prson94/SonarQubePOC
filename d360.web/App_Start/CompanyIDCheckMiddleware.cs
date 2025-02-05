@@ -31,7 +31,7 @@ namespace d360.web
 			
 			public string UrlPrefix { get; set; }
 
-			public string PrimaryUrlPrefix { get; set; }
+			public string PrimaryCompanyPrefix { get; set; }
 		}
 
 		public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
@@ -52,7 +52,7 @@ namespace d360.web
 				{
 					cnn.Open();
 					tenant = await cnn.QuerySingleOrDefaultAsync<cd>(@"
-select	s.AllowNewUserLogin,
+select	top 1 s.AllowNewUserLogin,
 		s.AuthenticationType, 
 		e.ClientID, 
 		s.CompanyID, 
@@ -106,7 +106,7 @@ from	CompanyDomainSetting s
 					context.Request.Set("AllowNewUserLogin", tenant.AllowNewUserLogin);
 					context.Request.Set("AuthenticationType", tenant.AuthenticationType);
 					context.Request.Set("CompanyDomain", tenant.UrlPrefix);
-					context.Request.Set("PrimaryCompanyPrefix", tenant.PrimaryUrlPrefix);
+					context.Request.Set("PrimaryCompanyPrefix", tenant.PrimaryCompanyPrefix);
 					context.Request.Set("ClientID", tenant.ClientID);
 					context.Request.Set("CompanyID", tenant.CompanyID);
 					context.Request.Set("DomainSettingID", tenant.DomainSettingID);

@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					return errorMessageArgumentResponse(Error.InvalidDirection);
+					return errorMessageArgumentResponse(string.Format(Error.InvalidDirection, _direction));
 			}
 
 			if (string.IsNullOrEmpty(_order))
@@ -420,11 +420,11 @@ namespace d360.web.Controllers.V2
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
 				if (assetType == null)
 				{
-					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidNotFound, assetTypeUid.ToString()));
 				}
 				else if (assetType.Class == AssetTypeClass.Diagram)
 				{
-					return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid.ToString()));
 				}
 			}
 
@@ -545,7 +545,7 @@ namespace d360.web.Controllers.V2
 			AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidNotFound, AssetTypeUid.ToString()));
 			}
 
 			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
@@ -655,7 +655,8 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				return errorMessageArgumentResponse(Error.UidNotValid);
+				Guid actionuid = model.Uid ?? Guid.Empty;
+				return errorMessageArgumentResponse(string.Format(Error.ActionTypeUidIsNotValid, actionuid.ToString()));
 			}
 
 			if (model.Name == null)

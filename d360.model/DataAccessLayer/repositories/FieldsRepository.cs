@@ -2757,7 +2757,10 @@ namespace d360.model.DataAccessLayer
 				}
 				idxs.AddRange(uidFields.Except(ids).Select(u => u.ToString()));
 
-				orderByClause = "order by " + string.Join(",", idxs);
+				if (idxs.Count > 0)
+				{
+					orderByClause = "order by " + string.Join(",", idxs);
+				}
 			}
 			else
 			{
@@ -2766,7 +2769,14 @@ namespace d360.model.DataAccessLayer
 				uidFields.Remove(uidFields.SingleOrDefault(i => i == index));
 				if (index != 0)
 				{
-					orderByClause = $"order by {index} {direction}, " + string.Join(",", uidFields);
+					if (uidFields.Count > 0)
+					{
+						orderByClause = $"order by {index} {direction}, " + string.Join(",", uidFields);
+					}
+					else
+					{
+						orderByClause = $"order by {index} {direction}";
+					}
 				}
 			}
 

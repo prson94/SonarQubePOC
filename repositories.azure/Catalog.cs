@@ -67,7 +67,7 @@ from	Tag t
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -105,12 +105,21 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName,
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
+
 
 select	top 1
 @PreviousValue = [Value]
@@ -131,7 +140,7 @@ from	#tbl
 
 drop table if exists #tbl;
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow,tagTypeId });
 			}
 
 			return response;
@@ -522,6 +531,7 @@ order by	lvl";
 			string value = "";
 			var response = new RepositoryResponse<List<dynamic>>(null, 200, true, "");
 
+			Guid tagTypeUID = Guid.Empty;
 			Guid exceptUid = Guid.Empty;
 			int maxNumberOfResults = 200;
 			bool ignoreCounts = false;
@@ -562,8 +572,31 @@ order by	lvl";
 							throw new ArgumentNullException(Error.InvalidPageSize);
 						}
 						break;
+						case "tagtypeuid":
+						Guid tagType;
+						if (Guid.TryParse(queryitem.Value, out tagType))
+						{
+							tagTypeUID = tagType;
+						}
+						else
+						{
+							throw new ArgumentNullException(Error.InvalidParameter);
+						}
+						break;
 				}
 			}
+
+			string query = string.Empty;
+			query = $@"
+				SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+
+			dynamic tagTypeId;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				tagTypeId = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new {tagTypeUID });
+			}
+
+			tagTypeId = tagTypeId?.ID;
 
 			string sql;
 
@@ -574,8 +607,8 @@ order by	lvl";
 
 				select top {maxNumberOfResults} T.ID, T.Value as name, T.uid as code , cast(0 as bigint) [count]
 				into #temptagdata
-				from Tag T
-				where State = 1 and T.Value like @value and T.uid != @exceptUid;
+				from Tag T 
+				where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId;
 
 				update t
 				set [count] = (select count(1) from AssetTag atg where atg.TagID = t.ID)
@@ -588,14 +621,14 @@ order by	lvl";
 			}
 			else
 			{
-				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T
-						where State = 1 and T.Value like @value and T.uid != @exceptUid
+				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
+						where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId
 						order by name";
 			}
 			IEnumerable<dynamic> results;
 			using (var connection = ConnectionProvider.Connect())
 			{
-				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid });
+				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid, tagTypeId });
 			}
 			response.Data = results.ToList();
 			return response;
@@ -667,112 +700,6 @@ where	t.uid = @uid";
 			}
 
 			return response;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(long id)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@id", id);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName,
-		Type,
-		TypeID,
-		uid
-from	AssetDetail
-where   ID = @id";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(string @object, int objectId)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@o", @object);
-			dbArgs.Add("@oid", objectId);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName as AssetTypeName,
-		Type,
-		TypeID,
-		uid,
-		assetTypeUid
-from	AssetDetail
-where   [ObjectID] = @oid and [Object] = @o";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
-		{
-			var dbArgs = new DynamicParameters();
-
-			dbArgs.Add("@assetTypeId", assetTypeId);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * (pageNum - 1));
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			var model = new AssetPathResults();
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				var countSql = "select count(1) from Asset where AssetTypeId = @assetTypeId";
-				if (includeTotal)
-				{
-					model.total = await connection.QueryFirstAsync<int>(countSql, dbArgs);
-				}
-				model.items = await connection.QueryAsync<AssetPathResult>(sql, dbArgs);
-			}
-
-			return model;
 		}
 
 		public async Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000)
@@ -1122,7 +1049,7 @@ ORDER BY
 			return models;
 		}
 
-		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -1160,12 +1087,20 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName,
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
 
 select	top 1
 @PreviousValue = [Value]
@@ -1187,7 +1122,7 @@ from	#tbl
 drop table if exists #tbl;
 
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow, tagTypeId });
 			}
 
 			return response;

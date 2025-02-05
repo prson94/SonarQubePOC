@@ -259,8 +259,7 @@ namespace d360.web.Models
 
         [DataMember]
         public bool HasReadAccess { get; set; } = true;
-
-    }
+	}
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
     {
@@ -373,7 +372,10 @@ namespace d360.web.Models
         /// </summary>
         [DataMember]
         public bool? IsPartOfKey { get; set; }
-    }
+
+		[DataMember]
+		public Guid? TagTypeUID { get; set; }
+	}
 
     [DataContract]
     public class ResponsibilityTypeRelationViewModel

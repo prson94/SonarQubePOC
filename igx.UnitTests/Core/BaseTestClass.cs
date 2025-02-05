@@ -432,7 +432,7 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<IEnumerable<TagApiModel>>(new List<TagApiModel>(), 200, true, "")));
 
 			mock.Setup(x =>
-				x.CreateAssetTagAsync(It.IsAny<long>(), It.IsAny<int>())
+				x.CreateAssetTagAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<int>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
@@ -489,7 +489,7 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new List<TagTypeApiModel>().AsEnumerable()));
 
 			mock.Setup(x =>
-				x.RemoveAssetTagAsync(It.IsAny<long>(), It.IsAny<int>())
+				x.RemoveAssetTagAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<int>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>

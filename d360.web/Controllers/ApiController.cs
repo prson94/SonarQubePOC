@@ -14,6 +14,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -752,11 +753,12 @@ namespace d360.web.Controllers
 			return complexRelationFieldHasAnyModels;
 		}
 
-		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id,FieldType ft)
 		{
 			List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
 			var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
-			var tags = tagRepository.GetTagsForAsset(asset.ID);
+			int tagTypeId = 0;
+			var tags = tagRepository.GetTagsForAsset(asset.ID,  ft.TagTypeID);
 			tags.ToList().ForEach(x =>
 			{
 				var roField = new ReadOnlyFieldValue
@@ -1693,6 +1695,9 @@ namespace d360.web.Controllers
 
 		private List<DetailReadOnlyRowModel> RenderTagField(FieldType ft, SystemObjects type, int id)
 		{
+			var sql = $@"Select uid from TagType where ID = {ft.TagTypeID}";
+			var result = Company.Connection.QuerySingle<dynamic>(sql, new {ft.TagTypeID}).uid;
+
 			var list = new List<DetailReadOnlyRowModel>
 			{
 				new DetailReadOnlyRowModel
@@ -1706,7 +1711,8 @@ namespace d360.web.Controllers
 						FieldName = ft.Name,
 						ShowIfEmpty = true,
 						DataType = "tag",
-						Values = GetTagsValues(type, id),
+						TagTypeUID = result,
+						Values = GetTagsValues(type, id,ft),
 						IsPartOfKey = ft.IsPartOfKey
 					}
 				},

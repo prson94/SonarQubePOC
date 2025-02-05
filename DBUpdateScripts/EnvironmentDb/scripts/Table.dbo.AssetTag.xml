@@ -55,58 +55,20 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterDelete]
-   ON  [dbo].[AssetTag] 
-   AFTER DELETE
-AS 
-	SET NOCOUNT ON;
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT Distinct 'ObjectIndex', 
-				'U',
-				A.Object, 
-				A.ObjectID,
-				A.ID
-		FROM deleted D INNER JOIN [dbo].[Asset] A ON D.AssetID = A.ID;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+ <changeSet author="Pappas" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v5">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[AssetTag_AfterDelete]
+]]>
+  </sql>
+ </changeSet>
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterUpsert]
-   ON  [dbo].[AssetTag] 
-   AFTER INSERT, UPDATE
-AS 
-	SET NOCOUNT ON;
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT Distinct 'ObjectIndex', 
-				'U',
-				A.Object, 
-				A.ObjectID,
-				A.ID
-		FROM inserted  I INNER JOIN [dbo].[Asset] A ON I.AssetID = A.ID;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v5">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[AssetTag_AfterUpsert]
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
