@@ -2630,7 +2630,14 @@ namespace d360.web.Controllers.V2
 
 			if (assets == null)
 			{
-				assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
+				try
+				{
+					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
+				}
+				catch
+				{
+					// Do nothing. Error reading body content.
+				}
 			}
 
 			if (assets == null)
@@ -2692,7 +2699,14 @@ namespace d360.web.Controllers.V2
 
 			if (assets == null)
 			{
-				assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
+				try
+				{
+					assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
+				}
+				catch
+				{
+					// Do nothing. Error reading body content.
+				}
 			}
 
 			if (assets == null)
