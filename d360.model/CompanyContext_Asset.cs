@@ -2662,7 +2662,7 @@ where	T.ExecutionID = @ExecutionID
 										inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
 										inner join #parent_relationship_types IT on IT.ID = I.IntersectTypeID
 										inner join Asset P on P.Id = I.SubjectAssetId
-									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber and ([Level] is null or [Level] = 0)
+									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber
 									", new { execution.ExecutionID, beginItemNumber, endItemNumber, hierarchyPredicates }, commandTimeout: timeout);
 
 								addMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
