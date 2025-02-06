@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,Puneet" id="Procedure.api.UpsertGroups-v1.3">
+  <changeSet author="Pappas,Puneet" id="Procedure.api.UpsertGroups-v1.4">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertGroups
@@ -113,7 +113,8 @@ begin
 			T.Message = iif(S.ResourceID is null, 'Primary Owner Uid provided is not a resource uid.', T.Message)
 	from	#Items T
 			left join reporting.Global_Resource S on S.Uid = T.PrimaryOwnerUid 
-	where	T.IsValid is null;
+	where	T.PrimaryOwnerUid is not null
+			and T.IsValid is null;
 
 	update	T
 	set		T.SecondaryOwnerResourceID = coalesce(S.ResourceID,T.SecondaryOwnerResourceID),
@@ -121,7 +122,8 @@ begin
 			T.Message = iif(S.ResourceID is null, 'Secondary Owner Uid provided is not a resource uid.', T.Message)
 	from	#Items T
 			left join reporting.Global_Resource S on S.Uid = T.SecondaryOwnerUid 
-	where	T.IsValid is null;
+	where	T.SecondaryOwnerUid is not null
+			and T.IsValid is null;
 
 	begin try
 		begin transaction;
