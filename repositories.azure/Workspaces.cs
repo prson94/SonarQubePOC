@@ -551,6 +551,7 @@ end";
 			items.ForEach(u => {
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
+				string message = string.Empty;
 
 				itemNumber++;
 				row["ExecutionId"] = executionId;
@@ -564,24 +565,40 @@ end";
 				jsonObject.Add("Description", u.Description);
 				jsonObject.Add("IsActiveDirectoryGroup", u.IsActiveDirectoryGroup);
 
-				if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid != Guid.Empty) 
+				if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid != Guid.Empty)
 				{
 					jsonObject.Add("PrimaryOwnerUid", u.PrimaryOwnerUid);
+				}
+				else if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid == Guid.Empty)
+				{
+					message = "Primary Owner Uid provided is not a resource uid.";
 				}
 				if (u.SecondaryOwnerUid.HasValue && u.SecondaryOwnerUid != Guid.Empty)
 				{
 					jsonObject.Add("SecondaryOwnerUid", u.SecondaryOwnerUid);
 				}
+				else if (u.SecondaryOwnerUid.HasValue && u.SecondaryOwnerUid == Guid.Empty)
+				{
+					message = "Secondary Owner Uid provided is not a resource uid.";
+				}
+
 				row["Properties"] = jsonObject.ToString();
 				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.Fields);
 				
-				if (fieldProcessingResult.Item1)
+				if (fieldProcessingResult.Item1 && string.IsNullOrEmpty(message))
 				{
 					table.Rows.Add(row);
 				}
 				else
-				{	// Add error to outgoing.
-					response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+				{   // Add error to outgoing.
+					if (string.IsNullOrEmpty(message))
+					{
+						response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+					}
+					else
+					{
+						response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = message, Success = false });
+					}
 				}
 			});
 
@@ -982,7 +999,7 @@ select @assetId;
 					success = false;
 					messages.Add(Error.InvalidEmail);
 				}
-				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
+				else if (users.Count(u => u.Username != null && u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
 				{
 					success = false;
 					messages.Add(Error.UsernameDuplicate);
@@ -993,7 +1010,7 @@ select @assetId;
 					success = false;
 					messages.Add(Error.InvalidEmail);
 				}
-				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
+				else if (user.Username != user.Email && (users.Count(u => u.Email != null && u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
 				{
 					success = false;
 					messages.Add(Error.UsernameDuplicate);
