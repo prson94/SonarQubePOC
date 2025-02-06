@@ -48,24 +48,13 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Comment-Comment_AfterInsert-v1">
+  <changeSet author="Core" id="Table.dbo.Comment-Comment_AfterInsert-v1RemoveTrigger">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Comment_AfterInsert]
-   ON  [dbo].[Comment] 
-   AFTER INSERT
-AS 
-	SET NOCOUNT ON;
-	insert into [queue].[Task] ([Action], [Custom], [Object], ObjectID)
-		select	'Notify',
-				'1',
-				'Comment',
-				ID
-		from	inserted
-		where	CommentTypeID in (2, 3, 4, 5, 7, 8, 9);
+		DROP TRIGGER IF EXiSTS dbo.[Comment_AfterInsert]
 		]]>
     </sql>
 	<rollback>
