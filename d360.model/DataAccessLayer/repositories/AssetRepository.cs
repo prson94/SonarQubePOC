@@ -3652,7 +3652,8 @@ drop table if exists #tempAssetsIds;
 				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				SendWorkflowEvents = sendWorkflowEvents
+				SendWorkflowEvents = sendWorkflowEvents,
+				Action = ApiExecutionAction.DeleteAssets
 			};
 
 			if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
