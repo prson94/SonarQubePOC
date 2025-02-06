@@ -591,14 +591,11 @@ end";
 				}
 				else
 				{   // Add error to outgoing.
-					if (string.IsNullOrEmpty(message))
+					if (!string.IsNullOrEmpty(message))
 					{
-						response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
+						fieldProcessingResult.Item2.Add(message);
 					}
-					else
-					{
-						response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = message, Success = false });
-					}
+					response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
 				}
 			});
 
