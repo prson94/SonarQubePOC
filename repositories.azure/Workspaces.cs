@@ -273,6 +273,15 @@ where	g.id = @groupId;
 				{
 					var prefix = $"f_{ft.ID}";
 					DataType dt = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+					bool isdefvalue = false;
+
+					if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
+					{
+						isdefvalue = true;
+						dbArgs.Add($"defformatvalue{ft.ID}", ft.DefaultFormattedValue);
+					}
+
 					if (dt == DataType.Lookup)
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
@@ -282,13 +291,29 @@ where	g.id = @groupId;
 					else
 					{
 						string sqlDataType = dt.AsSqlDataType();
-						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
-						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+						if (isdefvalue)
+						{
+							validOrderFields.Add(new SortColumnOption(ft.Name, $"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID})"));
+							fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then @defformatvalue{ft.ID} else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
+							fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+						}
+						else
+						{
+							validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
+							fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
+							fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+						}
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
 					{
-						simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+						if (isdefvalue)
+						{
+							simpleQueryFilters.Add($"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID}) like @simpleFilter");
+						}
+						else
+						{
+							simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+						}
 					}
 				});
 			}
