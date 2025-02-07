@@ -677,7 +677,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 else if (f.Type == "Tag")
 				 {
 					 var filter = new AssetFieldFilter();
-					 filter.SimpleFilterStatement = @"
+					 filter.SimpleFilterStatement = $@"
 									select AT.AssetId
 										from [Tag] T
 										inner join [AssetTag] [AT] ON [AT].TagID = T.ID
