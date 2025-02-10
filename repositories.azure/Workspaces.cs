@@ -741,7 +741,7 @@ set @pathXml =	(
 						@assetTypeId as '@assetTypeId',
 						@assetId as '@assetId',
 						@FullName as 'data()'
-				for xml path('segments'),root('path')
+				for xml path('segment'),root('path')
 				)
 if exists (select 1 from AssetPath where ID = @assetId)
 begin
