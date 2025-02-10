@@ -199,6 +199,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 	scale = 1;
 
+	private loadDiagramAttempts = 0;
 
 	@ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
 	@ViewChild('importTable', { static: false }) importTable: any;
@@ -283,6 +284,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
 
 			this.isLoaded = true;
+			this.loadDiagramAttempts = 0;
 			this.loadDiagram();
 		});
 	}
@@ -485,7 +487,25 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 		}
 	}
 
+	private checkDivElementReady(): boolean {
+		if (this.diagramDivRef === undefined) {
+			if (this.loadDiagramAttempts < 5) {
+				setTimeout(() => {
+					this.loadDiagram();
+				}, 500);
+				this.loadDiagramAttempts++;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	loadDiagram() {
+		// If this.diagramDivRef is not ready, delay load of diagram
+		if (!this.checkDivElementReady()) {
+			return;
+		}
+
 		var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 		this.myDiagram =
