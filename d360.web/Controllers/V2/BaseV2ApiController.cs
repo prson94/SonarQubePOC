@@ -300,7 +300,7 @@ namespace d360.web.Controllers.V2
 						}
 						else
 						{
-							maxRows = Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows).Result;
+							maxRows = Task.Run(() => Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows)).GetAwaiter().GetResult();
 							Cache.SetItemInListByID(cacheKey, SecurityContext.CompanyID, maxRows, true, 5);
 						}
 					}

@@ -925,19 +925,19 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid);
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+				}
 
-                if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
+				if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
                 {
                     string[] allowedValues = new[] { "asc", "desc" };
                     var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
 					if (!allowedValues.Contains(directionFilter))
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection);
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
 					}
-                }
+				}
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
                 {
@@ -946,26 +946,26 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid);
-                    }
-                }
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid)).ConfigureAwait(false);
+					}
+				}
 
                 if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid);
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid)).ConfigureAwait(false);
+				}
 
 				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier));
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
+				}
 
-                if (minConfidence <= 0 || minConfidence > 1)
+				if (minConfidence <= 0 || minConfidence > 1)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid)).ConfigureAwait(false);
                 }
 
-                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
+				var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
 
                 if (isStreamResponse)
                 {
