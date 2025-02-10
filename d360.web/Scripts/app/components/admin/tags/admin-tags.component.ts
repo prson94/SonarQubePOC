@@ -422,7 +422,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 this.selected = [];
                 event.item.UseCount = 0;
-                this.selected.push(event.item);
+                //this.selected.push(event.item);
                 this.showEditor = false;
             });
     }
@@ -432,9 +432,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
-                if (result.type !== 'error') {
-                    this.selected.forEach((t) => {
-                        this.mutateTags((tags) => tags.splice(this.findTagIndex(t.uid), 1));
+				if (result.type !== 'error') {
+					this.selected.forEach((t) => {
+						const tagIndex = this.findTagIndex(t.uid);
+						this.mutateTags((tags) => tags.splice(tagIndex, 1));
                     });
                     this.selected = [];
                 }
