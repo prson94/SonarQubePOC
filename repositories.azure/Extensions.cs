@@ -163,7 +163,7 @@ namespace repositories.azure
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
 				{
-					var option = options.SingleOrDefault(c => c.QueryStringPropertyName == rawValue.ToLowerInvariant());
+					var option = options.SingleOrDefault(c => c.QueryStringPropertyName.ToLowerInvariant() == rawValue.ToLowerInvariant());
 					if (option != null)
 					{
 						defaultColumn = option.DatabaseColumn;
