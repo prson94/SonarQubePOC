@@ -1,8 +1,10 @@
 ﻿using d360.core.entities;
 using Dapper;
+using DocumentFormat.OpenXml.Vml;
 using System;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -86,6 +88,79 @@ namespace repositories.azure
 				throw;
 			}
 		}
+
+		protected async Task UpsertApiExecution(ApiExecution execution)
+		{
+			try
+			{
+				if (execution.ExecutionID == Guid.Empty)
+				{
+					execution.ExecutionID = Guid.NewGuid();
+				}
+
+				string sql = $@"
+				if (@id = 0)
+					begin
+						insert into api.execution (executionid,resourceid,total,Processed,
+						Error,StartedOn,CompletedOn,Fields,ErrorMessage,Method,Route,
+						ProcessingStartedOn,State,ApplicationID,RetryCount,Action)
+						values (@executionid,@resourceid,@total,@Processed,
+						@Error,@StartedOn,@CompletedOn,@Fields,@ErrorMessage,@Method,@Route,
+						@ProcessingStartedOn,@State,@ApplicationID,@RetryCount,@Action);
+					end
+				else
+					begin
+						update e
+						set executionid = @executionid,
+						resourceid = @resourceid,
+						total = @total,
+						Processed = @Processed,
+						Error = @Error,
+						StartedOn = @StartedOn,
+						CompletedOn = @CompletedOn,
+						Fields = @Fields,
+						ErrorMessage = @ErrorMessage,
+						Method = @Method,
+						Route = @Route,
+						ProcessingStartedOn = @ProcessingStartedOn,
+						State = @State,
+						ApplicationID = @ApplicationID,
+						RetryCount = @RetryCount,
+						Action = @Action
+						from api.execution e
+						where e.id = @id;
+					end
+				";
+
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					await connection.ExecuteAsync(sql, new {
+						execution.Id,
+						execution.ExecutionID,
+						execution.ResourceID,
+						execution.Total,
+						execution.Processed,
+						execution.Error,
+						execution.StartedOn,
+						execution.CompletedOn,
+						execution.Fields,
+						execution.ErrorMessage,
+						execution.Method,
+						execution.Route,
+						execution.ProcessingStartedOn,
+						execution.State,
+						execution.ApplicationId,
+						execution.RetryCount,
+						execution.Action
+					});
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
 
 		private string GetFullExceptionData(Exception ex, bool includeStacktrace = true, int characterLimit = 2000)
 		{

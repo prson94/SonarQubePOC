@@ -328,18 +328,19 @@ namespace repositories.azure
 			}
 			using (var conn = (SqlConnection)ConnectionProvider.Connect())
 			{
+				conn.Open();
 				using (var bulk = new SqlBulkCopy(conn))
 				{
 					bulk.BulkCopyTimeout = 0;
 					bulk.DestinationTableName = assetsTable;
-					bulk.WriteToServer(assetTable);
+					await bulk.WriteToServerAsync(assetTable);
 				}
 
 				using (var bulk = new SqlBulkCopy(conn))
 				{
 					bulk.BulkCopyTimeout = 0;
 					bulk.DestinationTableName = fieldsTable;
-					bulk.WriteToServer(fieldTable);
+					await bulk.WriteToServerAsync(fieldTable);
 				}
 
 				using (var trans = conn.BeginTransaction())
@@ -589,7 +590,7 @@ namespace repositories.azure
 						execution.Processed = totalCount;
 						execution.Error = 0;
 						execution.CompletedOn = DateTime.UtcNow;
-						await conn.UpdateAsync(execution);
+						await UpsertApiExecution(execution);
 					}
 					catch (Exception ex)
 					{
