@@ -1,10 +1,8 @@
 ﻿using d360.core.entities;
 using Dapper;
-using DocumentFormat.OpenXml.Vml;
 using System;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
