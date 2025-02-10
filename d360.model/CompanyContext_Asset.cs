@@ -2657,12 +2657,29 @@ where	T.ExecutionID = @ExecutionID
 									inner join [Predicate] P on P.ID = IT.PredicateID
 									where P.Type in @hierarchyPredicates;
 
-									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-										select S.ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' from api.ExecutionDeletedAsset S 
+									drop table if exists #tempExecutionItemDependentChange;
+
+									select S.ItemNumber, 1 DependentChangeType, 2 [Action], max(P.Uid) PUid
+									into #tempExecutionItemDependentChange
+										from api.ExecutionDeletedAsset S 
 										inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
 										inner join #parent_relationship_types IT on IT.ID = I.IntersectTypeID
 										inner join Asset P on P.Id = I.SubjectAssetId
 									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber
+									group by S.ItemNumber;
+
+									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+									select @ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(S.PUid as varchar(50)) + '""}' 
+									from #tempExecutionItemDependentChange S 
+									where not exists (
+												select 1 from api.ExecutionItemDependentChange dc
+												where dc.ExecutionID = @ExecutionID
+												and dc.ItemNumber = S.ItemNumber
+												and dc.DependentChangeType = S.DependentChangeType
+												and dc.[Action] = S.[Action]
+											);
+
+									drop table if exists #tempExecutionItemDependentChange;
 									", new { execution.ExecutionID, beginItemNumber, endItemNumber, hierarchyPredicates }, commandTimeout: timeout);
 
 								addMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
