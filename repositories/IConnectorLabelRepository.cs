@@ -33,5 +33,7 @@ namespace repositories
 		Task<dynamic> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null);
 
 		Task<ConnectorLabel> GetLabel(Guid parentGuid);
+
+		Task<ConnectorLabel> GetLabel(string labelName);
 	}
 }
