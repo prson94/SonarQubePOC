@@ -45,13 +45,15 @@ namespace igx.jobs.indexer
 				{ 
 					try
 					{
+						log.LogWarning($"Performing maintenance on server {server} for slot {slot}");
+
 						/* One search server may host indexes for different environment levels.
 						 * serverCompanies are all companies regardless of environment level hosted on a search server
 						 * slotCompanies are all companies of the current environment level hosted on the active search server
 						 */
 						var indexCompanies = ElasticSearchSource.GetCompanyByIndices(server);
 						var slotCompanies = tenants.Where(c => c.SearchServer == server);
-						var serverCompanies = slotCompanies.Select(c => c.CompanyID);
+						var serverCompanies =  (await Community.ReadTenantConnectionSettingsBySearchServerAsync(server)).ToList().Select(c => c.CompanyID);
 						
 						var removeIndices = indexCompanies.Except(serverCompanies);
 						var missingIndices = slotCompanies.Select(c => c.CompanyID).Except(indexCompanies);
@@ -61,12 +63,13 @@ namespace igx.jobs.indexer
 
 						foreach (var companyId in removeIndices)
 						{
+							log.LogWarning($"Removing index for company {companyId} on server {server}, slot {slot}.");
 							ElasticSearchSource.DeleteIndexIfExists(server, companyId);
 						}
 
 						foreach (var companyId in missingIndices)
 						{
-							log.LogWarning($"Company {companyId} does not have an index on server {server}.");
+							log.LogWarning($"Company {companyId} does not have an index on server {server}, slot {slot}.");
 							reindex.Add(companyId);
 						}
 
@@ -74,7 +77,7 @@ namespace igx.jobs.indexer
 						{
 							if(!ElasticSearchSource.IndexHasLatestFeatures(server, companyId))
 							{
-								log.LogWarning($"Company {companyId} index on server {server} does not have latest features");
+								log.LogWarning($"Company {companyId} index on server {server}, slot {slot}, does not have latest features");
 								reindex.Add(companyId);
 							}
 							else
@@ -106,17 +109,17 @@ namespace igx.jobs.indexer
 
 									if (suggestedLimit > 1000 && (10 * limitDelta) > suggestedLimit)
 									{
-										log.LogWarning($"Company {companyId} index on server {server} has a limit delta over 10%");
+										log.LogWarning($"Company {companyId} index on server {server}, slot {slot}, has a limit delta over 10%");
 										reindex.Add(companyId);
 									}
 									else if (limit > 1000 && (2 * suggestedLimit) < limit)
 									{
-										log.LogWarning($"Company {companyId} index on server {server} has a limit more than twice the suggested");
+										log.LogWarning($"Company {companyId} index on server {server}, slot {slot}, has a limit more than twice the suggested");
 										reindex.Add(companyId);
 									}
 									else if (Math.Max(indexableFields, 400) * 2 < Math.Max(fields, 800))
 									{
-										log.LogWarning($"Company {companyId} index on server {server} has more than double fields in mapping");
+										log.LogWarning($"Company {companyId} index on server {server}, slot {slot}, has more than double fields in mapping");
 										reindex.Add(companyId);
 									}
 								}

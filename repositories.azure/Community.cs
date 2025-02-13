@@ -727,6 +727,35 @@ where	c.EnvironmentLevel = @slot" + (string.IsNullOrEmpty(region) ? "" : " and d
 			return response;
 		}
 
+		public async Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsBySearchServerAsync(string searchServer)
+		{
+			IEnumerable<CompanyWithDatabaseServerSettings> response = null;
+
+			string sql = @"
+select  c.ID as CompanyID, 
+        c.ClientID,
+        ds.Server, 
+        ds.Username, 
+        ds.Password,                             
+        ds.SearchServer, 
+        c.EnvironmentLevel,
+        CDS.UrlPrefix,
+        c.Priority,
+        ds.RegionCode,
+		ds.[Region]
+from    company c 
+        inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
+        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1
+where	ds.SearchServer = @searchServer";
+
+			using (var connection = Connect(true))
+			{
+				response = await connection.QueryAsync<CompanyWithDatabaseServerSettings>(sql, new { searchServer });
+			}
+
+			return response;
+		}
+
 		public async Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId)
 		{
 			CompanyWithDatabaseServerSettings response = null;

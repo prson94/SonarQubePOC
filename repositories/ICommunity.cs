@@ -58,6 +58,8 @@ namespace repositories
 
 		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null);
 
+		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsBySearchServerAsync(string searchServer = null);
+
 		Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId);
 
 		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
