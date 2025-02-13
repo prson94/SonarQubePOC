@@ -353,11 +353,9 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	}
 
 	public onDeleted() {
-		this.items = this.items.filter((x) => x.AssetUid !== this.selectedItem.AssetUid);
-		this.totalRecords = this.items.length;
-		this.itemCount.emit(this.totalRecords);
 		this.selectedItem = null;
 		this.showDelete = false;
+		this.loadItems();
 	}
 
 	public saveReferenceItem() {
