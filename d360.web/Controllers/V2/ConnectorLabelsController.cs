@@ -138,33 +138,23 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-            if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
+			var labelValue = label?.Value.Trim();
+			if (label == null || string.IsNullOrWhiteSpace(labelValue) || labelValue.Length > 40)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
             }
-
-            var labelValue = label.Value.Trim();
-            var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => string.Equals(x.Value, labelValue, StringComparison.OrdinalIgnoreCase));
+            var dbRecord = await _connectorLabelRepository.GetLabel(labelValue);
             if (dbRecord != null)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
             }
-
-            if (labelValue.Length > 40)
-            {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelMax40Char))).ConfigureAwait(false);
-            }
-
-            dbRecord = new ConnectorLabel
-            {
-                Value = labelValue
+			var labelRecord = new ConnectorLabelPostModel
+			{
+                Value = labelValue,
             };
-            dbRecord.UpdatedBy = dbRecord.CreatedBy = SecurityContext.ResourceID;
-            dbRecord.UpdatedOn = dbRecord.CreatedOn = DateTime.UtcNow;
+			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
 
-            Company.Add(dbRecord);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
         /// <summary>

@@ -740,6 +740,27 @@ namespace repositories.azure
 			}
 		}
 
+		public async Task<ConnectorLabel> GetLabel(string labelName)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var result = await connection.QueryFirstOrDefaultAsync<ConnectorLabel>(@"
+					 SELECT * FROM dbo.ConnectorLabel
+					 WHERE Value = @labelName
+					", new { labelName });
+
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
+
 		protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
 		{
 			var valueString = value?.ToString() ?? "";
