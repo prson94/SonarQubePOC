@@ -138,7 +138,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-			var labelValue = label?.Value.Trim();
+			var labelValue = label?.Value?.Trim();
 			if (label == null || string.IsNullOrWhiteSpace(labelValue) || labelValue.Length > 40)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
