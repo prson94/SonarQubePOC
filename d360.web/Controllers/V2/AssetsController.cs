@@ -1603,7 +1603,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
 
-			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.AddAsset))
+			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, isInsert ? Permission.AddAsset : Permission.EditAsset))
 			{
 				return errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, Error.AssetTypeAddAssetPermissionsDenied);
 			}
