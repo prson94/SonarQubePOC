@@ -141,7 +141,7 @@ namespace d360.model
 														select		RowIndex,
 																	CONVERT(
 																		varchar(32), 
-																		SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+																		SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59)) within group (order by FieldTypeID)), 3, 32), 
 																		2) as KeyHash
 														from		(
 																		select top 100 percent
@@ -177,36 +177,13 @@ namespace d360.model
 
 		private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level)
 		{
-			return (await QueryAsync<string>(@"
-			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), ' > ') as [Value]
-				from LoadColumn LC
-				inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-				inner join FieldType FT on FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
-					where LC.LoadID = @id and LC.ColumnIndex in (
-						select		LC.ColumnIndex 
-						from		AssetType ATT
-							inner join (
-								select	AssetTypeID, [Level], [Name] 
-								from	AssetTypeLevel L
-								where	L.AssetTypeID = @atID
-								union all
-								select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
-								from	AssetType T
-										outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
-								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
-										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level]) 
-							) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
-							inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-							inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-						where		ATT.ObjectID = @ObjectID and L.[Level] not like @currLevel)"
+			return (await QueryAsync<string>(@"exec BulkLoad.GetModelPathForLevel @loadId, @rowIndex, @assetTypeID, @currLevel"
 					, new
 					{
-						id = item.LoadID,
+						loadId = item.LoadID,
 						rowIndex = item.RowIndex,
 						currLevel = level,
-						atID = assetType.ID,
-						@object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object },
-						objectID = assetType.ObjectID
+						assetTypeID = assetType.ID
 					}, timeout: timeout)).FirstOrDefault();
 		}
 
@@ -340,6 +317,7 @@ end
 
 		public async Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository)
 		{
+			string sqlstmt = string.Empty;
 			if (load == null)
 			{
 				throw new ArgumentNullException("load cannot be null");
@@ -366,6 +344,8 @@ end
 			PredicateType? predicateType = null;
 			bool calculateParentHashByUid = false;
 			int maxLevel = 1;
+			var columnParentItemNumberMappings = new List<LoadColumnParentItemNumberMapping>();
+
 
 			switch (assetType.Class)
 			{
@@ -399,7 +379,7 @@ end
 
 					if (assetType.Class == AssetTypeClass.Model)
 					{
-						maxLevel = await Connection.QuerySingleAsync<int>(@"
+						sqlstmt = @"
 							select coalesce(max(L.[Level]), 1) from LoadColumn LC
 							inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
 							inner join (
@@ -413,262 +393,30 @@ end
 								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
 										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
 							) L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-							where LC.Loadid = @ID;", new { load.ID, atID = assetType.ID }, transaction: trans);
+							where LC.Loadid = @ID;";
+						maxLevel = await Connection.QuerySingleAsync<int>(sqlstmt, new { load.ID, atID = assetType.ID }, transaction: trans);
 					}
 
-					await Connection.ExecuteAsync(@"
+					sqlstmt = @"
 						drop table if exists #BulkExecutionAsset;
-						create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32), AssetUid uniqueidentifier, AssetID bigint, Success bit, Message nvarchar(max))
+						create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32), AssetUid uniqueidentifier, AssetID bigint, Success bit, Message nvarchar(max), ParentRowIndex int)
 
 						create nonclustered index IX_TempBulkExecutionField on #BulkExecutionAsset (ItemNumber asc );
 
 						drop table if exists #BulkExecutionField;
-						create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
+						create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int, [Level] int, ColumnOrder int);
 						create nonclustered index IX_TempBulkExecutionAsset on #BulkExecutionField (ColumnIndex asc,ItemNumber asc);                        
-						", transaction: trans, commandTimeout: timeout);
+						";
+					await Connection.ExecuteAsync(sqlstmt, transaction: trans, commandTimeout: timeout);
 
 					//load temp tables and calculate key hashes
-					await Connection.ExecuteAsync($@"
-						insert into #BulkExecutionAsset
-						select	@executionID as ExecutionID,
-								RowIndex as ItemNumber,
-								ParentAssetUid as ParentUid,
-								null as ProposedKey,
-								null as AssetUid,
-								null as AssetID,
-								null as [Success],
-								null as [Message]
-						from	[LoadItem] L
-						where	L.LoadID = @ID
-
-						insert into #BulkExecutionField
-						select	BA.ExecutionID,
-								I.RowIndex as ItemNumber,
-								coalesce(FT.[Name], LC.[Name]) as FieldName,
-								I.[Value] as FieldValue,
-								FT.ID as FieldTypeID,
-								I.LookupObjectID as LookupValue,
-								null as Ignore,
-								I.ColumnIndex
-						from    [Load] L
-								inner join AssetType T on T.[Object] = L.[Object] and T.ObjectID = L.ObjectID
-								inner join LoadColumn LC on LC.LoadID = L.ID
-								inner join LoadItemColumn I on I.LoadID = L.ID and I.ColumnIndex = LC.ColumnIndex
-								inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
-								left join FieldType FT on FT.[Name] = LC.[Name] and FT.AssetTypeID = T.ID
-						where   L.ID = @ID;
-
-						if exists (select 1 from #BulkExecutionField ef inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter')
-						begin
-									
-							update ef 
-							set FieldValue = replace(FieldValue,ft.CounterPrefix,'')
-							from #BulkExecutionField ef 
-							inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
-							where coalesce(FieldValue,'') != '' and ft.CounterPrefix is not null;
-
-
-							update LIC
-							set [Value] = replace([Value],ft.CounterPrefix,'')
-							from LoadItemColumn LIC 
-							inner join LoadColumn LC on LC.LoadID = LIC.LoadID
-							inner join fieldtype ft on ft.Name = LC.Name and ft.Type = 'Counter' and ft.AssetTypeID = @atID
-							where LIC.LoadId = @id and coalesce(LIC.[Value],'') != '' and ft.CounterPrefix is not null;
-
-							drop table if exists #tempcountervalue;
-
-							select itemnumber,ft.name,ISNUMERIC(ef.FieldValue) IsNum,ft.CounterInitialIndex,try_cast(ef.FieldValue as int) CounterValue
-							into #tempcountervalue
-							from #BulkExecutionField ef 
-							inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
-							where coalesce(FieldValue,'') != '';
-
-							create clustered index cx_tempcountervalue on #tempcountervalue(itemnumber)
-
-							--Check Non Numeric Value
-							update A
-							set A.Success = 0
-							from #BulkExecutionAsset A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 0
-							where A.ExecutionID = @executionID and A.Success is null;
-
-							update A
-							set status = 0,
-								StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than 0 and less than 2147483647.',1,500)
-							from LoadItem A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 0
-							where A.LOADID = @ID and coalesce(status,1) = 1;
-					
-							--Check Value less than  CounterInitialIndex
-							update A
-							set A.Success = 0
-							from #BulkExecutionAsset A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
-							where A.ExecutionID = @executionID  and A.Success is null;
-
-							update A
-							set status = 0,
-								StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than or equal to ' + cast(TC.CounterInitialIndex as nvarchar(10)),1,500)
-							from LoadItem A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
-							where A.LOADID = @ID and coalesce(status,1) = 1;
-
-							--Check Value duplicate Value
-
-							select CounterValue
-							into #tempcountduplicate
-							from #tempcountervalue Tc
-							where TC.IsNum = 1 and CounterValue is not null
-							group by CounterValue
-							having count(1)>1
-
-							update A
-							set A.Success = 0
-							from #BulkExecutionAsset A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber 
-							inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
-							where A.ExecutionID = @executionID  and A.Success is null;
-
-							update A
-							set status = 0,
-								StatusMessage =  substring('Counter Field (' + tc.name + ') should be unique value',1,500)
-							from LoadItem A
-							inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex
-							inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
-							where A.LOADID = @ID and coalesce(status,1) = 1;
-						end
-
-						--handle ref lists
-						if @class = 9
-						begin
-							delete from #BulkExecutionField where (FieldTypeID is null and FieldName <> 'Code');
-						end
-
-						--handle model levels
-						if @class = 2
-						begin
-
-							update  F
-							set     F.FieldName = FT.Name,
-									F.FieldTypeID = FT.ID
-							from    #BulkExecutionField F
-									inner join AssetType T on T.ID = @atID
-									inner join (
-										select	AssetTypeID, [Level], [Name] 
-										from	AssetTypeLevel L
-										where	L.AssetTypeID = @atID
-										union all
-										select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30))
-										from	AssetType T
-												outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
-										where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
-												and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
-							) L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
-									inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.AssetTypeID = T.ID
-							where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
-
-							delete from #BulkExecutionField where FieldTypeID is null;
-
-
-							--build model text path from sheet to find existing assets and parent assets
-
-							drop table if exists #PathFields;
-							create table #PathFields 
-							(
-							ItemNumber int,
-							ColumnIndex int,
-							DisplayValue nvarchar(max)
-							);
-
-							drop table if exists #PathValues;
-							create table #PathValues
-							(
-								ItemNumber int,
-								FullPath nvarchar(max),
-								ParentPath nvarchar(max),
-								[Uid] uniqueidentifier,
-								ParentUid uniqueidentifier
-							);
-
-							insert into #PathFields
-							select		A.ItemNumber,
-										D.ColumnIndex,
-										string_agg(coalesce(D.FormattedValue, D.LookupValue), '') as DisplayValue
-							from		#BulkExecutionAsset A
-										inner join AssetType T on T.ID = @atID
-										outer apply (select F.LookupValue,
-															F.FieldValue as FormattedValue,
-															F.ColumnIndex,
-															F.ItemNumber
-													from	#BulkExecutionField F 
-															left join FieldType FT on FT.AssetTypeID = T.ID and FT.IsPartOfKey = 1
-															WHERE F.FieldTypeID = FT.ID
-													) D
-							where		A.ItemNumber = D.ItemNumber
-							group by	A.ItemNumber,
-										D.ColumnIndex
-
-							insert into #PathValues
-							select		F.ItemNumber, 
-										string_agg(F.DisplayValue,' > ')  within group (order by F.ColumnIndex asc) as FullPath,
-										null as ParentPath,
-										null as [Uid],
-										null as [ParentUid]
-							from		#PathFields F
-							group by	F.ItemNumber;
-
-
-							update V
-							set V.ParentPath = P.ParentPath
-							from #PathValues V
-							cross apply (
-								select	F.ItemNumber, 
-										string_agg(F.DisplayValue,' > ') within group (order by F.ColumnIndex asc) as ParentPath
-								from	#PathFields F
-								where	F.ColumnIndex < (select max(ColumnIndex) from #PathFields where ItemNumber = F.ItemNumber and DisplayValue is not null)
-								group by F.ItemNumber
-							) P
-							where P.ItemNumber = V.ItemNumber;
-
-							update	V
-							set		V.Uid = A.UId
-							from	#PathValues V 
-									inner join Asset A on A.AssetTypeID = @atID
-									inner join AssetPath P on P.ID = A.ID
-							where	V.FullPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
-
-							update	V
-							set		V.ParentUid = A.Uid
-							from	#PathValues V 
-									inner join Asset A on A.AssetTypeID = @atID
-									inner join AssetPath P on P.ID = A.ID
-							where	V.ParentPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
-
-							update A
-							set A.AssetUid = P.Uid,
-							A.ParentUid = P.ParentUid
-							from #BulkExecutionAsset A
-							inner join #PathValues P on P.ItemNumber = A.ItemNumber;
-							
-							update B
-							set B.AssetID = A.ID
-							from #BulkExecutionAsset B
-							inner join Asset A on A.[uid] = B.AssetUid;
-
-							--update LoadItem with correct parent uid for API
-							update L
-							set L.ParentAssetUid = A.ParentUid
-							from LoadItem L
-							inner join #BulkExecutionAsset A on A.ItemNumber = L.RowIndex
-							where L.LoadID = @ID;
-
-
-						end", new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
+					sqlstmt = "exec BulkLoad.FillParentUid @executionID, @loadId, @assetTypeID, @class, @maxlevel";
+					await Connection.ExecuteAsync(sqlstmt, new { executionID, loadId = load.ID, assetTypeID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
 
 					if (intersectTypeId.HasValue && calculateParentHashByUid)
 					{
 						//need to parse parent column here to be used in proposed key
-						await Connection.ExecuteAsync(@"
+						sqlstmt = @"
 								--flag records with missing parent uids, they will error out later in the API
 								update A
 								set A.Success = 0
@@ -695,15 +443,15 @@ end
 								inner join #BulkExecutionAsset A on A.ExecutionID = @executionID and A.ItemNumber = li.RowIndex
 								where li.LoadID = @ID 
 								and (A.Success is null or A.Success = 1)
-								and li.ParentAssetUid is null and A.ParentUid is not null
-							", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
+								and li.ParentAssetUid is null and A.ParentUid is not null";
+						await Connection.ExecuteAsync(sqlstmt, new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
 					}
 
 					CalculateProposedKeyHashesBulkLoad(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
 
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
-						await Connection.ExecuteAsync(@"
+						sqlstmt = @"
 								drop table if exists #AssetActiveKey;
 
 							   select  A.Uid,                                                
@@ -726,14 +474,15 @@ end
 								from LoadItem L
 								inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
 								where L.LoadID = @ID
-							", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
+							";
+						await Connection.ExecuteAsync(sqlstmt, new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
 					}
 					else
 					{
 
 						if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
 						{
-							await Connection.ExecuteAsync(@"
+							sqlstmt = @"
 									declare @assetttypeID int = (select @atID);
 									declare @fieldtypeid int = 0;
 
@@ -811,12 +560,13 @@ end
 									from    LoadItem L
 											inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
 									where   L.LoadID = @ID
-									", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
+									";
+							await Connection.ExecuteAsync(sqlstmt, new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
 
 						}
 						else
 						{
-							await Connection.ExecuteAsync(@"
+							sqlstmt = @"
 
 								drop table if exists #AssetActiveKey;
 
@@ -860,9 +610,24 @@ end
 								set L.AssetUid = T.AssetUid
 								from LoadItem L
 								inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
-								where L.LoadID = @ID", new { atID = assetType.ID, load.ID, maxLevel }, transaction: trans, commandTimeout: timeout);
+								where L.LoadID = @ID";
+							await Connection.ExecuteAsync(sqlstmt, new { atID = assetType.ID, load.ID, maxLevel }, transaction: trans, commandTimeout: timeout);
 						}
 					}
+
+					if (assetType.Class == AssetTypeClass.Model)
+					{
+						sqlstmt = @"
+									select T.ItemNumber RowIndex, T.ParentRowIndex 
+									from #BulkExecutionAsset T
+									where ExecutionID = @executionID";
+						var columnParentItemNumber = await Connection.QueryAsync<LoadColumnParentItemNumberMapping>(sqlstmt, new { executionID }, transaction: trans, commandTimeout: timeout);
+						if (columnParentItemNumber != null)
+						{
+							columnParentItemNumberMappings = columnParentItemNumber.ToList();
+						}
+					}
+
 
 					trans.Commit();
 				}
@@ -934,53 +699,8 @@ end
 
 			List<LoadItem> loadItems = new List<LoadItem>();
 			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
-			var columnParentItemNumberMappings = new List<LoadColumnParentItemNumberMapping>();
 
 			Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
-
-
-			if (assetType.Class == AssetTypeClass.Model)
-			{
-				int numberOfRequiredFields = FieldTypes.Count(f => f.AssetTypeID == assetType.ID && f.IsPartOfKey);
-				int maxLevels = assetType.HierarchyMaximumDepth;
-
-				columnParentItemNumberMappings = Query<LoadColumnParentItemNumberMapping>(@"
-create table #tempRowIndexKeyTable(RowIndex int, [Key] nvarchar(4000), LastLevelKey nvarchar(4000), ParentRowIndex int)
-create nonclustered index ix_key_idx on #tempRowIndexKeyTable([Key])
-
-declare @currentLevel int = 1
-declare @currentKey int = 1
-declare @targetIndex int = -1
-declare @levelKeyIndexes table (ColumnIndex int)
-
-while @currentKey <= @numberOfRequiredFields
-begin
-	insert into @levelKeyIndexes (ColumnIndex) values (((@currentKey-1)* @maxLevels)+1)
-
-	set @currentKey = @currentKey + 1
-end
-
-while @currentLevel <= @maxLevels
-begin
-	merge #tempRowIndexKeyTable as T
-	using (
-		select RowIndex, 
-		string_agg(cast(Value as nvarchar(255)),',') as Value from dbo.LoadItemColumn LIC
-	where LIC.LoadID = @loadId and ColumnIndex in (select ColumnIndex + (@currentLevel-1) from @levelKeyIndexes)
-	group by RowIndex
-	)Data
-	on Data.RowIndex = T.RowIndex
-	when matched and Data.Value is not null then update set T.[Key] = CONCAT(T.[Key],Data.Value), T.LastLevelKey = Data.Value
-	when not matched then insert (RowIndex,[Key], LastLevelKey) VALUES (Data.RowIndex, Data.Value, Data.Value);
-
-	set @currentLevel = @currentLevel + 1
-end
-
-select T.RowIndex, keys.RowIndex as ParentRowIndex from #tempRowIndexKeyTable T
-inner join #tempRowIndexKeyTable keys on keys.[Key] = REPLACE(T.[Key], T.LastLevelKey, '')
-
-drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLevels, loadId = load.ID }).ToList();
-			}
 
 			//build level info for models
 			if (assetType.Class == AssetTypeClass.Model)
@@ -999,7 +719,7 @@ drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLe
 					}
 				}
 
-				loadItems = (await QueryAsync<LoadItem>(@"
+				sqlstmt = @"
 						select I.*, L.[Level] from LoadItem I
 						outer apply (
 							select      coalesce(max(L.[Level]), 1) as [Level]
@@ -1019,7 +739,8 @@ drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLe
 											inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
 								where		ATT.[ObjectID] = @ObjectID
 						) L
-						where I.LoadID = @id and COALESCE(Status,1) = 1  order by I.rowindex", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
+						where I.LoadID = @id and COALESCE(Status,1) = 1  order by I.rowindex";
+				loadItems = (await QueryAsync<LoadItem>(sqlstmt, new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
 
 			}
 			else
@@ -1114,15 +835,24 @@ inner join LoadItemColumn LIC on LoadID = @id and LIC.RowIndex = t.RowIndex";
 							string parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1).ConfigureAwait(false);
 							string itemPath = await GetModelPathForLevel(item, assetType, item.Level).ConfigureAwait(false);
 
-							Guid? parentUid = (await QueryAsync<Guid?>(@"
-select [uid] from Asset A 
+							sqlstmt = @"
+drop table if exists #tempassetpath;
+select A.ID,A.[uid]
+into #tempassetpath
+from asset a
+inner join AssetPath P on P.ID = A.ID
+where A.AssetTypeID = @assetTypeId 
+and trim(P.DisplayPath) like @textPath;
+
+select [uid] 
+from #tempassetpath A 
 cross apply (
   select		
 			  InnerA.AssetTypeID,
 			  InnerA.ID,
 			  CONVERT(
 			  varchar(32),
-			  SUBSTRING(HASHBYTES('SHA1', STRING_AGG(InnerA.FieldTypeID + InnerA.[Value], char(59))), 3, 32),
+			  SUBSTRING(HASHBYTES('SHA1', STRING_AGG(InnerA.FieldTypeID + InnerA.[Value], char(59)) within group (order by InnerA.FieldTypeID)), 3, 32),
 			  2) as KeyHash
 		  from (
 				select	B.ID, 
@@ -1146,11 +876,11 @@ cross apply (
 		  ) InnerA
 		  group by InnerA.AssetTypeID, InnerA.ID
 ) S
-inner join AssetPath P on P.ID = A.ID
-								and A.AssetTypeID = @assetTypeId 
-								and P.DisplayPath like @textPath
-								and S.KeyHash = @parentKeyHash
-", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
+where S.KeyHash = @parentKeyHash
+";
+							Guid? parentUid = (await QueryAsync<Guid?>(sqlstmt, new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
+
+							insert.ChildItemNumber = item.RowIndex;
 
 							if (parentUid.HasValue)
 							{
@@ -1161,7 +891,7 @@ inner join AssetPath P on P.ID = A.ID
 								var parent = columnParentItemNumberMappings.FirstOrDefault(x => x.RowIndex == item.RowIndex);
 								if (parent != null)
 								{
-									item.ParentItemNumber = parent.ParentRowIndex - 1;
+									item.ParentItemNumber = parent.ParentRowIndex;
 								}
 							}
 
@@ -1212,6 +942,11 @@ inner join AssetPath P on P.ID = A.ID
 							if (item.ParentItemNumber.HasValue)
 							{
 								insert.ParentItemNumber = item.ParentItemNumber;
+							}
+
+							if (!insert.ChildItemNumber.HasValue)
+							{
+								insert.ChildItemNumber = item.RowIndex;
 							}
 						}
 

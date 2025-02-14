@@ -54,6 +54,9 @@ namespace d360.core.entities
 
 		[IgnoreDataMember, NotMapped]
 		public int? ParentItemNumber { get; set; }
+
+		[IgnoreDataMember, NotMapped]
+		public int? ChildItemNumber { get; set; }
 		#endregion
 
 		[IgnoreDataMember, ForeignKey("LoadID")]

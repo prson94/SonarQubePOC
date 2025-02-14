@@ -1,0 +1,64 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.bulkload.GetModelPathForLevel-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure bulkload.GetModelPathForLevel
+	@loadId int,
+	@rowIndex int,
+	@assetTypeID int,
+	@currLevel int
+as
+begin
+
+	drop table if exists #TempATLevel;
+	drop table if exists #tempcolumn;
+	
+	select	AssetTypeID, [Level], [Name] 
+	into #TempATLevel
+	from	AssetTypeLevel L
+	where	L.AssetTypeID = @assetTypeID
+	union all
+	select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+	from	AssetType T
+			outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+	where	T.ID = @assetTypeID and N.[Level] <= T.HierarchyMaximumDepth
+			and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level]) 
+
+
+
+	select	LC.ColumnIndex , max(L.[Level]) [Level]
+	into #tempcolumn
+	from AssetType ATT
+	inner join #TempATLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+	inner join LoadColumn LC on LC.LoadID = @loadId and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+	inner join LoadItemColumn LI on LI.LoadID = @loadId and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+	where ATT.ID = @assetTypeID and L.[Level] <> @currLevel
+	group by LC.ColumnIndex ;
+
+	select string_agg([Value],' > ')  within group (order by [Level])
+	from (
+	select
+	[Level],
+	string_agg([Value],' / ')  within group (order by [Level], Columnorder) as [Value]
+	from (
+	select  T.[Level], FT.Columnorder , coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value]
+	from LoadColumn LC
+	inner join LoadItemColumn IC on IC.LoadID = @loadId and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
+	inner join FieldType FT on FT.AssetTypeID = @assetTypeID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+	inner join #tempcolumn T on T.ColumnIndex = LC.ColumnIndex
+	where LC.LoadID = @loadId) a
+	group by [Level]) b;
+	
+	drop table if exists #TempATLevel;
+	drop table if exists #tempcolumn;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

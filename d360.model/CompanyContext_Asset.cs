@@ -990,6 +990,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				table.Columns.Add("ParentUid", typeof(Guid));
 				table.Columns.Add("ParentItemNumber", typeof(int));
 
+				table.Columns.Add("ChildItemNumber", typeof(int));
+
 				table.Columns.Add("ObjectType", typeof(string));
 				table.Columns.Add("ObjectTypeID", typeof(int));
 				table.Columns.Add("SourceID", typeof(string));
@@ -1108,6 +1110,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							row["ExecutionID"] = execution.ExecutionID;
 							row["ItemNumber"] = i;
 
+							if (model.ChildItemNumber.HasValue)
+							{
+								row["ChildItemNumber"] = model.ChildItemNumber;
+							}
+							else
+							{
+								row["ChildItemNumber"] = i;
+							}
+
 							if (model.ExecutionItemUid.HasValue)
 							{
 								row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
@@ -1140,10 +1151,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								row["ParentItemNumber"] = model.ParentItemNumber;
 								hasParentsSetInPayload = true;
 
-								if (model.ParentItemNumber > i)
+								if (model.ParentItemNumber > model.ChildItemNumber)
 								{
 									success = false;
-									errorMessage = $"ParentItemNumber {model.ParentItemNumber} cannot be higher than current ItemNumber {i}";
+									errorMessage = $"ParentItemNumber {model.ParentItemNumber} cannot be higher than ChildItemNumber {model.ChildItemNumber} current ItemNumber {i}";
 								}
 							}
 
@@ -1220,6 +1231,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("ParentItemNumber", "ParentItemNumber");
 								bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
 								bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
+
+								bulkCopy.ColumnMappings.Add("ChildItemNumber", "ChildItemNumber");
 
 								bulkCopy.ColumnMappings.Add("IntersectTypeUid", "IntersectTypeUid");
 								bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
@@ -1394,13 +1407,14 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						if exists(select 1 from api.ExecutionAsset T where  ExecutionID = @ExecutionID and success = 0)
 						begin
 							drop table if exists #tempExecuAsset;
-							select itemnumber,Success,cast(Message as nvarchar(4000)) Message,ParentItemNumber
+							select ItemNumber,ChildItemNumber,Success,cast(Message as nvarchar(4000)) Message,ParentItemNumber
 							into #tempExecuAsset
 							from api.ExecutionAsset T
 							where ExecutionID = @ExecutionID;
 
 							create clustered index cix_tempExecuAsset on #tempExecuAsset (ParentItemNumber);
-							create index ix_tempExecuAsset_ItemNumber on #tempExecuAsset (ItemNumber) include (ParentItemNumber);
+							create index ix_tempExecuAsset_ChildItemNumber on #tempExecuAsset (ChildItemNumber) include (ParentItemNumber);
+							create index ix_tempExecuAsset_ItemNumber on #tempExecuAsset (ItemNumber);
 
 
 							drop table if exists #tempchild;
@@ -1408,15 +1422,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 							with rs as
 							(
-							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							select ItemNumber,ChildItemNumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
 							from #tempExecuAsset T
 							where success = 0
 							union all
-							select T.itemnumber, s.itemnumber,s.Message,1 Include
+							select T.ItemNumber,T.ChildItemNumber, s.ChildItemNumber,s.Message,1 Include
 							from rs s
-							inner join #tempExecuAsset T on s.itemnumber = T.ParentItemNumber and T.Success is null
+							inner join #tempExecuAsset T on s.ChildItemNumber = T.ParentItemNumber and T.Success is null
 							)
-							select itemnumber,Message
+							select ItemNumber,ChildItemNumber,Message
 							into #tempchild
 							from rs
 							where Include = 1;
@@ -1424,25 +1438,25 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							create clustered index cix_tempchild on #tempchild (itemnumber);
 
 							update	T
-							set		T.Success = 0,
-									T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on parent record :' + S.[Message] + '; ', ''),1,2000)
-							from	api.ExecutionAsset T
-									inner join	#tempchild S on T.itemnumber = S.itemnumber
+							set	T.Success = 0,
+							T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on parent record :' + S.[Message] + '; ', ''),1,2000)
+							from api.ExecutionAsset T
+							inner join	#tempchild S on T.itemnumber = S.itemnumber
 							where	T.ExecutionID = @ExecutionID
 							and T.Success is null;
 
 							---Parent Record
 							with rs as
 							(
-							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							select itemnumber,ChildItemNumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
 							from #tempExecuAsset T
 							where success = 0
 							union all
-							select T.itemnumber, T.ParentItemNumber,s.Message,1 Include
+							select T.itemnumber,T.ChildItemNumber, T.ParentItemNumber,s.Message,1 Include
 							from rs s
-							inner join #tempExecuAsset T on s.ParentItemNumber = T.itemnumber and T.Success is null
+							inner join #tempExecuAsset T on s.ParentItemNumber = T.ChildItemNumber and T.Success is null
 							)
-							select itemnumber,Message
+							select itemnumber,ChildItemNumber,Message
 							into #tempparent
 							from rs
 							where Include = 1;
@@ -1676,7 +1690,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														ea.ParentObjectType = parent.ObjectType,
 														ea.ParentObjectTypeID = parent.ObjectTypeID
 														from api.ExecutionAsset ea 
-														inner join api.ExecutionAsset parent on parent.ExecutionID = ea.ExecutionID and parent.ItemNumber = ea.ParentItemNumber
+														inner join api.ExecutionAsset parent on parent.ExecutionID = ea.ExecutionID and parent.ChildItemNumber = ea.ParentItemNumber
 														inner join asset a on a.ID = parent.AssetID
 														where ea.ExecutionID = @ExecutionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber",
 										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
