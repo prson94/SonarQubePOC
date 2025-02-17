@@ -120,7 +120,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.InvalidAssetTypeUid, assetTypeUidString));
+						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUidString));
 					}
 				}
 			}

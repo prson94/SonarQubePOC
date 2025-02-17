@@ -473,7 +473,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()))).ConfigureAwait(false);
             }
 
             var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
@@ -538,14 +538,14 @@ namespace d360.web.Controllers.V2
 				}
 				if(assetUid == Guid.Empty)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()));
 				}
 
 				Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
 				if (asset == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetNotFoundError, assetUid.ToString()))).ConfigureAwait(false);
 				}
 
 				if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
