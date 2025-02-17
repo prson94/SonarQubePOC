@@ -1137,9 +1137,6 @@
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter '{0}' has invalid GUID value</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>No Asset Type found for given Guid</value>
-  </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
     <value>[Class] value invalid. Allowed classes are {0}</value>
   </data>
@@ -3299,5 +3296,8 @@
   </data>
   <data name="ErrorAddingComment" xml:space="preserve">
     <value>Error adding comment</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Asset Type not found based on Uid provided [{0}].</value>
   </data>
 </root>

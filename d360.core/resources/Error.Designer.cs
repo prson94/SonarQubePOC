@@ -610,7 +610,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Asset Type found for given Guid.
+        ///   Looks up a localized string similar to Asset Type not found based on Uid provided [{0}]..
         /// </summary>
         public static string AssetTypeNotFound {
             get {
