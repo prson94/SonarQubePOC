@@ -272,6 +272,12 @@ where	g.id = @groupId;
 				fieldTypes.ForEach(ft =>
 				{
 					var prefix = $"f_{ft.ID}";
+					var counterPrefix = "";
+					if (ft.Type == DataType.Counter.ToString())
+					{
+						counterPrefix = $"fcv_{ft.ID}";
+					}
+
 					DataType dt = (DataType)Enum.Parse(typeof(DataType), ft.Type);
 
 					bool isdefvalue = false;
@@ -299,9 +305,18 @@ where	g.id = @groupId;
 						}
 						else
 						{
+							if (dt == DataType.Counter)
+							{
+								validOrderFields.Add(new SortColumnOption(ft.Name, $"{counterPrefix}.Value"));
+								fieldColumns.Add($"try_cast(case when LEN(ISNULL({counterPrefix}.Value, '')) < 1 then null else {counterPrefix}.Value end as {sqlDataType}) as [{ft.Name}]");
+								fieldJoins.Add($"left join FieldCounterValue {counterPrefix} on ({counterPrefix}.FieldTypeID = {ft.ID} and {counterPrefix}.AssetID = ag.ID)");
+							}
+							else 
+							{ 
 							validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
 							fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
 							fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+							}
 						}
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
@@ -326,8 +341,6 @@ where	g.id = @groupId;
 				queryFilters.Add(string.Join(" or ", simpleQueryFilters));
 				countSql += $" {string.Join("\n", fieldJoins)}";
 			}
-
-			
 
 			var sql = $@"
 select	{string.Join(", ", fieldColumns)}
