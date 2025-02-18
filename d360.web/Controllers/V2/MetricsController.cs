@@ -1453,7 +1453,7 @@ namespace d360.web.Controllers.V2
 				}
 				else if (effectiveDateStart > effectiveDateEnd)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "EffectiveDateEnd", "EffectiveDateStart"));
 				}
 
 			}

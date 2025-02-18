@@ -757,7 +757,7 @@ namespace d360.web.Controllers.V2
 
 				if (!validOrderByFields.Contains(orderByCol.ToLower()))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidOrder);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter,string.Format(Error.InvalidOrderBy,orderByCol));
 				}
 
 				orderBySql = $" order by {orderByCol} {_direction} ";
