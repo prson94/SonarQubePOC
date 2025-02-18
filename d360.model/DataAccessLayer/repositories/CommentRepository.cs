@@ -531,7 +531,7 @@ namespace d360.model.DataAccessLayer
 				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid, a => a.AssetType).FirstOrDefault();
 				if (asset == null)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidNotFound, assetUid.ToString()));
 				}
 
 				if (

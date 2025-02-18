@@ -3562,6 +3562,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Asset Type Uid provided [{0}]..
+        /// </summary>
+        public static string InvalidAssetTypeUidParameter {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUidParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No asset type found with [assetTypeUid] provided..
         /// </summary>
         public static string InvalidAssetTypeUidProvided {

@@ -735,7 +735,7 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = string.Format(Error.AssetTypeNotFound, q.Value);
+									errorMessage = string.Format(Error.AssetTypeUidNotFound, q.Value);
 								}
 							}
 							else
