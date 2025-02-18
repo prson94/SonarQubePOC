@@ -19,10 +19,15 @@ namespace d360.web
         {
             IOwinContext context = new OwinContext(environment);
 
-            if (context.Response.ContentType == "application/json")
-            {
-                context.Response.Headers.Add("Cache-Control", new string[] { "no-store" });
-            }
+			if (context.Response.ContentType == "application/json")
+			{
+				context.Response.Headers.Add("Cache-Control", new string[] { "no-store" });
+			}
+			else 
+			{
+				const int durationInSeconds = 60 * 60 * 12;
+				context.Response.Headers.Add("Cache-Control", new string[] { "public,max-age=" + durationInSeconds });
+			}
 
             // Remove the server version number from being sent with every response.
             context.Response.Headers.Remove("server");

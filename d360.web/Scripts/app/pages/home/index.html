@@ -1,0 +1,78 @@
+﻿<div>
+	@if (showTitle) {
+	<div>
+		<div [style.color]="titleColor" [style.font-size]="titleSize" class="title-setting">{{title}}</div>
+	</div>	
+	}
+</div>
+
+@if (showActivityDetails) {
+<div class="row">
+	<div class="col s12">
+		<activity-details-tile [objectId]="selectedArtifactTypeId"
+							   [objectName]="selectedArtifactTypeName"
+							   (close)="showActivityDetails = false;"
+							   [daysToLookBack]="activityDaysToLookBack">
+		</activity-details-tile>
+	</div>
+</div>
+}
+
+@if (showBoardDetails) {
+<div class="row">
+	<div class="col s12">
+		<div class="tile tile-detail">
+			<d3s-social-board [followerUid]=""
+							  [limitToType]="selectedCommentType"
+							  [daysToLookBack]="boardDaysToLookBack"
+							  [hasNewInput]="false"
+							  [hasCloseButton]="true"
+							  (close)="showBoardDetails=false">
+			</d3s-social-board>
+		</div>
+	</div>
+</div>
+}
+
+<div class="homeTileArea">
+	@if (!showActivityDetails && !showBoardDetails) {
+	<d3s-home-search (resultsChange)="checkHasResults($event)" hasResults="{{ hasResults }}"></d3s-home-search>
+	}
+	@if (!showActivityDetails && !showBoardDetails) {
+	<span><shortcut-display></shortcut-display></span>
+	}
+</div>
+
+<ng-container>
+	<div class="row home-tiles">
+		<div class="col s12 l12">
+			<d3s-user-assignments [assignmentTileNotAvailable]="!showAssignmentTile"></d3s-user-assignments>
+		</div>
+	</div>
+
+	@if (!showActivityDetails && !showBoardDetails && numTiles > 0) {
+	<div class="row home-tiles">
+		@if (showBoardTile) {
+		<div [class]="'col s12 l' + colSize">
+			<board-tile (showItemDetail)="onShowBoardDetails($event);" [(daysToLookBack)]="boardDaysToLookBack"></board-tile>
+		</div>
+		}
+		@if (showActivityTile) {
+		<div [class]="'col s12 l' + colSize">
+			<activity-tile (showItemDetail)="onShowActivityDetails($event);" [(daysToLookBack)]="activityDaysToLookBack"></activity-tile>
+		</div>
+		}
+	</div>
+	}
+</ng-container>
+
+@if (dashboard != null) {
+<div [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null" class="tile tile-detail" style="position: relative;">
+	@if (dashboard.DashboardType == 'PowerBi') {
+	<d3s-powerbi-viewer [dashboard]="dashboard"></d3s-powerbi-viewer>
+	}	
+	@if (dashboard.DashboardType == 'DqPlus') {
+	<d3s-sagacity-viewer [dashboard]="dashboard"></d3s-sagacity-viewer>
+	}
+</div>
+}
