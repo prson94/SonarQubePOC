@@ -25,7 +25,7 @@ const routes: Routes = [
 	{ path: "tag", loadChildren: () => import("./components/tag/tag.module").then((m) => m.TagModule) },
 	{ path: "connectorLabel", loadChildren: () => import("./components/connector-label/connector-label.module").then((m) => m.ConnectorLabelModule) },
 	{ path: "group", loadChildren: () => import("./components/group/group.module").then((m) => m.GroupModule) },
-	{ path: "home", loadChildren: () => import("./components/home/home.module").then((m) => m.HomeModule) },
+	{ path: "home", loadComponent: () => import("./pages/home/index").then((c) => c.HomeIndex) },
 	{ path: "gallery", loadChildren: () => import("./components/gallery/gallery.module").then((m) => m.GalleryModule) },
 	{ path: "search", loadChildren: () => import("./components/search/search.module").then((m) => m.SearchModule) },
 	{ path: "workflow", loadChildren: () => import("./components/workflow/workflow.module").then((m) => m.WorkflowModule) },

@@ -19,10 +19,11 @@ namespace d360.core.queue
         public List<int> ChangedFieldIds { get; set; } = new List<int>();
 
         public int AssetTypeID { get; set; }
+
         public ScoreType? ScoreType { get; set; } = null;
     }
 
-    public class EventInfo : IServiceBusMessageType
+    public class EventInfo
     {
         public string DomainPrefix { get; set; }
 
@@ -40,30 +41,6 @@ namespace d360.core.queue
 
         public long VersionStepTransitionID { get; set; }
 
-        public int MessageType { get { return (int)Action; } }
-    }
-
-    public class AssetEventInfo : IServiceBusMessageType
-    {
-        public int CompanyID { get; set; }
-        
-        public AssetEventType Type { get; set; }
-        
-        public List<string> ChangedFieldNames { get; set; }
-        
-        public Guid Uid { get; set; }
-        
-        public ApiExecutionInfo execution { get; set; }
-        
-        public int MessageType { get { return (int)Type; } }
-    }
-
-    public enum AssetEventType
-    {
-        Node,
-        Edge,
-        Path,
-        Execution,
-        AssetType
-    }
+		public int RetryCount { get; set; } = 0;
+	}
 }

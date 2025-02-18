@@ -31,7 +31,7 @@ module.exports = {
 			name: 'govern',
 			filename: 'remoteEntry.js',
 			exposes: {
-				'./HomeModule': 'Scripts/app/components/home/home.module.ts',
+				'./HomeIndex': 'Scripts/app/pages/home/index',
 				'./SearchModule': 'Scripts/app/components/search/search.module.ts',
 				'./AssetModule': 'Scripts/app/components/asset/asset.module.ts',
 				'./AssetsBaseModule': 'Scripts/app/components/assets-base/assets-base.module.ts',
