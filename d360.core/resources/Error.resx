@@ -3297,6 +3297,9 @@
   <data name="ErrorAddingComment" xml:space="preserve">
     <value>Error adding comment</value>
   </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Invalid Asset Type Uid provided [{0}].</value>
+  </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset Type not found based on Uid provided [{0}].</value>
   </data>

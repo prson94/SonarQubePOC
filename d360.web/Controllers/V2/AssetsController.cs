@@ -883,7 +883,7 @@ namespace d360.web.Controllers.V2
 
 				if (!validator.IsValidOrderDirectionGetAssets(queryParams))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidDirection));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidDirectionSimple));
 				}
 
 				if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
@@ -2158,7 +2158,7 @@ namespace d360.web.Controllers.V2
 
 					if (!new string[] { "desc", "asc" }.Contains(direction))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection));
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirectionSimple));
 					}
 				}
 
@@ -4052,7 +4052,7 @@ namespace d360.web.Controllers.V2
 			Guid assetTypeID;
 			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
 			{
-				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUidAttached, assetTypeUid));
 			}
 
 			ValidateParameters();
