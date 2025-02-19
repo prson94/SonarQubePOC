@@ -1889,23 +1889,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (shouldRunMergeAssetPath)
 									{
-										if (isInsert)
-										{
-											//call MergeAssetPath only on insert as queries in govern require asset path to be populated to be returned
-											addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
+										//call MergeAssetPath only on insert as queries in govern require asset path to be populated to be returned
+										addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
-											Connection.Execute(
-												"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
-												new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
-												transaction: trans, timeout);
-											addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
-											sw.Restart();
-										}
-										else
-										{
-											//in case of update, delegate path processing to post execution processor for faster updating
-											sendAssetGraphPostExecutionEvent = true;
-										}
+										Connection.Execute(
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
+											transaction: trans, timeout);
+										addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
+										sw.Restart();
 									}
 
 									// Must execute BEFORE the Success flag is updated below.
