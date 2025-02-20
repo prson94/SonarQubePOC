@@ -101,7 +101,7 @@ namespace d360.model.DataAccessLayer
 				commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid, a => a.AssetType).FirstOrDefault();
 				if (commentAsset == null)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound,string.Format(Error.AssetUidNotFound, comment.AssetUid.ToString()));
 				}
 
 				if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
