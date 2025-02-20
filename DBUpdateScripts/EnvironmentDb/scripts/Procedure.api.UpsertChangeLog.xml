@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.2">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertChangeLog
@@ -38,7 +38,7 @@ begin
 	output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 		select	a.Object, 
 				a.ObjectId,
-				d.DisplayValue, 
+				substring(d.DisplayValue,1,250), 
 				@userId, 
 				@date, 
 				mv.[Version],
@@ -46,7 +46,7 @@ begin
 				a.Object, 
 				a.ObjectId,
 				t.Name, 
-				d.DisplayValue, 
+				substring(d.DisplayValue,1,250),  
 				'This has been ' + iif(mv.[Version] = 1, 'created', 'updated') + '.' 
 		from	#Assets l
 				inner join Asset a on a.Id = l.AssetID
