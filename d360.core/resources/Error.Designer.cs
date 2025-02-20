@@ -3481,6 +3481,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [resourceUid] provided.
+        /// </summary>
+        public static string Invalid_ResourceUID {
+            get {
+                return ResourceManager.GetString("Invalid_ResourceUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A valid [ActionTypeUid] is required..
         /// </summary>
         public static string InvalidActionTypeUid {

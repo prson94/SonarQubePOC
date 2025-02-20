@@ -689,13 +689,13 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = Error.InvalidResourceUID;
+									errorMessage = Error.Invalid_ResourceUID;
 								}
 							}
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = Error.InvalidResourceUID;
+								errorMessage = Error.Invalid_ResourceUID;
 							}
 						}
 						else if (key == "_assetuid")

@@ -3234,4 +3234,7 @@
   <data name="ResponsibilityTypeRule" xml:space="preserve">
     <value>Regola del tipo di responsabilità</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>[_resourceUid] fornito non valido</value>
+  </data>
 </root>

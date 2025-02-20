@@ -3303,4 +3303,7 @@
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset Type not found based on Uid provided [{0}].</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Invalid [resourceUid] provided</value>
+  </data>
 </root>

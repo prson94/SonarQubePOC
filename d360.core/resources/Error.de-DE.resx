@@ -3231,4 +3231,7 @@
   <data name="TagUidNotFound" xml:space="preserve">
     <value>Tag mit UID {0} nicht gefunden.</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Ungültige [_resourceUid] angegeben</value>
+  </data>
 </root>
