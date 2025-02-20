@@ -445,13 +445,13 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true), Obsolete
 		]
-		public IHttpActionResult GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
+		public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
 		{
 			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
 			if (assetType == null)
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
 			}
 
 			var result = MetricsRepository.GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
@@ -528,7 +528,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetMetricHierarchyByAssetAndScoreTypeAsync(ScoreType scoreType, Guid assetUid)
+		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndScoreTypeAsync(ScoreType scoreType, Guid assetUid)
 		{
 			bool convertToUniversalTime = true;
 
@@ -541,7 +541,7 @@ namespace d360.web.Controllers.V2
 
 				if (!DateTime.TryParse(value, out effectiveDate))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate)).ConfigureAwait(false);
 				}
 			}
 			else
@@ -592,7 +592,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false)
 		]
-		public IHttpActionResult GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
+		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
 		{
 			bool convertToUniversalTime = true;
 
@@ -600,7 +600,7 @@ namespace d360.web.Controllers.V2
 
 			if (allocationStatus.StatusCode != HttpStatusCode.OK)
 			{
-				return errorMessageResponse(allocationStatus.StatusCode, Error.BadRequest, allocationStatus.Message);
+				return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, Error.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
 			}
 
 			var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out Guid _assetUid);
@@ -775,7 +775,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			return GetMetricHierarchyByAssetTypeAsync(asset.AssetType.uid, effDate);
+			return await GetMetricHierarchyByAssetTypeAsync(asset.AssetType.uid, effDate);
 		}
 
 
