@@ -848,7 +848,7 @@ namespace d360.model.validators
 				{
 					if (assetTypeIdentifierInfoModel == null)
 					{
-						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeUidNotFound, model.ActionTypeUid));
+						return new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeNotFound, model.ActionTypeUid));
 					}
 				}
 			}

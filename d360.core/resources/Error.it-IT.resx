@@ -628,9 +628,6 @@
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
     <value>Questo tipo di risorsa non può avere un valore [Type.Score]</value>
   </data>
-  <data name="AssetTypeUidNotFound" xml:space="preserve">
-    <value>Tipo di risorsa non trovato in base all'UID fornito [{0}].</value>
-  </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
     <value>Non è possibile fornire un [AssetTypeUid] poiché è stato già fornito un [ActionTypeUid].</value>
   </data>
@@ -745,9 +742,6 @@
   </data>
   <data name="GroupInvalidFieldType" xml:space="preserve">
     <value>I gruppi non possono avere il tipo di campo {0}.</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Non hai fornito un UID Tipo di risorsa valido per questa richiesta.</value>
   </data>
   <data name="InvalidField" xml:space="preserve">
     <value>Campo {0} non valido</value>
@@ -1671,9 +1665,6 @@
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
     <value>È necessario fornire [AssetTypeUid] o [AssetUid].</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID del tipo di risorsa valido.</value>
-  </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
     <value>{0} non è un UID della risorsa valido.</value>
   </data>
@@ -1763,9 +1754,6 @@
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>L'utente attuale non è un amministratore.</value>
-  </data>
-  <data name="InvalidAssetUidAttached" xml:space="preserve">
-    <value>L'AssetUid {0} non è valido</value>
   </data>
   <data name="InvalidDirectionSimple" xml:space="preserve">
     <value>Valore non valido per il parametro [_direction]. I valori consentiti sono 'desc' e 'asc'.</value>
@@ -1940,9 +1928,6 @@
   </data>
   <data name="FileUploadMessage" xml:space="preserve">
     <value>File caricato correttamente</value>
-  </data>
-  <data name="InvalidAssetTypeID" xml:space="preserve">
-    <value>ID tipo risorsa non valido. Fornirne uno valido.</value>
   </data>
   <data name="InvalidBoolean" xml:space="preserve">
     <value>Il valore fornito non è un valore booleano valido</value>
@@ -2211,8 +2196,8 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Il percorso {Route} è sconosciuto o obsoleto</value>
   </data>
-  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>Nessun tipo di risorsa trovato con [assetTypeUid] fornito.</value>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Nessun tipo di risorsa trovato con [{0}] fornito.</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Nessun tipo di intersezione trovato con l'intersectTypeUid fornito.</value>

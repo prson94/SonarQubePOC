@@ -115,7 +115,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeUidNotFound, assetTypeUid.ToString()));
+							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 						}
 					}
 					else

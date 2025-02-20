@@ -21,6 +21,7 @@ using repositories;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Drawing;
 using System.Linq;
@@ -1034,7 +1035,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					group by {string.Join(", ", groupColumns)}";
 				}
 			}
-
+			
 			if (! SecurityContext.IsAdministrator && !useAsAdmin)
 			{
 				if (restrictions.HasAssetTypeRestriction)

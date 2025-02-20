@@ -353,7 +353,7 @@ namespace d360.web.Controllers
 
 				if (assetTypeUid != Guid.Empty && !Company.Any<AssetType>(x => x.uid == assetTypeUid))
 				{
-					return Json(new { title = "Error!", message = Error.InvalidAssetTypeUid, type = "error" });
+					return Json(new { title = "Error!", message = string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid), type = "error" });
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);

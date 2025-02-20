@@ -115,7 +115,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };

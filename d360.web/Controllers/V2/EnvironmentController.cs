@@ -735,7 +735,7 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = string.Format(Error.AssetTypeUidNotFound, q.Value);
+									errorMessage = string.Format(Error.AssetTypeNotFound, q.Value);
 								}
 							}
 							else
@@ -2830,32 +2830,21 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetUserSettings(CancellationToken cancellationToken)
 		{
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				Guid AssetTypeUID = Guid.Empty;
+			var queryParams = Request.GetQueryNameValuePairs();
+			Guid AssetTypeUID = Guid.Empty;
 
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+			{
+				if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
 				{
-					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
-					{
-						AssetTypeUID = Guid.Empty;
-						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorGeneric, Error.InvalidAssetTypeUid);
-					}
+					AssetTypeUID = Guid.Empty;
+					return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 				}
+			}
 
-				var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
+			var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
-			}
-			catch (GenericException)
-			{
-				throw;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.UnknownErrorInvestigatingMessage);
-			}
+			return Ok(settings);
 		}
 
 		/// <summary>

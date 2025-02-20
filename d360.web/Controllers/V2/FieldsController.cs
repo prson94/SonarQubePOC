@@ -213,7 +213,7 @@ namespace d360.web.Controllers.V2
 
 				if (typeIdentifierInfoModel == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(Error.AssetTypeUidNotFound, model.AssetTypeUid.Value.ToString()));
+					throw new NotFoundBusinessLayerException(string.Format(Error.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
 				}
 			}
 
@@ -2002,7 +2002,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(Error.InvalidAssetTypeUid);
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			var types = Company.Query<int>(

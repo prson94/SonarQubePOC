@@ -230,7 +230,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = Error.InvalidAssetTypeUid,
+						Message = string.Format(Error.InvalidAssetTypeUidParameter, allocation.AssetTypeUid),
 						Success = false
 					});
 					continue;
@@ -324,7 +324,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = Error.InvalidAssetTypeUid,
+						Message = string.Format(Error.InvalidAssetTypeUidParameter, allocation.AssetTypeUid),
 						Success = false
 					});
 
@@ -417,7 +417,7 @@ namespace d360.web.Controllers.V2
 					results.Add(new ResponsibilityTypeAllocationResponseModel()
 					{
 						AssetTypeUid = allocation.AssetTypeUid,
-						Message = Error.InvalidAssetTypeUid,
+						Message = string.Format(Error.InvalidAssetTypeUidParameter, allocation.AssetTypeUid),
 						Success = false
 					});
 

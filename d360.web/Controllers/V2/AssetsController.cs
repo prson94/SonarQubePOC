@@ -1944,7 +1944,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetTypeUidIsNotValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 			else
 			{
@@ -2447,7 +2447,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -2491,7 +2491,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -2535,7 +2535,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -3436,7 +3436,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidAssetTypeUid)));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			int pageSize = 500;
@@ -3446,7 +3446,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (res > maxPageSize || res < 1)
 					{
-						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.PageSizeRange)));
+						return errorMessageArgumentResponse(Error.PageSizeRange);
 					}
 					else
 					{
@@ -3455,7 +3455,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.PageSizeNotNumber)));
+					return errorMessageArgumentResponse(Error.PageSizeNotNumber);
 				}
 			}
 
@@ -3466,7 +3466,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (res < 1)
 					{
-						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidPageNumberGT0)));
+						return errorMessageArgumentResponse(Error.InvalidPageNumberGT0);
 					}
 					else
 					{
@@ -3475,7 +3475,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidPageNumber)));
+					return errorMessageArgumentResponse(Error.InvalidPageNumber);
 				}
 			}
 
@@ -3488,7 +3488,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidParameterIncludeTotal)));
+					return errorMessageArgumentResponse(Error.InvalidParameterIncludeTotal);
 				}
 			}
 
@@ -4052,7 +4052,7 @@ namespace d360.web.Controllers.V2
 			Guid assetTypeID;
 			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
 			{
-				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUidAttached, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 			}
 
 			ValidateParameters();
@@ -4061,7 +4061,7 @@ namespace d360.web.Controllers.V2
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{
-				return errorMessageNotFoundResponse($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			var result = entities.Select(x => new AssetTypeAncestryModel
@@ -4072,7 +4072,7 @@ namespace d360.web.Controllers.V2
 
 			return Ok(result);
 		}
-
+		
 		/// <summary>
 		/// Hidden API to return class of asset
 		/// </summary>
