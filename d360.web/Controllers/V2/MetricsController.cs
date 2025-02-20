@@ -1046,7 +1046,7 @@ namespace d360.web.Controllers.V2
 
 				if (!_direction.Equals("asc", StringComparison.InvariantCultureIgnoreCase) && !_direction.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirection);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirectionSimple);
 				}
 			}
 
