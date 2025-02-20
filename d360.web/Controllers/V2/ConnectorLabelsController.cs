@@ -154,7 +154,18 @@ namespace d360.web.Controllers.V2
             };
 			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
 
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+			var respData = new
+			{
+				uid = result.uid,
+				Value = result.Value,
+				State = State.Active,
+				CreatedBy = result.CreatedByName,
+				CreatedOn = result.CreatedOn,
+				UpdatedBy = result.UpdatedByName,
+				UpdatedOn = result.UpdatedOn
+			};
+
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, respData)));
         }
 
         /// <summary>
