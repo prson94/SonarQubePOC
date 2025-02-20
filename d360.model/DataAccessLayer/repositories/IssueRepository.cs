@@ -131,7 +131,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) && (!Guid.TryParse(assetTypeUidParam.Value, out assetTypeUid) || assetTypeUid == Guid.Empty))
 				{
-					throw new ArgumentException(Error.InvalidAssetTypeUid);
+					throw new ArgumentException(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUidParam.Value));
 				}
 			}
 

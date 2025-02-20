@@ -355,7 +355,7 @@ end
 
 			if (assetType == null)
 			{
-				throw new Exception($"Asset type with uid {assetTypeUid} not found");
+				throw new ApplicationException(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			await GenerateExecutionItemUids(load, timeout);

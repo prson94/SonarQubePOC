@@ -628,9 +628,6 @@
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
     <value>Dit assettype mag niet een waarde [Type.Score] hebben</value>
   </data>
-  <data name="AssetTypeUidNotFound" xml:space="preserve">
-    <value>Assettype niet gevonden op basis van opgegeven UID [{0}].</value>
-  </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
     <value>U mag geen [AssetTypeUid] opgeven omdat u al een [ActionTypeUid] hebt opgegeven.</value>
   </data>
@@ -745,9 +742,6 @@
   </data>
   <data name="GroupInvalidFieldType" xml:space="preserve">
     <value>Groepen mogen niet het veldtype {0} hebben.</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>U hebt geen geldige assettype-GUID opgegeven voor dit verzoek.</value>
   </data>
   <data name="InvalidField" xml:space="preserve">
     <value>Ongeldig veld {0}</value>
@@ -1671,9 +1665,6 @@
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
     <value>Er moet ofwel [AssetTypeUid] of [AssetUid] worden opgegeven.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is geen geldige assettype-UID.</value>
-  </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
     <value>{0} is geen geldige asset-UID.</value>
   </data>
@@ -1763,9 +1754,6 @@
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>De huidige gebruiker is geen beheerder.</value>
-  </data>
-  <data name="InvalidAssetUidAttached" xml:space="preserve">
-    <value>AssetUid {0} is ongeldig</value>
   </data>
   <data name="InvalidDirectionSimple" xml:space="preserve">
     <value>Ongeldige waarde voor parameter [_direction]. Toegestane waarden zijn desc en asc.</value>
@@ -1940,9 +1928,6 @@
   </data>
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Bestand is geüpload</value>
-  </data>
-  <data name="InvalidAssetTypeID" xml:space="preserve">
-    <value>Ongeldige assettype-ID. Geef een geldige assettype-ID op.</value>
   </data>
   <data name="InvalidBoolean" xml:space="preserve">
     <value>De opgegeven waarde is geen geldige Booleaanse waarde</value>
@@ -2211,8 +2196,8 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Route {Route} is onbekend of afgeschaft</value>
   </data>
-  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>Geen assettype gevonden met de opgegeven [assetTypeUid].</value>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Geen assettype gevonden met de opgegeven [{0}].</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Geen snijpunttype gevonden met de opgeven intersectTypeUid.</value>

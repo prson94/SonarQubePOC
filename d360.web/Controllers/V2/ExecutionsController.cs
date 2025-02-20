@@ -1194,7 +1194,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (assetTypeUid == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUidProvided)).ConfigureAwait(false);
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 					}
 				}
 
@@ -1202,7 +1202,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (intersectTypeUid == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidIntersectTypeUidProvided)).ConfigureAwait(false);
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidIntersectTypeUidProvided);
 					}
 				}
 
@@ -1212,7 +1212,7 @@ namespace d360.web.Controllers.V2
 
 				if (file == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "file"))).ConfigureAwait(false);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "file"));
 				}
 
 				byte[] bytes = await file.ReadAsByteArrayAsync();

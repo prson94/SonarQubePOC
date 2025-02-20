@@ -673,24 +673,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid Asset Type Uid..
-        /// </summary>
-        public static string AssetTypeUidIsNotValid {
-            get {
-                return ResourceManager.GetString("AssetTypeUidIsNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Asset Type not found based on Uid provided [{0}]..
-        /// </summary>
-        public static string AssetTypeUidNotFound {
-            get {
-                return ResourceManager.GetString("AssetTypeUidNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You may not provide an [AssetTypeUid] since you have already provided an [ActionTypeUid]..
         /// </summary>
         public static string AssetTypeUidNotRequiredIfActionTypeUidProvided {
@@ -3544,24 +3526,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Asset Type ID.Provide Valid Asset Type ID..
-        /// </summary>
-        public static string InvalidAssetTypeID {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You have not provided a valid Asset type uid for this request..
-        /// </summary>
-        public static string InvalidAssetTypeUid {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid Asset Type Uid provided [{0}]..
         /// </summary>
         public static string InvalidAssetTypeUidParameter {
@@ -3571,29 +3535,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No asset type found with [assetTypeUid] provided..
-        /// </summary>
-        public static string InvalidAssetTypeUidProvided {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeUidProvided", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid [AssetUid] provided..
         /// </summary>
         public static string InvalidAssetUid {
             get {
                 return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AssetUid {0} is invalid.
-        /// </summary>
-        public static string InvalidAssetUidAttached {
-            get {
-                return ResourceManager.GetString("InvalidAssetUidAttached", resourceCulture);
             }
         }
         

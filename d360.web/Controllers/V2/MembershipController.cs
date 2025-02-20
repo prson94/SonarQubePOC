@@ -1611,7 +1611,7 @@ namespace d360.web.Controllers.V2
 			{
 				if ((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUid)).ConfigureAwait(false);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, model.assetTypeUid));
 				}
 				else
 				{
@@ -1777,7 +1777,7 @@ namespace d360.web.Controllers.V2
 
 			if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 			}
 
 			var assetType = Assets.GetAssetTypeByUID(assetTypeUid);

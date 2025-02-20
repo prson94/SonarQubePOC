@@ -184,7 +184,7 @@ namespace d360.web.Controllers.V2
 			//Validate and map asset type uid to to id
 			if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()) || model.AssetTypeUID == Guid.Empty)
 			{
-				throw new ArgumentException(Error.InvalidAssetTypeUid);
+				throw new ArgumentException(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
@@ -458,7 +458,7 @@ namespace d360.web.Controllers.V2
 			//Validate and map asset type uid to to id
 			if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
 			{
-				throw new ArgumentException(Error.InvalidAssetTypeUid);
+				throw new ArgumentException(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
@@ -560,7 +560,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
-				throw new ArgumentException(Error.InvalidAssetTypeUid);
+				throw new ArgumentException(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
@@ -616,7 +616,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetType == null)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeUid);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			if (assetType.Class != AssetTypeClass.BusinessAsset
@@ -643,7 +643,7 @@ namespace d360.web.Controllers.V2
 
 			if (template.AssetTypeID <= 0)
 			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			if (!Enum.IsDefined(typeof(ExportView), template.ExportViewType))

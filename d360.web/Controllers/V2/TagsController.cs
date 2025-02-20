@@ -464,9 +464,10 @@ namespace d360.web.Controllers.V2
 
 			if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
 			{
-				if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
+				string assetTypeUid = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower();
+				if (!Guid.TryParse(assetTypeUid, out AssetTypeUid))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 				}
 
 				if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
@@ -475,12 +476,12 @@ namespace d360.web.Controllers.V2
 
 					if (assetType == null)
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, AssetTypeUid));
 					}
 				}
 				else
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 				}
 			}
 

@@ -91,7 +91,7 @@ namespace d360.model.DataAccessLayer
 				report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
 				if (report == null)
 				{
-					throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
+					throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.InvalidAssetTypeUidParameter, model.AssetTypeUid));
 				}
 
 				nowPreviousreport = report.CloneThis();
@@ -143,7 +143,7 @@ namespace d360.model.DataAccessLayer
 		{
 			if (model.AssetTypeUid == null || model.AssetTypeUid == Guid.Empty)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUidParameter, model.AssetTypeUid));
 			}
 
 			var assetType = CompanyContext.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => new { x.uid, x.ID, x.Class }).FirstOrDefault();

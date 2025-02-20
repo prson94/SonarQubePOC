@@ -513,7 +513,7 @@ select count(1) from AuditView {whereSql};
 		{
 			if (assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(Error.InvalidAssetTypeUid);
+				throw new ArgumentException(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 
 			dynamic objectInfo = GetLegacyObjectDetails(assetUid);

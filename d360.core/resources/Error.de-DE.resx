@@ -628,9 +628,6 @@
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
     <value>Dieser Asset-Typ darf nicht den Wert '[Type.Score]' aufweisen.</value>
   </data>
-  <data name="AssetTypeUidNotFound" xml:space="preserve">
-    <value>Asset-Typ anhand der angegebenen UID [{0}] nicht gefunden.</value>
-  </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
     <value>[AssetTypeUid] darf nicht angegeben werden, da [ActionTypeUid] bereits angegeben wurde.</value>
   </data>
@@ -745,9 +742,6 @@
   </data>
   <data name="GroupInvalidFieldType" xml:space="preserve">
     <value>Gruppen dürfen nicht den Feldtyp {0} aufweisen.</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Sie haben keine gültige Asset-UID für diese Anforderung angegeben.</value>
   </data>
   <data name="InvalidField" xml:space="preserve">
     <value>Ungültiges Feld {0}</value>
@@ -1671,9 +1665,6 @@
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
     <value>Entweder [AssetTypeUid] oder [AssetUid] muss angegeben werden.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} ist keine gültige Asset-Typ-UID.</value>
-  </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
     <value>{0} ist keine gültige Asset-UID.</value>
   </data>
@@ -1763,9 +1754,6 @@
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>Der aktuelle Benutzer ist kein Administrator.</value>
-  </data>
-  <data name="InvalidAssetUidAttached" xml:space="preserve">
-    <value>AssetUid {0} ist ungültig</value>
   </data>
   <data name="InvalidDirectionSimple" xml:space="preserve">
     <value>Ungültiger Wert für Parameter [_direction] Zulässige Werte sind 'desc' und 'asc'.</value>
@@ -1940,9 +1928,6 @@
   </data>
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Datei hochgeladen</value>
-  </data>
-  <data name="InvalidAssetTypeID" xml:space="preserve">
-    <value>Ungültige Asset-Typ-ID. Geben Sie eine gültige Asset-Typ-ID an.</value>
   </data>
   <data name="InvalidBoolean" xml:space="preserve">
     <value>Bei dem angegebenen Wert handelt es sich nicht um einen gültigen booleschen Wert.</value>
@@ -2211,8 +2196,8 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Route {Route} ist unbekannt oder veraltet</value>
   </data>
-  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>Kein Asset-Typ mit angegebener/m [assetTypeUid] gefunden.</value>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Kein Asset-Typ mit angegebener/m [{0}] gefunden.</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Kein Überschneidungstyp mit der angegebenen intersectTypeUid gefunden.</value>

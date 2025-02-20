@@ -132,12 +132,12 @@ namespace d360.model.DataAccessLayer
 			return GetSetting(ResourceID, 0, Setting);
 		}
 
-		private int AssetTypeUID2ID(Guid AssetTypeUID)
+		private int AssetTypeUID2ID(Guid uid)
 		{
-			var AssetType = CompanyContext.AssetTypes.Where(t => t.uid == AssetTypeUID).FirstOrDefault();
+			var AssetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
 			if(AssetType == null)
 			{
-				throw new ArgumentException(Error.InvalidAssetTypeUid);
+				throw new ArgumentException(string.Format(Error.AssetTypeNotFound, uid));
 			}
 			return AssetType.ID;
 		}
