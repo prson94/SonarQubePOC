@@ -2505,20 +2505,28 @@ namespace d360.model
 			{
 				Log.LogError(string.Format("Error executing workflow step. ItemID: {0}, StepID: {1}", itemID, itemStepID));
 
-				WorkflowItemStep itemStep = WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
-				itemStep.State = StepState.Error;
-
-				var message = ex.InnerException?.Message ?? ex.Message;
-				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+				if (eventInfo.RetryCount >= 5)
 				{
-					itemStepID = itemStep.ID,
-					Details = ex.StackTrace,
-					Message = message.Substring(0, Math.Min(250, message.Length)),
-					State = StepState.Error
-				};
+					WorkflowItemStep itemStep = WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
+					itemStep.State = StepState.Error;
 
-				WorkflowItemStepStateDetails.Add(itemStateDetail);
-				SaveChanges();
+					var message = ex.InnerException?.Message ?? ex.Message;
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = itemStep.ID,
+						Details = ex.StackTrace,
+						Message = message.Substring(0, Math.Min(250, message.Length)),
+						State = StepState.Error
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+					SaveChanges();
+				}
+				else
+				{
+					eventInfo.RetryCount++;
+					await QueueSource.CreateMessageAsync(constants.Queue.Workflow, eventInfo, TimeSpan.FromMinutes(1));
+				}
 			}
 		}
 

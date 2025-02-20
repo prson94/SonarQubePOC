@@ -11,7 +11,6 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 
-
 namespace d360.web
 {
     public static class AutofacExtensions
@@ -22,7 +21,6 @@ namespace d360.web
 		    builder.RegisterType<T>().As<IWebApi2ExceptionHandler>().SingleInstance();
 	    }
     }
-
 
     public class MvcApplication : HttpApplication
     {

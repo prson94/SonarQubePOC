@@ -317,8 +317,8 @@
     <Reference Include="System.Spatial, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.8.5\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+    <Reference Include="System.Text.Encoding.CodePages, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.6.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
@@ -718,6 +718,11 @@
     <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.html" />
     <Content Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\pages\home\components\activity-details-tile.html" />
+    <Content Include="Scripts\app\pages\home\components\activity-tile.html" />
+    <Content Include="Scripts\app\pages\home\components\board-tile.html" />
+    <Content Include="Scripts\app\pages\home\components\shortcut-display.html" />
+    <Content Include="Scripts\app\pages\home\index.html" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\**\*.js" />
@@ -970,6 +975,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owner-detail.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-details-tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\components\board-tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\components\shortcut-display.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
@@ -1264,12 +1274,6 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\home.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
@@ -2106,10 +2110,6 @@
     <None Include="Scripts\app\components\help\help.component.html" />
     <None Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <None Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
-    <None Include="Scripts\app\components\home\activity-details-tile.component.html" />
-    <None Include="Scripts\app\components\home\activity-tile.component.html" />
-    <None Include="Scripts\app\components\home\board-tile.component.html" />
-    <None Include="Scripts\app\components\home\home.component.html" />
     <None Include="Scripts\app\components\monitor\monitor-filter.component.html" />
     <None Include="Scripts\app\components\monitor\monitor-list.component.html" />
     <None Include="Scripts\app\components\monitor\monitor-workflow-version.component.html" />
