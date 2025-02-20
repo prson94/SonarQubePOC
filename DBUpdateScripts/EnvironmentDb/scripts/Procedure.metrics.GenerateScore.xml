@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v5">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v6">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -228,8 +228,8 @@ begin
 	-- Is there anything to update for this score?
 	declare @prehash nvarchar(max),
 			@Hash varchar(50);
-	select @prehash = string_agg('[' + lower(cast(VersionUid as nvarchar(50))) + '|' + cast(RawValue as nvarchar(10)) + ']', ';') from @measures
-	--select @prehash = string_agg('[' + lower(cast(VersionUid as nvarchar(50))) + '|' + Evidence + '|' + cast(RawValue as nvarchar(10)) + ']', ';') from @measures
+	--select @prehash = string_agg('[' + lower(cast(VersionUid as nvarchar(50))) + '|' + cast(RawValue as nvarchar(10)) + ']', ';') from @measures
+	select @prehash = string_agg('[' + lower(cast(VersionUid as nvarchar(50))) + '|' + Evidence + '|' + cast(RawValue as nvarchar(10)) + ']', ';') from @measures
 	select @Hash = [utility].[GetHash](@prehash)
 
 	-- Add new itemUids for those records that do not have a match.
