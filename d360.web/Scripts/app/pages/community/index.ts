@@ -14,7 +14,6 @@ import { ResponsibilityTypeCount } from '../../models/responsibility-type.model'
 
 @Component({
     selector: 'community',
-    styleUrls: ['index.less'],
 	templateUrl: 'index.html',
 	standalone: true,
 	imports: [D3SSharedModule, HighchartsChartModule, LoadingComponent]
