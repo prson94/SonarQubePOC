@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					return errorMessageArgumentResponse(string.Format(Error.InvalidDirection, _direction));
+					return errorMessageArgumentResponse(Error.InvalidDirectionSimple);
 			}
 
 			if (string.IsNullOrEmpty(_order))

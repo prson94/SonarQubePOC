@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,AmitYadav" id="Procedure.api.UpsertItemFields-v2.1">
+  <changeSet author="Pappas,AmitYadav,PuneetGupta" id="Procedure.api.UpsertItemFields-v2.3">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertItemFields
@@ -73,9 +73,11 @@ begin
 	using	(
 			select	i.ObjectID,
 					i.AssetID,
-					f.*
+					f.*,
+					case when coalesce(ft.Type,'''') = ''Link'' then 1 else 0 end IsValueUpdate
 			from	#Fields f
 					inner join #Items i on i.ItemNumber = f.ItemNumber
+					left Join FieldType Ft on Ft.ID = f.FieldTypeID
 			) as s '
 
 	if @object = 'Group'
@@ -93,13 +95,13 @@ begin
 	set @fieldSql = @fieldSql + '
 	when	matched then
 	update	set
-			t.Value = iif(s.LookupValue is null, null, s.LookupValue),
+			t.Value = case when s.IsValueUpdate = 1 and s.LookupValue is null then s.FieldValue else iif(s.LookupValue is null, null, s.LookupValue) end,
 			t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
 			t.UpdatedBy = @userId,
 			t.UpdatedOn = @date
 	when	not matched by target then
 	insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);'
+	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, case when s.IsValueUpdate = 1 and s.LookupValue is null then s.FieldValue else iif(s.LookupValue is null, null, s.LookupValue) end, iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);'
 
 	exec sp_executesql @fieldSql, N'@userId int, @date datetime, @object varchar(50)', @userId, @date, @object;
 	
@@ -113,7 +115,7 @@ begin
 			from #Items i
 			cross apply (select fte.id from FieldType fte where fte.AssetTypeID = @groupassettypeid and fte.Type = 'Counter') ft
 			left join dbo.FieldCounterValue FCV on FCV.AssetId = i.AssetID and FCV.FieldTypeId = ft.id
-			where FCV.AssetId is null
+			where FCV.AssetId is null and i.AssetID is not null;
 		end
 	end
 

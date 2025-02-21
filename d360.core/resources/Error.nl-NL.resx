@@ -3222,4 +3222,7 @@
   <data name="UidConstant" xml:space="preserve">
     <value>UID</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Ongeldige [_resourceUid] opgegeven</value>
+  </data>
 </root>
