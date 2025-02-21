@@ -929,6 +929,7 @@
     <Content Include="Scripts\app\components\admin\security\policy.less" />
     <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
     <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
+    <Content Include="Scripts\app\components\search\hero-search-input.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
