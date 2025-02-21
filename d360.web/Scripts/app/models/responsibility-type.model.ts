@@ -104,7 +104,7 @@ export class ResponsibilityTypeCount {
     Count: number;
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
-    ResponsibilityTypeUID: number;
+    ResponsibilityTypeUID: string;
 }
 
 export class ResourceResponsibilityTypeCount {

@@ -20,8 +20,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-preview-tooltip',
     templateUrl: './preview-tooltip.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ToolTipService]
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class PreviewTooltipComponent {
@@ -144,19 +143,19 @@ export class PreviewTooltipComponent {
     }
 
     repositionMenuToFit(windowHeight, windowWidth, element) {
-        var dims = element.getBoundingClientRect();
+        const dims = element.getBoundingClientRect();
 
         if (dims) {
-            var maxHeight = dims.top + dims.height;
-            var maxWidth = dims.left + dims.width;
+            const maxHeight = dims.top + dims.height;
+			const maxWidth = dims.left + dims.width;
 
             if (maxHeight > windowHeight) { //case where bottom is below page
-                var topOffset = windowHeight - dims.height - 10;
+				const topOffset = windowHeight - dims.height - 10;
                 element.style.top = topOffset + 'px';
             }
 
             if (maxWidth > windowWidth) {
-                var leftOffset = Math.max(windowWidth - dims.width - 30, 0);
+				let leftOffset = Math.max(windowWidth - dims.width - 30, 0);
                 if (this.isRightAligned()) {
                     leftOffset += 30;
                     element.style.width = dims.width + 'px';

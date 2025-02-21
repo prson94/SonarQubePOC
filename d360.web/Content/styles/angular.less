@@ -4659,6 +4659,10 @@ d3s-header-typeahead-search {
   width: 80%;
   height: 140px;
 
+  p-multiselect {
+    z-index: 10000;
+  }
+
   .field {
     height: 56px;
     border-radius: 0 4px 4px 0;
@@ -4687,26 +4691,26 @@ d3s-header-typeahead-search {
       margin-top: -1px;
     }
 
-    .p-multiselect-panel .p-multiselect-item {
-      padding: 4px;
-      height: 32px;
-      font-size: 14px;
-      font-weight: normal;
-      font-style: normal;
-      font-stretch: normal;
-      line-height: 1.14;
-      letter-spacing: normal;
-      color: @ig-black;
+      .p-multiselect-panel .p-multiselect-item {
+        padding: 4px;
+        height: 32px;
+        font-size: 14px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.14;
+        letter-spacing: normal;
+        color: @ig-black;
 
-      &:focus {
-        outline: none;
-      }
+        &:focus {
+          outline: none;
+        }
 
-      span {
-        height: 16px;
-        padding-left: 4px;
+        span {
+          height: 16px;
+          padding-left: 4px;
+        }
       }
-    }
 
     .select-all-label {
       color: @ig-black;

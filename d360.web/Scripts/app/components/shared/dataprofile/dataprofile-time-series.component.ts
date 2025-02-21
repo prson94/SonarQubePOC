@@ -19,7 +19,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     public displayChart: boolean = false;
     public graphTitle: string = $localize`Default Title`;
-    public selectedGraphRangeOption: any;
+	public selectedGraphRangeOption: any = {};
 
     public graphRangeOptions: SelectItem[] = [
         {

@@ -3285,4 +3285,7 @@
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset Type not found based on Uid provided [{0}].</value>
   </data>
+  <data name="DisabledByEnvironmentSetting" xml:space="preserve">
+    <value>Not allowed due to feature being disable via setting: {0}.</value>
+  </data>
 </root>

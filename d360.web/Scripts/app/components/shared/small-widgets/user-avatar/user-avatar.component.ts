@@ -11,6 +11,8 @@ declare const __webpack_public_path__: string;
 export class UserAvatarComponent implements OnChanges {
 
 	@Input() resourceUid: string;
+	@Input() resourceName: string;
+	@Input() showPicture: boolean = true;
 	@Input() size: number;
 	@Input() style: string;
 	@Input() class: string;
@@ -18,6 +20,7 @@ export class UserAvatarComponent implements OnChanges {
 	private availableSizes = [25, 35, 70, 200];
 	private defaultSize: number = 70;
 	private baseUrl: string = null;
+	resourceInitials: string = "";
 
 	constructor(
 		private ref: ChangeDetectorRef,
@@ -35,6 +38,7 @@ export class UserAvatarComponent implements OnChanges {
 		if (changes["size"]) {
 			this.defaultSize = this.closestNumber(changes["size"].currentValue, this.availableSizes);
 		}
+		this.resourceInitials = this.getUserInitials();
 	}
 
 	getAbsoluteAssetUrl(url: string): string {
@@ -69,5 +73,54 @@ export class UserAvatarComponent implements OnChanges {
 			return arr[lo];
 		}
 		return arr[hi];
+	}
+
+	getNameHash(str) {
+		let hash = 5381;
+		for (let i = 0; i < str.length; i++) {
+			hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
+		}
+		return hash;
+	}
+	hashStringToColor(str, opacity) {
+		const hash = this.getNameHash(str);
+		const r = (hash & 0xFF0000) >> 16;
+		const g = (hash & 0x00FF00) >> 8;
+		const b = hash & 0x0000FF;
+		return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+		//return "#" + ("0" + r.toString(16)).substr(-2) + ("0" + g.toString(16)).substr(-2) + ("0" + b.toString(16)).substr(-2);
+	}
+
+	getAvatarStyle() {
+		if (this.resourceName) {
+			const bcolor = this.hashStringToColor(this.resourceName, 0.35);
+			const fcolor = this.hashStringToColor(this.resourceName, 1);
+			let style = `background-color: ${bcolor}`;
+			style += `; color: ${fcolor}`;
+			style += `; border-radius: ${this.size / 2}px`;
+			style += `; line-height: ${this.size}px`;
+			style += `; vertical-align: middle`;
+			style += `; text-align: center`;
+			style += `; font-size: ${this.size * .4}px`;
+			style += `; height: ${this.size}px`;
+			style += `; width: ${this.size}px`;
+			return style;
+		}
+		else {
+			return "";
+		}
+	}
+
+	private getUserInitials() {
+		if (this.resourceName) {
+			const nameSegments = this.resourceName.split(" ");
+			while (nameSegments.length > 2) {
+				nameSegments.splice(1, 1);
+			}
+			return nameSegments.map((n) => n[0]).join("");
+		}
+		else {
+			return "";
+		}
 	}
 }
