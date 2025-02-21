@@ -276,8 +276,8 @@ namespace d360.web.Controllers.V2
 		public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, bool validateForExport = false)
 		{
 			var parameters = queryParams.ToList();
-			long pageSize = 0;
-			long pageNum = 0;
+			int pageSize = 0;
+			int pageNum = 0;
 
 			if (parameters.Any(q => q.Key == "_pageSize"))
 			{
@@ -288,7 +288,7 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageSize;
 				}
 
-				if (long.TryParse(_pageSize, out pageSize))
+				if (int.TryParse(_pageSize, out pageSize))
 				{
 					string cacheKey = "ValidForExport";
 					int maxRows = 200000;
@@ -330,7 +330,7 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageNum;
 				}
 
-				if (long.TryParse(_pageNum, out pageNum))
+				if (int.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
@@ -340,6 +340,19 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					return Error.InvalidpageNumNumberValue;
+				}
+			}
+
+			int offset = (pageSize == 0 ? 250 : pageSize) * ((pageNum == 0 ? 1 : pageNum) - 1);
+			if (offset < 0)
+			{
+				if (pageNum > 21474836)
+				{
+					return Error.InvalidPageNum;
+				}
+				else
+				{
+					return Error.InvalidPageSize;
 				}
 			}
 
