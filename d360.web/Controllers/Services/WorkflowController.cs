@@ -1990,11 +1990,10 @@ namespace d360.web.Controllers.Services
 					type.UpdatedBy = SecurityContext.ResourceID;
 
 					var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
+					//Create new workflow version for every save except when we are changing status from active to inactive or vice versa
 					int version = currentVersion.Version;
-
 					versionID = currentVersion.ID;
 
-					//Create new workflow version for every save except when we are changing status from active to inactive or vice versa
 					bool isSameVersion = currentVersion.ID == type.PublishedVersionID;
 					if (model.Nodes.Count > 0 && model.Links.Count > 0 && (isSameVersion || model.Type.PublishedVersionID == -1) && !isActiveStatusChanged)
 					{
@@ -2115,7 +2114,7 @@ namespace d360.web.Controllers.Services
 
 				List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
 				Dictionary<int, int> keyMapping = new Dictionary<int, int>();
-
+				Dictionary<string, int> NewNodeIds = new Dictionary<string, int>();
 				if (newVersion)
 				{
 					#region Create New Version
@@ -2236,8 +2235,9 @@ namespace d360.web.Controllers.Services
 							int.TryParse(n.Key, out int id);
 
 							//new step
-							if (id < 0)
+							if (id < 0 || n.IsNewNode)
 							{
+
 								var step = new WorkflowVersionStep
 								{
 									ID = 0,
@@ -2263,6 +2263,7 @@ namespace d360.web.Controllers.Services
 								Company.Add(step);
 								Company.SaveChanges();
 								keyMapping.Add(id, step.ID);
+								NewNodeIds.Add(n.Key, step.ID);
 							}
 							//modify exsiting step
 							else if (id > 0)
@@ -2319,8 +2320,23 @@ namespace d360.web.Controllers.Services
 
 					if (model?.Links?.Count > 0)
 					{
-						model.Links.ForEach(l =>
+
+						model.Links.ForEach((l) =>
 						{
+							if (NewNodeIds.ContainsKey(l.FromKey))
+							{
+
+								var key = NewNodeIds[l.FromKey];
+								keyMapping[key] = NewNodeIds[l.FromKey];
+								l.FromKey = key.ToString();
+							}
+
+							if (NewNodeIds.ContainsKey(l.ToKey))
+							{
+								var key = NewNodeIds[l.ToKey];
+								keyMapping[key] = NewNodeIds[l.ToKey];
+								l.ToKey = key.ToString();
+							}
 							int.TryParse(l.FromKey, out int from);
 							int.TryParse(l.ToKey, out int to);
 

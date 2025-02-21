@@ -509,9 +509,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private save(publish: boolean = false) {
 
         const links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
-        const nodes = []; //this.myDiagram.model.nodeDataArray;
+        const nodes: any[] = []; //this.myDiagram.model.nodeDataArray;
         var types = this.fieldTypes;
-        this.diagram.model.nodeDataArray.forEach((n) => {
+        this.diagram.model.nodeDataArray.forEach((n,index) => {
             if ((<NodeModel>n).activityName === "FieldChange") {
                 ((<NodeModel>n).settings.FieldUpdate.Field).forEach(function (fieldNode) {
                     var fieldData = fieldNode["@FieldName"].split("::", 2);
@@ -525,8 +525,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     }
                 });
             }
-
             nodes.push(this.convertToWorkflowModel(<NodeModel>n));
+            if(n.isNewNode){
+                nodes[index].isNewNode = true;
+            }
         });
 
         (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach((l) => {
@@ -540,7 +542,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         m.Event = this.model.Event;
         m.Nodes = nodes;
         m.Links = links;
-
         this.isLoadingCounter++;
 
         this.workflowService.saveWorkflowDiagramModel(m)
@@ -1847,7 +1848,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private ExternalObjectsDropped(e: any) {
-        this.diagram.model.nodeDataArray.forEach((n) => {
+        this.diagram.model.nodeDataArray.forEach((n,index) => {
 
             //gojs doesn't like giving each node its own settings/fields object for some reason
             //set it here if it's empty
@@ -1856,6 +1857,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if ((<any>n).fields == null || isEmpty((<any>n).fields))
                 {(<any>n).fields = Object.create({});}
+
+            if(index === this.diagram.model.nodeDataArray.length - 1)
+            {
+                n.isNewNode = true;
+            }
 
             this.diagram.model.setDataProperty(n, 'valid', this.validateNode(<NodeModel>n));
         });
