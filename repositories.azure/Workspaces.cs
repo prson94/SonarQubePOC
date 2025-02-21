@@ -323,11 +323,31 @@ where	g.id = @groupId;
 					{
 						if (isdefvalue)
 						{
-							simpleQueryFilters.Add($"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID}) like @simpleFilter");
+							if (dt == DataType.Counter)
+							{
+								simpleQueryFilters.Add($"coalesce({counterPrefix}.Value,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
+
+							else if (dt == DataType.Lookup)
+							{
+								simpleQueryFilters.Add($"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
+
+							else
+							{ 
+							simpleQueryFilters.Add($"coalesce({prefix}.Value,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
 						}
 						else
 						{
+							if(dt == DataType.Counter)
+							{
+								simpleQueryFilters.Add($"{counterPrefix}.Value like @simpleFilter");
+							}
+							else
+							{ 
 							simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+							}
 						}
 					}
 				});
