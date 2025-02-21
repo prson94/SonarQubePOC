@@ -7,6 +7,7 @@ using d360.core.validators;
 using d360.utils.excel;
 using d360.web.Models;
 using Dapper;
+using DocumentFormat.OpenXml.Drawing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -343,7 +344,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			int offset = (pageSize == 0 ? 250 : pageSize) * ((pageNum == 0 ? 1 : pageNum) - 1);
+			long offset = (pageSize == 0 ? 250 : (long)pageSize) * ((pageNum == 0 ? 1 : (long)pageNum) - 1);
 			if (offset < 0)
 			{
 				if (pageNum > 21474836)
