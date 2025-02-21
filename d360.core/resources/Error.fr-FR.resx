@@ -3216,4 +3216,7 @@
   <data name="TagUidNotFound" xml:space="preserve">
     <value>Le tag dont l’UID est {0} est introuvable.</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Valeur [_resourceUid] fournie non valide</value>
+  </data>
 </root>
