@@ -2497,48 +2497,37 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> UpdatePowerBiCredentials(PowerBiCredentials credentials)
 		{
-			try
+			if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
 			{
-				if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
-				}
-
-				if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
-				{
-					throw new ArgumentNullException(Error.PleaseSpecifyUserNamePassword);
-				}
-
-				var companySettings = await GetCachedSettings();
-				var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
-				var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
-
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
-				}
-
-				// if the workspace id is null create a new one and update the companysettings
-				groupId = await checkPowerBIValidWorkspace(groupId, clientId);
-
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
-				}
-
-				//save password in this workspace for all ds's
-				await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Power Bi credentials updated" }));
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.DashboardingErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
 			}
-			catch (GenericException ex)
+
+			if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
 			{
-				throw ex;
+				return errorMessageArgumentResponse(Error.PleaseSpecifyUserNamePassword);
 			}
-			catch
+
+			var companySettings = await GetCachedSettings();
+			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
+			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
+
+			if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(Error.UnableToFindPowerBISettings);
 			}
+
+			// if the workspace id is null create a new one and update the companysettings
+			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+
+			if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+			{
+				return errorMessageArgumentResponse(Error.UnableToFindPowerBISettings);
+			}
+
+			//save password in this workspace for all ds's
+			await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
+
+			return Ok(new ConfirmResponse { message = "Power Bi credentials updated" });
 		}
 
 		[

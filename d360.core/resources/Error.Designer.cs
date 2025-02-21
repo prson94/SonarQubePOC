@@ -1456,6 +1456,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error updating dashboard.
+        /// </summary>
+        public static string DashboardingErrorOnUpdate {
+            get {
+                return ResourceManager.GetString("DashboardingErrorOnUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
         /// </summary>
         public static string DataProfileDeleteMaxLimit {
