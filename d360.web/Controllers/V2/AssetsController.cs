@@ -1605,7 +1605,7 @@ namespace d360.web.Controllers.V2
 
 			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, isInsert ? Permission.AddAsset : Permission.EditAsset))
 			{
-				return errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, Error.AssetTypeAddAssetPermissionsDenied);
+				return errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, isInsert ? Error.AssetTypeAddAssetPermissionsDenied : Error.AssetTypeEditAssetPermissionsDenied);
 			}
 
 			if (assets == null)
