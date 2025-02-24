@@ -3288,4 +3288,7 @@
   <data name="AssetTypeEditAssetPermissionsDenied" xml:space="preserve">
     <value>You are not allowed to update assets of this type.</value>
   </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Invalid [resourceUid] provided</value>
+  </data>
 </root>

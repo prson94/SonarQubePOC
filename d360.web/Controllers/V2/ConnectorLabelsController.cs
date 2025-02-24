@@ -138,7 +138,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-			var labelValue = label?.Value.Trim();
+			var labelValue = label?.Value?.Trim();
 			if (label == null || string.IsNullOrWhiteSpace(labelValue) || labelValue.Length > 40)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
@@ -154,7 +154,18 @@ namespace d360.web.Controllers.V2
             };
 			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
 
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+			var respData = new
+			{
+				uid = result.uid,
+				Value = result.Value,
+				State = State.Active,
+				CreatedBy = result.CreatedByName,
+				CreatedOn = result.CreatedOn,
+				UpdatedBy = result.UpdatedByName,
+				UpdatedOn = result.UpdatedOn
+			};
+
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, respData)));
         }
 
         /// <summary>

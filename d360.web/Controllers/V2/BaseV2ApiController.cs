@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
 using System.Web.UI.WebControls;
+using System.Xml.XPath;
 
 namespace d360.web.Controllers.V2
 {
@@ -112,14 +113,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (!string.IsNullOrEmpty(fieldDataType))
 						{
-							if (fieldDataType == "bit")
-							{
-								fieldColumns.Add($"cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-							}
-							else
-							{
 								fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-							}
 						}
 						else
 						{
@@ -134,7 +128,7 @@ namespace d360.web.Controllers.V2
 						{
 							if (fieldDataType == "bit")
 							{
-								fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+								fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as nvarchar(max)) as [{columnName}]");
 							}
 							else
 							{

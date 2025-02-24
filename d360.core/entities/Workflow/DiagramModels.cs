@@ -62,7 +62,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember, NotMapped]
         public int RunCount { get; set; }
-    }
+
+		public bool IsNewNode { get; set; }
+	}
 
     public class WorkflowDiagramLink
     {

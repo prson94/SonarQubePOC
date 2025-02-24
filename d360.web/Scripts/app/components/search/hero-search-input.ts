@@ -8,7 +8,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-hero-search-input',
-    templateUrl: 'hero-search-input.html',
+	templateUrl: 'hero-search-input.html',
+	styleUrls: ['/hero-search-input.less'],
     providers: [TypeaheadSearchService],
 })
 
@@ -90,7 +91,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 			selectAllLabel.className = "select-all-label";
 			selectAllLabel.innerText = $localize`Search All Categories`;
 			document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header")[0]
-				.getElementsByClassName("p-checkbox-box")[0].append(selectAllLabel);
+				.getElementsByClassName("p-checkbox")[0].append(selectAllLabel);
 		}
 	}
 }
