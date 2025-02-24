@@ -687,7 +687,9 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetTagTypes()
 		{
 				var models = await Catalog.ReadTagTypesAsync();
-				return Ok(models);
+				//Exclude 'General' TagType
+				var result = models.Where((m) => !string.Equals(m.Value, "General", StringComparison.OrdinalIgnoreCase));
+				return Ok(result);
 		}
 
 		/// <summary>
