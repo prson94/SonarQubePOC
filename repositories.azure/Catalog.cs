@@ -1006,7 +1006,7 @@ select	t.uid,
 from	TagType t
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
-where	t.State = {(int)State.Active}
+where	t.State = {(int)State.Active} AND Lower(t.Value) != 'general'
 order by	t.[value]");
 			}
 

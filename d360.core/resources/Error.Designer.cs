@@ -565,6 +565,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to update assets of this type..
+        /// </summary>
+        public static string AssetTypeEditAssetPermissionsDenied {
+            get {
+                return ResourceManager.GetString("AssetTypeEditAssetPermissionsDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset type error.
         /// </summary>
         public static string AssetTypeError {
@@ -1452,6 +1461,15 @@ namespace d360.core.resources {
         public static string CustomUidNotValid {
             get {
                 return ResourceManager.GetString("CustomUidNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error updating dashboard.
+        /// </summary>
+        public static string DashboardingErrorOnUpdate {
+            get {
+                return ResourceManager.GetString("DashboardingErrorOnUpdate", resourceCulture);
             }
         }
         

@@ -41,6 +41,8 @@ namespace d360.core.entities
 
 		int? ParentItemNumber { get; set; }
 
+		int? ChildItemNumber { get; set; }
+
 		string SourceID { get; set; }
 
 		Dictionary<string, string> Fields { get; set; }
@@ -174,6 +176,9 @@ namespace d360.core.entities
 		public int? ParentItemNumber { get; set; }
 
 		[DataMember]
+		public int? ChildItemNumber { get; set; }
+
+		[DataMember]
 		public string SourceID { get; set; }
 
 		[DataMember]
@@ -194,6 +199,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int? ParentItemNumber { get; set; }
+
+		[DataMember]
+		public int? ChildItemNumber { get; set; }
 
 		[DataMember]
 		public string SourceID { get; set; }
