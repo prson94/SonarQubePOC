@@ -75,6 +75,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 
 	private checkInterval;
 	ngAfterViewInit() {
+		this.applyStyleForOptionalDate();
 		this.checkInterval = setInterval(() => {
 			if (this.calendar.overlayVisible && this.calendar.overlay) {
 				if (this.calendar.overlay.className.indexOf(this.getStyleClass) === -1) {
@@ -105,7 +106,6 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 
 	get getInputStyleClass(): string {
 		return this.inputStyleClass == null ? 'ig-date ig-input' : this.inputStyleClass + ' ig-date ig-input';
-
 	}
 
 	tryChangeValue(val: boolean) {
@@ -154,6 +154,12 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 	ngOnDestroy() {
 		if (!this.checkInterval) {
 			window.clearInterval(this.checkInterval);
+		}
+	}
+
+	applyStyleForOptionalDate() {
+		if (!this.required) {
+			this.calendar.inputStyleClass = 'non-required-class';
 		}
 	}
 }
