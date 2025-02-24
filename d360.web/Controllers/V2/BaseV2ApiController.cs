@@ -7,12 +7,10 @@ using d360.core.validators;
 using d360.utils.excel;
 using d360.web.Models;
 using Dapper;
-using DocumentFormat.OpenXml.Drawing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
 using SpreadsheetLight;
-using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,7 +21,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
-using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
 namespace d360.web.Controllers.V2
