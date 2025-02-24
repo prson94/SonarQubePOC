@@ -330,6 +330,8 @@
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateItemColumnByIntersectType.xml"/>
+	<include file="scripts/Procedure.bulkload.GetModelPathForLevel.xml"/>
+	<include file="scripts/Procedure.bulkload.FillParentUid.xml"/>
 	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerageDisplayValuesByTempAssetTable.xml"/>
