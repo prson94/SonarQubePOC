@@ -10,8 +10,7 @@ import { TilesModule } from '../../../components/shared/tiles/tiles.module';
     selector: 'board-tile',
 	standalone: true,
 	imports: [CoreModule, TilesModule],
-    templateUrl: 'board-tile.html'//,
-    //providers: [SocialService],
+    templateUrl: 'board-tile.html'
 })
 
 export class BoardTile extends BaseComponent implements OnInit {

@@ -16,7 +16,7 @@ const routes: Routes = [
 	{ path: "assettype", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/assets-base/assets-base.module").then((m) => m.AssetsBaseModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/reference/reference.module").then((m) => m.ReferenceModule) },
-	{ path: "community", loadChildren: () => import("./components/community/community.module").then((m) => m.CommunityModule) },
+	{ path: "community", loadComponent: () => import("./pages/community/index").then((c) => c.CommunityIndex) },
 	{ path: "help", loadChildren: () => import("./components/help/help.module").then((m) => m.HelpModule) },
 	{ path: "admin", loadChildren: () => import("./components/admin/admin.module").then((m) => m.AdminModule) },
 	{ path: "monitor", loadChildren: () => import("./components/monitor/monitor.module").then((m) => m.MonitorModule), canActivate: [FeatureFlagGuard] },

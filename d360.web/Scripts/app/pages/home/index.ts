@@ -18,13 +18,11 @@ import { CompanySettingEnum } from "../../models/settings.model";
 import { FeatureFlags } from "../../services/feature-flags.enum";
 import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 import { BaseComponent } from "../../components/shared/base.component";
-
 import { ActivityDetailsTile } from "./components/activity-details-tile";
 import { ActivityTile } from "./components/activity-tile";
 import { BoardTile } from "./components/board-tile";
 import { DashboardModule } from "../../components/sidebar/dashboard/dashboard.module";
 import { ShortcutDisplay } from "./components/shortcut-display";
-import { SocialModule } from "../../components/shared/social/social.module";
 import { UserAssignmentsModule } from "../../components/assignments/user-assignments/user-assignments.module";
 import { SearchModule } from "../../components/search/search.module";
 
@@ -38,11 +36,9 @@ import { SearchModule } from "../../components/search/search.module";
 		DashboardModule,
 		SearchModule,
 		ShortcutDisplay,
-		SocialModule,
 		UserAssignmentsModule
 	],
-	templateUrl: "./index.html"//,
-	//providers: [DashboardService]
+	templateUrl: "./index.html"
 })
 export class HomeIndex extends BaseComponent implements OnInit, OnDestroy {
 	public showActivityDetails: boolean = false;

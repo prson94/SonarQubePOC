@@ -12,7 +12,7 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { CommentsRoutingModule } from './comments.routes';
 import { CommentsComponent } from './comments.component';
 import { ResourceModule } from '../../resource/resource.module';
-import { SocialModule } from '../../shared/social/social.module';
+import { SocialBoard } from '../../../_shared/components/social-board';
 
 @NgModule({
     imports: [
@@ -20,7 +20,7 @@ import { SocialModule } from '../../shared/social/social.module';
         FormsModule,
 
         RouterModule,
-        SocialModule,
+        SocialBoard,
 
         //routing 
         CommentsRoutingModule,

@@ -1636,6 +1636,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not allowed due to feature being disable via setting: {0}..
+        /// </summary>
+        public static string DisabledByEnvironmentSetting {
+            get {
+                return ResourceManager.GetString("DisabledByEnvironmentSetting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [DisplayInColumn] on [ComputedOwnershipLookup] can be set to True only if [DisplayAsList] is set to True..
         /// </summary>
         public static string DisplayInColumnMustFlaseOnComputedWonerShipLookup {
