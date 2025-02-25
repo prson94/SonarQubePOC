@@ -1493,7 +1493,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-language-setting.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-profile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\use-breadcrumbs.component.ts" />
