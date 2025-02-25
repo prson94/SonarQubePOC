@@ -3490,7 +3490,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid [resourceUid] provided.
+        ///   Looks up a localized string similar to Invalid [_resourceuid] provided!.
         /// </summary>
         public static string Invalid_ResourceUID {
             get {
