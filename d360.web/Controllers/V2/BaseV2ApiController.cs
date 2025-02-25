@@ -337,6 +337,20 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			if (parameters.Any(q => q.Key == "_includeTotal"))
+			{
+				var _includeTotal = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeTotal").Value.ToLower();
+
+				if (bool.TryParse(_includeTotal, out _))
+				{
+					return "";
+				}
+				else
+				{
+					return Error.InvalidIncludeTotal;
+				}
+			}
+
 			return "";
 		}
 
