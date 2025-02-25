@@ -766,6 +766,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	lazyLookupSub: Subscription;
 	lazyLoading: boolean = false;
 	lazyMap: Map<string, lazyLookupValue[]> = new Map();
+	lazyLoadSize = 50;
 
 	get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
@@ -814,6 +815,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 	initLazyList() {
 		const loadParams = this.getLoadParams({ first: 0, rows: 0 });
+		this.lazyLoading = true;
 		this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
 			if (!this.lazyMap.has('') || this.lazyMap.get('').length === 0) {
 				const lookupValues = this.createEmptyLookupValues(res.count);
@@ -822,7 +824,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			}
 			this.showLookupSearchField = (res.count > 10);
 			this.hadInitialLazyLoad = true;
-			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, 20), filter: '' });
+			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, this.lazyLoadSize), filter: '' });
 		});
 	}
 
@@ -831,6 +833,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	}
 
 	lazyLoadValues(event: DropdownLazyLoadEvent | MultiSelectLazyLoadEvent) {
+		this.lazyLoading = true;
+		this.ref.detectChanges();
+
 		const take = event.last - event.first + 1;
 		const filter = event.filter ?? '';
 		const filterChanged = this.lazyFilterValue !== filter;
@@ -846,8 +851,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 		if (!callBackend) {
 			if (filterChanged) {
 				this.lazyLookupValues = this.lazyMap.get(filter);
-				this.ref.detectChanges();
 			}
+			this.lazyLoading = false;
+			this.ref.detectChanges();
 			return;
 		}
 
@@ -879,6 +885,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 			this.lazyMap.set(filter, lookupValues)
 			this.lazyLookupValues = [...lookupValues];
+			this.lazyLoading = false;
 
 			this.ref.detectChanges();
 		});

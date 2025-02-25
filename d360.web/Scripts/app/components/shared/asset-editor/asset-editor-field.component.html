@@ -119,7 +119,7 @@
 
                 <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
-                        
+
                         <ng-template #selectedItemFragment let-item="item">
                             <ng-container *ngIf="item.value !== null; else placeholder">
                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value dropdown-selected-value">
@@ -143,7 +143,7 @@
                                 </div>
                             </ng-container>
                             <ng-template #placeholder>
-                                X -{{ getPlaceholder() }}
+                                {{ getPlaceholder() }}
                             </ng-template>
                         </ng-template>
 
@@ -182,6 +182,8 @@
                                          (onLazyLoad)="lazyLoadValues($event)"
                                          filterBy="label"
                                          [lazy]="true"
+                                         [loading]="lazyLoading"
+                                         [lazyLoadSize]="lazyLoadSize"
                                          [resetFilterOnHide]="true"
                                          [initialItems]="fieldItems"
                                          [showClear]="true"
@@ -220,6 +222,8 @@
                                             (onLazyLoad)="lazyLoadValues($event)"
                                             (onChange)="onChangeMultiselect($event)"
                                             [lazy]="true"
+                                            [loading]="lazyLoading"
+                                            [lazyLoadSize]="lazyLoadSize"
                                             [resetFilterOnHide]="true"
                                             [initialItems]="fieldItems"
                                             [required]="isRequired()"
