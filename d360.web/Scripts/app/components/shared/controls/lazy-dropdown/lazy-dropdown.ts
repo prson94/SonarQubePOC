@@ -226,6 +226,7 @@ export class LazyDropdownItem {
                                 [itemSize]="virtualScrollItemSize || _itemSize"
                                 [autoSize]="true"
                                 [lazy]="lazy"
+								[loading]="loading"
                                 (onLazyLoad)="onScrollerLazyLoadEvent($event)"
                                 [options]="virtualScrollOptions"
                             >
@@ -412,6 +413,16 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	 * @group Props
 	 */
 	@Input() dropdownIcon: string | undefined;
+	/**
+	* Whether the dropdown is in loading state.
+	* @group Props
+	*/
+	@Input() loading: boolean | undefined = false;
+	/**
+	* Number of items to request in onLazyLoad emitter.
+	* @group Props
+	*/
+	@Input() lazyLoadSize: number | undefined = 20;
 	/**
 	 * Name of the label field of an option.
 	 * @group Props
@@ -636,7 +647,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	set filterValue(val: string | undefined | null) {
 		this._filterValue = val;
 		if (this.lazy) {
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		} else {
 			this.activateFilter();
 		}
@@ -1042,7 +1053,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 	public resetFilter(): void {
 		this._filterValue = null;
 		if (this.lazy) {
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		}
 
 		if (this.filterViewChild && this.filterViewChild.nativeElement) {
@@ -1553,7 +1564,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 		const inputValue = (event.target as HTMLInputElement).value;
 		if (this.lazy) {
 			this._filterValue = inputValue;
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		} else {
 			if (inputValue && inputValue.length) {
 				this._filterValue = inputValue;
