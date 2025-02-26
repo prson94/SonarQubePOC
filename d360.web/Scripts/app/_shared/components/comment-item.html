@@ -1,0 +1,81 @@
+﻿<div [class]="isReply ? 'reply' : 'comment'">
+
+	@if (comment.IsDeleted) {
+		<div class="comment-removed" i18n>Comment removed.</div>
+	}
+	@else {
+		<div class="heading">
+			<div class="avatar">
+				@if (comment.CreatedByUid) {
+				<d3s-user-avatar [resourceUid]="comment.CreatedByUid" [resourceName]="comment.ResourceName" [size]="32" [class]="'user'" [showPicture]="false"></d3s-user-avatar>
+				}
+			</div>
+			<div class="author">
+				<d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatedBy">{{comment.ResourceName}}</d3s-preview-tooltip>
+			</div>
+			<div class="date">
+				{{comment.CreatedOn | date:'medium'}}
+				@if (isModified()) {
+				<span class="comment-modified" i18n>[modified]</span>
+				}
+			</div>
+			<div class="comment-controls">
+				@if (commentsEnabled) {
+
+				@if (isEditable) {
+				<button (click)="showEdit = true;editText = comment.Body">Edit</button>
+				}
+
+				@if (isDeletable) {
+				<button (click)="deleteCommentClick();">Delete</button>
+				}
+
+				<button (click)="doVote('ThumbsUp');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</button>
+
+				<button (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</button>
+				}
+			</div>
+		</div>
+
+		<div class="body">
+			@if (showEdit) {
+			<comment-form [isVisible]="showEdit" [comment]="comment" (onCancel)="showEdit = false" (onSave)="showEdit = false;edit.emit($event)"></comment-form>
+			}
+			@else {
+			<div class="ql-editor" [innerHtml]="comment.Body | safeHtml"></div>
+			}
+		</div>
+
+		@if (comment.Tags && comment.Tags.length > 0) {
+		<div class="tags">
+			<i class="fa fa-tag" aria-hidden="true"></i>
+			<ng-container i18n>Comment Tags</ng-container>:
+			@for(tag of comment.Tags; track tag) {
+			<d3s-preview-tooltip class="comment-tag" (click)="changeUrlwithPermission(tag.Url,tag.AssetUid)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
+				{{getTagName(tag)}}
+			</d3s-preview-tooltip>
+			}
+		</div>
+		}
+	}
+
+	@if (!isReply) {
+		<div class="threads">
+			@for(response of comment?.Comments; track response) {
+			<comment-item [comment]="response" [isReply]="true" [assetUid]="assetUid" [commentsEnabled]="commentsEnabled" [isAdmin]="isAdmin"></comment-item>
+			}
+		</div>
+		
+		@if (commentsEnabled) {
+		<div class="reply-area">
+			<comment-form [assetUid]="assetUid" [parentUid]="comment.Uid" [isVisible]="showReply" (onSave)="showReply = false;edit.emit($event)" (onCancel)="showReply = false"></comment-form>
+
+			@if (!showReply) {
+			<div class="header-bar">
+				<input type="text" placeholder="Reply" i18n-placeholder class="fakeInput" (click)="showReply = true" />
+			</div>
+			}
+		</div>
+		}
+	}
+</div>

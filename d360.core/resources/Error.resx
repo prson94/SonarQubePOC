@@ -3285,7 +3285,16 @@
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset Type not found based on Uid provided [{0}].</value>
   </data>
+  <data name="DisabledByEnvironmentSetting" xml:space="preserve">
+    <value>Not allowed due to feature being disable via setting: {0}.</value>
+  </data>
+  <data name="AssetTypeEditAssetPermissionsDenied" xml:space="preserve">
+    <value>You are not allowed to update assets of this type.</value>
+  </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
-    <value>Invalid [resourceUid] provided</value>
+    <value>Invalid [_resourceuid] provided!</value>
+  </data>
+  <data name="DashboardingErrorOnUpdate" xml:space="preserve">
+    <value>Error updating dashboard</value>
   </data>
 </root>

@@ -327,7 +327,10 @@ namespace d360.model.DataAccessLayer
 					model.pageSize = pageSize;
 					model.pageNum = pageNum;
 
-					offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+					long offset = (long)pageSize * ((long)pageNum - 1);
+					offset = offset < 0 ? 0 : offset;
+
+					offsetSql = $"offset {offset} rows fetch next {pageSize} rows only";
 					pagingSql.Add(offsetSql);
 				}
 			}

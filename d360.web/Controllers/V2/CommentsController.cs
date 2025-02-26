@@ -20,8 +20,6 @@ namespace d360.web.Controllers.V2
 	[ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/comments"), Authorize]
     public class CommentsController : BaseV2ApiController
     {
-        #region DI
-
         private readonly ICommentRepository Comments;
 
         public CommentsController(ICoreComponentSet set, ICommentRepository comments) : base(set)
@@ -29,8 +27,12 @@ namespace d360.web.Controllers.V2
             Comments = comments;
         }
 
-        #endregion
-
+		private async Task<bool> commentsDisabled()
+		{
+			bool commentsDiabled = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.DisableCommunityPosting);
+			return commentsDiabled;
+		}
+        
         /// <summary>
         /// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
         /// </summary>
@@ -43,13 +45,19 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
         {
-            var detail = await Comments.AddComment(comment);
-            return Created("", detail);
+			if (await commentsDisabled())
+			{
+				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
+			}
+			else
+			{
+				var detail = await Comments.AddComment(comment);
+				return Created("", detail);
+			}
         }
 
         /// <summary>
@@ -66,29 +74,35 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Created, "The request was accepted and the vote was registered.", null),
             SwaggerResponse(HttpStatusCode.OK, "The request was accepted but the user already used this emoji on the comment.", null),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult AddVote(Guid commentUid, Emoji emoji)
+        public async Task<IHttpActionResult> AddVote(Guid commentUid, Emoji emoji)
         {
-            var queryParams = Request.GetQueryNameValuePairs();
-            bool toggle = true;
+			if (await commentsDisabled())
+			{
+				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
+			}
+			else
+			{
+				var queryParams = Request.GetQueryNameValuePairs();
+				bool toggle = true;
 
-            if (queryParams.Any(qp => qp.Key.ToLower() == "toggle"))
-            {
-                var toggleString = queryParams.FirstOrDefault(x => x.Key.ToLower() == "toggle").Value;
-                bool.TryParse(toggleString, out toggle);
-            }
+				if (queryParams.Any(qp => qp.Key.ToLower() == "toggle"))
+				{
+					var toggleString = queryParams.FirstOrDefault(x => x.Key.ToLower() == "toggle").Value;
+					bool.TryParse(toggleString, out toggle);
+				}
 
-            var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
-            if (created)
-            {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
-            }
-            else
-            {
-				return Ok();
-            }
+				var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
+				if (created)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
+				}
+				else
+				{
+					return Ok();
+				}
+			}
         }
 
         /// <summary>
@@ -103,19 +117,25 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Removed the comment.", null),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteComment(Guid commentUid)
+        public async Task<IHttpActionResult> DeleteComment(Guid commentUid)
         {
-            if (Comments.DeleteComment(commentUid))
-            {
-                return Ok();
-            }
-            else
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.CommentRetryRemove);
-            }
+			if (await commentsDisabled())
+			{
+				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
+			}
+			else
+			{
+				if (Comments.DeleteComment(commentUid))
+				{
+					return Ok();
+				}
+				else
+				{
+					return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.CommentRetryRemove);
+				}
+			}
         }
 
         /// <summary>
@@ -129,13 +149,19 @@ namespace d360.web.Controllers.V2
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Unregister your vote for a comment.", null),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteVote(Guid commentUid, Emoji emoji)
+        public async Task<IHttpActionResult> DeleteVote(Guid commentUid, Emoji emoji)
         {
-            Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
-            return Ok();
+			if (await commentsDisabled())
+			{
+				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
+			}
+			else
+			{
+				Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
+				return Ok();
+			}
         }
 
         /// <summary>
@@ -149,13 +175,19 @@ namespace d360.web.Controllers.V2
             Route("{commentUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(object)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
         {
-            var detail = await Comments.EditComment(commentUid, comment);
-            return Ok(detail);
+			if (await commentsDisabled())
+			{
+				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
+			}
+			else
+			{
+				var detail = await Comments.EditComment(commentUid, comment);
+				return Ok(detail);
+			}
         }
 
         /// <summary>
@@ -199,8 +231,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Returns the rule results used to determine the data quality score for this score item based on a defined measure.", typeof(List<CommentDetail>)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetComments()
         {
@@ -220,8 +251,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of voters using a particular emoji on a specific comment.", typeof(List<CommentVoterDetail>)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetCommentVotersByEmoji(Guid commentUid, Emoji emoji)
         {
@@ -239,8 +269,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of votes on a specific comment.", typeof(List<CommentVoteDetail>)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetCommentVotes(Guid commentUid)
         {
@@ -255,7 +284,6 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetCountsRolledUpByCommentType(int resourceId, int days)

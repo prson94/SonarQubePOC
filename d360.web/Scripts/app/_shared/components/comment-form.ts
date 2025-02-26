@@ -1,20 +1,28 @@
 ﻿import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail } from "../../../models/social.model";
-import { Tag } from "../../../models/tag.model";
-import { AuthenticationService } from "../../../services/authentication.service";
-import { MessagesObservableService } from "../../../services/messages-observable.service";
-import { SocialService } from "../../../services/social.service";
-import { BaseComponent } from "../base.component";
 import { cloneDeep } from "lodash-es";
-import { CompanySettingsService } from "../../../services/settings.service";
 import * as DOMPurify from "isomorphic-dompurify";
+import { BaseComponent } from "../../components/shared/base.component";
+import { CommentDetail, CommentApiPutModel, CommentApiPostModel } from "../../models/social.model";
+import { AuthenticationService } from "../../services/authentication.service";
+import { MessagesObservableService } from "../../services/messages-observable.service";
+import { CompanySettingsService } from "../../services/settings.service";
+import { SocialService } from "../../services/social.service";
+import { Tag } from "../../models/tag.model";
+import { SocialTagInput } from "./social-tag-input";
+import { EditorModule } from "primeng/editor";
+import { ButtonModule } from "../../directives/ig-button-directive";
+import { DirectivesModule } from "../../directives/directives.module";
+import { CoreModule } from "../../components/shared/core.module";
+import { FormsModule } from "@angular/forms";
 
 @Component({
-    selector: "d3s-comment-form",
-    templateUrl: "comment-form.component.html"
+    selector: "comment-form",
+	templateUrl: "comment-form.html",
+	standalone: true,
+	imports: [DirectivesModule, ButtonModule, CoreModule, EditorModule, FormsModule, SocialTagInput]
 })
 
-export class CommentFormComponent extends BaseComponent {
+export class CommentForm extends BaseComponent {
     @Input() comment: CommentDetail;
     @Input() parentUid: string = "";
     @Input() assetUid: string = "";
@@ -71,7 +79,7 @@ export class CommentFormComponent extends BaseComponent {
         this.isLoading = true;
 
         if (this.comment.Uid) {
-            var putModel = new CommentApiPutModel();
+            const putModel = new CommentApiPutModel();
 
             putModel.Body = this.comment.Body;
             putModel.Tags = this.comment.Tags.map((x) => x.AssetUid);
@@ -88,7 +96,7 @@ export class CommentFormComponent extends BaseComponent {
                 });
         }
         else {
-            var postModel = new CommentApiPostModel();
+			const postModel = new CommentApiPostModel();
             postModel.AssetUid = this.assetUid;
             postModel.Body = this.comment.Body;
             postModel.Tags = this.comment.Tags.map((x) => x.AssetUid);

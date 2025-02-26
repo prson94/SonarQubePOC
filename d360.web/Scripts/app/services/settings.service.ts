@@ -166,7 +166,7 @@ export class CompanySettingsService extends BaseObservableService {
 
 	putSetting(setting: SettingsPutModel): Observable<any> {
 		const updatedSetting = this.parseSettingChange(setting);
-		var headers = new HttpHeaders({
+		const headers = new HttpHeaders({
 			'Content-Type': 'application/json'
 		});
 
@@ -176,13 +176,13 @@ export class CompanySettingsService extends BaseObservableService {
 	putSettings(settings: SettingsPutModel[]): Observable<any> {
 
 		settings.forEach((s) => {
-			var updatedSetting = this.parseSettingChange(s);
+			const updatedSetting = this.parseSettingChange(s);
 			if (updatedSetting !== null) {
 				this.settingToUpdate.push(updatedSetting);
 			}
 		});
 
-		var headers = new HttpHeaders({
+		const headers = new HttpHeaders({
 			'Content-Type': 'application/json'
 		});
 

@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
 using SpreadsheetLight;
-using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +21,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
-using System.Web.Mvc;
 using System.Web.UI.WebControls;
 using System.Xml.XPath;
 
@@ -270,8 +268,8 @@ namespace d360.web.Controllers.V2
 		public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, bool validateForExport = false)
 		{
 			var parameters = queryParams.ToList();
-			long pageSize = 0;
-			long pageNum = 0;
+			int pageSize = 0;
+			int pageNum = 0;
 
 			if (parameters.Any(q => q.Key == "_pageSize"))
 			{
@@ -282,7 +280,7 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageSize;
 				}
 
-				if (long.TryParse(_pageSize, out pageSize))
+				if (int.TryParse(_pageSize, out pageSize))
 				{
 					string cacheKey = "ValidForExport";
 					int maxRows = 200000;
@@ -324,7 +322,7 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageNum;
 				}
 
-				if (long.TryParse(_pageNum, out pageNum))
+				if (int.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
@@ -337,15 +335,24 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			long offset = (pageSize == 0 ? 250 : (long)pageSize) * ((pageNum == 0 ? 1 : (long)pageNum) - 1);
+			if (offset < 0)
+			{
+				if (pageNum > 21474836)
+				{
+					return Error.InvalidPageNum;
+				}
+				else
+				{
+					return Error.InvalidPageSize;
+				}
+			}
+
 			if (parameters.Any(q => q.Key == "_includeTotal"))
 			{
 				var _includeTotal = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeTotal").Value.ToLower();
 
-				if (bool.TryParse(_includeTotal, out _))
-				{
-					return "";
-				}
-				else
+				if (!bool.TryParse(_includeTotal, out _))
 				{
 					return Error.InvalidIncludeTotal;
 				}

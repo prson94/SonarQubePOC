@@ -1,15 +1,11 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
-
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
-import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -37,7 +33,6 @@ import { AngularSplitModule } from 'angular-split';
         //d3s
         CoreModule,
         SharedGridPagingInfoModule,
-        SocialModule,
         TilesModule,
         WorkflowModule,
         PipesModule,

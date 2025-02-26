@@ -1459,6 +1459,7 @@ where   ER.ExecutionID = @ExecutionID
 
 		public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
 		{
+			string sqlstmt = string.Empty;
 			string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
 			string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
 			string keyComparisonUpdateStatement = $@"
@@ -1495,7 +1496,7 @@ where   ER.ExecutionID = @ExecutionID
 
 			if (at.Object == "ReferenceItemType")
 			{
-				Connection.Execute($@"
+				sqlstmt = $@"
 									update  T
 									set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 									from    {assetTable} T
@@ -1515,8 +1516,8 @@ where   ER.ExecutionID = @ExecutionID
 									from		Asset A 
 									where	    A.AssetTypeID = @ID;
 
-									{keyComparisonUpdateStatement}",
-													new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
+									{keyComparisonUpdateStatement}";
+				Connection.Execute(sqlstmt, new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
 			}
 			else
 			{

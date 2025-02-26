@@ -9,7 +9,6 @@ import { ResourceRoutingModule } from './resource.routes';
 
 import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
-import { SocialModule } from '../shared/social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
@@ -74,7 +73,6 @@ import { UserAvatarModule } from "../shared/small-widgets/user-avatar/user-avata
         //d3s
         D3SSharedModule,          
         CoreModule,   
-		SocialModule,
 		SharedAssignmentsModule,
 		UserAssignmentsModule,
         PipesModule,

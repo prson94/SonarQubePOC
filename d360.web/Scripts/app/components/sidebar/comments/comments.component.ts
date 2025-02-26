@@ -13,7 +13,9 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-social-board *ngIf="showBoard" [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></d3s-social-board>
+						@if (showBoard) {
+							<social-board [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></social-board>
+						}
                     </div>
                 </div>
             </div>

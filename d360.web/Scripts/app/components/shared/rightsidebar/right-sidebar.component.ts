@@ -36,7 +36,6 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
-import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
@@ -59,7 +58,6 @@ import { TabsModule } from '../tabs/tabs.module';
 		TagUsageInfoModule,
 		SharedDeleteFormModule,
 		SiteModalModule,
-		TakeSurveyModule,
 		PipesModule,
 		ScoreBadgeModule,
 		InfoTooltipModule,
@@ -298,7 +296,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showOnlyMainTab = true;
             }
             if (this.assetAction && this.assetAction.type === "TAG") {
-                var AssetActionwidthCalc = 0;
+                let AssetActionwidthCalc = 0;
                 if (this.assetAction.showBack) {
                     AssetActionwidthCalc = AssetActionwidthCalc + 110;
                 }

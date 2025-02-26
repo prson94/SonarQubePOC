@@ -706,9 +706,6 @@
     <Content Include="Scripts\app\components\admin\security\roles\role-editor.html" />
     <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
     <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
-    <Content Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.html" />
-    <Content Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.html" />
-    <Content Include="Scripts\app\components\admin\surveys\admin-surveys.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.html" />
@@ -718,11 +715,16 @@
     <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
     <Content Include="Scripts\app\components\shared\security\components\owner-detail.html" />
     <Content Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\pages\community\index.html" />
     <Content Include="Scripts\app\pages\home\components\activity-details-tile.html" />
     <Content Include="Scripts\app\pages\home\components\activity-tile.html" />
     <Content Include="Scripts\app\pages\home\components\board-tile.html" />
     <Content Include="Scripts\app\pages\home\components\shortcut-display.html" />
     <Content Include="Scripts\app\pages\home\index.html" />
+    <Content Include="Scripts\app\_shared\components\comment-form.html" />
+    <Content Include="Scripts\app\_shared\components\loading.html" />
+    <Content Include="Scripts\app\_shared\components\social-board.html" />
+    <Content Include="Scripts\app\_shared\components\comment-item.html" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\**\*.js" />
@@ -953,11 +955,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.ts" />
@@ -976,6 +973,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owner-detail.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\community\index.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-details-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\board-tile.ts" />
@@ -983,6 +981,11 @@
     <TypeScriptCompile Include="Scripts\app\pages\home\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\comment-form.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\loading.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\social-board.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\comment-item.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\social-tag-input.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -1202,9 +1205,6 @@
     <TypeScriptCompile Include="Scripts\app\components\assignments\side-panel-switcher\side-panel-switcher.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assignments\user-assignments\user-assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assignments\user-assignments\user-assignments.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.module.ts" />
@@ -1493,7 +1493,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-language-setting.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-profile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\use-breadcrumbs.component.ts" />
@@ -1582,13 +1581,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\user-avatar\user-avatar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\user-avatar\user-avatar.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\comment-form.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-board.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-comment.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social-tag-input.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tabs\tabs.component.ts" />
@@ -2058,7 +2050,6 @@
     <None Include="Scripts\app\components\assignments\complete-assignment\complete-assignment.component.html" />
     <None Include="Scripts\app\components\assignments\side-panel-switcher\side-panel-switcher.component.html" />
     <None Include="Scripts\app\components\assignments\user-assignments\user-assignments.component.html" />
-    <None Include="Scripts\app\components\community\community.component.html" />
     <None Include="Scripts\app\components\connector-label\connector-label-item.component.html" />
     <None Include="Scripts\app\components\connector-label\definition\connector-label-definition.component.html" />
     <None Include="Scripts\app\components\data-catalog\data-catalog-grid.component.html" />
@@ -2292,10 +2283,6 @@
     <None Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\user-avatar\user-avatar.component.html" />
-    <None Include="Scripts\app\components\shared\social\comment-form.component.html" />
-    <None Include="Scripts\app\components\shared\social\social-board.component.html" />
-    <None Include="Scripts\app\components\shared\social\social-comment.component.html" />
-    <None Include="Scripts\app\components\shared\survey\take-survey.component.html" />
     <None Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.html" />
     <None Include="Scripts\app\components\shared\tabs\tabs.component.html" />
     <None Include="Scripts\app\components\shared\tagged-assets\tagged-assets-detail.component.html" />
@@ -2390,7 +2377,6 @@
     <None Include="Scripts\app\components\assignments\complete-assignment\complete-assignment.component.less" />
     <None Include="Scripts\app\components\assignments\side-panel-switcher\side-panel-switcher.component.less" />
     <None Include="Scripts\app\components\assignments\user-assignments\user-assignments.component.less" />
-    <None Include="Scripts\app\components\community\community.component.less" />
     <None Include="Scripts\app\components\connector-label\connector-label-item.component.less" />
     <None Include="Scripts\app\components\connector-label\definition\connector-label-definition.component.less" />
     <None Include="Scripts\app\components\data-catalog\data-catalog-grid.component.less" />
@@ -2468,7 +2454,6 @@
     <None Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.less" />
     <None Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.less" />
     <None Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
-    <None Include="Scripts\app\components\shared\social\social-board.less" />
     <None Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.less" />
     <None Include="Scripts\app\components\shared\tabs\tabs.component.less" />
     <None Include="Scripts\app\components\shared\user\user-list.component.less" />

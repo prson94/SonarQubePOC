@@ -68,6 +68,10 @@ namespace repositories.azure
 						}
 						else
 						{
+							if (defaultValue is not null)
+							{
+								dbArgs.Add(sqlparameternameArgs, defaultValue);
+							}
 							isValidParameter = false;
 						}
 					}

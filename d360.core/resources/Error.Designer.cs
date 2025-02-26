@@ -565,6 +565,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to update assets of this type..
+        /// </summary>
+        public static string AssetTypeEditAssetPermissionsDenied {
+            get {
+                return ResourceManager.GetString("AssetTypeEditAssetPermissionsDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset type error.
         /// </summary>
         public static string AssetTypeError {
@@ -1456,6 +1465,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error updating dashboard.
+        /// </summary>
+        public static string DashboardingErrorOnUpdate {
+            get {
+                return ResourceManager.GetString("DashboardingErrorOnUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
         /// </summary>
         public static string DataProfileDeleteMaxLimit {
@@ -1614,6 +1632,15 @@ namespace d360.core.resources {
         public static string DirectionAllowedForRelation {
             get {
                 return ResourceManager.GetString("DirectionAllowedForRelation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not allowed due to feature being disable via setting: {0}..
+        /// </summary>
+        public static string DisabledByEnvironmentSetting {
+            get {
+                return ResourceManager.GetString("DisabledByEnvironmentSetting", resourceCulture);
             }
         }
         
@@ -3463,7 +3490,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid [resourceUid] provided.
+        ///   Looks up a localized string similar to Invalid [_resourceuid] provided!.
         /// </summary>
         public static string Invalid_ResourceUID {
             get {

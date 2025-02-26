@@ -1,0 +1,296 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.bulkload.FillParentUid-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure bulkload.FillParentUid
+	@executionID uniqueidentifier,
+	@loadId int,
+	@assetTypeID int,
+	@class int,
+	@maxlevel int
+as
+begin
+	set nocount on;
+
+	insert into #BulkExecutionAsset(ExecutionID, ItemNumber, ParentUid)
+	select	@executionID as ExecutionID,
+		RowIndex as ItemNumber,
+		ParentAssetUid as ParentUid
+	from	[LoadItem] L
+	where	L.LoadID = @loadId
+
+	insert into #BulkExecutionField
+	(ExecutionID , ItemNumber , FieldName, FieldValue , FieldTypeID, LookupValue, Ignore, ColumnIndex)
+	select	BA.ExecutionID,
+		I.RowIndex as ItemNumber,
+		coalesce(FT.[Name], LC.[Name]) as FieldName,
+		I.[Value] as FieldValue,
+		FT.ID as FieldTypeID,
+		I.LookupObjectID as LookupValue,
+		null as Ignore,
+		I.ColumnIndex
+	from [Load] L
+		inner join AssetType T on T.[Object] = L.[Object] and T.ObjectID = L.ObjectID
+		inner join LoadColumn LC on LC.LoadID = L.ID
+		inner join LoadItemColumn I on I.LoadID = L.ID and I.ColumnIndex = LC.ColumnIndex
+		inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
+		left join FieldType FT on FT.[Name] = LC.[Name] and FT.AssetTypeID = T.ID
+	where   L.ID = @loadId;
+
+	if exists (select 1 from #BulkExecutionField ef inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter')
+	begin
+			
+		update ef 
+		set FieldValue = replace(FieldValue,ft.CounterPrefix,'')
+		from #BulkExecutionField ef 
+		inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
+		where coalesce(FieldValue,'') != '' and ft.CounterPrefix is not null;
+
+
+		update LIC
+		set [Value] = replace([Value],ft.CounterPrefix,'')
+		from LoadItemColumn LIC 
+		inner join LoadColumn LC on LC.LoadID = LIC.LoadID
+		inner join fieldtype ft on ft.Name = LC.Name and ft.Type = 'Counter' and ft.AssetTypeID = @assetTypeID
+		where LIC.LoadId = @loadId and coalesce(LIC.[Value],'') != '' and ft.CounterPrefix is not null;
+
+		drop table if exists #tempcountervalue;
+
+		select itemnumber,ft.name,ISNUMERIC(ef.FieldValue) IsNum,ft.CounterInitialIndex,try_cast(ef.FieldValue as int) CounterValue
+		into #tempcountervalue
+		from #BulkExecutionField ef 
+		inner join fieldtype ft on ef.FieldTypeID = ft.id and ft.Type = 'Counter'
+		where coalesce(FieldValue,'') != '';
+
+		create clustered index cx_tempcountervalue on #tempcountervalue(itemnumber)
+
+		--Check Non Numeric Value
+		update A
+		set A.Success = 0
+		from #BulkExecutionAsset A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 0
+		where A.ExecutionID = @executionID and A.Success is null;
+
+		update A
+		set status = 0,
+			StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than 0 and less than 2147483647.',1,500)
+		from LoadItem A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 0
+		where A.LOADID = @loadId and coalesce(status,1) = 1;
+
+		--Check Value less than  CounterInitialIndex
+		update A
+		set A.Success = 0
+		from #BulkExecutionAsset A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
+		where A.ExecutionID = @executionID  and A.Success is null;
+
+		update A
+		set status = 0,
+			StatusMessage =  substring(tc.name + ' must be a valid whole number, greater than or equal to ' + cast(TC.CounterInitialIndex as nvarchar(10)),1,500)
+		from LoadItem A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex and TC.IsNum = 1 and TC.CounterValue < TC.CounterInitialIndex
+		where A.LOADID = @loadId and coalesce(status,1) = 1;
+
+		--Check Value duplicate Value
+
+		select CounterValue
+		into #tempcountduplicate
+		from #tempcountervalue Tc
+		where TC.IsNum = 1 and CounterValue is not null
+		group by CounterValue
+		having count(1)>1
+
+		update A
+		set A.Success = 0
+		from #BulkExecutionAsset A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.ItemNumber 
+		inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
+		where A.ExecutionID = @executionID  and A.Success is null;
+
+		update A
+		set status = 0,
+			StatusMessage =  substring('Counter Field (' + tc.name + ') should be unique value',1,500)
+		from LoadItem A
+		inner join #tempcountervalue TC on TC.itemnumber =  A.RowIndex
+		inner join #tempcountduplicate TCD on TCD.CounterValue = TC.CounterValue
+		where A.LOADID = @loadId and coalesce(status,1) = 1;
+	end
+
+	--handle ref lists
+	if @class = 9
+	begin
+		delete from #BulkExecutionField where (FieldTypeID is null and FieldName <> 'Code');
+	end
+
+	--handle model levels
+	if @class = 2
+	begin
+
+		update  F
+		set     F.FieldName = FT.Name,
+				F.FieldTypeID = FT.ID,
+				F.[Level] = L.[Level],
+				F.ColumnOrder = FT.ColumnOrder
+		from    #BulkExecutionField F
+				inner join AssetType T on T.ID = @assetTypeID
+				inner join (
+					select	AssetTypeID, [Level], [Name] 
+					from	AssetTypeLevel L
+					where	L.AssetTypeID = @assetTypeID
+					union all
+					select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30))
+					from	AssetType T
+							outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+					where	T.ID = @assetTypeID and N.[Level] <= T.HierarchyMaximumDepth
+							and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+		) L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
+				inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.AssetTypeID = T.ID
+		where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
+
+		delete from #BulkExecutionField where FieldTypeID is null;
+
+
+		--build model text path from sheet to find existing assets and parent assets
+
+		drop table if exists #PathFields;
+		create table #PathFields 
+		(
+		ItemNumber int,
+		ColumnIndex int,
+		DisplayValue nvarchar(max),
+		[Level] int,
+		ColumnOrder int,
+		FieldTypeID int
+		);
+
+		drop table if exists #PathValuesPos;
+		create table #PathValuesPos
+		(
+		ItemNumber int,
+		[level] int,
+		FullPath nvarchar(max)
+		);
+
+		drop table if exists #PathValues;
+		create table #PathValues
+		(
+			ItemNumber int,
+			FullPath nvarchar(max),
+			ParentPath nvarchar(max),
+			[Uid] uniqueidentifier,
+			ParentUid uniqueidentifier,
+			ParentRowIndex int,
+			FullPathPrefix nvarchar(250),
+			ParentPathPrefix nvarchar(250)
+		);
+
+		insert into #PathFields
+		select		A.ItemNumber,
+					D.ColumnIndex,
+					string_agg(coalesce(D.FormattedValue, D.LookupValue), '') as DisplayValue,
+					D.[Level],
+					D.ColumnOrder,
+					D.FieldTypeID
+		from		#BulkExecutionAsset A
+					inner join AssetType T on T.ID = @assetTypeID
+					outer apply (select F.LookupValue,
+										F.FieldValue as FormattedValue,
+										F.ColumnIndex,
+										F.ItemNumber,
+										FT.ID FieldTypeID,
+										F.[Level],
+										F.ColumnOrder
+								from	#BulkExecutionField F 
+										left join FieldType FT on FT.AssetTypeID = T.ID and FT.IsPartOfKey = 1
+										WHERE F.FieldTypeID = FT.ID
+								) D
+		where		A.ItemNumber = D.ItemNumber
+		group by	A.ItemNumber,
+					D.[Level],
+					D.ColumnOrder,
+					D.ColumnIndex,
+					D.FieldTypeID;
+
+		insert into #PathValuesPos
+		select		F.ItemNumber, 
+		F.[Level],
+		string_agg(F.DisplayValue,' / ')  within group (order by F.ItemNumber, F.[Level], F.Columnorder) as FullPath
+		from		#PathFields F
+		group by	F.ItemNumber,F.[Level];
+
+		insert into #PathValues(ItemNumber, FullPath)
+		select		F.ItemNumber, 
+		string_agg(F.FullPath,' > ')  within group (order by F.ItemNumber, F.[Level]) as FullPath
+		from		#PathValuesPos F
+		group by	F.ItemNumber;
+
+		update V
+		set V.ParentPath = P.ParentPath
+		from #PathValues V
+		cross apply (
+			select	F.ItemNumber, 
+					string_agg(F.FullPath,' > ') within group (order by F.[level] asc) as ParentPath
+					from	#PathValuesPos F
+					where	F.level < (select max(level) from #PathValuesPos where ItemNumber = F.ItemNumber and FullPath is not null)
+			group by F.ItemNumber
+		) P
+		where P.ItemNumber = V.ItemNumber;
+
+		update	V
+		set V.ParentPathPrefix = SUBSTRING(V.ParentPath,1,250),
+		V.FullPathPrefix = SUBSTRING(V.FullPath,1,250)
+		from #PathValues V;
+		
+		create index idx_FullPathPrefix on #PathValues(FullPathPrefix) include(ItemNumber,FullPath);
+		create index idx_ParentPathPrefix on #PathValues(ParentPathPrefix) include(ItemNumber,ParentPath);
+
+		update V
+		set V.ParentRowIndex = P.ItemNumber
+		from #PathValues V
+		inner join #PathValues P on P.FullPathPrefix = V.ParentPathPrefix and P.FullPath = V.ParentPath;
+		
+		update	V
+		set		V.Uid = A.UId
+		from	#PathValues V 
+				inner join Asset A on A.AssetTypeID = @assetTypeID
+				inner join AssetPath P on P.ID = A.ID
+		where	V.FullPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
+
+		update	V
+		set		V.ParentUid = A.Uid
+		from	#PathValues V 
+				inner join Asset A on A.AssetTypeID = @assetTypeID
+				inner join AssetPath P on P.ID = A.ID
+		where	V.ParentPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
+
+		update A
+		set A.AssetUid = P.Uid,
+		A.ParentUid = P.ParentUid,
+		A.ParentRowIndex = P.ParentRowIndex
+		from #BulkExecutionAsset A
+		inner join #PathValues P on P.ItemNumber = A.ItemNumber;
+
+		update B
+		set B.AssetID = A.ID
+		from #BulkExecutionAsset B
+		inner join Asset A on A.[uid] = B.AssetUid;
+
+		--update LoadItem with correct parent uid for API
+		update L
+		set L.ParentAssetUid = A.ParentUid
+		from LoadItem L
+		inner join #BulkExecutionAsset A on A.ItemNumber = L.RowIndex
+		where L.LoadID = @loadId;
+	end
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>
