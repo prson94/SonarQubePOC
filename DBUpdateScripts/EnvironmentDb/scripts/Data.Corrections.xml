@@ -1337,5 +1337,21 @@ WHERE JobToken = 1;
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-37057">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+UPDATE	[dbo].[Asset]
+SET		SourceID = ObjectID
+WHERE	[Object] = 'Resource'
+AND		SourceID IS NULL
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
