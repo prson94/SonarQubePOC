@@ -155,10 +155,7 @@ namespace repositories.azure
 				row["ItemNumber"] = itemNumber;
 				row["Username"] = user.Username;
 				row["Email"] = user.Email;
-				if (user.uid != null)
-				{
-					row["uid"] = user.uid;
-				}
+				row["uid"] = (user.uid != null) ? user.uid : Guid.Empty;
 
 				tbl.Rows.Add(row);
 			}
