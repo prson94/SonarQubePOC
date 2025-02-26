@@ -32,5 +32,8 @@ namespace d360.core.enums.Workflow
 
 		[Description("No Valid Assignee")]
 		NoValidAssignee = 9,
+
+		[Description("No Valid Asset")]
+		NoValidAsset = 10,
 	}
 }
