@@ -146,26 +146,32 @@ namespace d360.web.Controllers.V2
             var dbRecord = await _connectorLabelRepository.GetLabel(labelValue);
             if (dbRecord != null)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
+				var getResult = new
+				{
+					uid = dbRecord.uid,
+					Value = dbRecord.Value,
+					State = dbRecord.State,
+					CreatedOn = dbRecord.CreatedOn,
+					UpdatedOn = dbRecord.UpdatedOn,
+
+				};
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, getResult))).ConfigureAwait(false);
             }
 			var labelRecord = new ConnectorLabelPostModel
 			{
                 Value = labelValue,
             };
 			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
-
-			var respData = new
+			var createResult = new
 			{
 				uid = result.uid,
 				Value = result.Value,
 				State = State.Active,
-				CreatedBy = result.CreatedByName,
 				CreatedOn = result.CreatedOn,
-				UpdatedBy = result.UpdatedByName,
-				UpdatedOn = result.UpdatedOn
-			};
+				UpdatedOn = result.UpdatedOn,
 
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, respData)));
+			};
+			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, createResult)));
         }
 
         /// <summary>
