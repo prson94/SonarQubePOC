@@ -1393,11 +1393,11 @@ namespace d360.model
 			await AddAssetAuditRecord(asset, fieldType, field);
 		}
 
-		private async Task UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+		private async Task<bool> UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
 		{
 			if (!settings.FieldUpdateSettings.Any())
 			{
-				return;
+				return true;
 			}
 
 			Issue issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
@@ -1415,6 +1415,24 @@ namespace d360.model
 				{
 					asset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
 					assetType = AssetTypes.FirstOrDefault(a => a.ID == issue.AssetTypeID);
+
+					if(asset == null)
+					{
+						itemStep.State = StepState.NoValidAsset;
+
+						var itemStateDetail = new WorkflowItemStepStateDetail
+						{
+							itemStepID = itemStep.ID,
+							Message = "No valid Asset for assignment.",
+							State = StepState.NoValidAsset
+						};
+
+						WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+						await SaveChangesAsync();
+						return false;
+					}
+
 					objectId = asset.ObjectID;
 					objectType = asset.Object;
 					ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
@@ -1530,6 +1548,8 @@ namespace d360.model
 					 });
 
 			CreateAssetReindexRequest(new List<Guid> { asset.uid }, ReindexBatchOperation.Update);
+
+			return true;
 		}
 
 		private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -2435,8 +2455,7 @@ namespace d360.model
 							break;
 						case WorkflowActivityType.FieldChange:
 							// change the specified field and mark the step complete
-							await UpdateItemField(itemStep, objectInfo, stepSettings);
-							isStepCompleted = true;
+							isStepCompleted = await UpdateItemField(itemStep, objectInfo, stepSettings);
 							break;
 						case WorkflowActivityType.RelationshipChange:
 							UpdateItemRelationship(itemStep, objectInfo, stepSettings);

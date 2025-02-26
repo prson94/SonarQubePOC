@@ -509,6 +509,7 @@ export enum StepState {
 	NoValidTransitions = 7,
 	InvalidInitiator = 8,
 	NoValidAssignee = 9,
+	NoValidAsset = 10,
 }
 
 //#endregion
