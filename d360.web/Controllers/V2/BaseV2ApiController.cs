@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -345,6 +345,16 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					return Error.InvalidPageSize;
+				}
+			}
+
+			if (parameters.Any(q => q.Key == "_includeTotal"))
+			{
+				var _includeTotal = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeTotal").Value.ToLower();
+
+				if (!bool.TryParse(_includeTotal, out _))
+				{
+					return Error.InvalidIncludeTotal;
 				}
 			}
 
