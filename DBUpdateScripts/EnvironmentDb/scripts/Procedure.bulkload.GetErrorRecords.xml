@@ -1,0 +1,101 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Procedure.bulkload.GetErrorRecords-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure bulkload.GetErrorRecords
+	@LoadID int
+as
+begin
+	set nocount on;
+
+	declare @PutExecutionID uniqueidentifier,
+			@PostExecutionID uniqueidentifier;
+		
+	select	@PostExecutionID = PostExecutionID,
+			@PutExecutionID = PutExecutionID
+	from	[Load]
+	where	ID = @LoadID;
+	
+	drop table if exists #temperrors;
+	
+	create table #temperrors
+		(
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		[ParentAssetID] [bigint] NULL,
+		[Message] [nvarchar](max) NULL,
+		[Success] [bit] NULL
+		)
+	
+	
+	if (@PostExecutionID is not null)
+	begin
+		insert into #temperrors(ExecutionID,ItemNumber,ExecutionItemUid,ParentAssetID,Message,Success)
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success 
+		from api.ExecutionAsset 
+		where ExecutionId = @PostExecutionID and success = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success 
+		from api.ExecutionAssetError
+		where ExecutionId = @PostExecutionID
+	end
+
+	if (@PutExecutionID is not null)
+	begin
+		insert into #temperrors(ExecutionID,ItemNumber,ExecutionItemUid,ParentAssetID,Message,Success)
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success 
+		from api.ExecutionAsset 
+		where ExecutionId = @PutExecutionID and coalesce(success,1) = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success 
+		from api.ExecutionAssetError
+		where ExecutionId = @PutExecutionID
+	end
+	
+	select * from (
+	select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
+	inner join #temperrors EA on EA.ExecutionItemUid = L.ExecutionItemUid
+	where L.LoadID = @LoadID 
+	union all
+	select L.RowIndex, L.StatusMessage Message
+	from LoadItem L
+	where LoadID = @LoadID and coalesce(Status,1) = 0
+	) a
+	order by RowIndex asc;
+	
+	drop table if exists #tempExecutionItemUid;
+	
+	select *
+	into #tempExecutionItemUid
+	from (
+	select ExecutionId,ExecutionItemUid,ItemNumber
+	from #temperrors
+	union all
+	select Null ExecutionId,ExecutionItemUid,L.RowIndex ItemNumber
+	from LoadItem L
+	where LoadID = @LoadID and coalesce(Status,1) = 0
+	) a;
+
+	select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
+	from LoadItem I 
+	inner join #tempExecutionItemUid EA on EA.ExecutionItemUid = I.ExecutionItemUid
+	left join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @LoadID
+	left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+	left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+	order by I.RowIndex asc, C.ColumnIndex asc;
+	
+	drop table if exists #temperrors;
+	drop table if exists #tempExecutionItemUid;
+	
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>
