@@ -239,7 +239,7 @@ begin
 		update	T
 		set		T.TypeId = S.Id,
 				T.Success = iif(S.Id is null, 0, null),
-				T.[Message] = iif(S.Id is null and T.[Message] not like '%Asset Type not found based on SourceId;%', 'Asset Type not found based on SourceId; ' + coalesce(t.[Message], ''), T.[Message])
+				T.[Message] = iif(S.Id is null and coalesce(T.[Message],'') not like '%Asset Type not found based on SourceId;%', 'Asset Type not found based on SourceId; ' + coalesce(t.[Message], ''), T.[Message])
 		from	api.ExecutionCatalogItem T
 				left join AssetType S on S.SourceId = T.TypeSourceId
 		where	T.ExecutionId = @executionId
