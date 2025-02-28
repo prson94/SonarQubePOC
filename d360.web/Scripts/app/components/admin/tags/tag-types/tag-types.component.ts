@@ -62,6 +62,7 @@ export class TagTypesPanelComponent {
 
                 this.tagTypes = [{ uid: res.uid, Value: res.Value }, ...this.tagTypes];
                 this.showEditor = false;
+                this.onTagTypeSelected.emit({...res});
             });
             return;
         }

@@ -29,6 +29,7 @@ import { IOutputData } from "angular-split";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 import { TagDetailComponent } from './tag-details/tag-detail.component';
+import { TagTypesViewModel } from './tag-types/tag-types.model';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -215,6 +216,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             if (tags && tags.length > 0) {
                 this.tags = tags;
                 this.readOnlyFullListOfTags = [...this.tags];
+            }
+            else {
+                this.tags = [];
+                this.readOnlyFullListOfTags = [];
             }
             this.isLoading = false;
         }, (err) => this.error = err);
@@ -509,9 +514,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tags = draft;
     }
 
-	loadTagsOnTagTypeSelected(val: string) {
-		this.selectedTagTypeUid = val;
-        this.getTags(val);
+	loadTagsOnTagTypeSelected(tagTypeUid: string) {
+		this.selectedTagTypeUid = tagTypeUid;
+        this.getTags(this.selectedTagTypeUid);
 	}
 
 	loadMenuItems() {
