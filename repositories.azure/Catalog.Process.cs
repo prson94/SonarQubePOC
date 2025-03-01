@@ -50,7 +50,7 @@ namespace repositories.azure
 				assetUid,
 				predicateType = (int)PredicateType.Diagram
 			};
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var nodes = await connection.QueryAsync<dynamic>(sql, parameters, commandTimeout: CommandTimeout);
 				return nodes;
@@ -74,7 +74,7 @@ namespace repositories.azure
 
 			if (targetAsset != null)
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					diagram = await connection.QueryFirstOrDefaultAsync<AssetProcessDiagram>(
 						$"Select * from dbo.AssetProcessDiagram apd Where apd.AssetID = @Id", new { Id = targetAsset.ID },
@@ -101,7 +101,7 @@ namespace repositories.azure
 
 			List<Guid> assetUids = model.nodeDataArray.Select(x => x.AssetUid).ToList();
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				//expand model with db data
 				nodesExpandedData = await connection.QueryAsync<dynamic>(@"select
@@ -169,7 +169,7 @@ namespace repositories.azure
 					}
 				}
 			}
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				linksExpandedData = await connection.QueryAsync<dynamic>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a
@@ -790,7 +790,7 @@ namespace repositories.azure
 			group by a.uid";
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var response = await connection.QueryAsync<ProcessDiagramBadge>(badgesSql, new { assetUid }, commandTimeout: CommandTimeout);
 					return response;
@@ -809,7 +809,7 @@ namespace repositories.azure
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
 
 			AssetType assetType;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				assetType = await connection.QueryFirstOrDefaultAsync<AssetType>(@"
 					Select * from dbo.AssetType a
@@ -878,7 +878,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryFirstOrDefaultAsync<Guid>(@"
 					select top 1 diagramassetuid from processexpandeddata
@@ -922,7 +922,7 @@ namespace repositories.azure
 
 		private async Task GetSheetsForRelatedAssets(Asset asset, SLDocument document)
 		{
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var relModels = await connection.QueryAsync<DiagramAssetRelationshipModel>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a
@@ -1089,7 +1089,7 @@ namespace repositories.azure
 		private async Task GetSheetsForDiagramTypes(Asset asset, SLDocument document)
 		{
 			IEnumerable<dynamic> types = new List<dynamic>();
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				types = await connection.QueryAsync<dynamic>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a
@@ -1209,7 +1209,7 @@ namespace repositories.azure
 			"Next Asset UID","Next Asset ID","Next Asset URL"
 			};
 			IEnumerable<dynamic> diagram = new List<dynamic>();
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				diagram = await connection.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid }, commandTimeout: CommandTimeout);
 			}

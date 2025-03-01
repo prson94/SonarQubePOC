@@ -519,7 +519,7 @@ from		cte
 order by	lvl";
 
 			IEnumerable<AssetType> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				results = await connection.QueryAsync<AssetType>(sql, new { assetUid });
 			}
@@ -628,7 +628,7 @@ order by	lvl";
 						order by name";
 			}
 			IEnumerable<dynamic> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid, tagTypeId });
 			}
@@ -652,7 +652,7 @@ from	Tag T
 		inner join AssetDisplayValue D on D.AssetID = A.ID
 where	t.uid = @uid";
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				var result = await connection.QueryAsync<dynamic>(sql, new { uid = tagUid });
 
@@ -738,7 +738,7 @@ order by    P.[Path];";
 
 			IEnumerable<AssetTypeApiViewModel> model;
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				model = await connection.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
 			}
@@ -760,7 +760,7 @@ order by    P.[Path];";
 
 			IEnumerable<AssetCrossReferenceResult> models = null;
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				models = await connection.QueryAsync<AssetCrossReferenceResult>(sql, dbArgs);
 			}
@@ -786,7 +786,7 @@ order by    P.[Path];";
 
 			IEnumerable<AssetCrossReference> models = null;
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				models = await connection.QueryAsync<AssetCrossReference>(sql, dbArgs);
 			}
@@ -813,7 +813,7 @@ order by    P.[Path];";
 		{
 			var response = new RepositoryResponse<TagApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagApiModel>($@"{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.Uid = @uid", new { uid });
 				if (response.Data != null)
@@ -935,7 +935,7 @@ from	Tag t
 				sql += $" offset {response.Data.pageSize * (response.Data.pageNum - 1)} rows fetch next {response.Data.pageSize} rows only";
 			}
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				if (includeTotal)
 				{
@@ -956,7 +956,7 @@ from	Tag t
 		{
 			var response = new RepositoryResponse<TagTypeApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagTypeApiModel>(
 					@"
@@ -991,7 +991,7 @@ where	t.Uid = @uid
 		{
 			IEnumerable<TagTypeApiModel> models = null;
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				models = await connection.QueryAsync<TagTypeApiModel>(
 
@@ -1016,7 +1016,7 @@ order by	t.[value]");
 		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
 		{
 			IEnumerable<TagTypeApiModel> models = null;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				string sql = $@"
 DECLARE @assetTypeId INT;
@@ -1491,7 +1491,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -1516,7 +1516,7 @@ where	ID = @id;",
 			{
 				if (assetUid.HasValue)
 				{
-					using (var connection = (SqlConnection)ConnectionProvider.Connect())
+					using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 					{
 						var asset = await connection.QueryFirstOrDefaultAsync<Asset>(@"
 					 SELECT * FROM dbo.Asset a
@@ -1547,7 +1547,7 @@ where	ID = @id;",
 
 				if (!hasPermission)
 				{
-					using (var connection = (SqlConnection)ConnectionProvider.Connect())
+					using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 					{
 						int assetTypeID = await connection.QuerySingleOrDefaultAsync<int>("select AssetTypeID from Asset where ID = @assetId", new { assetId });
 
@@ -1570,7 +1570,7 @@ where	ID = @id;",
 			if (isReadPermission)
 			{
 				Asset asset;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					asset = await connection.QueryFirstOrDefault(@"
 					SELECT * FROM dbo.Asset a
@@ -1586,7 +1586,7 @@ where	ID = @id;",
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					return connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
 																	begin
@@ -1606,7 +1606,7 @@ where	ID = @id;",
 
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QuerySingleAsync<bool>($@"	if exists(select 1
 																		 from asset a
@@ -1634,7 +1634,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>($@"
 						select a.uid,
@@ -1646,7 +1646,7 @@ where	ID = @id;",
 						cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
 						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
 						order by an.DisplayPath",
-						new { currentAssetUid = uid, assetTypeId = assetTypeId });
+						new { currentAssetUid = uid, assetTypeId });
 
 					return result;
 				}
@@ -1661,7 +1661,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>($@";with assets as (
 					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
@@ -1706,7 +1706,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
 																						begin

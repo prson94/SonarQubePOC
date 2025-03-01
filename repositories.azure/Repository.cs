@@ -42,7 +42,7 @@ namespace repositories.azure
 				{
 					ResourceId = resId
 				};
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var user = await connection.QueryFirstOrDefaultAsync<GlobalReportingResource>(
 					 @"SELECT 
