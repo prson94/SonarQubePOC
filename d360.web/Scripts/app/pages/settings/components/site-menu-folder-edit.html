@@ -1,12 +1,17 @@
 ﻿<div class="flex-modal">
 	<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}} {{higlightedItem ? 'opened-side-panel' : ''}}">
 		<div class="form-header">
-			<header *ngIf="!isEdit" i18n>Add Folder</header>
-			<header *ngIf="isEdit" i18n>Edit Folder</header>
-			<div class="sub-header" *ngIf="!isLoading">
+			@if (isEdit) {
+			<header i18n>Edit Folder</header>
+			}
+			@else {
+			<header i18n>Add Folder</header>
+			}
+			@if (!isLoading) {
+			<div class="sub-header">
 				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.Title ? '> ' + navigationFolder?.Title : '')}}
-				<span *ngIf="requiredCount > 0"
-					  class="requiredCount req noselect"
+				@if (requiredCount > 0) {
+				<span class="requiredCount req noselect"
 					  tabindex="1"
 					  i18n-pTooltip
 					  tooltipPosition="top"
@@ -15,12 +20,17 @@
 					  i18n>
 					{{requiredCount}} required
 				</span>
+				}
 			</div>
+			}
 		</div>
-		<div class="row" *ngIf="isInError">
+		@if (isInError) {
+		<div class="row">
 			<div class="err-message">{{isInErrorMessage}}</div>
 		</div>
-		<div class="row" *ngIf="!isLoading">
+		}
+		@if (!isLoading) {
+		<div class="row">
 			<div class="form-wrapper">
 				<div inputs class="inputs-wrapper">
 					<ig-property-group [igformGroup]="folderForm" title="General" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
@@ -32,7 +42,7 @@
 										   [ngClass]="{'invalid': folderForm?.get('title')?.errors?.empty}"
 										   (input)="setRequiredCount()"
 										   name="name"
-										   required tabindex="1" type="text" 
+										   required tabindex="1" type="text"
 										   [(ngModel)]="folderModel.Title" />
 								</div>
 							</div>
@@ -53,7 +63,8 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group *ngIf="hasFolderItems" title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
+					@if (hasFolderItems) {
+					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<d3s-table-data-transfer [(itemsFromSource)]="foldersFromSource"
 													 [(itemsFromTarget)]="foldersFromTarget"
@@ -66,6 +77,7 @@
 													 (itemsFromTargetChange)="setRequiredCount()"></d3s-table-data-transfer>
 						</div>
 					</ig-property-group>
+					}
 
 					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
@@ -88,7 +100,6 @@
 													 (showInfoEvent)="showInfo($event)"></d3s-table-data-transfer>
 						</div>
 					</ig-property-group>
-
 				</div>
 			</div>
 
@@ -107,9 +118,11 @@
 						[disabled]="isSaveDisabled"></button>
 			</div>
 		</div>
+		}
 	</div>
 
-	<div class="flex-side-panel" *ngIf="higlightedItem">
+	@if (higlightedItem) {
+	<div class="flex-side-panel">
 		<div class="modal-side-panel position-relative">
 			<div class="side-panel-container" style="margin: 0;">
 				<div class="panel-header">
@@ -127,4 +140,5 @@
 						   [hasOpenLink]="false"></asset-preview>
 		</div>
 	</div>
+	}
 </div>
