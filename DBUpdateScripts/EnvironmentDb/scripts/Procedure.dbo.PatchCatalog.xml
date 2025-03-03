@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v2.1">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.dbo.PatchCatalog-v2.2">
     <comment>GOV-31550</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -40,22 +40,35 @@ begin
 				and (SourceId is null or trim(coalesce(SourceId, '')) = '');
 
 		-- Check if the SourceId is duplicated
-		update	t 
-		set	t.Success = 0,
-			t.[Message] = coalesce(t.[Message], '') + 'SourceId must not be duplicated within the same request; '
-		from	api.ExecutionCatalogItem t
-			inner join (
-				select	SourceId
-				from	api.ExecutionCatalogItem
-				where	ExecutionId = @executionId 
-					and [Type] = @type 
-					and (SourceId is not null or trim(coalesce(SourceId, '')) = '')
-				group by SourceId having count(1) > 1
-			) g on g.SourceId = t.SourceId
-		where	t.ExecutionId = @executionId 
-			and t.[Type] = @type 
-			and (t.SourceId is not null or trim(coalesce(t.SourceId, '')) = '');
-	    
+		drop table if exists #tempduplicate;
+		
+		select	SourceId,TypeSourceId
+		into #tempduplicate
+		from	api.ExecutionCatalogItem
+		where	ExecutionId = @executionId 
+			and [Type] = @type 
+			and (trim(coalesce(SourceId, '')) != '')
+			and (trim(coalesce(TypeSourceId, '')) != '')
+		group by SourceId,TypeSourceId 
+		having count(1) > 1;
+		
+		create Nonclustered index cx_tempduplicate on #tempduplicate(SourceId) include (TypeSourceId);
+
+		if exists(select 1 from #tempduplicate)
+		begin
+			update	t 
+			set	t.Success = 0,
+				t.[Message] = coalesce(t.[Message], '') + 'TypeSourceId, SourceId must not be duplicated within the same request; '
+			from api.ExecutionCatalogItem t
+			inner join #tempduplicate g on g.SourceId = t.SourceId and g.TypeSourceId = t.TypeSourceId
+			where	t.ExecutionId = @executionId 
+			and t.[Type] = @type ;
+		end
+
+		drop table if exists #tempduplicate;
+		
+		
+		
 		-- Does asset exist based on the incoming SourceId?
 		update	T
 		set		T.Id = S.Id,
@@ -226,7 +239,7 @@ begin
 		update	T
 		set		T.TypeId = S.Id,
 				T.Success = iif(S.Id is null, 0, null),
-				T.[Message] = iif(S.Id is null, 'Asset Type not found based on SourceId; ', T.[Message])
+				T.[Message] = iif(S.Id is null and coalesce(T.[Message],'') not like '%Asset Type not found based on SourceId;%', 'Asset Type not found based on SourceId; ' + coalesce(t.[Message], ''), T.[Message])
 		from	api.ExecutionCatalogItem T
 				left join AssetType S on S.SourceId = T.TypeSourceId
 		where	T.ExecutionId = @executionId
@@ -239,7 +252,7 @@ begin
 				T.Uid = S.Uid,
 				T.[Action] = 'U',
 				T.Success = iif(S.Id is null, 0, null),
-				T.[Message] = iif(S.Id is null, 'Asset not found based on SourceId; ', T.[Message])
+				T.[Message] = iif(S.Id is null, 'Asset not found based on SourceId; '  + coalesce(t.[Message], ''), T.[Message])
 		from	api.ExecutionCatalogItem  T
 				left join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null
 		where	T.ExecutionId = @executionId 
