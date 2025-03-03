@@ -1025,6 +1025,18 @@ from	CompanyResource CR
 				return response;
 			}
 
+			if (!string.IsNullOrEmpty(newPassword))
+			{
+				if (string.IsNullOrEmpty(newPassword)
+					|| newPassword.Length < 7 || newPassword.Length > 25
+					|| !newPassword.Any(char.IsUpper) || !newPassword.Any(char.IsLower)
+					|| !newPassword.Any(char.IsDigit))
+				{
+					response = new(400, Error.PasswordRule);
+					return response;
+				}
+			}
+
 			var newPasswordHash = PasswordHelper.HashPassword(newPassword);
 			var currentPasswordHash =  PasswordHelper.HashPassword(currentPassword);
 
