@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="View.dbo.ResponsibilityDetail-v4">
+  <changeSet author="TDuric,PuneetGupta" id="View.dbo.ResponsibilityDetail-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -71,7 +71,8 @@
 				inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 				left join Asset A on ( (A.ID = rasset.AssetID)  )
 				inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
-				inner join [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = rresource.SecurityAssetID
+				inner join [AssetType] ATG on ATG.Class = 12
+				inner join [Asset] secasset ON secasset.[AssetTypeID] = ATG.ID AND secasset.ObjectID = rresource.SecurityAssetID
 				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 		where 	RES.State=1
@@ -131,7 +132,8 @@
 				inner join [dbo].assettype att on (att.id = a.assettypeid)
 				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
 				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
-				inner join [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = oride.SecurityAssetID
+				inner join [AssetType] ATG on ATG.Class = 12
+				inner join [Asset] secasset ON secasset.[AssetTypeID] = ATG.ID AND secasset.ObjectID = oride.SecurityAssetID
 				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
 		]]>
