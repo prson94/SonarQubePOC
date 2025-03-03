@@ -155,7 +155,7 @@ namespace repositories.azure
 
 				results.pageNum = pageNum;
 				results.pageSize = pageSize;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					int labelsCount = await connection.ExecuteScalarAsync<int>(countSql);
 					results.total = labelsCount;
@@ -278,7 +278,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new { Uid = uid };
 					var count = await connection.ExecuteScalarAsync<int>(
@@ -296,7 +296,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -318,7 +318,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -438,7 +438,7 @@ namespace repositories.azure
 						{whereClause}
 						{sortClause}";
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var resut = await connection.QueryAsync<dynamic>(sql, dbArgs, commandTimeout: CommandTimeout);
 					return resut;
@@ -511,7 +511,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -658,7 +658,7 @@ namespace repositories.azure
 								{whereClause}
 								{sortClause}";
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var response = await connection.QueryAsync<dynamic>(labelsSql, dbArgs, commandTimeout: CommandTimeout);
 					return response;
@@ -707,7 +707,7 @@ namespace repositories.azure
 					q
 				};
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>(labelsSql, parameters, commandTimeout: CommandTimeout);
 					return result;
@@ -723,7 +723,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -744,7 +744,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryFirstOrDefaultAsync<ConnectorLabel>(@"
 					 SELECT * FROM dbo.ConnectorLabel
