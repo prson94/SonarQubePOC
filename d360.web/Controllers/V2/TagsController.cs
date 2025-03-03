@@ -727,10 +727,15 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
-			var response = await Catalog.CreateTagTypeAsync(model.Value);
-			return (response.IsSuccess) ?
-				Ok(response.Data) :
-				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			if(model?.Value.Length > 0  && model.Value?.Length <= 50)
+			{
+				var response = await Catalog.CreateTagTypeAsync(model.Value);
+				return (response.IsSuccess) ?
+					Ok(response.Data) :
+					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.BadTagType));
+
 		}
 
 		/// <summary>

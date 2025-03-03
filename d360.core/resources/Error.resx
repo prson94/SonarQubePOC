@@ -3297,4 +3297,7 @@
   <data name="DashboardingErrorOnUpdate" xml:space="preserve">
     <value>Error updating dashboard</value>
   </data>
+  <data name="BadTagType" xml:space="preserve">
+    <value>Allowed max length for TagType is 50</value>
+  </data>
 </root>
