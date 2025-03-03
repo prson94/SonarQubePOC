@@ -1,22 +1,19 @@
 ﻿<div class="row">
     <div class="col s12 m12 l7">
         <div class="tile tile-detail">
-            <d3s-admin-ip-restriction [(companySettings)]="companySettings"></d3s-admin-ip-restriction>
+            <ip-restrictions [(companySettings)]="companySettings"></ip-restrictions>
         </div>
         <div class="tile tile-detail">
-            <d3s-admin-site-menu [(companySettings)]="companySettings" (onSaveComplete)="load()"></d3s-admin-site-menu>
+            <site-menu-configuration [(companySettings)]="companySettings" (onSaveComplete)="load()"></site-menu-configuration>
         </div>
         <div class="tile tile-detail">
-            <d3s-admin-home [(companySettings)]="companySettings" [(homePageImage)]="homePageImage"></d3s-admin-home>
+            <home-customization [(companySettings)]="companySettings" [(homePageImage)]="homePageImage"></home-customization>
         </div>
         <div class="tile tile-detail">
             <d3s-helpmenu-list [(addedRecords)]="addedRecords" [(items)]="items" [(deletedRecords)]="deletedRecords"></d3s-helpmenu-list>
         </div>
     </div>
     <div class="col s12 m12 l3">
-        <div *ngIf="distributedCacheEnabled" class="info-tip" i18n>
-            Caching Is Distributed
-        </div>
         <div class="tile tile-detail">
             <header i18n>Features</header>
             <p-checkbox igCheckbox

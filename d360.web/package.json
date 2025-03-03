@@ -5,19 +5,19 @@
     "type": "git",
     "url": "https://github.com/Infogix/govern.git"
   },
-  "scripts": {
-    "build": "node_modules\\.bin\\ng build",
-    "buildProd": "node_modules\\.bin\\ng build --configuration=production --localize && node ./remove-hash-angular.js",
-    "buildFed": "SET FEDERATION_BUILD=TRUE && node_modules\\.bin\\ng build --configuration=production --localize --output-path=Scripts/remote",
-    "build-fed-linux": "export FEDERATION_BUILD=TRUE && node_modules/.bin/ng build --configuration=production --localize --output-path=Scripts/remote",
-    "build-dev-ops-prod": "node ./replace.timestamp.js && node --max_old_space_size=4096 node_modules\\.bin\\ng build --localize --configuration=production && node ./remove-hash-angular.js",
-    "build-dev-ops-prod-linux": "node ./replace.timestamp.js && node --max_old_space_size=4096 node_modules/.bin/ng build --localize --configuration=production && node ./remove-hash-angular.js",
-    "build-local-debug": "ng build --localize --watch --progress",
-    "build-local-debug-no-localization": "ng build --configuration=development --watch --progress",
-    "updateBuild": "node ./replace.timestamp.js",
-    "extract-translation-files": "node_modules\\.bin\\ng extract-i18n --output-path=locale",
-    "lint": "eslint .. --ext .ts,.js"
-  },
+	"scripts": {
+		"build": "node_modules\\.bin\\ng build",
+		"buildProd": "node_modules\\.bin\\ng build --configuration=production --i18n-missing-translation=ignore && node ./remove-hash-angular.js",
+		"buildFed": "SET FEDERATION_BUILD=TRUE && node_modules\\.bin\\ng build --configuration=production  --i18n-missing-translation=ignore --output-path=Scripts/remote",
+		"build-fed-linux": "export FEDERATION_BUILD=TRUE && node_modules/.bin/ng build --configuration=production  --i18n-missing-translation=ignore --output-path=Scripts/remote",
+		"build-dev-ops-prod": "node ./replace.timestamp.js && node --max_old_space_size=4096 node_modules\\.bin\\ng build  --i18n-missing-translation=ignore --configuration=production && node ./remove-hash-angular.js",
+		"build-dev-ops-prod-linux": "node ./replace.timestamp.js && node --max_old_space_size=4096 node_modules/.bin/ng build  --i18n-missing-translation=ignore --configuration=production && node ./remove-hash-angular.js",
+		"build-local-debug": "ng build --configuration=development --watch --progress",
+		"build-local-debug-no-localization": "ng build --configuration=development --watch --progress",
+		"updateBuild": "node ./replace.timestamp.js",
+		"extract-translation-files": "node_modules\\.bin\\ng extract-i18n --output-path=locale",
+		"lint": "eslint .. --ext .ts,.js"
+	},
   "license": "ISC",
 	"dependencies": {
 		"@angular-architects/module-federation": "^17.0.8",

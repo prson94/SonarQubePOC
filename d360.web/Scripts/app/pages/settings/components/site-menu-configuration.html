@@ -1,0 +1,93 @@
+﻿<loading [isLoading]="isLoading"></loading>
+@if (!isLoading) {
+<div class="admin-site-menu">
+	<div>
+		<div class="grid-header">
+			<h2 i18n style="margin-left:11px">Site Navigation</h2>
+			<div class="flex-grow"></div>
+			<button igButton (click)="addFolderDialog()" i18n-label label="Add Folder"></button>
+			<div class="spacer"></div>
+			<button igButton (click)="showAssetTypeModelDialog = true" i18n-label label="Add Asset Type" style="margin-right:11px"></button>
+		</div>
+		<p-table #dt 
+				 [value]="companySettings.SiteNav" 
+				 selectionMode="single" 
+				 [metaKeySelection]="true" 
+				 [(selection)]="selection"
+				 [scrollable]="true" 
+				 scrollHeight="420px">
+			<ng-template pTemplate="header">
+				<tr>
+					<th style="min-width: 250px" i18n>Name</th>
+					<th style="width: 120px" i18n>Type</th>
+					<th style="width: 50px" ></th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item">
+					<td style="min-width: 250px">
+						@if (item.Icon) {
+						<span>
+							@if (checkIfImg(item.Icon)) {<img class="gov-icon" [src]="item.Icon" />}
+							@else {<i [class]="'fa '+ item.Icon"></i>}
+						</span>
+						}
+						@if (item.ImageIconUrl != null) {
+						<span>
+							<img [src]="item.FullURL" style="max-width: 15px; max-height: 15px;" />
+						</span>
+						}
+						&nbsp;&nbsp;{{item.Title}}
+					</td>
+					<td style="width: 120px">
+						{{item.Type}}
+					</td>
+					<td style="width: 50px" class="asset-grid-tools" (click)="selectRow(item)">
+						<div style="width: 100%; display: flex; flex-direction: row-reverse;">
+							<button igButton type="button" class="ig-button-dark" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
+							<ig-popup-menu [items]="item.menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
+						</div>
+					</td>
+				</tr>
+			</ng-template>
+		</p-table>
+	</div>
+</div>
+}
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog modal-extended asset-editor modal-max"
+		   (onClose)="showFolderModalDialog=false"
+		   [showTitle]="false"
+		   [isVisible]="showFolderModalDialog">
+	@if (showFolderModalDialog) {
+	<site-menu-folder-edit [navigationFolder]="formMode === FormMode.Editing  ? selection : null"
+						   (closeClick)="showFolderModalDialog=false"
+						   (saveClick)="saveNavigationFolder($event)">
+	</site-menu-folder-edit>
+	}
+</d3s-modal>
+
+<d3s-modal additionalClasses="large-dialog"
+		   (onClose)="showAssetTypeModelDialog=false"
+		   i18n-title
+		   title="Add Asset Type"
+		   subtitle="Site Navigation"
+		   [isVisible]="showAssetTypeModelDialog">
+	<site-menu-asset-type (onSave)="onAssetTypeNavAdded($event)"
+						  [showAddAssetType]="showAssetTypeModelDialog"
+						  (onCancel)="showAssetTypeModelDialog = false">
+	</site-menu-asset-type>
+</d3s-modal>
+
+<d3s-modal additionalClasses="medium-dialog"
+		   (onClose)="showDeleteDialog=false"
+		   [isVisible]="showDeleteDialog"
+		   title="Delete Folder">
+	@if (showDeleteDialog) {
+	<site-menu-delete-dialog [siteNavigationItemTitle]="selection.Title"
+							 [siteNavigationItemType]="selection.Type"
+							 (onDelete)="onDeleteFolderConfirmed()"
+							 (onCancel)="showDeleteDialog = false; formMode = FormMode.Default">
+	</site-menu-delete-dialog>
+	}
+</d3s-modal>

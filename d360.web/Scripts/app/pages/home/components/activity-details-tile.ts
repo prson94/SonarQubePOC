@@ -1,4 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../../../components/shared/base.component';
 import { AssetDetail } from '../../../models/asset.model';
@@ -12,7 +13,7 @@ import { CoreModule } from '../../../components/shared/core.module';
 @Component({
     selector: 'activity-details-tile',
 	standalone: true,
-	imports: [CoreModule, TableModule, TilesModule],
+	imports: [CommonModule, CoreModule, TableModule, TilesModule],
 	//providers: [ArtifactService],
     templateUrl: './activity-details-tile.html'
 })

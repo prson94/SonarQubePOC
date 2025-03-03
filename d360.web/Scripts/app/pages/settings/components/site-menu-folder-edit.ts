@@ -13,33 +13,35 @@
 	ViewChildren,
 	ViewEncapsulation
 } from '@angular/core';
-import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormsModule, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { cloneDeep, debounce, isEmpty } from "lodash-es";
 import { forkJoin, Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
 import { FormHelper, FormMode } from '../../../models/form.model';
 import { CompanyImage } from '../../../models/settings.model';
 import { SiteNav, SiteNavPermission, SiteNavPermissionUID } from '../../../models/site-menu.model';
-import { DataProfileService } from '../../../services/dataprofile.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';
-import { BaseComponent } from '../../shared/base.component';
-import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
-
-/*global $localize*/
+import { BaseComponent } from '../../../components/shared/base.component';
+import { PropertyGroupComponent, PropertyGroupModule } from '../../../components/shared/controls/property-group/property-group.component';
+import { AssetPreviewModule } from '../../../components/shared/asset-preview/asset-preview.module';
+import { TableDataTransferModule } from '../../../components/shared/table-data-transfer/table-data-transfer.module';
+import { ButtonModule } from '../../../directives/ig-button-directive';
+import { IconPickerModule } from '../../../components/shared/controls/icon-picker/icon-picker.component';
 
 @Component({
-	selector: 'd3s-admin-site-menu-folder-editor',
-	templateUrl: './admin-site-menu-folder-editor.component.html',
-	providers: [DataProfileService, SiteMenuService],
+	selector: 'site-menu-folder-edit',
+	templateUrl: './site-menu-folder-edit.html',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
-	styleUrls: ['admin-site-menu-folder-editor.component.less']
+	styleUrls: ['site-menu-folder-edit.less'],
+	standalone: true,
+	imports: [AssetPreviewModule, ButtonModule, FormsModule, IconPickerModule, PropertyGroupModule, TableDataTransferModule]
 })
 
-export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {
+export class SiteMenuFolderEdit extends BaseComponent implements OnChanges, OnInit {
 	@Input() navigationFolder: SiteNav;
 	@Input() dataProfile: any = null;
 	@Output() closeClick = new EventEmitter();
@@ -262,7 +264,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		folder.Permissions = [];
 
 		this.permissionsFromTarget.forEach((p) => {
-			var legacyData = (p["Value"] as string).split('|');
+			const legacyData = (p["Value"] as string).split('|');
 			folder.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
 		});
 		return folder;
@@ -274,8 +276,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.clearInvalidFields();
 		switch (this.formMode) {
 			case FormMode.Editing:
-				const folder = this.getModel();
-				this.siteMenuService.editFolder(folder)
+				this.siteMenuService.editFolder(this.getModel())
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
 						if (result?.type !== "error") {
@@ -288,23 +289,20 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					});
 				break;
 			case FormMode.Adding:
-				const model = {
+				this.siteMenuService.addFolder({
 					folder: this.getModel(),
 					items: this.foldersFromTarget
-				};
-
-				this.siteMenuService.addFolder(model)
-					.subscribe((result) => {
-						this.showMessageForResult(this.messagesService, result);
-						if (result?.type !== "error") {
-							this.formMode = FormMode.Default;
-							this.stateService.reloadLeftNavMenu();
-							this.siteMenuService.setSiteNavPermissions(this.selection);
-							this.handleSaveComplete(result);
-						}
-						this.savingInProgress = false;
-						this.cdRef.markForCheck();
-					});
+				}).subscribe((result) => {
+					this.showMessageForResult(this.messagesService, result);
+					if (result?.type !== "error") {
+						this.formMode = FormMode.Default;
+						this.stateService.reloadLeftNavMenu();
+						this.siteMenuService.setSiteNavPermissions(this.selection);
+						this.handleSaveComplete(result);
+					}
+					this.savingInProgress = false;
+					this.cdRef.markForCheck();
+				});
 				break;
 		}
 	}

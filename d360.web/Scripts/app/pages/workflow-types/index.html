@@ -1,0 +1,63 @@
+﻿<div class="row">
+	<div class="col s12">
+		<loading [isLoading]="isLoading"></loading>
+		@if (!isLoading) {
+
+		<div [ngSwitch]="mode">
+			@switch (mode) {
+
+			@case (PageMode.Default) {
+			<div class="tile tile-detail">
+				<workflow-type-list (onViewClick)="viewReadOnlyDiagram($event)"
+									(onDeleteClick)="currentUid = $event; workflow = null; mode = PageMode.Delete;"
+									(onEditClick)="currentUid = $event.uid;cloneWorkflow=$event.isClone; workflow = null; mode = PageMode.Editor"
+									(onAddClick)="add()">
+				</workflow-type-list>
+			</div>
+			}
+
+			@case (PageMode.ReadOnlyDiagram) {
+			<div>
+				<d3s-workflow-diagram [uid]="currentUid" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
+			</div>
+			}
+
+			@case (PageMode.Editor) {
+			<div>
+				<workflow-type-edit [uid]="currentUid"
+									(onClose)="mode = PageMode.Default"
+									(onSave)="save($event);"
+									[model]="workflow"
+									[isClone]="cloneWorkflow"
+									(onWorkflowNameChange)="cloneWorkflow=$event">
+				</workflow-type-edit>
+			</div>
+			}
+
+			@case (PageMode.DiagramEditor) {
+			<div>
+				<d3s-workflow-diagram [id]="workflow.Type.ID"
+									  [model]="workflow"
+									  [readonly]="false"
+									  hasClose="true"
+									  hasBack="true"
+									  (onBackClick)="workflow = $event; mode = PageMode.Editor"
+									  (onCloseClick)="mode = PageMode.Default;">
+				</d3s-workflow-diagram>
+			</div>
+			}
+
+			@case (PageMode.Delete) {
+			<div class="tile tile-detail">
+				<workflow-type-delete [uid]="currentUid"
+									  (onSuccess)="mode = PageMode.Default"
+									  (onCancel)="mode = PageMode.Default">
+				</workflow-type-delete>
+			</div>
+			}
+
+			}
+		</div>
+		}
+	</div>
+</div>
