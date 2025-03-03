@@ -230,7 +230,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrEmpty(value))
+			if (value != null)
 			{
 				bool bValue;
 				if (bool.TryParse(value, out bValue))
