@@ -437,7 +437,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
 						const tagIndex = this.findTagIndex(t.uid);
 						this.mutateTags((tags) => tags.splice(tagIndex, 1));
                     });
-                    this.selected = [];
+					this.selected = [];
+					this.triggerRerenderOfSelection();
+					this.itemToEdit = null;
+					this.lastSelectedElement = null;
+					this.cdRef.markForCheck();
                 }
                 this.showDelete = false;
             }, (err) => this.showMessageForResult(this.messagesService, err));
