@@ -72,7 +72,7 @@ export class TagTypesPanelComponent {
                 this.tagTypes[index].Value = item.Value;
                 this.showEditor = false;
             });
-            this.onTagTypeSelected.emit(null);
+            this.onTagTypeSelected.emit({ uid: this.selectedTag.uid, Value: item.Value });
             return;
         }
 
