@@ -26,7 +26,7 @@
                                 <li (click)="openEditor({mTitle: 'Edit Tag Type', action: 'edit'})">
                                     <p> Edit </p>
                                 </li>
-                                <li (click)="openDeleteModal()">
+                                <li (click)="openDeleteModal(tagType.uid)">
                                     <p> Delete </p>
                                 </li>
                             </ul>
@@ -62,7 +62,13 @@
         <div prompt>
             <div *ngIf="selectedTag?.uid">
               <ng-container i18n>
-                Please confirm that you wish to delete the tag type '{{this.selectedTag.Value}}'
+                <p *ngIf="isTagTypeInUse">
+                    The TagType <b>'{{this.selectedTag.Value}}' </b>  is being used. Deletion will permanently remove all associated tags and related data fields from your assets. 
+                    <br/> Are you sure you wish to proceed?
+                </p>
+                <p *ngIf="!isTagTypeInUse">
+                    Please confirm that you wish to delete the tag type <b>'{{this.selectedTag.Value}}' </b>   
+                </p>
              </ng-container>
             </div>
         </div>
