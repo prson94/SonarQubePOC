@@ -264,6 +264,7 @@
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityTypeIDByResourceID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissions.xml"/>
+	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissionsAssetID.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissionsByAssetID.xml"/>
 	<include file="scripts/Function.dbo.ArtifactSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
