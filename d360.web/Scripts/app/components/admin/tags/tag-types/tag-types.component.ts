@@ -25,6 +25,7 @@ export class TagTypesPanelComponent {
     selectedAction = 'add';
     showDeleteModal = false;
     theDeleteCallback: unknown;
+    saveButtonLabelText = '';
 
     constructor(private ts: TagTypesService) { }
 
@@ -88,6 +89,7 @@ export class TagTypesPanelComponent {
         this.modalTitle = mTitle;
         this.formSubmitAction = action;
         this.showEditor = true;
+        this.setSaveButtonLabel(action)
 
     }
 
@@ -113,6 +115,14 @@ export class TagTypesPanelComponent {
         });
 
 
+    }
+
+    setSaveButtonLabel(_action: string){
+      if (_action == 'edit') {
+        this.saveButtonLabelText = 'Save Changes';
+        return;
+      }
+      this.saveButtonLabelText = 'Add Tag Type';
     }
 
 }
