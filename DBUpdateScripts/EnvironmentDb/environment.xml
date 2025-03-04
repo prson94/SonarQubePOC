@@ -62,7 +62,6 @@
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetPath.xml"/>
-	<include file="scripts/Table.dbo.AssetPathSegmentDtl.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.Comment.xml"/>
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>

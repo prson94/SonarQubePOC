@@ -107,34 +107,27 @@ namespace d360.model.DataAccessLayer.repositories
 			}
 		}
 
-		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID, AssetTypeClass assettypeClass)
+		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID)
 		{
 			if (assetTypeID != null)
 			{
-				if (assettypeClass == AssetTypeClass.BusinessAsset || assettypeClass == AssetTypeClass.TechnicalAsset)
-				{
-					return $@" left outer join AssetPathSegmentDtl F{fieldType.ID} on F{fieldType.ID}.AssetID = a.id and F{fieldType.ID}.AssetTypeId = {assetTypeID} ";
-				}
-				else
-				{
-					return $@"
-					outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
-							 FROM (
-							 SELECT *
-							   FROM (
-							   SELECT X.p.value('./@level', 'int') as L,
-									  X.p.value('./@position', 'int') as P,
-									  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
-									  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
-								 FROM AssetPath atp
-								 cross apply atp.Segments.nodes('/path/segment') X(p)
-								 where atp.id = a.id 
-							   ) s
-							 where AssetTypeId = {assetTypeID}
-							 ) segmentPath
-						  )F{fieldType.ID}(FormattedValue)
-				";
-				}
+				return $@"
+				outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
+							FROM (
+							SELECT *
+							FROM (
+							SELECT X.p.value('./@level', 'int') as L,
+									X.p.value('./@position', 'int') as P,
+									X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+									(select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+								FROM AssetPath atp
+								cross apply atp.Segments.nodes('/path/segment') X(p)
+								where atp.id = a.id 
+							) s
+							where AssetTypeId = {assetTypeID}
+							) segmentPath
+						)F{fieldType.ID}(FormattedValue)
+			";
 			}
 			return "";
 		}
@@ -864,14 +857,11 @@ namespace d360.model.DataAccessLayer.repositories
 					 var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
 					 if (pathDefinition?.AssetTypeUid != null)
 					 {
-						 var assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault();
-						 if (assetTypeID != null)
+						 int? assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault()?.ID;
+						 string pathJoinStatement = GetPathJoinSql(f, assetTypeID);
+						 if (!string.IsNullOrEmpty(pathJoinStatement))
 						 {
-							 string pathJoinStatement = GetPathJoinSql(f, assetTypeID.ID, assetTypeID.Class);
-							 if (!string.IsNullOrEmpty(pathJoinStatement))
-							 {
-								 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
-							 }
+							 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
 						 }
 					 }
 				 }
