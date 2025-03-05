@@ -2290,7 +2290,8 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			settings["CustomCSSLocation"] = "";
 			settings["CompanyIcon"] = "";
 			settings["CompanyLogo"] = "";
-			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
+			Theme themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync(themerec);
 			if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
 			{
 				settings["CompanyIcon"] = currentTheme.IconUri;

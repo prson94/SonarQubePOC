@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v2">
+  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -93,19 +93,14 @@ begin
 	;with cte as (select AssetTypeID,min(LastRunOn) LastRunOn 
 				  from @AssetTypeIDUpdates
 				  group by AssetTypeID)
-	select cte.AssetTypeID,Greatest(MaxDateC.CreatedOn,coalesce(MaxDateU.UpdatedOn, '1/1/2000')) UpdatedOn
+	select cte.AssetTypeID,Greatest(MaxDateC.CreatedOn,coalesce(MaxDateC.UpdatedOn, '1/1/2000')) UpdatedOn
 	into #AssetTypeUpdatesMap
 	from cte
 	outer apply (
-				select MAX(A.CreatedOn) 
+				select MAX(A.CreatedOn),MAX(A.UpdatedOn)
 				from Asset A  WITH (NOLOCK)
-				where A.AssetTypeID = cte.AssetTypeID and A.CreatedOn > cte.LastRunOn
-				)MaxDateC(CreatedOn)
-	outer apply (
-				select MAX(A.UpdatedOn) 
-				from Asset A  WITH (NOLOCK)
-				where A.AssetTypeID = cte.AssetTypeID and A.UpdatedOn > cte.LastRunOn
-				)MaxDateU(UpdatedOn)
+				where A.AssetTypeID = cte.AssetTypeID
+				)MaxDateC(CreatedOn,UpdatedOn)
 	option(recompile);
 				
 	create clustered index cx_AssetTypeUpdatesMap on #AssetTypeUpdatesMap(AssetTypeID);
@@ -167,7 +162,7 @@ begin
 	cross apply (
 				select MAX(F.UpdatedOn) 
 				from Field F  WITH (NOLOCK)
-				where F.FieldTypeID = cte.FieldTypeID and F.UpdatedOn > cte.LastRunOn
+				where F.FieldTypeID = cte.FieldTypeID
 				)MaxDate(UpdatedOn)
 	option(recompile);
 				
@@ -221,7 +216,7 @@ begin
 	cross apply (select MAX(I.UpdatedOn) 
 				from [Intersect] I WITH (NOLOCK)
 				where I.IntersectTypeID = cte.IntersectTypeID
-				and I.UpdatedOn > cte.LastRunOn)MaxDate(UpdatedOn)
+				)MaxDate(UpdatedOn)
 	option(recompile);
 
 	merge @relationshipUpdates as target

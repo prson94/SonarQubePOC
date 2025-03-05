@@ -1120,7 +1120,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetUid, assetUid));
+                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, assetUid));
             }
 
             if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))

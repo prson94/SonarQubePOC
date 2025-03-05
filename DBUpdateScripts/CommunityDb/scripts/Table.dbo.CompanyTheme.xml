@@ -1,0 +1,215 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyTheme-v1.0">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyTheme')
+BEGIN
+	CREATE TABLE [dbo].[CompanyTheme](
+		[CompanyID] [int] NOT NULL,
+		ID int identity not null,
+		Uid uniqueidentifier not null,
+		Name nvarchar(250) not null,
+		IsCurrent bit not null,
+		HeaderLogoExtension varchar(5) null,
+		HomePageBackgroundExtension varchar(5) null,
+		BrowserIconExtension varchar(5) null,
+		BackColor varchar(7) null,
+		BreadcrumbLinkColor varchar(7) null,
+		ButtonBackColor varchar(7) null,
+		PrimaryButtonBackColor varchar(7) null,
+		HeaderBackColor varchar(7) null,
+		NavBarBackColor varchar(7) null,
+		NavBarBackSelectedColor varchar(7) null,
+		TabLinkColor varchar(7) null,
+		TableHeaderBackColor varchar(7) null,
+		TableRowBackSelectedColor varchar(7) null,
+		CustomCss nvarchar(max) null,
+		CreatedBy int not null,
+		CreatedOn datetime not null,
+		UpdatedBy int not null,
+		UpdatedOn datetime not null,
+		Locked bit constraint DF_CompanyTheme_Locked default(0) not null,
+		CONSTRAINT [PK_CompanyTheme] PRIMARY KEY CLUSTERED (CompanyID, ID ASC )
+	)
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'CompanyTheme' and COLUMN_NAME = 'Locked')
+BEGIN 
+	ALTER TABLE [dbo].[CompanyTheme] ADD Locked bit constraint DF_CompanyTheme_Locked default(0) not null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyTheme')
+BEGIN
+	drop table dbo.[CompanyTheme]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyTheme-Constraints-v1.0">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_CreatedBy')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_CreatedBy] DEFAULT (0) FOR [CreatedBy]
+END
+
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_CreatedOn')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_CreatedOn] DEFAULT (getutcdate()) FOR [CreatedOn]
+END
+
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_IsCurrent')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_IsCurrent] DEFAULT (0) FOR [IsCurrent]
+END
+
+IF NOT EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_CompanyTheme_Name')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [UC_CompanyTheme_Name] UNIQUE (CompanyID,[Name])
+END
+
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_Uid')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_Uid] DEFAULT (newid()) FOR [Uid]
+END
+
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_UpdatedBy')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_UpdatedBy] DEFAULT (0) FOR [UpdatedBy]
+END
+
+IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_UpdatedOn')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] ADD CONSTRAINT [DF_CompanyTheme_UpdatedOn] DEFAULT (getutcdate()) FOR [UpdatedOn]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_CreatedBy')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_CreatedBy]
+END
+
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_CreatedOn')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_CreatedOn]
+END
+
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_IsCurrent')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_IsCurrent]
+END
+		
+IF EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_CompanyTheme_Name')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [UC_CompanyTheme_Name]
+END
+
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_Uid')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_Uid]
+END
+
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_UpdatedBy')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_UpdatedBy]
+END
+
+IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_CompanyTheme_UpdatedOn')
+BEGIN
+	ALTER TABLE [dbo].[CompanyTheme] DROP CONSTRAINT [DF_CompanyTheme_UpdatedOn]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyTheme-Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [sys].[indexes] where name = 'IX_CompanyTheme_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_CompanyTheme_Uid] ON [dbo].[CompanyTheme] ( [Uid] ASC )
+END
+
+IF NOT EXISTS (select * from [sys].[indexes] where name = 'UC_CompanyTheme_Name')
+BEGIN
+	CREATE UNIQUE INDEX [UC_CompanyTheme_Name] ON [dbo].[CompanyTheme] (CompanyID, [Name] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (select * from [sys].[indexes] where name = 'IX_CompanyTheme_Uid')
+BEGIN
+	DROP INDEX [IX_CompanyTheme_Uid] ON [dbo].[CompanyTheme]
+END
+
+IF EXISTS (select * from [sys].[indexes] where name = 'UC_CompanyTheme_Name')
+BEGIN
+	DROP INDEX [UC_CompanyTheme_Name] ON [dbo].[CompanyTheme]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyTheme-Data-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [CompanyTheme] where Uid = 'AAAAAAAA-0000-0000-0000-000000000001')
+BEGIN
+	INSERT INTO [dbo].[CompanyTheme] (
+	CompanyId,
+	[Uid],[Name],[IsCurrent]
+	,[BackColor]
+	,[BreadcrumbLinkColor]
+	,[ButtonBackColor],[PrimaryButtonBackColor]
+	,[HeaderBackColor]
+	,[NavBarBackColor],[NavBarBackSelectedColor]
+	,[TabLinkColor]
+	,[TableHeaderBackColor],[TableRowBackSelectedColor]
+	,[CreatedBy],[CreatedOn],[UpdatedBy],[UpdatedOn],[Locked])
+	VALUES (
+	0,
+	'AAAAAAAA-0000-0000-0000-000000000001','Precisely Theme',1
+	,'#F1F2F3'
+	,'#90FCF9'
+	,'#CE53A5', '#6D18DD'
+	,'#36017B'
+	,'#FFFFFF'
+	,'#E4CFFF'
+	,'#8A46E4'
+	,'#F1F2F3', '#E4CFFF'
+	, 0, '2022-03-01', 0, '2022-03-01', 1)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
