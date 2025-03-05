@@ -89,6 +89,12 @@ namespace igx.UnitTests
 
 			mock.Setup(x => x.ReadSettingValueAsync<int>(It.IsAny<int>(), It.IsAny<Setting>()));
 
+			mock.Setup(x => x.ReadThemeUidAsync(It.IsAny<int>(), It.IsAny<Guid>()))
+							.ReturnsAsync(new Theme());
+
+			mock.Setup(x => x.ReadThemeAsync(It.IsAny<int>(), It.IsAny<string>()))
+							.ReturnsAsync(new Theme());
+
 			return mock.Object;
 		}
         
@@ -686,10 +692,6 @@ namespace igx.UnitTests
         public IThemeRepository GetThemeRepository()
         {
             var mockRepo = new Mock<IThemeRepository>();
- 
-            mockRepo.Setup(x => x.GetThemeByUid(It.IsAny<Guid>()))
-                            .Returns(new Theme());
-
             return mockRepo.Object;
         }
 

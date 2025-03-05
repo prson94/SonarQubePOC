@@ -10,20 +10,17 @@ namespace repositories
 {
     public interface IThemeRepository
     {
-        HttpStatusCode Delete(Guid uid);
+		Task<HttpStatusCode> Delete(Guid uid, Theme theme);
+
+		Task<List<GetTheme>> GetThemesAsync(List<Theme> theme, Guid themeUid, CancellationToken? cancellationToken = null);
         
-        Task<List<GetTheme>> GetThemesAsync(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
+        Task<GetTheme> GetCurrentThemeByUserAsync(Theme dbTheme);
         
-        Task<GetTheme> GetCurrentThemeByUserAsync();
+        Task<bool> MarkThemeAsCurrentAsync(Theme theme, Guid uid);
         
-        Theme GetThemeByUid(Guid uid);
-        
-        string GetCurrentThemeCustomCssByUser();
-        
-        Task<bool> MarkThemeAsCurrentAsync(Guid uid);
-        
-        Task<GetTheme> PostThemeAsync(PostTheme theme, bool validationOnly = false);
-        
-        Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme);
-    }
+        Task<GetTheme> PostThemeAsync(Theme theme, bool validationOnly = false);
+
+		Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme, Theme existingTheme, Theme nowPreviousTheme);
+
+	}
 }
