@@ -34,7 +34,6 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
-
 namespace d360.web.Controllers.V2
 {
 	/// <summary>
@@ -1449,7 +1448,20 @@ select	r.uid as ResourceUid,
 			try
 			{
 				var queryParams = Request.GetQueryNameValuePairs();
-				var apiModels = await ThemeRepository.GetThemesAsync(queryParams, cancellationToken);
+				Guid themeUid = Guid.Empty;
+
+				if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
+				{
+					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
+					{
+						themeUid = Guid.Empty;
+						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorOnGet, Error.InvalidUidParameter);
+					}
+				}
+
+				List<Theme> themes = await Community.ReadThemesAsync(SecurityContext.CompanyID);
+
+				var apiModels = await ThemeRepository.GetThemesAsync(themes,themeUid, cancellationToken);
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
 			}
 			catch (GenericException)
@@ -1478,7 +1490,8 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
+				Theme themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+				var theme = await ThemeRepository.GetCurrentThemeByUserAsync(themerec);
 
 				string textColorFromBackground(string backgroundColor)
 				{
@@ -1561,7 +1574,7 @@ select	r.uid as ResourceUid,
 				{
 					//https://jira.syncsort.com/browse/GOV-21052
 					//Limited / Low-risk information disclosure via CSS overrides
-					var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
+					var customCss = Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
 					css.AppendLine("");
 					css.Append(customCss);
 				}
@@ -1595,11 +1608,11 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult GetThemeCssByUid(Guid uid)
+		public async Task<IHttpActionResult> GetThemeCssByUid(Guid uid)
 		{
 			try
 			{
-				var theme = ThemeRepository.GetThemeByUid(uid);
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
 				if (theme == null)
 				{
@@ -1653,7 +1666,7 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult GetThemeCustomCssByUid(Guid uid)
+		public async Task<IHttpActionResult> GetThemeCustomCssByUid(Guid uid)
 		{
 			try
 			{
@@ -1663,7 +1676,7 @@ select	r.uid as ResourceUid,
 				}
 
 
-				var theme = ThemeRepository.GetThemeByUid(uid);
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 				if (theme == null)
 				{
 					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
@@ -1714,7 +1727,7 @@ select	r.uid as ResourceUid,
 
 			try
 			{
-				var theme = ThemeRepository.GetThemeByUid(uid);
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
 				if (theme == null)
 				{
@@ -1875,7 +1888,31 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				var responseModel = await ThemeRepository.PostThemeAsync(requestModel, validationOnly);
+				var repoTheme = requestModel.ToRepositoryModel(SecurityContext.ResourceID);
+				repoTheme.Validate();
+
+				var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, repoTheme.Name);
+
+				if (themerec !=null)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ThemeNameMustBeUnique);
+				}
+
+				var responseModel = new GetTheme();
+
+				if (!validationOnly)
+				{
+					RepositoryResponse<bool> response = null;
+					response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true);
+					if (response.IsSuccess)
+					{
+						responseModel = await ThemeRepository.PostThemeAsync(repoTheme, validationOnly);
+					}
+					else
+					{
+						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorUpsertTheme);
+					}
+				}
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
@@ -1922,7 +1959,43 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel);
+				var existingTheme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+
+				if (existingTheme == null)
+				{
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
+				}
+
+				if (requestModel.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
+				{
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeInUseForIsCurrentEdit);
+				}
+
+				var nowPreviousTheme = existingTheme.CloneThis();
+
+				if (existingTheme.Locked)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeIsLocked);
+				}
+
+				existingTheme = requestModel.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
+				existingTheme.Validate();
+
+				var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, existingTheme.Name);
+
+				if (themerec != null && themerec.Uid != existingTheme.Uid)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeNameMustBeUnique);
+				}
+
+				RepositoryResponse<bool> response = null;
+				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, existingTheme, SecurityContext.ResourceID, true);
+				if (!response.IsSuccess)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorUpsertTheme);
+				}
+
+				var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel, existingTheme, nowPreviousTheme);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModel));
 			}
@@ -1957,10 +2030,25 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				var success = await ThemeRepository.MarkThemeAsCurrentAsync(uid);
-				if (success)
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+				if (theme == null)
 				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
+					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
+				}
+
+				RepositoryResponse<bool> response = null;
+				response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
+				if (response.IsSuccess)
+				{	
+					var success = await ThemeRepository.MarkThemeAsCurrentAsync(theme ,uid);
+					if (success)
+					{
+						return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
+					}
+					else
+					{
+						return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
+					}
 				}
 				else
 				{
@@ -1993,11 +2081,35 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
-		public IHttpActionResult DeleteTheme(Guid uid)
+		public async Task<IHttpActionResult> DeleteTheme(Guid uid)
 		{
 			try
 			{
-				var status = ThemeRepository.Delete(uid);
+				var theme = await Community.ReadThemeUidAsync( SecurityContext.CompanyID, uid);
+
+				if (theme == null)
+				{
+					throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
+				}
+
+				if (theme.Locked)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
+				}
+
+				if (theme.IsCurrent)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
+				}
+
+				RepositoryResponse<bool> response = null;
+				response = await Community.RemoveThemeAsync(SecurityContext.CompanyID, uid);
+				if (!response.IsSuccess)
+				{
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorRemoveTheme);
+				}
+
+				var status = await ThemeRepository.Delete(uid, theme);
 
 				return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
 			}
@@ -2065,7 +2177,7 @@ select	r.uid as ResourceUid,
 				}
 
 				byte[] bytes = await file.ReadAsByteArrayAsync();
-				string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+				string extension =  Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
 
 				var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
 				if (!goodExtensions.Contains(extension))
@@ -2102,7 +2214,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> Base64Images(Guid uid)
 		{
-			var theme = Company.Themes.AsNoTracking().FirstOrDefault(x => x.Uid == uid);
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 			var response = new ThemeBase64Data();
 			if (theme.HomePageBackgroundExtension != null)
 			{
