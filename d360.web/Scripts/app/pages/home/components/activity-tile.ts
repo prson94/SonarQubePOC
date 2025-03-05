@@ -5,11 +5,12 @@ import { ArtifactService } from '../../../services/artifacts.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CoreModule } from '../../../components/shared/core.module';
 import { TilesModule } from '../../../components/shared/tiles/tiles.module';
+import { TableModule } from 'primeng/table';
 
 @Component({
 	selector: 'activity-tile',
 	standalone: true,
-	imports: [CoreModule, TilesModule],
+	imports: [CoreModule, TableModule, TilesModule],
     //providers: [ArtifactService],
     templateUrl: './activity-tile.html'
 })

@@ -104,5 +104,20 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value);
 
+		Task<Theme> ReadThemeAsync(int companyId, string name);
+
+		Task<Theme> ReadThemeUidAsync(int companyId, Guid uid);
+
+		Task<List<Theme>> ReadThemesAsync(int companyId);
+
+		Task<Theme> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser);
+
+		Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser);
+
+		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false);
+
+		Task<RepositoryResponse<bool>> RemoveThemeAsync(int companyId, Guid uid);
+
+		Task<RepositoryResponse<bool>> MarkThemeCurrentAsync(int companyId, Guid uid);
 	}
 }

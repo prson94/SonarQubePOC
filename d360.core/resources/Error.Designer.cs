@@ -2410,6 +2410,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error during remove theme..
+        /// </summary>
+        public static string ErrorRemoveTheme {
+            get {
+                return ResourceManager.GetString("ErrorRemoveTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error removing rule results.
         /// </summary>
         public static string ErrorRuleResult {
@@ -2514,6 +2523,15 @@ namespace d360.core.resources {
         public static string Errorupdatingmetric {
             get {
                 return ResourceManager.GetString("Errorupdatingmetric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error during Upsert Theme..
+        /// </summary>
+        public static string ErrorUpsertTheme {
+            get {
+                return ResourceManager.GetString("ErrorUpsertTheme", resourceCulture);
             }
         }
         

@@ -264,6 +264,7 @@
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityTypeIDByResourceID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissions.xml"/>
+	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissionsAssetID.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissionsByAssetID.xml"/>
 	<include file="scripts/Function.dbo.ArtifactSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
@@ -332,6 +333,7 @@
 	<include file="scripts/Procedure.bulkload.UpdateItemColumnByIntersectType.xml"/>
 	<include file="scripts/Procedure.bulkload.GetModelPathForLevel.xml"/>
 	<include file="scripts/Procedure.bulkload.FillParentUid.xml"/>
+	<include file="scripts/Procedure.bulkload.GetErrorRecords.xml"/>
 	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerageDisplayValuesByTempAssetTable.xml"/>

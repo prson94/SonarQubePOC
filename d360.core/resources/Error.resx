@@ -3297,6 +3297,12 @@
   <data name="DashboardingErrorOnUpdate" xml:space="preserve">
     <value>Error updating dashboard</value>
   </data>
+  <data name="ErrorUpsertTheme" xml:space="preserve">
+    <value>Error during Upsert Theme.</value>
+  </data>
+  <data name="ErrorRemoveTheme" xml:space="preserve">
+    <value>Error during remove theme.</value>
+  </data>
   <data name="BadTagType" xml:space="preserve">
     <value>Allowed max length for TagType is 50</value>
   </data>

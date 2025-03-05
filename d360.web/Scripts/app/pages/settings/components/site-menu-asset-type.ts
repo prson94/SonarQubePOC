@@ -1,23 +1,28 @@
 ﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { HelpService } from '../../../services/help.service';
 import { Table } from 'primeng/table';
 import { Subscription } from 'rxjs';
+import { AdminBaseComponent } from '../../../components/admin/admin-base.component';
+import { TableModule } from 'primeng/table';
+import { SearchFieldModule } from '../../../components/shared/controls/search-field/search-field.component';
+import { SharedGridPagingInfoModule } from '../../../components/shared/grid-paging-info.component';
+import { CoreModule } from '../../../components/shared/core.module';
 
 @Component({
-	selector: 'd3s-admin-site-menu-asset-type-editor',
-	providers: [SiteMenuService],
-	templateUrl: './admin-site-menu-asset-type.component.html'
+	selector: 'site-menu-asset-type',
+	templateUrl: './site-menu-asset-type.html',
+	standalone: true,
+	imports: [CoreModule, FormsModule, SearchFieldModule, SharedGridPagingInfoModule, TableModule]
 })
-
-export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent implements OnDestroy, OnChanges {
+export class SiteMenuAssetType extends AdminBaseComponent implements OnDestroy, OnChanges {
 	@Output() onSave = new EventEmitter();
 	@Output() onCancel = new EventEmitter();
 	@Input() showAddAssetType: boolean = false;
@@ -93,7 +98,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		nav.Name = "#ASSET_TYPE";
 		nav.Object = this.selectedAssetType.Object;
 		nav.ObjectID = this.selectedAssetType.ObjectID;
-		var model = {
+		const model = {
 			folder: nav
 		};
 

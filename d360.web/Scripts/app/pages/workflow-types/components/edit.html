@@ -1,0 +1,280 @@
+﻿<div class="tile tile-detail">
+	@if (model?.Type?.Name != null && !isLoading) {
+	<header>{{model.Type.Name}}</header>
+	}
+	@if (model?.Type?.Name == null  && !isLoading) {
+	<header i18n>New Workflow Type</header>
+	}
+	<loading [isLoading]="isLoading"></loading>
+	@if (!isLoading) {
+	<div class="row">
+		<div class="col s12 m4">
+			<div class="FieldName" i18n>
+				Name
+			</div>
+			<div>
+				<input type="text"
+					   [ngModel]="model.Type.Name"
+					   (ngModelChange)="isClone=false;onWorkflowNameChange.emit(isClone);model.Type.Name = $event; validate();"
+					   style="width: 95%"
+					   [d3s-text-highlight]="isClone" />
+			</div>
+			<div class="FieldName" i18n>
+				Change Type
+			</div>
+			<div>
+				<select style="width:95%;"
+						placeholder="Choose a value"
+						i18n-placeholder
+						[ngModel]="model.Event.ChangeType"
+						(ngModelChange)="changeTypeChanged($event)">
+					<option></option>
+					@for (i of changesTypes; track i) {
+					<option [value]="i.ID">{{i.Description}}</option>
+					}
+				</select>
+			</div>
+			<div class="FieldName" i18n>
+				Object Type
+			</div>
+			<div class="d3s-type-dropdown">
+				<p-dropdown [options]="workflowObjectTypes"
+							[ngModel]="selectedObjectType"
+							(ngModelChange)="selectObjectType($event)"
+							[disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
+							[style]="{'width': '95%'}"
+							filterPlaceholder="Choose a value"
+							i18n-filterPlaceholder
+							[filter]="true">
+				</p-dropdown>
+			</div>
+			@if (objectType == 'IssueType') {
+			<div>
+				<div class="FieldName" i18n>
+					Issue Object Type
+				</div>
+				<div class="d3s-type-dropdown">
+					<p-dropdown [options]="issueObjectTypes"
+								[ngModel]="model.Event.IssueObject"
+								(ngModelChange)="selectIssueObjectType($event)"
+								[style]="{'width': '95%'}"
+								filterPlaceholder="Choose a value"
+								i18n-filterPlaceholder
+								[filter]="true">
+					</p-dropdown>
+				</div>
+			</div>
+			}
+
+			@if (objectSelected && model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
+			<div>
+				<div class="FieldName" i18n>
+					Score Type
+				</div>
+				<div class="d3s-type-dropdown">
+					<p-dropdown [options]="scoreTypes"
+								[ngModel]="model.Event.ScoreType"
+								(ngModelChange)="model.Event.ScoreType = $event; validate();"
+								[style]="{'width': '95%'}"
+								filterPlaceholder="Choose a value"
+								i18n-filterPlaceholder
+								[filter]="true">
+					</p-dropdown>
+				</div>
+			</div>
+			}
+
+			@if (model.Event.ChangeType == WorkflowChangeType.Schedule) {
+			<div>
+				<div class="FieldName" i18n>
+					Run Interval
+				</div>
+				<div>
+					<div>
+						<select style="width:95%;"
+								[ngModel]="model.Event.SettingsObject.Settings.ScheduleType"
+								(ngModelChange)="model.Event.SettingsObject.Settings.ScheduleType = $event; validate(); checkScheduleInterval();">
+							@for(i of scheduleTypes; track i) {
+							<option [value]="i.value">{{i.label}}</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="FieldName" i18n>
+					Run Frequency
+				</div>
+				<div>
+					<input type="number"
+						   min="1"
+						   [max]="runFrequencyMax()"
+						   step="1"
+						   [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval"
+						   (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event; validate();"
+						   style="width: 95%" />
+				</div>
+				<div class="FieldName" i18n>
+					Run Days
+				</div>
+				<div style="width: 95%">
+					<d3s-dayofweek-input [ngModel]="model.Event.SettingsObject.Settings.ScheduleDays"
+										 (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleDays = $event; validate();"
+										 i18n-every
+										 label="Every"></d3s-dayofweek-input>
+				</div>
+			</div>
+			}
+
+		</div>
+		<div class="col s12 m8">
+			@if (objectSelected) {
+			<div>
+				<div class="FieldName" i18n>
+					Conditions
+				</div>
+				<div>
+					<d3s-workflow-condition-list (removeClick)="remove($event)"
+												 (addClick)="showCondition()"
+												 (connectorChange)="applyConnectorToConditions($event)"
+												 [conditions]="conditions"
+												 [satisfyAll]="satisfyAllConditions"></d3s-workflow-condition-list>
+					@if (showAddCondition) {
+					<div>
+						<d3s-workflow-condition-editor [objectId]="objectID"
+													   [objectType]="objectType"
+													   [changeType]="model.Event.ChangeType"
+													   [issueObject]="model.Event.IssueObject"
+													   (onSave)="addCondition($event)"
+													   (onClose)="showAddCondition = false;">
+						</d3s-workflow-condition-editor>
+					</div>
+					}
+
+				</div>
+			</div>
+			}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col s12 m4">
+			<div class="FieldName" i18n>
+				Description
+			</div>
+			<div style="width: 95%">
+				<p-editor [(ngModel)]="model.Type.Description"
+						  [style]="{'height':'150px'}">
+					<d3s-editor-header></d3s-editor-header>
+				</p-editor>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col s12">
+			<div class="FieldName">
+				<p-checkbox igCheckbox (ngModelChange)="onStateChange($event)" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" i18n-label label="Active" [binary]="true"></p-checkbox>
+			</div>
+		</div>
+	</div>
+
+	@if (model.Event.ChangeType == WorkflowChangeType.Schedule) {
+	<div class="row" style="padding-top: 8px;">
+		<div class="col s12">
+			<div>
+				<p-checkbox igCheckbox (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail" i18n-label label="Send aggregated email?" [binary]="true"></p-checkbox>
+			</div>
+		</div>
+	</div>
+
+	@if (model.Event.SettingsObject.Settings.SendAggregateEmail == true) {
+	<div class="row">
+		<div class="col s12 m4 offset-m2">
+			<div class="FieldName" i18n>
+				Subject
+			</div>
+			<div>
+				<input type="text"
+					   style="width:100%"
+					   [ngModel]="model.Event.SettingsObject.Settings.MessageSubjectTemplate"
+					   (ngModelChange)="model.Event.SettingsObject.Settings.MessageSubjectTemplate = $event; validate();" />
+			</div>
+		</div>
+		<div class="col s12 m4">
+			<div class="FieldName" i18n>
+				Recipient Type
+			</div>
+			<div>
+				<select style="width: 100%"
+						disabled>
+					<option value="SpecificUser" i18n>Specific User</option>
+				</select>
+			</div>
+			<div>
+				<div class="FieldName" i18n>
+					Recipient
+				</div>
+				<div>
+					<input type="text"
+						   [ngModel]="model.Event.SettingsObject.Settings.MessageToUser"
+						   (ngModelChange)="model.Event.SettingsObject.Settings.MessageToUser = $event; validate();"
+						   style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col s12 m8 offset-m2">
+			<div class="FieldName" i18n>
+				Body
+			</div>
+			<div style="width: 100%">
+				<p-editor [ngModel]="model.Event.SettingsObject.Settings.MessageBodyTemplate"
+						  (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();"
+						  [style]="{'height':'150px'}"
+						  #ed2>
+				</p-editor>
+			</div>
+		</div>
+	</div>
+	}
+
+	}
+
+	}
+
+	<div class="row">
+		<div class="col s12">&nbsp;</div>
+	</div>
+	<div class="row">
+		<div class="col s12">
+			<div class="errorMessage">{{errorMessage}}</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col s12">
+			<div class="governance-value-warning">{{warningMessage}}</div>
+		</div>
+	</div>
+
+	@if (!isLoading) {
+	<div class="row" style="padding-top: 8px;">
+		<div class="col s12">
+			<div>
+				<button type="button"
+						igButton
+						class="ig-button-secondary"
+						margin
+						i18n-label
+						label="Cancel"
+						(click)="close()"></button>
+				<button type="button"
+						class="ig-button-primary"
+						igButton
+						label="Next"
+						i18n-label
+						(click)="save()"
+						[disabled]="!isValid || isLoading"></button>
+			</div>
+		</div>
+	</div>
+	}
+
+</div>

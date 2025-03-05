@@ -27,7 +27,7 @@ from	AssetDetail
 where   ID = @id";
 
 			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				model = (
 					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
@@ -58,7 +58,7 @@ from	AssetDetail
 where   [ObjectID] = @oid and [Object] = @o";
 
 			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect((true)))
 			{
 				model = (
 					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
@@ -100,7 +100,7 @@ where   [ObjectID] = @oid and [Object] = @o";
 
 			var model = new AssetPathResults();
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect((true)))
 			{
 				var countSql = "select count(1) from Asset where AssetTypeId = @assetTypeId";
 				if (includeTotal)

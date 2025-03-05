@@ -221,8 +221,8 @@ namespace d360.web
 
 					return new DapperConnectionProvider
 					{
-						ReadOnlyConnectionString = $"{connectionString}",//ApplicationIntent = ReadOnly",
-						ReadWriteConnectionString = $"{connectionString}",//ApplicationIntent=ReadWrite",
+						ReadOnlyConnectionString = $"{connectionString};ApplicationIntent=ReadOnly",
+						ReadWriteConnectionString = $"{connectionString};ApplicationIntent=ReadWrite",
 						CommandTimeOut = Config.GetValue<string>("DbConnectionTimeout"),
 
 					};

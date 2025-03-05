@@ -1025,6 +1025,18 @@ from	CompanyResource CR
 				return response;
 			}
 
+			if (!string.IsNullOrEmpty(newPassword))
+			{
+				if (string.IsNullOrEmpty(newPassword)
+					|| newPassword.Length < 7 || newPassword.Length > 25
+					|| !newPassword.Any(char.IsUpper) || !newPassword.Any(char.IsLower)
+					|| !newPassword.Any(char.IsDigit))
+				{
+					response = new(400, Error.PasswordRule);
+					return response;
+				}
+			}
+
 			var newPasswordHash = PasswordHelper.HashPassword(newPassword);
 			var currentPasswordHash =  PasswordHelper.HashPassword(currentPassword);
 
@@ -1332,5 +1344,299 @@ end";
 			return response;
 		}
 		#endregion
+
+		#region "Theme"
+		public async Task<Theme> ReadThemeAsync(int companyId, string name)
+		{
+			string sql = "select * from CompanyTheme where CompanyId in (@companyId,0) and Name = @name";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				return (await connection.QueryAsync<Theme>(sql, new { companyId,name })).ToList().FirstOrDefault();
+			}
+		}
+
+		public async Task<Theme> ReadThemeUidAsync(int companyId, Guid uid)
+		{
+			string sql = "select * from CompanyTheme where CompanyId in (@companyId,0) and Uid = @uid";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				return (await connection.QueryAsync<Theme>(sql, new { companyId, uid })).ToList().FirstOrDefault();
+			}
+		}
+
+		public async Task<List<Theme>> ReadThemesAsync(int companyId)
+		{
+			string Companythemefields = @"ID,Uid,Name,HeaderLogoExtension,
+										  HomePageBackgroundExtension,BrowserIconExtension,
+										  BackColor,BreadcrumbLinkColor,ButtonBackColor,
+										  PrimaryButtonBackColor,HeaderBackColor,NavBarBackColor,
+										  NavBarBackSelectedColor,TabLinkColor,TableHeaderBackColor,
+										  TableRowBackSelectedColor,CustomCss,CreatedBy,
+										  CreatedOn,UpdatedBy,UpdatedOn,Locked";
+			string sql = @$"declare @CurrentThemeID int = 0;
+
+						   select @CurrentThemeID = ID
+						   from CompanyTheme
+						   where CompanyId = @companyId and IsCurrent =1;
+
+						   if (@CurrentThemeID = 0)
+						   begin
+							   select @CurrentThemeID = ID
+							   from CompanyTheme
+							   where CompanyId = 0;
+						   end
+
+						   select case when Id = @CurrentThemeID then 1 else 0 end IsCurrent,
+						   {Companythemefields}
+						   from CompanyTheme 
+						   where CompanyId in (0,@companyId) 
+						   order by name,id";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				return (await connection.QueryAsync<Theme>(sql, new { companyId})).ToList();
+			}
+		}
+
+
+		public async Task<Theme> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser)
+		{
+			string sql = @"					
+					set nocount on;
+					declare @userThemeId int;
+					declare @themeid int = null;
+					select top 1 @userThemeId = ThemeID from CompanyResourceTheme where CompanyId in (@companyId,0) and ResourceID = @CurrentUser;
+					if @userThemeId is not null
+					begin
+						select @themeid = ID from CompanyTheme where CompanyId in (@companyId,0) and ID = @userThemeId;
+					end
+					else
+					begin
+						select top 1 @themeid = ID from CompanyTheme where CompanyId = @companyId and IsCurrent = 1
+					end
+					
+					if (@themeid is null)
+					begin
+						select top 1 * from CompanyTheme where CompanyId = 0;
+					end
+					else
+					begin
+						select top 1 * from CompanyTheme where CompanyId = @companyId and ID = @themeid;
+					end
+
+";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				return (await connection.QueryAsync<Theme>(sql, new { companyId, CurrentUser })).FirstOrDefault();
+			}
+		}
+
+		public async Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser)
+		{
+			string sql = @"					
+					set nocount on;
+					declare @userThemeId int;
+					declare @themeid int = null;
+					select top 1 @userThemeId = ThemeID from CompanyResourceTheme where CompanyId = @companyId and ResourceID = @CurrentUser;
+					if @userThemeId is not null
+					begin
+						select @themeid = ID from CompanyTheme where CompanyId = @companyId and ID = @userThemeId;
+					end
+					else
+					begin
+						select top 1 @themeid = ID from CompanyTheme where CompanyId = @companyId and IsCurrent = 1;
+					end
+
+					if (@themeid is null)
+					begin
+						select top 1 @themeid = ID from CompanyTheme where CompanyId = 0;
+					end
+					
+					if (@themeid is null)
+					begin
+						select '' CustomCss;
+					end
+					else
+					begin
+						select CustomCss where CompanyId in (0, @companyId) and ID = @themeid;
+					end
+
+";
+			using (var connection = (SqlConnection)Connect(true))
+			{
+				return (await connection.QueryAsync<string>(sql, new { companyId, CurrentUser })).FirstOrDefault();
+			}
+		}
+		public async Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false)
+		{
+			var userErrorMessages = new List<string>();
+
+			var response = new RepositoryResponse<bool>(false, 0, false, "");
+
+			if (userErrorMessages.Count > 0)
+			{
+				response.Message = string.Join("; ", userErrorMessages);
+				response.StatusCode = 400;
+
+				return response;
+			}
+
+			var sql = @$"
+declare @resetcurrent bit = try_cast(@isresetCurrent as bit),
+@recIsCurrent bit = try_cast(@IsCurrent as bit);
+
+if exists(select 1 from [CompanyTheme] where CompanyID = @companyId and Name = @Name) 
+begin 
+	update [CompanyTheme] 
+	set IsCurrent				= @IsCurrent,
+	HeaderLogoExtension	 		= @HeaderLogoExtension,
+	HomePageBackgroundExtension	= @HomePageBackgroundExtension,
+	BrowserIconExtension	 	= @BrowserIconExtension,
+	BackColor	= @BackColor,
+	BreadcrumbLinkColor	 		= @BreadcrumbLinkColor,
+	ButtonBackColor	 			= @ButtonBackColor,
+	PrimaryButtonBackColor	 	= @PrimaryButtonBackColor,
+	HeaderBackColor	 			= @HeaderBackColor,
+	NavBarBackColor	 			= @NavBarBackColor,
+	NavBarBackSelectedColor	 	= @NavBarBackSelectedColor,
+	TabLinkColor	 			= @TabLinkColor,
+	TableHeaderBackColor	 	= @TableHeaderBackColor,
+	TableRowBackSelectedColor	= @TableRowBackSelectedColor,
+	CustomCss	 = @CustomCss,
+	UpdatedBy	 = COALESCE(@UpdatedBy,@CurrentUser),
+	UpdatedOn	 = COALESCE(@UpdatedOn,getutcdate()),
+	Locked	 	= @Locked
+	where CompanyID = @companyId and Name = @Name 
+
+	if (@resetcurrent = 1 and @recIsCurrent = 1)
+	begin
+		update [CompanyTheme] set IsCurrent = 0 where CompanyID = @companyId and Uid <> @Uid;
+	end
+end 
+else 
+begin 
+	insert [CompanyTheme] (CompanyID,Name,IsCurrent,HeaderLogoExtension,
+				HomePageBackgroundExtension,BrowserIconExtension,
+				BackColor,BreadcrumbLinkColor,
+				ButtonBackColor,PrimaryButtonBackColor,
+				HeaderBackColor,NavBarBackColor,
+				NavBarBackSelectedColor,TabLinkColor,
+				TableHeaderBackColor,TableRowBackSelectedColor,
+				CustomCss,
+				CreatedBy,CreatedOn,
+				UpdatedBy,UpdatedOn,
+				Locked
+				) 
+	values (@companyId, @Name,@IsCurrent,@HeaderLogoExtension,
+				@HomePageBackgroundExtension,@BrowserIconExtension,
+				@BackColor,@BreadcrumbLinkColor,
+				@ButtonBackColor,@PrimaryButtonBackColor,
+				@HeaderBackColor,@NavBarBackColor,
+				@NavBarBackSelectedColor,@TabLinkColor,
+				@TableHeaderBackColor,@TableRowBackSelectedColor,
+				@CustomCss,
+				COALESCE(@CreatedBy,@CurrentUser),COALESCE(@CreatedOn,getutcdate()),
+				COALESCE(@UpdatedBy,@CurrentUser),COALESCE(@UpdatedOn,getutcdate()),
+				@Locked) 
+end";
+
+			using (var connection = (SqlConnection)Connect())
+			{
+				await connection.ExecuteAsync(sql, new { companyId, CurrentUser,
+					theme.Name,
+					theme.IsCurrent,
+					theme.HeaderLogoExtension,
+					theme.HomePageBackgroundExtension,
+					theme.BrowserIconExtension,
+					theme.BackColor,
+					theme.BreadcrumbLinkColor,
+					theme.ButtonBackColor,
+					theme.PrimaryButtonBackColor,
+					theme.HeaderBackColor,
+					theme.NavBarBackColor,
+					theme.NavBarBackSelectedColor,
+					theme.TabLinkColor,
+					theme.TableHeaderBackColor,
+					theme.TableRowBackSelectedColor,
+					theme.CustomCss,
+					theme.CreatedBy,
+					theme.CreatedOn,
+					theme.UpdatedBy,
+					theme.UpdatedOn,
+					theme.Locked,
+					theme.Uid,
+					isresetCurrent });
+
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemoveThemeAsync(int companyId, Guid uid)
+		{
+			var userErrorMessages = new List<string>();
+
+			var response = new RepositoryResponse<bool>(false, 0, false, "");
+
+			if (userErrorMessages.Count > 0)
+			{
+				response.Message = string.Join("; ", userErrorMessages);
+				response.StatusCode = 400;
+
+				return response;
+			}
+
+			var sql = @"delete ct 
+						from [CompanyTheme] ct 
+						where CompanyID = @companyId and Uid= @uid and CompanyID > 0;";
+
+			using (var connection = (SqlConnection)Connect())
+			{
+				await connection.ExecuteAsync(sql, new { companyId, uid });
+
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> MarkThemeCurrentAsync(int companyId, Guid uid)
+		{
+			var userErrorMessages = new List<string>();
+
+			var response = new RepositoryResponse<bool>(false, 0, false, "");
+
+			if (userErrorMessages.Count > 0)
+			{
+				response.Message = string.Join("; ", userErrorMessages);
+				response.StatusCode = 400;
+
+				return response;
+			}
+
+			var sql = @$"
+			begin
+				update [CompanyTheme] set IsCurrent = 1 where CompanyID = @companyId and Uid = @Uid;
+				update [CompanyTheme] set IsCurrent = 0 where CompanyID = @companyId and Uid <> @Uid;
+			end			";
+
+			using (var connection = (SqlConnection)Connect())
+			{
+				await connection.ExecuteAsync(sql, new { companyId, uid });
+
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+
+			return response;
+		}
+
+		#endregion
+
 	}
 }

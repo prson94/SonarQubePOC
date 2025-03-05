@@ -26,6 +26,8 @@
 	<include file="scripts/Table.dbo.CompanyResource.xml"/>
 	<include file="scripts/Table.dbo.CompanyResourceLog.xml"/>
 	<include file="scripts/Table.dbo.CompanySetting.xml"/>
+	<include file="scripts/Table.dbo.CompanyTheme.xml"/>
+	<include file="scripts/Table.dbo.CompanyResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.EnvironmentTemplate.xml"/>
 	<include file="scripts/Table.dbo.OpenIdRequest.xml"/>
     <include file="scripts/Table.dbo.ClaimMapping.xml"/>
