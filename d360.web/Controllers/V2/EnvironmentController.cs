@@ -1454,7 +1454,6 @@ select	r.uid as ResourceUid,
 				{
 					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
 					{
-						themeUid = Guid.Empty;
 						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorOnGet, Error.InvalidUidParameter);
 					}
 				}
