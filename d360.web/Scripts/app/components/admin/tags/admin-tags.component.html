@@ -107,7 +107,10 @@
                                     <td>{{item.UseCount}}</td>
                                     <td>
                                         <div class="RowTools">
-                                            <span (click)="selectSingleItem(null,item)" class=" ig-button-icon fa fa-info-circle"></span>
+                                            <span (click)="selectSingleItem(null,item)"
+                                            class="ig-button-icon fa fa-info-circle info-icon"
+                                            [ngClass]="{'active': item.isSelected}"
+                                            ></span>
                                         </div>
                                     </td>
                                     <td style="padding-left:0" #assetGridTools>

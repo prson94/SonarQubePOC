@@ -34,6 +34,7 @@ import { TagTypesViewModel } from './tag-types/tag-types.model';
 @Component({
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
+    styleUrl: 'admin-tags.component.less',
     providers: [TagService]
 })
 
@@ -304,10 +305,16 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+        //set isSelected to true to current click tag row
+        this.tags.map((tag) => tag.isSelected = tag.uid == item.uid);
+
 		if (event === null) {
 			this.itemToEdit = item;
 			return;
 		}
+        
+        
+        
 
         this.editPopupTitle = $localize`Edit Tag`;
 
