@@ -12,7 +12,7 @@ import { TagType } from '../../../../models/tag.model';
 })
 export class TagTypesPanelComponent {
 
-    @Output('onTagTypeSelected') onTagTypeSelected = new EventEmitter<TagTypesViewModel>();
+    @Output('onTagTypeSelected') onTagTypeSelected = new EventEmitter<TagTypesViewModel | string>();
     @ViewChild('searchinput', { static: true }) searchInput: SearchFieldComponent;
     
     tagTypes: TagTypesViewModel[] = [];
@@ -63,7 +63,6 @@ export class TagTypesPanelComponent {
         const { item } = formData;
         if (this.formSubmitAction === 'add') {
             this.ts.addNewTagType(item.Value).subscribe((res) => {
-
                 this.tagTypes = [{ uid: res.uid, Value: res.Value }, ...this.tagTypes];
                 this.showEditor = false;
                 this.onTagTypeSelected.emit({...res});
@@ -71,12 +70,17 @@ export class TagTypesPanelComponent {
             return;
         }
         if (this.formSubmitAction === 'edit') {
-            this.ts.updateTagType(item.Value, this.selectedTag.uid).subscribe(() => {
-                const index = this.tagTypes.findIndex((tag) => tag.uid === this.selectedTag.uid);
-                this.tagTypes[index].Value = item.Value;
-                this.showEditor = false;
+            const index = this.tagTypes.findIndex((tag) => tag.uid === this.selectedTag.uid);
+            this.ts.updateTagType(item.Value, this.selectedTag.uid).subscribe((res) => {
+                if (res.uid) {
+                    this.tagTypes[index].Value = item.Value;
+                    this.onTagTypeSelected.emit({...res});
+                    this.selectedTag = res;
+                    this.showEditor = false;
+                }
             });
-            this.onTagTypeSelected.emit({ uid: this.selectedTag.uid, Value: item.Value });
+            this.selectedTag = null;
+            this.showEditor = false;
             return;
         }
 

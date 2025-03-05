@@ -772,7 +772,7 @@ namespace d360.web.Controllers.V2
 			if (response.IsSuccess)
 			{
 				var responseModel = await Catalog.ReadTagTypeAsync(tagTypeId);
-				return Ok(responseModel);
+				return Ok(responseModel.Data);
 			}
 			else
 			{
