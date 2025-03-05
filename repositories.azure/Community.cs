@@ -5,8 +5,6 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using DocumentFormat.OpenXml.Office.CustomXsn;
-using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
 using System.Data;
