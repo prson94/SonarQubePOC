@@ -230,7 +230,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrEmpty(value))
+			if (value != null)
 			{
 				bool bValue;
 				if (bool.TryParse(value, out bValue))
@@ -251,7 +251,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != null)
 			{
 				DateTime dValue;
 				if (DateTime.TryParse(value, out dValue))
@@ -272,7 +272,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != null)
 			{
 				DateTime dValue;
 				if (DateTime.TryParse(value, out dValue))
@@ -294,7 +294,7 @@ namespace d360.core
 			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != null)
 			{
 				decimal dValue;
 				if (decimal.TryParse(value, out dValue))
@@ -359,7 +359,7 @@ namespace d360.core
 		{
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != "")
 			{
 				if (!allowMultiple && value.Split(',').Length > 1)
 				{
@@ -376,7 +376,7 @@ namespace d360.core
 			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != null)
 			{
 				long dValue;
 				if (long.TryParse(value, out dValue))
@@ -421,7 +421,7 @@ namespace d360.core
 			string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 			FieldValidationResult result = new();
 
-			if (!string.IsNullOrWhiteSpace(value))
+			if (value != "")
 			{
 				if (length.HasValue)
 				{
