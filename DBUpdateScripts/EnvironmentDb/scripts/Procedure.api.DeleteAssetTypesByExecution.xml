@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v6.1">
+ <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v6.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[DeleteAssetTypesByExecution]
@@ -267,18 +267,6 @@ begin
 				where	ExecutionID = @ExecutionID
 			end catch
 
-			--Remove asset path Dtl.
-			begin try
-				delete	R
-				from	AssetPathSegmentDtl R
-						inner join Asset A on A.ID = R.AssetID
-						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
-			end try
-			begin catch
-				update	api.Execution
-				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset paths Detail. '
-				where	ExecutionID = @ExecutionID
-			end catch
 			--Remove process diagram.
 			begin try
 				delete	R

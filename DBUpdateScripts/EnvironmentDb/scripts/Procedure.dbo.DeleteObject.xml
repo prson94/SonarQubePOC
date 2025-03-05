@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v7">
+ <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v7.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [dbo].[DeleteObject]
@@ -398,11 +398,6 @@ create or alter procedure [dbo].[DeleteObject]
 							inner join Asset A on A.ID = O.ID
 							inner join #types I on I.ID = A.AssetTypeID;
 
-				  delete	O
-				  from		dbo.AssetPathSegmentDtl O
-							inner join Asset A on A.ID = O.AssetID
-							inner join #types I on I.ID = A.AssetTypeID;
-
 				delete	T
 				from	[metrics].[ScoreItem] T
 						inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
@@ -467,10 +462,6 @@ create or alter procedure [dbo].[DeleteObject]
 				  delete	O
 				  from	dbo.AssetPath O
 						  inner join #items I on I.ID = O.ID;
-
-				  delete	O
-				  from		dbo.AssetPathSegmentDtl O
-							inner join #items I on I.ID = O.AssetID;
 
 					delete	T
 					from	[metrics].[ScoreItem] T
