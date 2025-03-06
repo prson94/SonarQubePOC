@@ -551,4 +551,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	expandPanel() {
 		this.sidePanelService.setSidePanelState({ expanded: true });
 	}
+
+    editTag(toEditTag: TagType){
+        this.selected[0] = toEditTag;
+        this.showEditor = true;
+    }
 }
