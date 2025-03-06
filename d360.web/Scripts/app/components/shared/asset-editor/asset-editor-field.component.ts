@@ -822,7 +822,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				this.hadInitialLazyLoad = true;
 				this.ref.detectChanges();
 			} else {
- 				this.initLazyList();
+				this.initLazyList();
 			}
 		}
 	}
