@@ -538,7 +538,7 @@ namespace d360.web.Controllers.V2
 
 					if (!new[] { "asc", "desc" }.Contains(value))
 					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidDirection);
+						return ReturnApiError(HttpStatusCode.BadRequest,string.Format(Error.InvalidDirection,value));
 					}
 				}
 
