@@ -1354,4 +1354,31 @@ AND		SourceID IS NULL
 	</rollback>
   </changeSet>
 
+
+  <!---->
+
+  <changeSet author="ChetanGupta" id="Data.Corrections.GOV-35429">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+declare @dt datetime = getutcdate();
+INSERT INTO dbo.TagType (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, State)
+SELECT p.Name, @dt, 0, @dt, 0, 1
+FROM dbo.NymRelation n
+INNER JOIN dbo.Predicate p ON n.PredicateID = p.ID
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.TagType tt
+    WHERE tt.Value = p.Name
+)
+GROUP BY p.Name;
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
