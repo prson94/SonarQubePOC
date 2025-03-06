@@ -89,6 +89,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 	modalSubtitle: string;
+	exportTooltip: string = 'Export to Excel';
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
@@ -204,8 +205,22 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			});
 	}
 
-	canExportRecords() {
-		return this.totalRecords <= this.maxExportRows;
+	canExportRecords(): boolean{
+		if (this.totalRecords <= 10000 || this.maxExportRows <= 10000) {
+			if (this.totalRecords <= this.maxExportRows) {
+				this.exportTooltip = 'Export to Excel';
+				return true;
+			}
+			else {
+				this.exportTooltip = 'Export not available for over ' + this.maxExportRows + ' rows';
+				return false;
+			}
+		}
+		else {
+			this.exportTooltip = 'Maximum export limit for assignment 10000 rows';
+			return false;
+		}
+		
 	}
 
 	export() {
