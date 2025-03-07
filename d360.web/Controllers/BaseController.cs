@@ -28,6 +28,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -1055,6 +1056,59 @@ namespace d360.web.Controllers
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
 										";
+
+									if(f.LookupObjectType == "Resource")
+									{
+										var assetformat = Company.Connection.Query<string>($"select DisplayFormat from assettype where uid = '{constants.CommonIdentifiers.ResourceTypeUid}'").FirstOrDefault();
+										var fieldformat = !string.IsNullOrWhiteSpace(f.LookupEditFormat) ? f.LookupEditFormat : f.LookupDisplayFormat;
+										var useFormat = !string.IsNullOrWhiteSpace(fieldformat) ? fieldformat : assetformat;
+
+										var patternFields = new List<string>();
+										var concatParts = new List<string>();
+
+										if (!string.IsNullOrWhiteSpace(useFormat))
+										{
+											var pattern = new Regex(@"\{[\d\w]+\}", RegexOptions.IgnoreCase);
+											var tokens = pattern.Matches(useFormat);
+
+											var lastPos = 0;
+											foreach (Match item in tokens)
+											{
+												if (item.Index > lastPos)
+												{
+													concatParts.Add("'" + useFormat.Substring(lastPos, item.Index - lastPos).CleanForSql() + "'");
+												}
+												var fieldToken = useFormat.Substring(item.Index + 1, item.Length - 2);
+												patternFields.Add(fieldToken.ToLower());
+												concatParts.Add("R." + fieldToken);
+												lastPos = item.Index + item.Length;
+											}
+											if (lastPos < useFormat.Length)
+											{
+												concatParts.Add("'" + useFormat.Substring(lastPos).CleanForSql() + "'");
+											}
+										}
+
+										if (!patternFields.Except(new List<string> { "firstname", "lastname", "email" }).Any())
+										{
+											var textSelect = concatParts.Count > 1 ? "CONCAT(" + string.Join(", ", concatParts) + ")" : concatParts.First();
+											itemSql = $@"select {f.ID} as FieldTypeID,
+																'{f.LookupObjectType}' as LookupObjectType,
+																{f.LookupObjectID} as LookupObjectID,
+																r.ResourceID as Value,
+																{textSelect} as Text
+															from AssetType Att 
+															inner join Asset a on att.id = a.assettypeid
+															inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+															where att.uid = '{constants.CommonIdentifiers.ResourceTypeUid}'";
+
+											countSql = $@"select count(*)
+															from AssetType Att 
+															inner join Asset a on att.id = a.assettypeid
+															inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+															where att.uid = '{constants.CommonIdentifiers.ResourceTypeUid}'";
+										}
+									}
 
 									if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
 									{
