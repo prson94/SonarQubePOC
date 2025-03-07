@@ -55,7 +55,6 @@
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetField.xml"/>
 	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
-	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSampleJson.xml"/>

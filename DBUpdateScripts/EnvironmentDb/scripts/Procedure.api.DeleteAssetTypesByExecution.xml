@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v6.2">
+ <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v7">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[DeleteAssetTypesByExecution]
@@ -200,19 +200,6 @@ begin
 			begin catch
 				update	api.Execution
 				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Audit data. '
-				where	ExecutionID = @ExecutionID
-			end catch
-
-			--Remove cross references.
-			begin try
-				delete	R
-				from	AssetCrossReference R
-						inner join Asset A on A.Uid = R.uid
-						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
-			end try
-			begin catch
-				update	api.Execution
-				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Cross Reference data. '
 				where	ExecutionID = @ExecutionID
 			end catch
 

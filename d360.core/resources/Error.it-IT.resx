@@ -2124,9 +2124,6 @@
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>ID del tipo di intersezione non valido</value>
   </data>
-  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Il modello di riferimento incrociato delle risorse non contiene campi obbligatori.</value>
-  </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>[_includeChildAssets] fornito non valido</value>
   </data>

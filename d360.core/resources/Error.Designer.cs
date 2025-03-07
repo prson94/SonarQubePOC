@@ -448,15 +448,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset cross reference model does not contain required fields..
-        /// </summary>
-        public static string AssetCrossReferenceNotHaveRequiredField {
-            get {
-                return ResourceManager.GetString("AssetCrossReferenceNotHaveRequiredField", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
         public static string AssetIdentifierDoesnotValidAsset {
