@@ -549,6 +549,8 @@ where t.uid in @uids
 						END + AST.Name AS AssetType, 
 						A.Object,
 						A.ObjectID,
+						A.CreatedOn as AssetCreatedDate,
+						grc.FirstName + ' ' + grc.LastName as AssetCreatedBy,
 						AssetTags.Tags as Tags
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
