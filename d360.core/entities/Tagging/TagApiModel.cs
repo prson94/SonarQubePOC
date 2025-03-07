@@ -40,5 +40,8 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string TagTypeValue { get; set; }
+
+		[DataMember]
+		public string? UpdatedBy { get; set; }
 	}
 }

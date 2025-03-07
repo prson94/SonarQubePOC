@@ -886,6 +886,7 @@ select	t.uid,
 		t.UpdatedOn,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
+		u.FirstName + ' ' + u.LastName as UpdatedBy,
 		tt.Uid as TagTypeUID,
 		tt.Value as TagTypeValue
 from	Tag t
