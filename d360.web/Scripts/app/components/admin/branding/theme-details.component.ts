@@ -9,10 +9,9 @@
     ViewEncapsulation
 } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
-
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: "theme-detail",
@@ -34,11 +33,10 @@ export class ThemeDetailComponent implements OnChanges {
 	labelDuplicate = $localize`Duplicate`;
 	labelCurrentTheme = $localize`Set as Current Theme`;
 
-    constructor(private brandingService: BrandingService,
-        featureFlagService?: LaunchDarklyService) {
-        if (featureFlagService.variation<boolean>(FeatureFlags.BrandingThemeCustomCss)) {
-            this.hasCustomCss = true;
-        }
+	constructor(private brandingService: BrandingService, featureFlagService: FeatureFlagsInitService) {
+		featureFlagService.getFlagValue(FeatureFlags.BrandingThemeCustomCss).then((flag) => {
+			this.hasCustomCss = flag;
+		});
     }
 
     ngOnChanges(simpleChange: SimpleChanges) {
@@ -48,7 +46,7 @@ export class ThemeDetailComponent implements OnChanges {
     loadData() {
         this.categories = [];
 		this.theme.fillDefaultValues();
-		var header = new Category($localize`Header Bar`);
+		const header = new Category($localize`Header Bar`);
         header.active = true;
         header.rows = [];
         header.rows.push(
@@ -63,7 +61,7 @@ export class ThemeDetailComponent implements OnChanges {
             { title: $localize`Button color`, value: this.theme.buttonBackColor, type: "color" }
         );
 
-		var navSidebar = new Category($localize`Navigation Sidebar`);
+		const navSidebar = new Category($localize`Navigation Sidebar`);
         navSidebar.rows.push(
             { title: $localize`Side menu color`, value: this.theme.navbarBackColor, type: "color" }
         );
@@ -71,11 +69,11 @@ export class ThemeDetailComponent implements OnChanges {
             { title: $localize`Side menu selection color`, value: this.theme.navbarBackColorSelected, type: "color" }
         );
 
-        var home = new Category($localize`Home Page`);
+		const home = new Category($localize`Home Page`);
         home.rows.push(
             { title: $localize`Background Image`, value: this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault, type: "img" });
 
-        var general = new Category($localize`General`);
+		const general = new Category($localize`General`);
         general.rows.push(
             { title: $localize`Primary Button Color`, value: this.theme.primaryButtonBackColor, type: "color" }
         );

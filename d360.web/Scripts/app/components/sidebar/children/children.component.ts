@@ -7,7 +7,6 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-children',
@@ -40,7 +39,6 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
     `,
     providers: [ObjectStatisticsService, ObjectDetailService],
 })
-
 export class ChildrenComponent extends BaseComponent implements OnInit, OnDestroy {
 
     private children: ObjectStatisticChildItem[] = [];
@@ -55,13 +53,11 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        breadcrumbService: HeaderBreadcrumbService,
-		launchDarklyService: LaunchDarklyService
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

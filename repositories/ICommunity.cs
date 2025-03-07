@@ -44,6 +44,12 @@ namespace repositories
 
 		Task<RepositoryResponse<IEnumerable<CompanyDomainSetting>>> ReadDomainSettingsByTenantAsync(int companyId);
 
+		Task<bool> ReadFeatureFlagByTenantAsync(int companyId, string slug);
+
+		Task<Dictionary<string, bool>> ReadFeatureFlagsByTenantAsync(int companyId);
+
+		Task<RepositoryResponse<IEnumerable<dynamic>>> ReadLoginsByTenantAsync(int companyId, long startId = 0);
+
 		Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null);
 		
 		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
@@ -93,6 +99,8 @@ namespace repositories
 		Task<RepositoryResponse<int>> UpdateUserAsync(Resource user);
 
 		Task<RepositoryResponse<bool>> UpdateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		Task<Dictionary<string, bool>> UpsertFeatureFlagsForTenantAsync(int companyId, string slug, bool value);
 
 		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 

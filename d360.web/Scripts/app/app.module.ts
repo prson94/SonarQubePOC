@@ -28,8 +28,8 @@ export function localeIdFactory() {
     return navigator.language;
 }
 
-export function featureFlagServiceInitializer(provider: FeatureFlagsInitService) {
-    return () => provider.initialize();
+export function featureFlagsFromCommunity(provider: FeatureFlagsInitService) {
+	return () => provider.getFlags();
 }
 
 export function settingsInitializer(provider: SettingsProviderService) {
@@ -100,13 +100,13 @@ export function localeInitializer(localeId: string) {
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
         },
-        {
-            provide: APP_INITIALIZER,
-            multi: true,
-            useFactory: featureFlagServiceInitializer,
-            deps: [FeatureFlagsInitService]
-        },
-        {
+		{
+			provide: APP_INITIALIZER,
+			multi: true,
+			useFactory: featureFlagsFromCommunity,
+			deps: [FeatureFlagsInitService]
+		},
+		{
             provide: APP_INITIALIZER,
             multi: true,
             useFactory: settingsInitializer,

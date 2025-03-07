@@ -1,0 +1,94 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.dbo.FeatureFlag-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[FeatureFlag]') and type in (N'U'))
+begin
+	create table dbo.FeatureFlag (
+		Id smallint not null,
+		Slug varchar(100) not null,
+		TrueLabel varchar(25) null,
+		FalseLabel varchar(25) null,
+		[Description] varchar(500) null,
+		IsPermanent bit not null,
+		DefaultValue bit not null,
+		constraint PK_FeatureFlag primary key clustered (Id asc)
+	)
+end
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.dbo.FeatureFlag.Data-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[FeatureFlag]') and type in (N'U'))
+begin
+	if not exists (select 1 from FeatureFlag where ID = 1)
+	begin
+		insert into FeatureFlag values (1, 'branding-custom-css', 'Allow Css', 'Prohibit Css', 'Supports the Custom CSS block on the new theme UI and API.', 1, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 2)
+	begin
+		insert into FeatureFlag values (2, 'govern-dashboarding', 'Allow', 'Prohibit', 'Determines if the dashboarding features are enabled in the API and UI.', 1, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 3)
+	begin
+		insert into FeatureFlag values (3, 'data-profiles-ui', 'Show', 'Hide', 'Expose the Data Profliing UI to user.', 1, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 4)
+	begin
+		insert into FeatureFlag values (4, 'semantic-types-api', 'Show', 'Hide', 'Controls whether semantic type endpoints will successfully execute when called. (403)', 1, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 5)
+	begin
+		insert into FeatureFlag values (5, 'semantic-types-ui', 'Show', 'Hide', 'Controls whether semantic type UI will display.', 1, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 6)
+	begin
+		insert into FeatureFlag values (6, 'tag-types', 'Use Tag Types', 'Use Single Tag Type', 'Used to control whether the new UI for tag management is displayed.', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 7)
+	begin
+		insert into FeatureFlag values (7, 'custom-synonyms', 'Enabled', 'Disabled', 'Determines if the custom synonyms feature is enabled or not. Disabling will hide custom synonym functionality from Govern.', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 8)
+	begin
+		insert into FeatureFlag values (8, 'tagging-new-administration-ui', 'Show New', 'Use Legacy', 'Enables the enhanced tag type administration UI in Govern.', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 9)
+	begin
+		insert into FeatureFlag values (9, 'tagging-value-limitation', 'Enabled', 'Disabled', 'Sets rules to limit the types of values to be used in tagging for Govern', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 10)
+	begin
+		insert into FeatureFlag values (10, 'security-policy-conversion', 'Use New', 'Use Legacy', 'Security Policy Conversion for API/UI', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 11)
+	begin
+		insert into FeatureFlag values (11, 'search-use-elastic', 'Use Elastic', 'Use SQL Full-text', 'Use Elastic to Provide General Search', 0, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 12)
+	begin
+		insert into FeatureFlag values (12, 'relationship-cardinality', 'Enabled', 'Disabled', 'Relationship Cardinality', 0, 1);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 13)
+	begin
+		insert into FeatureFlag values (13, 'contains-search-default-ui', 'Uses Contains', 'Use Starts With', 'Contains Search In UI', 0, 0);
+	end
+	if not exists (select 1 from FeatureFlag where ID = 14)
+	begin
+		insert into FeatureFlag values (14, 'asset-field-table', 'Use The Asset Field Table Logic', 'Use AssetField', 'Use Field', 0, 0);	
+	end
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

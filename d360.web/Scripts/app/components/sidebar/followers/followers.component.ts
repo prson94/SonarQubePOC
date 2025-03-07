@@ -7,7 +7,6 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetService } from '../../../services/asset.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-followers',
@@ -74,15 +73,12 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
                 </div>
             </div>
         </div>
-    `,
-    providers: [FollowerService],
+    `
 })
-
 export class FollowersComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
 
     private items: FollowDetail[] = new Array<FollowDetail>();
-
     constructor(
         private followerService: FollowerService,
 		private assetsService: AssetService,
@@ -90,13 +86,11 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         secondaryNavService: SecondaryNavService,
         private router: Router,
         breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService
+        protected settingsService: CompanySettingsService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

@@ -8,12 +8,10 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.search;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using MoreLinq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +19,6 @@ using repositories;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Entity;
 using System.Drawing;
 using System.Linq;
@@ -43,9 +40,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource,
-			IStorageProvider storageProvider,
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storageProvider)
+			: base(companyContext, securityContext)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;

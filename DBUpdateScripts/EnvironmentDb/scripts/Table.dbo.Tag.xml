@@ -62,51 +62,32 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.Tag-Indices-v1">
-    <comment>GOV-14285</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+  <changeSet author="Pappas" id="Table.dbo.Tag-Indices-v3">
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Tag_Uid_State_Value')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_Tag_Uid_State_Value ON [dbo].[Tag] ([uid], [State], [Value])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Tag_Uid_State_Value')
-BEGIN
-	DROP INDEX IX_Tag_Uid_State_Value ON [dbo].[Tag]
-END
-		]]>
-	</rollback>
-  </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Index.dbo.Tag-v2">
-    <comment>GOV-16678</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Tag_State_Value')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_Tag_State_Value ON [dbo].[Tag] ([State], [Value])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Tag_State_Value')
+
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Tag'
+		)
 BEGIN
-	DROP INDEX IX_Tag_State_Value ON [dbo].[Tag]
+	CREATE FULLTEXT INDEX ON dbo.Tag(Value) KEY INDEX PK_Tag ON fullTextCatalog
 END
-		]]>
-	</rollback>
-  </changeSet>
+
+]]>
+  </sql>
+ </changeSet>
+
 
  <changeSet author="Pappas" id="Table.dbo.Tag-Tag_AfterUpdate-v5">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">

@@ -4,7 +4,6 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -26,9 +25,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IStorageProvider storage, 
-			IQueueSource queue, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IQueueSource queue)
+			: base(companyContext, securityContext)
 		{
 			Queue = queue;
 			Storage = storage;

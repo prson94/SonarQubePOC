@@ -4,7 +4,6 @@ import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-resource-groups-definition',
@@ -17,10 +16,8 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
                     </div>
                 </div>
             </div>
-        `,
-    providers: []
+        `
 })
-
 export class MemberGroupComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     resourceUid: string;
@@ -29,12 +26,10 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService) {
+        protected settingsService: CompanySettingsService) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

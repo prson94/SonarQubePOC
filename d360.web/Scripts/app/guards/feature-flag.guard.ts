@@ -1,15 +1,15 @@
 ﻿import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../services/feature-flags.enum';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
+import { FeatureFlagsInitService } from '../services/feature-flags-init.service';
+import { FeatureFlags } from '../_shared/models/feature-flags';
 
 @Injectable({ providedIn: 'root' })
 export class FeatureFlagGuard  {
 	constructor(
 		protected router: Router,
-		protected featureFlagService: LaunchDarklyService
+		protected featureFlagService: FeatureFlagsInitService
 	) { }
 
 	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
@@ -18,22 +18,20 @@ export class FeatureFlagGuard  {
 			this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);		
 		}
 
-		if (state.url.startsWith('/reference')) {
-			if (!this.featureFlagService.variation<boolean>(FeatureFlags.ReferenceListV2Flag)) {
-				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-			}
-		}
-
 		if (state.url.endsWith('/dashboard')) {
-			if (!this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled)) {
-				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-			}
+			this.featureFlagService.getFlagValue(FeatureFlags.DashboardingEnabled).then((flag) => {
+				if (!flag) {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+				}
+			});
         }
 
 		if (state.url.endsWith('/security/roles') || state.url.endsWith('/security/policies')) {
-			if (!this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel)) {
-				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-			}
+			this.featureFlagService.getFlagValue(FeatureFlags.NewSecurityModel).then((flag) => {
+				if (!flag) {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+				}
+			});
 		}
 
 		return true;

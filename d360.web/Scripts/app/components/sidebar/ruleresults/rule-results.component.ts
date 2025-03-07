@@ -4,7 +4,6 @@ import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-rule-results',
@@ -19,7 +18,6 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
             </div>
         `
 })
-
 export class RuleResultsComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() Uid: string;
 
@@ -31,13 +29,11 @@ export class RuleResultsComponent extends BaseComponent implements OnInit, OnDes
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        breadcrumbService: HeaderBreadcrumbService,
-		launchDarklyService: LaunchDarklyService
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

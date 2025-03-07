@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
 
 interface FeatureFlag {
 	flag: string,
@@ -26,13 +26,12 @@ export class GalleryFeatureflagComponent implements OnInit {
 	public featureFlags: FeatureFlag[] = [];
 
 	constructor(
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {	}
 
 	ngOnInit(): void {
-		const allFlags = this.featureFlagService.client.allFlags();
+		const allFlags = this.featureFlagService.getFlags();
 		this.featureFlags = Object.keys(allFlags)
-			.filter((key) => key.startsWith("Govern") || key.startsWith("govern-"))
 			.reduce((obj, key) => {
 				obj.push({
 					flag: key,

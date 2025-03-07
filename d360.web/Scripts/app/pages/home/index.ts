@@ -1,22 +1,16 @@
 ﻿import { Component, OnDestroy, OnInit } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { Title } from "@angular/platform-browser";
-
 import { Breadcrumb } from "../../models/breadcrumb.model";
 import { DashboardModel } from "../../models/dashboard.model";
-
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
 import { SecondaryNavService } from "../../services/right-sidebar.service";
 import { WebAnalyticsService } from "../../services/web-analytics.service";
 import { DashboardService } from "../../services/dashboard.service";
-
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
-
 import { CommentType } from "../../models/social.model";
 import { CompanySettingsService } from "../../services/settings.service";
 import { CompanySettingEnum } from "../../models/settings.model";
-import { FeatureFlags } from "../../services/feature-flags.enum";
-import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 import { BaseComponent } from "../../components/shared/base.component";
 import { ActivityDetailsTile } from "./components/activity-details-tile";
 import { ActivityTile } from "./components/activity-tile";
@@ -25,6 +19,8 @@ import { DashboardModule } from "../../components/sidebar/dashboard/dashboard.mo
 import { ShortcutDisplay } from "./components/shortcut-display";
 import { UserAssignmentsModule } from "../../components/assignments/user-assignments/user-assignments.module";
 import { SearchModule } from "../../components/search/search.module";
+import { FeatureFlagsInitService } from "../../services/feature-flags-init.service";
+import { FeatureFlags } from "../../_shared/models/feature-flags";
 
 @Component({
 	selector: "home",
@@ -78,7 +74,7 @@ export class HomeIndex extends BaseComponent implements OnInit, OnDestroy {
 		secondaryNavService: SecondaryNavService,
 		private dashboardService: DashboardService,
 		protected settingsService: CompanySettingsService,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
@@ -90,7 +86,9 @@ export class HomeIndex extends BaseComponent implements OnInit, OnDestroy {
 			}
 		});
 
-		this.dashboardingEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled);
+		featureFlagService.getFlagValue(FeatureFlags.DashboardingEnabled).then((flag) => {
+			this.dashboardingEnabledFeatureFlag = flag;
+		});
 	}
 
 	ngOnInit() {

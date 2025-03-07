@@ -23,15 +23,12 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using AutoFixture;
 using d360.model.helpers.filters;
-using MediatR;
 using d360.web.Controllers;
 using d360.web.Utilities;
 using FluentAssertions;
-using LaunchDarkly.Sdk.Server;
 using Moq.Language;
 using repositories;
 using d360.core.validators;
-using d360.featureflags;
 
 namespace igx.UnitTests
 {
@@ -232,7 +229,6 @@ namespace igx.UnitTests
             mock.Setup(s => s.Company).Returns(GetCompany());
             mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
-			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
 			mock.Setup(s => s.SecurityContext).Returns(GetSecurity());
 			return mock.Object;
         }
@@ -241,14 +237,6 @@ namespace igx.UnitTests
 		{
 			var mock = new Mock<IRuntimeInfo>();
 
-			return mock.Object;
-		}
-
-		public IFeatureFlagService GetFeatureFlagService()
-		{
-			var mock = new Mock<IFeatureFlagService>();
-			mock.Setup(x => x.IsThisTrue(It.IsAny<string>(), It.IsAny<ClientUserModel>(), It.IsAny<bool>())).Returns(true);
-			//mock.Setup(x => x.IsThisTrue).Returns(true);
 			return mock.Object;
 		}
 

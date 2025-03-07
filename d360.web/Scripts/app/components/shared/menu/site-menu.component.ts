@@ -28,10 +28,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
 import { Subject } from 'rxjs';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
-
-/*global $localize*/
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -42,7 +40,6 @@ import { FeatureFlags } from "../../../services/feature-flags.enum";
     styleUrls: ['./site-menu.less'],
 
 })
-
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy, AfterContentInit {
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
@@ -81,7 +78,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
 	dashboardingEnabledFeatureFlag: boolean = true;
 	newSecurityEnabledFeatureFlag: boolean = true;
-
+	semanticTypesUi: boolean;
     constructor(
         private authenticationService: AuthenticationService,
         protected settingsService: CompanySettingsService,
@@ -89,12 +86,22 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private stateService: StateService,
         private ref: ChangeDetectorRef,
         private route: ActivatedRoute,
-        private featureFlagService: LaunchDarklyService
+        private featureFlagService: FeatureFlagsInitService
     ) {
 		super(settingsService);
 		this.calculatedNavbarTextColor = getComputedStyle(document.documentElement).getPropertyValue('--calculatedNavbarTextColor');
-		this.dashboardingEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled);
-		this.newSecurityEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel);
+
+		featureFlagService.getFlagValue(FeatureFlags.DashboardingEnabled).then((flag) => {
+			this.dashboardingEnabledFeatureFlag = flag;
+		});
+
+		featureFlagService.getFlagValue(FeatureFlags.NewSecurityModel).then((flag) => {
+			this.newSecurityEnabledFeatureFlag = flag;
+		});
+
+		featureFlagService.getFlagValue(FeatureFlags.SemanticTypesUiFlag).then((flag) => {
+			this.semanticTypesUi = flag;
+		});
     }
 
     ngAfterContentInit(): void {
@@ -210,7 +217,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
 
                 result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#Admin')); //remove admin menu it will get built later.
-                if (!this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
+                if (!this.semanticTypesUi) {
                     result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
 				}
 
@@ -234,7 +241,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             break;
                         case '#Reference':
 							menu.NavigationItems = [];
-							menu.ngUrl = this.featureFlagService.variation<boolean>(FeatureFlags.ReferenceListV2Flag) ? SiteUrlHelpers.SITE_URL_REFERENCE_V2_ROOT : SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+							menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_V2_ROOT;
                             break;
 						case '#Assignments':
 							menu.NavigationItems = [];
@@ -325,7 +332,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     getAllCounts(items, arr: any[]) {
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') !== -1) {
 			//get count for item
-			var id = findIndex(arr, function (o) {
+			const id = findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
                 currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name === items.Name
