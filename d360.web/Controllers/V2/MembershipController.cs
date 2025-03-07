@@ -85,51 +85,6 @@ namespace d360.web.Controllers.V2
 			});
 		}
 
-		List<string> validateIncomingUsers(List<UserApiModel> users)
-		{
-			List<string> errors = new List<string>();
-
-			foreach(var u in users)
-			{
-				if (!string.IsNullOrEmpty(u.Password))
-				{
-					if (u.Password.Length < 7 || u.Password.Length > 25
-					|| !u.Password.Any(char.IsUpper) || !u.Password.Any(char.IsLower)
-					|| !u.Password.Any(char.IsDigit))
-					{
-						errors.Add(Error.PasswordRule);
-					}
-
-					if (string.IsNullOrEmpty(u.FirstName))
-					{
-						errors.Add(Error.FirstNameMissing);
-					}
-
-					if (string.IsNullOrEmpty(u.LastName))
-					{
-						errors.Add(Error.LastNameMissing);
-					}
-
-					if (u.FirstName != null && u.FirstName.Length > 250)
-					{
-						errors.Add(Error.FirstNameTooLong);
-					}
-
-					if (u.LastName != null && u.LastName.Length > 250)
-					{
-						errors.Add(Error.LastNameTooLong);
-					}
-
-					if (string.IsNullOrEmpty(u.Username) || !Regex.IsMatch(u.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
-					{
-						errors.Add(Error.InvalidEmail);
-					}
-				}
-			}
-			
-			return errors;
-		}
-
 		/// <summary>
 		/// Retrieves a list of users.
 		/// </summary>
