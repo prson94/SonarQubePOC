@@ -15,10 +15,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model);
-
-		Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600);
-
 		Task CreateSemanticType();
 
 		Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid);
@@ -41,10 +37,6 @@ namespace repositories
 
 		Task ReadAssetTypeDefinition();
 
-		Task<IEnumerable<AssetCrossReferenceResult>> ReadCrossReferenceResultsAsync(Guid executionId);
-
-		Task<IEnumerable<AssetCrossReference>> ReadCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
-
 		Task ReadProfiles();
 
 		Task ReadRelationTypeDefinition();
@@ -63,15 +55,11 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
-
 		Task<RepositoryResponse<string>> RemoveSemanticType();
 
 		Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags);
 
 		Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes);
-
-		Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model);
 
 		Task<RepositoryResponse<Semantic>> UpdateSemanticType();
 

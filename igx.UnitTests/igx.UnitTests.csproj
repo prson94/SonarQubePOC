@@ -121,7 +121,6 @@
     <Compile Include="ValidatorTests\FieldValidatorTagTests.cs" />
     <Compile Include="ValidatorTests\TagValidatorTests.cs" />
     <Compile Include="ValidatorTests\FieldValidatorTests.cs" />
-    <Compile Include="V2ControllerTests\CrossReferenceControllerTest.cs" />
     <Compile Include="ValidatorTests\WorkflowValidatorTests.cs" />
     <Compile Include="WebUtilitiesTests\InternationalizationUtilitiesTest.cs" />
     <Compile Include="WorkflowCriteriaProcTests\WorkflowProcTest-ContextualFieldTests.cs" />

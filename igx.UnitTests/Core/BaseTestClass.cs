@@ -430,14 +430,6 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
-				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference { DataSource = "", ExternalID= "", FieldHash= "", Type = "", uid = Guid.NewGuid() }, 200, true, "")));
-
-			mock.Setup(x =>
-				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 201, true, "")));
-
-			mock.Setup(x =>
 				x.CreateTagAsync(It.IsAny<string>(), It.IsAny<Guid?>())
 			).Returns(Task.FromResult(new RepositoryResponse<TagApiModel>(new TagApiModel(), 200, true, "")));
 
@@ -452,10 +444,6 @@ namespace igx.UnitTests
 			mock.Setup(x =>
 				x.ReadAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
 			).Returns(Task.FromResult(new List<AssetType> { new AssetType { Name = "test" } }));
-
-			mock.Setup(x => 
-				x.ReadCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
-			).Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference> { new AssetCrossReference() }));
 
 			mock.Setup(x =>
 				x.ReadTagAsync(It.IsAny<Guid>())
@@ -487,20 +475,12 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
-				x.RemoveCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
-
-			mock.Setup(x =>
 				x.RemoveTagsAsync(It.IsAny<List<Guid>>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
 				x.RemoveTagTypesAsync(It.IsAny<List<Guid>>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
-
-			mock.Setup(x => 
-				x.UpdateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
 
 			mock.Setup(x =>
 				x.UpdateTagAsync(It.IsAny<Guid>(), It.IsAny<string>())

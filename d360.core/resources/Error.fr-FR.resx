@@ -2124,9 +2124,6 @@
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>ID du type d’intersection non valide</value>
   </data>
-  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Le modèle de référence croisée des assets ne contient pas de champs obligatoires.</value>
-  </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Valeur [_includeChildAssets] fournie non valide</value>
   </data>

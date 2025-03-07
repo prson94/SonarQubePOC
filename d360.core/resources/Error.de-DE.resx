@@ -2124,9 +2124,6 @@
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>Ungültige Überschneidungstyp-ID</value>
   </data>
-  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Asset-Querverweismodell enthält keine Pflichtfelder.</value>
-  </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Ungültige [_includeChildAssets] angegeben</value>
   </data>

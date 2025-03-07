@@ -2124,9 +2124,6 @@
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>Ongeldige snijpunttype-ID</value>
   </data>
-  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Kruisverwijzingsmodel asset bevat niet de vereiste velden.</value>
-  </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Ongeldige [_includeChildAssets] opgegeven</value>
   </data>
