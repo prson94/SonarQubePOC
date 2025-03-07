@@ -25,6 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -2537,6 +2538,7 @@ namespace d360.web.Controllers.V2
 
 				bool hasColor = false;
 				bool UseAssetDisplayValue = false;
+				var AssetDisplayTextColumn = "adv.DisplayValue";
 
 				var colorjoin = "";
 
@@ -2550,7 +2552,35 @@ namespace d360.web.Controllers.V2
 					var fieldformat = !string.IsNullOrWhiteSpace(fieldType.LookupEditFormat) ? fieldType.LookupEditFormat : fieldType.LookupDisplayFormat;
 					bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
 					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
-					if (!string.IsNullOrWhiteSpace(assetformat) && assetformat == fieldformat)
+
+					var useFormat = !string.IsNullOrWhiteSpace(fieldformat) ? fieldformat : assetformat;
+					var patternFields = new List<string>();
+					if (!string.IsNullOrWhiteSpace(useFormat))
+					{
+						var pattern = new Regex(@"\{[\d\w]+\}", RegexOptions.IgnoreCase);
+						var tokens = pattern.Matches(useFormat);
+						var concatParts = new List<string>();
+
+						var lastPos = 0;
+						foreach (Match item in tokens)
+						{
+							if (item.Index > lastPos)
+							{
+								concatParts.Add("'" + useFormat.Substring(lastPos, item.Index - lastPos).CleanForSql() + "'");
+							}
+							var fld = useFormat.Substring(item.Index + 1, item.Length - 2);
+							patternFields.Add(fld.ToLower());
+							concatParts.Add("R." + fld);
+							lastPos = item.Index + item.Length;
+						}
+						if(lastPos < useFormat.Length)
+						{
+							concatParts.Add("'" + useFormat.Substring(lastPos).CleanForSql() + "'");
+						}
+						AssetDisplayTextColumn = concatParts.Count > 1 ? "CONCAT(" + string.Join(", ", concatParts) + ")" : concatParts.First();
+					}
+
+					if (!patternFields.Except(new List<string> { "firstname", "lastname", "email" }).Any())
 					{
 						UseAssetDisplayValue = true;
 						resourceJoin = $@" inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}";
@@ -2636,7 +2666,7 @@ namespace d360.web.Controllers.V2
 					{
 						query = $@"
 								drop table if exists #tempResults
-								select adv.DisplayValue text, a.SourceID value
+								select {AssetDisplayTextColumn} text, a.SourceID value
 								into #tempResults
 								from AssetType Att 
 								inner join Asset a on a.assettypeid = att.id
