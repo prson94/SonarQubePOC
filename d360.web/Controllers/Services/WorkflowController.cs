@@ -1057,7 +1057,17 @@ namespace d360.web.Controllers.Services
 					List<string> selectColumns = new List<string>();
 					getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "Issue", "I.ID");
 
+					var tempTable = "#TempField" + issue.ID;
+					var joins = Regex.Replace(string.Join("\n", fieldJoins), @"\bField\b", tempTable);
+
 					var requestSql = $@"
+							drop table if exists {tempTable};
+
+							select *
+							into {tempTable}
+							from field
+							where issueid = @issueId;
+
 							select 
 							I.Uid,
 							casset.uid as CreatedBy, 
@@ -1072,7 +1082,7 @@ namespace d360.web.Controllers.Services
 							assocType.Class as _associatedAssetTypeClass,
 							{string.Join(",\n", selectColumns)}
 							from Issue I
-							{string.Join("\n", fieldJoins)}
+							{joins}
 							left join asset casset on casset.ObjectID = I.CreatedBy and casset.Object = 'Resource'
 							left join AssetDisplayValue advCreated on advCreated.AssetID = casset.ID
 							left join asset uasset on uasset.ObjectID = I.UpdatedBy and uasset.Object = 'Resource'
@@ -1081,6 +1091,8 @@ namespace d360.web.Controllers.Services
 							left join AssetType assocType on assocType.ID = assocAsset.AssetTypeID
 							left join AssetPath ap on ap.id = assocAsset.ID
 							where I.Id = @issueId
+
+							drop table if exists {tempTable};
 							";
 
 					var issueData = Company.Query<dynamic>(requestSql, dbArgs).ToList().FirstOrDefault();
