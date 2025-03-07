@@ -62,8 +62,24 @@
                         <th [pSortableColumn]="'AssetType'" style="width: 20%">
                             <ng-container i18n>Asset Type</ng-container>
                         </th>
-                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 20%">
                             <ng-container i18n>Tags</ng-container>
+                        </th>
+                        <th [pSortableColumn]="'AssetCreatedBy'" style="width: 20%">
+                            <ng-container i18n>Added By</ng-container>
+                            <i class="helper fa fa-question-circle"
+                               i18n-pTooltip
+                               pTooltip="The user who added the <b>{{tag.Value}}</b> tag to this asset"
+                               tooltipStyleClass="ig-tooltip ig-tooltip-medium"
+                               [escape]="false"></i>
+                        </th>
+                        <th [pSortableColumn]="'AssetCreatedDate'" style="width: 20%">
+                            <ng-container i18n>Date Added</ng-container>
+                            <i class="helper fa fa-question-circle"
+                               i18n-pTooltip
+                               pTooltip="The date on which the user added the <b>{{tag.Value}}</b> tag to this asset"
+                               tooltipStyleClass="ig-tooltip ig-tooltip-medium"
+                               [escape]="false"></i>
                         </th>
                     </tr>
                 </ng-template>
@@ -76,6 +92,8 @@
                         <td>
                             <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" [interceptLinkClick]="true"></d3s-tag-view>
                         </td>
+                        <td [innerHTML]="item.AssetCreatedBy"></td>
+                        <td [innerHTML]="item.AssetCreatedDate | date: dateFormat"></td>
                     </tr>
                 </ng-template>
                 <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
