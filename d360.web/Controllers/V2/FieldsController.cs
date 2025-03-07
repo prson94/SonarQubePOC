@@ -7,7 +7,6 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.validators;
 using d360.web.Filters;
@@ -250,7 +249,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_TAG_TYPES_ENABLED, await GetFeatureFlagUser()))
+			if (!await GetFeatureFlagValue(FlagList.TAG_TYPES_ENABLED))
 			{
 
 				foreach (FieldTypeApiEditModel field in model.Fields)

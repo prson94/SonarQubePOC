@@ -18,18 +18,16 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../services/feature-flags.enum";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-artifact-item',
-	templateUrl: './artifact-item.component.html',
-	providers: [ArtifactService, PermissionsService, SiteMenuService, DataProfileService]
+	templateUrl: './artifact-item.component.html'
 })
-
 export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
 	@Input() assetUid: string;
 
@@ -50,6 +48,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 	secondarySidePanel: string = 'detail';
 	resourceUid: string;
 
+	dataProfilingUi: boolean;
+
 	constructor(
 		private sidePanelService: SidePanelService,
 		secondaryNavService: SecondaryNavService,
@@ -62,10 +62,13 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 		private dataProfileService: DataProfileService,
 		protected settingsService: CompanySettingsService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
-		this.launchDarklyService = featureFlagService;
+
+		featureFlagService.getFlagValue(FeatureFlags.DataProfilingUiFlag ).then((flag) => {
+			this.dataProfilingUi = flag;
+		});
 	}
 
 	ngOnInit() {
@@ -117,7 +120,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + this.settingsService.CurrentResourceID;
 
 					this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-					if (this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
+					if (this.dataProfilingUi) {
 						this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
 							(r) => {
 								if (r && r.items && r.items.length > 0) {

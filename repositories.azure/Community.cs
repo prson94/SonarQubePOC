@@ -9,13 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace repositories.azure
 {
-	public class Community: ICommunity
+	public partial class Community: ICommunity
 	{
 		public string ReadWriteConnectionString { get; set; }
 		public string ReadOnlyConnectionString { get; set; }
@@ -656,6 +657,29 @@ where	u.UrlPrefix = @prefix",
 			return response;
 		}
 
+		public async Task<RepositoryResponse<IEnumerable<dynamic>>> ReadLoginsByTenantAsync(int companyId, long startId = 0)
+		{
+			RepositoryResponse<IEnumerable<dynamic>> response = new(200);
+
+			string sql = $@"
+select	top 250
+		l.Id,
+		l.[Date],
+		l.AuthenticationMethod,
+		r.Uid as ResourceUid,
+		r.FirstName + ' ' + r.LastName as ResourceFullName
+from	CompanyResourceLog l
+		inner join [Resource] r on r.ID = l.ResourceId and l.CompanyID = @companyId and l.Id > @startId
+order by l.Id asc";
+
+			using (var connection = Connect(true))
+			{
+				response.Data = await connection.QueryAsync<dynamic>(sql, new { companyId, startId });
+			}
+
+			return response;
+		}
+
 		public async Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null)
 		{
 			IEnumerable<CompanyDigestExecution> response = null;
@@ -861,55 +885,6 @@ where	c.ID = @companyId";
 			}
 
 			return response;
-		}
-
-		public async Task<ClientUserModel> ReadUserFeatureFlagContext(int companyId, int userId) 
-		{
-			ClientUserModel model = null;
-
-			using (var connection = Connect(true))
-			{
-				if (userId == 0)
-				{
-					model = await connection.QueryFirstAsync<ClientUserModel>(@"
-select	C.ID as ClientId,
-		C.PublicID as TenantId,
-		C.Name as TenantName,
-		E.Id as CompanyId,
-		0 as ResourceId,
-		'no-reply@data3sixty.com' as Email,
-		'Govern' as FirstName,
-		'Service' as LastName,
-		cast(0 as bit) as IsAdministrator
-from	Company E
-		inner join Client C on C.ID = E.ClientID and E.ID = @companyId",
-						new { companyId, userId }
-					);
-				}
-				else 
-				{
-					model = await connection.QueryFirstAsync<ClientUserModel>(
-						@"
-select	C.ID as ClientId,
-		C.PublicID as TenantId,
-		C.Name as TenantName,
-		CR.CompanyId,
-		CR.ResourceId,
-		R.Email,
-		R.FirstName,
-		R.LastName,
-		R.uid as UserId,
-		CR.IsAdministrator
-from	CompanyResource CR
-		inner join [Resource] R on R.ID = CR.ResourceID and CR.CompanyID = @companyId and CR.ResourceID = @userId
-		inner join Company E on E.ID = CR.CompanyID
-		inner join Client C on C.ID = E.ClientID",
-						new { companyId, userId }
-					);
-				}
-			}
-
-			return model;
 		}
 
 		public async Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId)

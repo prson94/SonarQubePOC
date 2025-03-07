@@ -67,6 +67,8 @@ export class SearchFullResult extends SearchResult {
 }
 
 export interface SearchAggregation {
+	Uid: string;
+	Class: string;
     Name: string;
     DisplayName: string;
     ResultCount: number;
@@ -82,9 +84,15 @@ export interface SearchTiming {
     Augment: number;
 }
 
+export class SearchModel {
+	Aggregations: SearchAggregation[];
+	Total: number;
+}
+
 export class SearchResults {
     Results: SearchFullResult[];
-    Aggregations: SearchAggregations;
+	Aggregations: SearchAggregations;
+	ResultAggregations: SearchAggregation[];
     Matches: number;
     ElapsedMS: SearchTiming;
 }
@@ -133,7 +141,8 @@ export class SearchFieldFilter {
 export class SearchQuery {
     Term: string;
     Size: number;
-    From: number;
+	From: number;
+	includeAggregations: boolean;
     AggregationFilters: SearchAggregationFilter[];
     FieldFilters: SearchFieldFilter[];
     Aggregations: string[];

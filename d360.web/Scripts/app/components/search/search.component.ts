@@ -35,11 +35,12 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
     selector: 'd3s-search',
     templateUrl: './search.component.html',
-    providers: [DataProfileService],
     styleUrls: ["search.component.less"],
 })
 
@@ -115,8 +116,11 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     @ViewChild("catagoryFilter", { static: false }) catagoryFilter: CheckTree;
     @ViewChild("advancedFilter", { static: false }) advancedFilter: AdvancedFilteringComponent;
 
+	useElasticSearch: boolean = true;
+
     constructor(private route: ActivatedRoute,
-        protected titleService: Title,
+		protected titleService: Title,
+		protected featureFlagService: FeatureFlagsInitService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected secondaryNavService: SecondaryNavService,
         public searchStateService: SearchStateService,
@@ -128,6 +132,10 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
+
+		this.featureFlagService.getFlagValue(FeatureFlags.UseElasticSearch).then((flag) => {
+			this.useElasticSearch = flag;
+		});
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);

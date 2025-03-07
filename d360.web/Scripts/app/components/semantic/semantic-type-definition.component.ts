@@ -11,21 +11,18 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Subscription } from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../services/side-panel.service';
 import { UsageAction } from '../../models/web-analytics-activity.model';
-
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
 
 @Component({
     selector: 'semantic-definition',
     templateUrl: './semantic-type-definition.component.html',
     providers: [DataProfileService]
 })
-
-
 export class SemanticDefinitionComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
    
     private semanticType: SemanticType;
@@ -55,7 +52,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private sidePanelService: SidePanelService,
-        featureFlagService: LaunchDarklyService,
+        featureFlagService: FeatureFlagsInitService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
     ) {
@@ -116,7 +113,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
 
             this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), this.semanticType.name);
 
-            var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
+            const breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
                 const disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";

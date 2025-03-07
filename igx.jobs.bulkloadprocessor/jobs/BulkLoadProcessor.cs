@@ -3,7 +3,6 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.extensions.info;
-using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.company;
@@ -34,12 +33,10 @@ namespace igx.jobs.bulkloadprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 		readonly IStorageProvider Storage;
-		readonly IFeatureFlagService FeatureFlags;
 
-		public BulkLoadProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(community, config)
+		public BulkLoadProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage) : base(community, config)
 		{
 			Cache = cache;
-			FeatureFlags = ff;
 			Mail = mail;
 			Queue = queue;
 			Storage = storage;
@@ -72,9 +69,9 @@ namespace igx.jobs.bulkloadprocessor
 					};
 					using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo {  ConnectionString = _c.GetConnectionString() }))
 					{
-						var assetRepository = new AssetRepository(company, context,  Queue, Storage, FeatureFlags);
-						var tagRepository = new TagRepository(company, context, FeatureFlags, Queue);
-						var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage, FeatureFlags);
+						var assetRepository = new AssetRepository(company, context,  Queue, Storage);
+						var tagRepository = new TagRepository(company, context, Queue);
+						var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage);
 
 						try
 						{

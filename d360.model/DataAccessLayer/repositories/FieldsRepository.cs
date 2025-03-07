@@ -7,7 +7,6 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -31,19 +30,16 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-
 		public FieldsRepository(
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
-			IStorageProvider storageProvider, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storageProvider)
+			: base(companyContext, securityContext)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
 		}
-
 		public async Task<Tuple<FieldTypesApiViewModel, WorkHttpStatus>> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			Guid? actionTypeUid = null;

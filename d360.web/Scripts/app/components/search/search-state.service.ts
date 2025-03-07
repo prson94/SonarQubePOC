@@ -291,7 +291,11 @@ export class SearchStateService extends BaseObservableService {
                 }))
             )
         ).subscribe(
-            (res) => {
+			(res) => {
+
+				const total = res.Aggregations.category.reduce((acc, curr) => acc + curr.ResultCount, 0);
+				this._resultCount.next(total);
+
                 const filterTree = this.buildTree(res.Aggregations.category.map((val) => {
                     return {
                         "key": val.Name,
@@ -342,7 +346,7 @@ export class SearchStateService extends BaseObservableService {
         ).subscribe(
 			(res) => {
 				const pageNumber = (this._query.From ?? 0) / (this._query.Size ?? 25);
-                this._resultCount.next(res.Matches);
+                //this._resultCount.next(res.Matches);
                 this._pageNumber.next(pageNumber);
                 this._results.next(res.Results);
                 this._loading.next(false);

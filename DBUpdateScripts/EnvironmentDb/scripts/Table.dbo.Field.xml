@@ -171,16 +171,19 @@ END
   </sql>
  </changeSet> 
 
- <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterUpsert-v20">
+ <changeSet author="Pappas" id="Indices.dbo.Field-v6">
   <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Field_AfterUpsert]
+<![CDATA[
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Field'
+		)
+BEGIN
+	CREATE FULLTEXT INDEX ON dbo.Field(Value, FormattedValue) KEY INDEX PK_Field ON fullTextCatalog
+END
+]]>
   </sql>
  </changeSet>
   
- <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterDelete-v7">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Field_AfterDelete]  
-  </sql>
- </changeSet>
-
 </databaseChangeLog>

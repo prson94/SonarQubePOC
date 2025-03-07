@@ -1,22 +1,18 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from "rxjs";
-
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../../services/feature-flags.enum';
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-ownership',
 	template: `<owner-list *ngIf="newSecurityEnabledFeatureFlag" [assetUid]="uid"></owner-list>
-    <d3s-people-responsibilities-tile *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="uid"></d3s-people-responsibilities-tile>`,
-	providers: [
-	]
+    <d3s-people-responsibilities-tile *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="uid"></d3s-people-responsibilities-tile>`
 })
-
 export class OwnershipComponent extends BaseComponent implements OnInit {
 	destroySubject$: Subject<void> = new Subject();
 
@@ -27,13 +23,15 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService
+		featureFlagService: FeatureFlagsInitService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
-		this.newSecurityEnabledFeatureFlag = this.launchDarklyService.variation<boolean>(FeatureFlags.NewSecurityModel);
+
+		featureFlagService.getFlagValue(FeatureFlags.NewSecurityModel).then((flag) => {
+			this.newSecurityEnabledFeatureFlag = flag;
+		});
 	}
 
 	ngOnInit() {

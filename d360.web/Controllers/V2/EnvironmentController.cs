@@ -4,11 +4,11 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Usage;
+using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -61,14 +61,12 @@ namespace d360.web.Controllers.V2
 
 		private bool IsCustomCssEnabled {
 			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, ffUser);
+				return GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS).Result;
 			}
 		}
 		private bool IsDashboardingEnabled {
 			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, ffUser, true);
+				return GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED).Result;
 			}
 		}
 
@@ -489,34 +487,18 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// Retrieves environment licensing info. 
-		/// Infogix users are excluded from user counts.
+		/// Retrieves a list of feature flags for this environemnt.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>An HTTP status code and message.</returns>
 		[
 			HttpGet,
-			Route("featureflaginfo"),
-			SwaggerConsumes("application/json"),
+			Route("feature-flags"),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetFeatureFlagInfo()
+		public async Task<IHttpActionResult> GetFeatureFlagsForTenant()
 		{
-			var userModel = await GetFeatureFlagUser();
-			var user = new FeatureFlagUser
-			{
-				key = userModel.Key,
-				anonymous = false,
-				firstName = userModel.FirstName,
-				lastName = userModel.LastName,
-				email = userModel.Email,
-				custom = new Dictionary<string, string> {
-						{ "tenantId", userModel.TenantId.ToString() },
-						{ "tenantName", userModel.TenantName }
-					}
-			};
-				
-			var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
-			return Ok(new { clientId = ClientId, user });
+			var response = await GetFeatureFlags();
+			return Ok(response);
 		}
 
 		/// <summary>

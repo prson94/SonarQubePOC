@@ -32,8 +32,8 @@ import { Group } from '../../../models/group.model';
 import { StringConstants } from '../../../static/string-constants';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { mergeMap } from "rxjs/operators";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../../services/feature-flags.enum';
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'ig-asset-detail',
@@ -44,8 +44,6 @@ import { FeatureFlags } from '../../../services/feature-flags.enum';
         "(document:click)": "clickedOutside($event)",
     },
 })
-
-
 export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
@@ -121,10 +119,13 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         private groupService: GroupService,
         private linkClickInterceptor: LinkClickInterceptor,
 		private authService: AuthenticationService,
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
         private cdRef: ChangeDetectorRef) {
 		this.authService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
-		this.newSecurityEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel);
+
+		featureFlagService.getFlagValue(FeatureFlags.NewSecurityModel).then((flag) => {
+			this.newSecurityEnabledFeatureFlag = flag;
+		});
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

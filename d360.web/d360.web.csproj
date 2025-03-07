@@ -476,6 +476,8 @@
     <Compile Include="Models\Usage\UsageBrowser.cs" />
     <Compile Include="Models\Usage\UsageEntry.cs" />
     <Compile Include="Models\Usage\UsageEntryDetail.cs" />
+    <Compile Include="Services\CommunityFeatureFlagService.cs" />
+    <Compile Include="Services\FlagList.cs" />
     <Compile Include="Utilities\IRuntimeInfo.cs" />
     <Compile Include="Handlers\Exceptions\IWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\NotFoundWebApi2ExceptionHandler.cs" />
@@ -1016,6 +1018,7 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-board.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\comment-item.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-tag-input.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\models\feature-flags.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
@@ -1857,7 +1860,6 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\feature-flags-init.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\feature-flags.enum.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fieldsObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\forceNoReuseStrategy.ts" />
@@ -2505,10 +2507,6 @@
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\d360.featureflags\d360.featureflags.csproj">
-      <Project>{20cca898-62dd-4ff1-8126-e65065e830e3}</Project>
-      <Name>d360.featureflags</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>

@@ -7,11 +7,11 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.utils.excel;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
+using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -108,7 +108,7 @@ namespace d360.web.Controllers
 
 		IRuntimeInfo RuntimeInfo { get; set; }
 
-		IFeatureFlagService FeatureFlags { get; set; }
+		CommunityFeatureFlagService CommunityFlags { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
@@ -129,7 +129,7 @@ namespace d360.web.Controllers
 
 		public IThemeRepository ThemeRepository { get; set; }
 
-		public IFeatureFlagService FeatureFlags { get; set; }
+		public CommunityFeatureFlagService CommunityFlags { get; set; }
 
 		public IRuntimeInfo RuntimeInfo { get; set; }
 
@@ -138,13 +138,13 @@ namespace d360.web.Controllers
 		public CoreComponentSet(
 			ICachingProvider cache,
 			ICommunity community,
+			CommunityFeatureFlagService communityFlags,
 			ICompanyContext company,
 			ISecurityContextProvider securityContext,
 			IEnumerable<ICatalog> catalogs,
 			ILogger log,
 			IMailProvider mail,
 			IThemeRepository themeRepository,
-			IFeatureFlagService ff,
 			IRuntimeInfo runtimeInfo,
 			IWorkspaces workspace
 			)
@@ -152,8 +152,8 @@ namespace d360.web.Controllers
 			Cache = cache;
 			Company = company;
 			Community = community;
+			CommunityFlags = communityFlags;
 			Catalogs = catalogs;
-			FeatureFlags = ff;
 			Log = log;
 			Mail = mail;
 			ThemeRepository = themeRepository;
@@ -165,10 +165,10 @@ namespace d360.web.Controllers
 
 	public class BaseApiController : ApiController
 	{
-		internal IFeatureFlagService FeatureFlags { get; set; }
 		internal ICatalog Catalog { get; set; }
 		internal ICompanyContext Company;
 		internal ICommunity Community;
+		private CommunityFeatureFlagService CommunityFlags;
 		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
 		internal IWorkspaces Workspace;
@@ -206,50 +206,25 @@ namespace d360.web.Controllers
 
 		public BaseApiController(ICoreComponentSet set)
 		{
-			/*Future Use:
-		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
-
-		private ICatalog Catalog { 
-			get 
-			{ 
-				return UseCatalogMicroservice ? 
-					Catalogs.Single(c => c.Platform  == Platform.Dis) :
-					Catalogs.Single(c => c.Platform == Platform.Azure);
-			}
-		}			 
-			 */
 			Catalog = set.Catalogs.Single(c => c.Platform == Platform.Azure);
 			Company = set.Company;
 			Community = set.Community;
+			CommunityFlags = set.CommunityFlags;
 			Log = set.Log;
 			RuntimeInfo = set.RuntimeInfo;
-			FeatureFlags = set.FeatureFlags;
 			Workspace = set.Workspace;
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
 		}
 
-		internal async Task<ClientUserModel> GetFeatureFlagUser()
+		internal async Task<bool> GetFeatureFlagValue(string flag)
 		{
-			var listKey = "ClientUserModels";
-			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
-			ClientUserModel userModel = null;
-			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-			{
-				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
-			}
-			if (userModel == null)
-			{
-				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
-			}
-			if (userModel != null)
-			{
-				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-				{
-					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
-				}
-			}
-			return userModel;
+			return await CommunityFlags.GetFlagValue(flag);
+		}
+
+		internal async Task<Dictionary<string, bool>> GetFeatureFlags()
+		{
+			return await CommunityFlags.GetFlags();
 		}
 
 		protected internal async Task<bool> GetHideData3SixtyUsers()
@@ -675,9 +650,9 @@ namespace d360.web.Controllers
 		internal ICatalog Catalog;
 		internal ICompanyContext Company;
 		internal ICommunity Community;
+		private CommunityFeatureFlagService CommunityFlags;
 		internal ILogger Log;
 		internal IMailProvider Mail;
-		internal IFeatureFlagService FeatureFlags;
 		internal IThemeRepository ThemeRepository;
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
@@ -710,14 +685,24 @@ namespace d360.web.Controllers
 		{
 			Catalog = set.Catalogs.Single(o => o.Platform == Platform.Azure);
 			Community = set.Community;
+			CommunityFlags = set.CommunityFlags;
 			Company = set.Company;
-			FeatureFlags = set.FeatureFlags;
 			Log = set.Log;
 			Mail = set.Mail;
 			ThemeRepository = set.ThemeRepository;
 			Workspace = set.Workspace;
 			SecurityContext = set.SecurityContext;
 			Cache = set.Cache;
+		}
+
+		internal async Task<bool> GetFeatureFlagValue(string flag)
+		{
+			return await CommunityFlags.GetFlagValue(flag);
+		}
+
+		internal async Task<Dictionary<string, bool>> GetFeatureFlags()
+		{
+			return await CommunityFlags.GetFlags();
 		}
 
 		#region Validation constants
@@ -2307,29 +2292,6 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 					return File(stream.ToArray(), "application/vnd.ms-excel", $"{document.Name.GetSafeFilename()}.xlsx");
 				}
 			}
-		}
-
-		internal async Task<ClientUserModel> GetFeatureFlagUser()
-		{
-			var listKey = "ClientUserModels";
-			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
-			ClientUserModel userModel = null;
-			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-			{
-				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
-			}
-			if (userModel == null) 
-			{
-				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
-			}
-			if (userModel != null)
-			{
-				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-				{
-					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
-				}
-			}
-			return userModel;
 		}
 
 		protected async Task AppendSettingsToViewData(HttpContext httpContext = null)

@@ -5,7 +5,6 @@ using d360.core;
 using d360.core.enums;
 using d360.core.types;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers;
@@ -133,11 +132,6 @@ namespace d360.web
 
 				#endregion
 
-				builder.Register(c =>
-				{
-					return new FeatureFlagService(Config.GetValue<string>(constants.Setting.FeatureFlagKey));
-				}).As<IFeatureFlagService>().SingleInstance();
-
 				builder.RegisterType<OidcDiscoveryCache>().AsSelf().InstancePerRequest();
 
 				builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
@@ -237,6 +231,8 @@ namespace d360.web
 					};
 				}).InstancePerRequest();
 
+				builder.RegisterType<CommunityFeatureFlagService>().AsSelf().InstancePerRequest();
+
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
@@ -254,6 +250,12 @@ namespace d360.web
 					});
 
 				builder.RegisterType<Scoring>().As<IScoring>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
+				builder.RegisterType<Search>().As<ISearch>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserId = sec.ResourceID;

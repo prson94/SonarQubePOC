@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
-using d360.featureflags;
 using System.Configuration;
 using Dapper;
 using Newtonsoft.Json;
@@ -19,17 +18,15 @@ namespace d360.model.DataAccessLayer.repositories
 {
 	public abstract class BaseRepository
 	{
-		internal IFeatureFlagService FeatureFlags;
 		internal readonly ICompanyContext CompanyContext;
 		internal ISecurityContextProvider SecurityContext;
 		private const string RELATIONSHIP_DELIMITER = "|";
 		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occurred while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-		protected BaseRepository(ICompanyContext ctx, ISecurityContextProvider securityContext, IFeatureFlagService featureFlags)
+		protected BaseRepository(ICompanyContext ctx, ISecurityContextProvider securityContext)
 		{
 			CompanyContext = ctx;
 			SecurityContext = securityContext;
-			FeatureFlags = featureFlags;
 		}
 
 		public int ApiTimeout

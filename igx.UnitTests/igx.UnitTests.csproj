@@ -153,10 +153,6 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.featureflags\d360.featureflags.csproj">
-      <Project>{20cca898-62dd-4ff1-8126-e65065e830e3}</Project>
-      <Name>d360.featureflags</Name>
-    </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>

@@ -12,8 +12,8 @@
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { cloneDeep } from "lodash-es";
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: "theme-editor",
@@ -55,7 +55,7 @@ export class ThemeEditorComponent implements OnChanges {
     constructor(private fb: UntypedFormBuilder,
         private brandingService: BrandingService,
         private cdRef: ChangeDetectorRef,
-        featureFlagService?: LaunchDarklyService
+        featureFlagService?: FeatureFlagsInitService
     ) {
         this.formGroup = this.fb.group({
             name: [null, { validators: [Validators.required] }],
@@ -86,9 +86,9 @@ export class ThemeEditorComponent implements OnChanges {
             }
         });
 
-        if (featureFlagService.variation<boolean>(FeatureFlags.BrandingThemeCustomCss)) {
-            this.hasCustomCss = true;
-        }
+		featureFlagService.getFlagValue(FeatureFlags.BrandingThemeCustomCss).then((flag) => {
+			this.hasCustomCss = flag;
+		});
     }
 
     ngOnChanges(changes: SimpleChanges) {

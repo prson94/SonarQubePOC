@@ -7,36 +7,28 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeClass } from '../../../models/asset.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
-/* FIXME: Extract templates and styles to their own files
-*  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
 	selector: 'd3s-relationships-wrapper',
 	template: `
      <gov-relationship-grid *ngIf="assetUid" [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
-    `,
-	providers: [PermissionsService]
+    `
 })
-
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
 	private sub: any;
 	assetUid: string = '';
 	assetTypeUid: string = '';
-
 	constructor(
 		private route: ActivatedRoute,
 		private permissionsService: PermissionsService,
 		private assetService: AssetService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
-		protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService
+		protected settingsService: CompanySettingsService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {

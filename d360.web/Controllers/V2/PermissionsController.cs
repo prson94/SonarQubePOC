@@ -4,13 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-
 using d360.core.entities;
 using d360.core.entities.Permissions;
 using d360.core.enums;
 using d360.core.resources;
-using d360.featureflags;
-using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
@@ -39,8 +36,7 @@ namespace d360.web.Controllers.V2
 		private bool IsNewPermissions
 		{
 			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, ffUser);
+				return GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED).Result;
 			}
 		}
 

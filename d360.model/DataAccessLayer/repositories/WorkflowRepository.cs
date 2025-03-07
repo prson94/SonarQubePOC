@@ -13,7 +13,6 @@ using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -26,8 +25,8 @@ namespace d360.model.DataAccessLayer
 {
 	public class WorkflowRepository : BaseRepository, IWorkflowRepository
 	{
-		public WorkflowRepository(ICompanyContext CompanyContext, ISecurityContextProvider securityContext, IFeatureFlagService ff)
-			: base(CompanyContext, securityContext, ff)
+		public WorkflowRepository(ICompanyContext CompanyContext, ISecurityContextProvider securityContext)
+			: base(CompanyContext, securityContext)
 		{
 		}
 

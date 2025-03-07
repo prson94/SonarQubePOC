@@ -16,15 +16,14 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 import * as DOMPurify from "isomorphic-dompurify";
-import { FeatureFlags } from '../../../../services/feature-flags.enum';
-import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
+import { FeatureFlagsInitService } from "../../../../services/feature-flags-init.service";
+import { FeatureFlags } from "../../../../_shared/models/feature-flags";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
 	Form = "Form"
 }
 
-/*global $localize*/
 
 @Component({
 	selector: "field-type-modal-form",
@@ -128,10 +127,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
-
-	get isTagTypesFeatureEnabled(): boolean {
-		return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
-	}
+	isTagTypesFeatureEnabled: boolean;
 
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
@@ -139,7 +135,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		private assetService: AssetService,
 		private cdRef: ChangeDetectorRef,
 		private tagService: TagService,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {
 
 		this.relationshipDisplayFormatValueOptions = [
@@ -151,6 +147,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			{ label: $localize`True`, value: true },
 			{ label: $localize`False`, value: false },
 		];
+
+		featureFlagService.getFlagValue(FeatureFlags.TagTypesEnabled).then((flag) => {
+			this.isTagTypesFeatureEnabled = flag;
+		});
 	}
 
 	setDefaultTitle() {

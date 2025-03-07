@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchQuery, SearchResults } from '../models/search-result.model';
+import { SearchFullResult, SearchModel, SearchQuery, SearchResults } from '../models/search-result.model';
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { catchError, delay, map, shareReplay, takeUntil } from 'rxjs/operators';
 import { Observable, of, Subject, throwError } from 'rxjs';
@@ -7,22 +7,31 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SearchType, SettingsHelper } from '../models/settings.model';
 import { IndexableStatus, IndexableType, IndexPartialRebuild } from "../models/search-admin.model";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "./feature-flags.enum";
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 import { Table } from 'primeng/table';
 import { FilterMatchMode } from 'primeng/api';
+import { FeatureFlagsInitService } from './feature-flags-init.service';
+import { FeatureFlags } from '../_shared/models/feature-flags';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SearchService extends BaseObservableService  {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: LaunchDarklyService) { super(messagesService); }
+	semanticUi: boolean;
+
+	constructor(private http: HttpClient, messagesService: MessagesObservableService, featureFlagService: FeatureFlagsInitService) {
+		super(messagesService);
+
+		featureFlagService.getFlagValue(FeatureFlags.SemanticTypesUiFlag).then((flag) => {
+			this.semanticUi = flag;
+		});
+	}
 
     public getEmptyResult(): SearchResults {
         const result = new SearchResults();
-        result.Results = [];
+		result.Results = [];
+		result.ResultAggregations = [];
         result.Aggregations = { category: []};
         result.Matches = 0;
         result.ElapsedMS = { Query: 0, Augment: 0 };
@@ -46,7 +55,7 @@ export class SearchService extends BaseObservableService  {
         if (typeof query.Term === "undefined" || query.Term === "") {
             //No search term, no results, no need to call endpoint
             return of(this.getEmptyResult());
-        }
+		}
 
         return this.http
             .post('api/v2/search/results', query)
@@ -88,7 +97,7 @@ export class SearchService extends BaseObservableService  {
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
         
-        if (!this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
+		if (!this.semanticUi) {
             categories = categories.filter((s) => s.value !== "SemanticType");
         }
         

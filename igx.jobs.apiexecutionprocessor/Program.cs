@@ -4,7 +4,6 @@ using d360.extensions.events;
 using d360.extensions.mail;
 using d360.extensions.search;
 using d360.extensions.storage;
-using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -54,9 +53,6 @@ namespace igx.jobs.apiexecutionprocessor
 						{
 							CommunityConnectionString = context.Configuration[constants.Setting.ReadOnlyConnection]
 						};
-					});
-					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 				});
 

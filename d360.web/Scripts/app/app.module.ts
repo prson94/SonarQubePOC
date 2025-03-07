@@ -32,6 +32,10 @@ export function featureFlagServiceInitializer(provider: FeatureFlagsInitService)
     return () => provider.initialize();
 }
 
+export function featureFlagsFromCommunity(provider: FeatureFlagsInitService) {
+	return () => provider.getFlags();
+}
+
 export function settingsInitializer(provider: SettingsProviderService) {
 	return () => forkJoin(provider.loadSettings(), provider.loadApplicationSettings());
 }
@@ -106,7 +110,13 @@ export function localeInitializer(localeId: string) {
             useFactory: featureFlagServiceInitializer,
             deps: [FeatureFlagsInitService]
         },
-        {
+		{
+			provide: APP_INITIALIZER,
+			multi: true,
+			useFactory: featureFlagsFromCommunity,
+			deps: [FeatureFlagsInitService]
+		},
+		{
             provide: APP_INITIALIZER,
             multi: true,
             useFactory: settingsInitializer,
