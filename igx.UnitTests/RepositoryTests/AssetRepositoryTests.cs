@@ -64,7 +64,7 @@ namespace igx.UnitTests.RepositoryTests
 				}
 				);
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>
 			{
@@ -87,7 +87,7 @@ namespace igx.UnitTests.RepositoryTests
 		{
 			var mockCompanyContext = new Mock<ICompanyContext>();
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
 			pars.Add(new KeyValuePair<string, string>("useastransformation", "invalid_bool_value"));
@@ -236,7 +236,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 			var assetType = new AssetType() { ID = 1, Object = SystemObjects.ArtifactType.ToString() };
 
@@ -334,7 +334,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
@@ -446,7 +446,7 @@ namespace igx.UnitTests.RepositoryTests
 					return Task.FromResult(res);
 				});
 
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
@@ -497,7 +497,7 @@ namespace igx.UnitTests.RepositoryTests
 						 res.results = new List<AssetsByPathItemApiViewModel>() { asset };
 						 return Task.FromResult(res);
 					 });
-			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+			var assetRepository = new AssetRepository(mockCompanyContext.Object, GetSecurity(), GetQueue(), GetStorage());
 
 
 			List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
