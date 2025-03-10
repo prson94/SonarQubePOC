@@ -577,7 +577,14 @@ where t.uid in @uids
 
 			if (assetUid.HasValue)
 			{
-				sql = @"select	T.Value, T.TagTypeId,TT.uid as TagTypeUID,
+				sql = @"
+							declare @AssetID bigint;
+
+							select @AssetID = id 
+							from asset 
+							where uid = @assetUid;
+
+							select	T.Value, T.TagTypeId,TT.uid as TagTypeUID,
 									TA.CreatedOn, 
 									ADV.DisplayValue as CreatedBy,
 									T.Uid as TagUid
@@ -588,7 +595,7 @@ where t.uid in @uids
 									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
 									inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 							where	T.[Uid] = @tagUid 
-									and A.[Uid] = @assetUid";
+									and A.[id] = @AssetID";
 			}
 			else
 			{

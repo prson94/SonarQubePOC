@@ -394,7 +394,7 @@ namespace d360.web
 
 						if (groups?.Any() == true)
 						{
-							var governHasGroups = (await company.QueryFirstOrDefaultAsync<Group>("select * from Group where IsActiveDirectoryGroup = 1")) != null;
+							var governHasGroups = (await company.QueryFirstOrDefaultAsync<Group>("select * from [Group] where IsActiveDirectoryGroup = 1")) != null;
 
 							if (governHasGroups)
 							{
