@@ -29,6 +29,7 @@ using FluentAssertions;
 using Moq.Language;
 using repositories;
 using d360.core.validators;
+using d360.web.Services;
 
 namespace igx.UnitTests
 {
@@ -207,6 +208,12 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+		public CommunityFeatureFlagService GetCommunityFlags()
+		{
+			var flagservice = new CommunityFeatureFlagService(GetCache(), GetCommunity(), GetSecurity());
+			return flagservice;
+		}
+
         public static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
         {
             var elementsAsQueryable = elements.AsQueryable();
@@ -227,6 +234,7 @@ namespace igx.UnitTests
 			mock.Setup(s => s.Catalogs).Returns(GetCatalogs());
             mock.Setup(s => s.Community).Returns(GetCommunity());
             mock.Setup(s => s.Company).Returns(GetCompany());
+			mock.Setup(s => s.CommunityFlags).Returns(GetCommunityFlags());
             mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
 			mock.Setup(s => s.SecurityContext).Returns(GetSecurity());

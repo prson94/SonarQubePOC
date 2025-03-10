@@ -14,7 +14,7 @@ namespace igx.UnitTests.V2ControllerTests
 	{
 		protected readonly Mock<ICompanyContext> MockCompanyContext;
 		protected readonly Mock<ICommunity> MockCommunity;
-		protected readonly Mock<CommunityFeatureFlagService> MockCommunityFlags;
+		protected readonly CommunityFeatureFlagService CommunityFlags;
 		protected readonly Mock<ISecurityContextProvider> MockSecurityContext;
 		protected readonly Mock<List<ICatalog>> MockCatalogs;
 		protected readonly Mock<ILogger> MockLog;
@@ -36,15 +36,15 @@ namespace igx.UnitTests.V2ControllerTests
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
-			MockCommunityFlags = new Mock<CommunityFeatureFlagService>();
 			MockThemeRepository = new Mock<IThemeRepository>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();
+			CommunityFlags = new CommunityFeatureFlagService(MockCache.Object, MockCommunity.Object, MockSecurityContext.Object);
 
 			CoreComponentSet = new CoreComponentSet(
 				MockCache.Object,
 				MockCommunity.Object,
-				MockCommunityFlags.Object,
+				CommunityFlags,
 				MockCompanyContext.Object,
 				MockSecurityContext.Object,
 				MockCatalogs.Object,
