@@ -46,7 +46,7 @@
 	<include file="scripts/Procedure.dbo.ReadFeatureFlagForCompany.xml"/>
 	<include file="scripts/Procedure.dbo.ReadFeatureFlagsForCompany.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateFeatureFlag.xml"/>
-	<include file="scripts/Procedure.dbo.UpsertCompanyFeatureFlag"/>
+	<include file="scripts/Procedure.dbo.UpsertCompanyFeatureFlag.xml"/>
 	
 	<!-- Cleanup -->
 	<include file="scripts/Function.Deletions.xml"/>
