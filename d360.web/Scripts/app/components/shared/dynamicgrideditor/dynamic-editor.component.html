@@ -162,11 +162,11 @@
                 <button igButton class="ig-button-secondary" type="button"
 						(click)="closeClick.emit();"
 						i18n-tooltip tooltip="Close"
-						i18n-label label="Close"></button>
+						i18n-label [label]="closeButtonLabel"></button>
                 <span class="grow"></span>
                 <button igButton type="submit"
                         class="ig-button-primary"
-                        label="{{this.consolidateToTag ? 'Consolidate' :'Save'}}"
+                        [label]="this.consolidateToTag ? 'Consolidate' :  saveButtonLabel"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                         [loading]="loading"></button>
             </div>

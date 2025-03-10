@@ -23,6 +23,7 @@ export class TagType {
     CreatedByFirstName?: string;
     CreatedByLastName?: string;
 	TagTypeUID?: string;
+    isSelected?: boolean;
 }
 
 export class TagApiModel {

@@ -107,7 +107,10 @@
                                     <td>{{item.UseCount}}</td>
                                     <td>
                                         <div class="RowTools">
-                                            <span (click)="selectSingleItem(null,item)" class=" ig-button-icon fa fa-info-circle"></span>
+                                            <span (click)="selectSingleItem(null,item)"
+                                            class="ig-button-icon fa fa-info-circle info-icon"
+                                            [ngClass]="{'active': item.isSelected}"
+                                            ></span>
                                         </div>
                                     </td>
                                     <td style="padding-left:0" #assetGridTools>
@@ -198,6 +201,15 @@
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen">
                     <ng-container *ngIf="itemToEdit != undefined">
+                        <div class="quick-links">
+                            <div class="asset-name"> {{  itemToEdit.Value }} </div>
+                            <div class="class-name"> Tag </div>
+                            <a (click)="openTagDetails(itemToEdit)">Open</a>
+                            <span class="grey-delimiter">|</span>
+                            <a (click)="openTagDetails(itemToEdit, true)">Open in New Tab</a>
+                            <span class="grey-delimiter">|</span>
+                            <a  (click)="editTag(itemToEdit)">Edit</a>
+                        </div>
                         <ig-tag-detail [selectedItem]="itemToEdit"
                                        [selectedTagType]="itemToEdit"
                                        [useAccordion]="true"

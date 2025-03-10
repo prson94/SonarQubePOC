@@ -835,6 +835,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allowed max length for TagType is 50.
+        /// </summary>
+        public static string BadTagType {
+            get {
+                return ResourceManager.GetString("BadTagType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You must provide a value for the [Body] property..
         /// </summary>
         public static string BodyNotEmpty {

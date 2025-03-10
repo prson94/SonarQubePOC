@@ -3300,4 +3300,7 @@
   <data name="ErrorRemoveTheme" xml:space="preserve">
     <value>Error during remove theme.</value>
   </data>
+  <data name="BadTagType" xml:space="preserve">
+    <value>Allowed max length for TagType is 50</value>
+  </data>
 </root>

@@ -46,7 +46,13 @@ export class TagTypesService extends BaseObservableService {
     updateTagType(tagType: string, tagId: string): Observable<TagTypesViewModel> {
         return this
                 .http
-                .put<TagTypesViewModel>(`/api/v2/tags/tagTypes/${tagId}`, { 'Value': tagType });
+                .put<TagTypesViewModel>(`/api/v2/tags/tagTypes/${tagId}`, { 'Value': tagType })
+                .pipe(
+                    map((response) => {
+                        return response;
+                    }),
+                    map((item) => { return <TagTypesViewModel>item; }),
+                    catchError((err) => this.handleError(err)));
     }
 
     deleteTagType(tagId: string): Observable<TagTypesViewModel> {

@@ -29,10 +29,12 @@ import { IOutputData } from "angular-split";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 import { TagDetailComponent } from './tag-details/tag-detail.component';
+import { TagTypesViewModel } from './tag-types/tag-types.model';
 
 @Component({
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
+    styleUrl: 'admin-tags.component.less',
     providers: [TagService]
 })
 
@@ -216,6 +218,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.tags = tags;
                 this.readOnlyFullListOfTags = [...this.tags];
             }
+            else {
+                this.tags = [];
+                this.readOnlyFullListOfTags = [];
+            }
             this.isLoading = false;
         }, (err) => this.error = err);
     }
@@ -299,10 +305,16 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+        //set isSelected to true to current click tag row
+        this.tags.map((tag) => tag.isSelected = tag.uid == item.uid);
+
 		if (event === null) {
 			this.itemToEdit = item;
 			return;
 		}
+        
+        
+        
 
         this.editPopupTitle = $localize`Edit Tag`;
 
@@ -513,9 +525,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tags = draft;
     }
 
-	loadTagsOnTagTypeSelected(val: string) {
-		this.selectedTagTypeUid = val;
-        this.getTags(val);
+	loadTagsOnTagTypeSelected(tagTypeUid: string) {
+		this.selectedTagTypeUid = tagTypeUid;
+        this.getTags(this.selectedTagTypeUid);
 	}
 
 	loadMenuItems() {
@@ -539,4 +551,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	expandPanel() {
 		this.sidePanelService.setSidePanelState({ expanded: true });
 	}
+
+    editTag(toEditTag: TagType){
+        this.selected[0] = toEditTag;
+        this.showEditor = true;
+    }
 }
