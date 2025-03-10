@@ -4398,6 +4398,12 @@ drop table if exists #tempAssetsIds;
 
 
 			var sql = $@"
+						declare @AssetID bigint;
+
+						select @AssetID = id 
+						from asset 
+						where uid = @assetUid;
+
 						select  A.ID as AssetId,
 								A.[uid] as AssetUid,
 								A.SourceID as XrefId,
@@ -4419,7 +4425,7 @@ drop table if exists #tempAssetsIds;
 								left join Asset parentAsset on parentAsset.ID = Parent.ID
 								left join AssetDisplayValue parentAdv on parentAdv.AssetID = parentAsset.ID
 								{string.Join("\n", fieldJoins.GetStatements())}
-						where   A.[uid] = @assetUid";
+						where   A.[id] = @AssetID";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
 		}
@@ -4445,7 +4451,7 @@ drop table if exists #tempAssetsIds;
 			var fieldJoins = new DynamicQueryJoins();
 			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
-			dbArgs.Add("@assetUid", assetUid);
+			dbArgs.Add("@assetid", asset.ID);
 
 			getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
@@ -4454,7 +4460,7 @@ drop table if exists #tempAssetsIds;
 								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
 								{fieldJoins.SQLJoinStatement}
-						where   A.[uid] = @assetUid";
+						where   A.[id] = @assetid";
 
 			var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;
 
