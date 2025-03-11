@@ -21,6 +21,7 @@ import { DataProfileService } from '../../services/dataprofile.service';
 import { SelectAssetService } from '../../services/select-asset.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
+import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { tap } from 'rxjs/operators';
 import {
     AdvancedFilterFieldType,
@@ -54,7 +55,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     tagUsage: TagDetail[];
     readOnlyFullListOfTagUsage: ReadonlyArray<TagDetail> = [];
     selection: TagDetail;
-    advancedFilter: string = '';
+	advancedFilter: string = '';
+	menuItems: any = [];
     
     // sidepanel properties
     sidePanelOpen: boolean = false;
@@ -176,7 +178,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.tagUsage = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTagUsage, event);
     }
 
-    selectAsset(event: any) {
+	selectAsset(event: any) {
         this.selectAssetService.selectAsset(event, this);
     }
 
@@ -192,7 +194,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.filters[event.prop] = event.value;
     }
 
-    ngOnInit() {
+	ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
             this.tagUid = params['tagUid'];
 
@@ -210,8 +212,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
 
         });
-
-
+		this.loadMenuItems();
     }
 
     ngOnDestroy() {
@@ -242,7 +243,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         null,
                         this.tag.uid
                     );
-
 
                     if (this.isAdmin) {
 
@@ -276,7 +276,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.isLoading = false;
                     });
 
-
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.currentAreaName = $localize`Tags`;
                     const areaBreadcrumb = new Breadcrumb(
@@ -288,21 +287,16 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.tag.Value,
                         `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
                     );
-
                     this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
                     this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
                 }
                 else {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-
                 }
-
             },
                 (err) => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
                 });
-
-
     }
 
     restoreNecessaryFieldsFromTagToAsset(tagDetails: TagDetail[]): void {
@@ -324,7 +318,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     buildBreadcrumb() {
         this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', $localize`Tagged Assets`);
-
     }
 
     formatValue(item: TagDetail) {
@@ -474,7 +467,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.onActionEditCloseClick();
                 this.ref.markForCheck();
-
             });
     }
 
@@ -486,12 +478,25 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
                     this.onActionEditCloseClick();
                     this.openTagPageByID(parentUid);
-
                 }
             }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
-
             });
-    }
+	}
 
+	loadMenuItems() {
+		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectAsset(this.selection) } });
+		this.menuItems.push({ "title": $localize`Open`, callback: () => { this.openAssetDetails(this.selectedAsset) } });
+		this.menuItems.push({ "title": $localize`Open In New Tab`, callback: () => { this.openAssetDetails(this.selectedAsset,true) } });
+	}
+
+	openAssetDetails(item: any, openInNewTab: boolean = false) {
+		const url = `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${this.selection.AssetUid}`;
+
+		if (openInNewTab) {
+			window.open(url, '_blank');
+		} else {
+			this.router.navigate([url]);
+		}
+	}
 }
