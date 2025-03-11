@@ -124,7 +124,7 @@
                 <ng-template pTemplate="body"
                              let-item>
                     <tr [pSelectableRow]="item"
-                        (focus)="selectAsset(item)">
+                        (click)="selectAsset(item)">
                         <td>{{item.DisplayPath}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
@@ -133,6 +133,19 @@
                         </td>
                         <td>{{item.AddedBy}}</td>
                         <td>{{item.CreatedOn | date:'medium'}}</td>
+                        <td style="padding-left:0">
+                            <div class="token-popup-menu" *ngIf="menuItems">
+                                <button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);selectAsset(item)"></button>
+                                <ig-popup-menu [items]="menuItems"
+                                               #tokenMenu
+                                               [tabIndex]="1"></ig-popup-menu>
+                            </div>
+
+                            <button class="ig-float-popup-container" #floatButton>
+                                <ig-popup-menu [items]="menuItems" #floatMenu [tabIndex]="18">
+                                </ig-popup-menu>
+                            </button>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template *ngIf="dt.totalRecords"
@@ -207,7 +220,6 @@
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"
                                          [interceptLinkClick]="true"></ig-asset-detail>
-
                         <ng-container *ngIf="selectedReferenceItem">
                             <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
                                                   [highlightUid]="selectedReferenceItem.assetUid"
