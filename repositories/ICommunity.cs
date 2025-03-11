@@ -80,6 +80,8 @@ namespace repositories
 
 		Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null);
 
+		Task<Resource> ReadUsersByTenantFromIDAsync(int companyId, int userid);
+
 		Task<ClientUserModel> ReadUserFeatureFlagContext(int companyId, int userId);
 
 		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
@@ -116,9 +118,9 @@ namespace repositories
 
 		Task<Theme> ReadThemeUidAsync(int companyId, Guid uid);
 
-		Task<List<Theme>> ReadThemesAsync(int companyId);
+		Task<List<ThemewithResource>> ReadThemesAsync(int companyId, Guid themeUid);
 
-		Task<Theme> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser);
+		Task<ThemewithResource> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser);
 
 		Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser);
 

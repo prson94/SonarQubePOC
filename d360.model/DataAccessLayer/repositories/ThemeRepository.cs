@@ -20,8 +20,6 @@ namespace d360.model.DataAccessLayer
     {
         #region DI
 
-        private readonly Guid defaultThemeUID = new Guid("AAAAAAAA-0000-0000-0000-000000000001");
-
         internal IQueueSource Queue;
         internal IStorageProvider Storage;
 
@@ -153,72 +151,14 @@ namespace d360.model.DataAccessLayer
 
 			}).ConfigureAwait(false);
 
-
-
             return HttpStatusCode.OK;
         }
 
-        public async Task<List<GetTheme>> GetThemesAsync(List<Theme> theme, Guid themeUid , CancellationToken? cancellationToken = null)
+        public async Task<GetTheme> GetCurrentThemeByUserAsync(ThemewithResource dbTheme)
         {
+			var baseUri = await GetBaseUriTheme();
 
-            List<GetTheme> apiModels = null;
-
-            await Task.Run(() =>
-            {
-                var dbModels = (from t in theme
-								join c in CompanyContext.GlobalReportingResources on t.CreatedBy equals c.ResourceID
-                                join u in CompanyContext.GlobalReportingResources on t.UpdatedBy equals u.ResourceID
-                                select new { t, c, u }
-                               );
-
-                if (themeUid != Guid.Empty)
-                {
-                    dbModels = dbModels.Where(m => m.t.Uid == themeUid);
-                }
-
-                var baseUri = Storage.GetBaseUri("themes");
-
-                apiModels = dbModels
-                    .ToList()
-                    .Select(m => m.t.ToGetModel(baseUri, m.c, m.u, SecurityContext.CompanyID))
-                    .OrderBy(t => t.Name)
-                    .ToList();
-            }).ConfigureAwait(false);
-
-            return apiModels;
-        }
-
-        public async Task<GetTheme> GetCurrentThemeByUserAsync(Theme dbTheme)
-        {
-
-			var dbCreatedBy = new GlobalReportingResource();
-			var dbUpdatedBy = new GlobalReportingResource();
-
-			if (dbTheme.Uid != this.defaultThemeUID)
-			{
-				var themeSql = @"
-								select * from reporting.Global_Resource where ResourceID = @createdBy;
-								select * from reporting.Global_Resource where ResourceID = @updatedBy;";
-
-				var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
-					new CommandDefinition(
-						themeSql,
-						new { createdBy = dbTheme.CreatedBy, updatedBy = dbTheme.UpdatedBy },
-						commandTimeout: ApiTimeout
-						)
-					);
-				dbCreatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
-				dbUpdatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
-			}
-			
-			var baseUri = Storage.GetBaseUri("themes");
-
-            if (dbTheme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
-            }
-
-            return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, SecurityContext.CompanyID);
+            return dbTheme.ToGetModel(baseUri,SecurityContext.CompanyID);
         }
 
         public async Task<bool> MarkThemeAsCurrentAsync(Theme theme,Guid uid)
@@ -234,7 +174,7 @@ namespace d360.model.DataAccessLayer
             return true;
         }
 
-        public async Task<GetTheme> PostThemeAsync(Theme repoTheme, bool validationOnly = false)
+        public async Task<HttpStatusCode> PostThemeAsync(Theme repoTheme, bool validationOnly = false)
         {
 			await Task.Run(() =>
             {
@@ -246,13 +186,10 @@ namespace d360.model.DataAccessLayer
 
             }).ConfigureAwait(false);
 
-            var baseUri = Storage.GetBaseUri("themes");
-            var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID ==  SecurityContext.ResourceID).SingleOrDefault();
-
-            return repoTheme.ToGetModel(baseUri, resource, resource, SecurityContext.CompanyID);
+			return HttpStatusCode.OK;
         }
 
-        public async Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme, Theme existingTheme, Theme nowPreviousTheme)
+        public async Task<HttpStatusCode> PutThemeAsync(Theme existingTheme, Theme nowPreviousTheme)
         {
 
             await Task.Run(() =>
@@ -279,11 +216,18 @@ namespace d360.model.DataAccessLayer
                 addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
             }).ConfigureAwait(false);
 
-            var createdBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.CreatedBy).SingleOrDefault();
-            var updatedBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.UpdatedBy).SingleOrDefault();
-            var baseUri = Storage.GetBaseUri("themes");
+			return HttpStatusCode.OK;
+		}
 
-            return existingTheme.ToGetModel(baseUri, createdBy, updatedBy, SecurityContext.CompanyID);
-        }
-    }
+		public async Task<Uri> GetBaseUriTheme()
+		{
+			Uri baseUri = null;
+			await Task.Run(() =>
+			{
+				baseUri = Storage.GetBaseUri("themes");
+
+			}).ConfigureAwait(false);
+			return baseUri;
+		}
+	}
 }
