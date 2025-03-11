@@ -10,7 +10,7 @@ export class ColumnFilterComponent {
 	@Input() datatype: string = 'text';
 	@Input() field: string;
 	@Input() filterMatchMode = 'contains';
-	@Input() value: any;
+	@Input() value: unknown;
 	@Output() onChangeCallback = new EventEmitter();
 
 	constructor(public dt: Table) {

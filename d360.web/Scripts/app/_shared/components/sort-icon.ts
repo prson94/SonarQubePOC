@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, Optional } f
 import { Table } from 'primeng/table';
 import { CommonModule } from "@angular/common";
 import { TreeTable } from "primeng/treetable";
+import { Subscription } from "rxjs";
 
 
 @Component({
@@ -16,7 +17,7 @@ export class SortIconComponent implements OnInit, OnDestroy {
 	@Input() ariaLabelDesc: string;
 	@Input() ariaLabelAsc: string;
 
-	subscription: any;
+	subscription: Subscription;
 	sortOrder: number;
 
 	@Output() changeCallback = new EventEmitter();
@@ -29,7 +30,7 @@ export class SortIconComponent implements OnInit, OnDestroy {
 		}
 
 		this.dt = table ?? treeTable;
-		this.subscription = this.dt.tableService.sortSource$.subscribe((sortMeta) => {
+		this.subscription = this.dt.tableService.sortSource$.subscribe(() => {
 			this.updateSortState();
 		});
 	}
