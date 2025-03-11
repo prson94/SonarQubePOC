@@ -3303,4 +3303,7 @@
   <data name="BadTagType" xml:space="preserve">
     <value>Allowed max length for TagType is 50</value>
   </data>
+  <data name="MaxValueViolationError" xml:space="preserve">
+    <value>{0} must not be greater than {1}</value>
+  </data>
 </root>

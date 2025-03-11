@@ -988,17 +988,17 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_includeduplicateflag"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_includeduplicateflag", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeduplicateflag").Value, out includeDuplicate))
+				if (!bool.TryParse(queryParams.FirstOrDefault(x => string.Equals(x.Key, "_includeduplicateflag", StringComparison.OrdinalIgnoreCase)).Value, out includeDuplicate))
 				{
 					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, string.Format(Error.CustomNotValid, "_includeDuplicateFlag"));
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_filter"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_filter", StringComparison.OrdinalIgnoreCase)))
 			{
-				_filter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+				_filter = queryParams.FirstOrDefault(x => string.Equals(x.Key, "_filter", StringComparison.OrdinalIgnoreCase)).Value;
 
 				if (string.IsNullOrEmpty(_filter))
 				{
@@ -1006,9 +1006,9 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_simplefilter"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_simplefilter", StringComparison.OrdinalIgnoreCase)))
 			{
-				_simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+				_simpleFilter = queryParams.FirstOrDefault(x => string.Equals(x.Key, "_simplefilter", StringComparison.OrdinalIgnoreCase)).Value;
 
 				if (string.IsNullOrEmpty(_simpleFilter))
 				{
