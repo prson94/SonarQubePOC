@@ -1243,6 +1243,7 @@ AND		SourceID IS NULL
             stripComments="false">
 <![CDATA[
 declare @dt datetime = getutcdate();
+-- Migrate dbo.Predicate to dbo.TagTypes
 INSERT INTO dbo.TagType (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, State)
 SELECT p.Name, @dt, 0, @dt, 0, 1
 FROM dbo.NymRelation n
@@ -1253,6 +1254,19 @@ WHERE NOT EXISTS (
     WHERE tt.Value = p.Name
 )
 GROUP BY p.Name;
+
+-- Migrate dbo.Nym to dbo.Tag
+INSERT INTO dbo.Tag (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, State, TagTypeId)
+SELECT n.Name, @dt, 0, @dt, 0, 1, tt.ID
+FROM dbo.Nym n
+INNER JOIN dbo.Predicate p ON n.PredicateID = p.ID
+INNER JOIN dbo.TagType tt ON p.Name = tt.Value
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.Tag t
+    WHERE t.Value = n.Name
+)
+GROUP BY tt.ID, n.Name;
 ]]>
     </sql>
 	<rollback>
