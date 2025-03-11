@@ -1890,11 +1890,11 @@ new { assetType.ID, AssetTypeUid = assetType.uid, ResponsibilityTypeUid = respon
 
 							if (model.PassCount.HasValue && model.FailCount.HasValue)
 							{
-								ulong total = (ulong)model.PassCount.Value + (ulong)model.FailCount.Value;
+								var total = model.PassCount.Value + model.FailCount.Value;
 
-								if (total > 9223372036854775807)
+								if (total > long.MaxValue)
 								{
-									row["Message"] = string.Format(Error.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
+									row["Message"] = string.Format(Error.MaxValueViolationError, "PassCount + FailCount", long.MaxValue.ToString(), 0);
 									row["Success"] = 0;
 								}
 

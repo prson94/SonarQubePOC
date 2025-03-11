@@ -5686,6 +5686,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} must not be greater than {1}.
+        /// </summary>
+        public static string MaxValueViolationError {
+            get {
+                return ResourceManager.GetString("MaxValueViolationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parent metric must be an active group..
         /// </summary>
         public static string MeasureGroupStateMustBeActive {
