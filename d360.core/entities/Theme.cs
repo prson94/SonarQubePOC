@@ -78,7 +78,22 @@ namespace d360.core.entities
         public DateTime UpdatedOn { get; set; }
     }
 
-    public class ThemeBaseEdit : ThemeBase
+	public class ThemewithResource : Theme
+	{
+		[JsonProperty("createdByuid")]
+		public Guid CreatedByUid { get; set; }
+
+		[JsonProperty("createdByfullName")]
+		public string CreatedByFullName { get; set; }
+
+		[JsonProperty("updatedByuid")]
+		public Guid UpdatedByUid { get; set; }
+
+		[JsonProperty("updatedByfullName")]
+		public string UpdatedByFullName { get; set; }
+
+	}
+	public class ThemeBaseEdit : ThemeBase
     {
         [JsonProperty("customCss")]
         public string CustomCss { get; set; }
@@ -185,15 +200,15 @@ namespace d360.core.entities
             return css;
         }
 
-        public static GetTheme ToGetModel(this Theme model, Uri baseUri, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, int environmentId)
+        public static GetTheme ToGetModel(this ThemewithResource model, Uri baseUri, int environmentId)
         {
             return new GetTheme
             {
                 CreatedBy = new GetUserModel
                 {
-                    FullName = createdBy != null ? createdBy.FullName : "Unknown",
-                    Uid = createdBy != null ? createdBy.Uid : Guid.NewGuid()
-                },
+                    FullName = model.CreatedByFullName,
+                    Uid = model.CreatedByUid
+				},
                 CreatedOn = model.CreatedOn,
                 Name = model.Name,
                 CustomCssUri = string.IsNullOrEmpty(model.CustomCss) ?
@@ -216,14 +231,47 @@ namespace d360.core.entities
                 Uid = model.Uid,
                 UpdatedBy = new GetUserModel
                 {
-                    FullName = updatedBy != null ? updatedBy.FullName : "Unknown",
-                    Uid = updatedBy != null ? updatedBy.Uid : Guid.NewGuid()
+                    FullName = model.UpdatedByFullName,
+                    Uid = model.UpdatedByUid
                 },
                 UpdatedOn = model.UpdatedOn
             };
         }
 
-        public static Theme ToRepositoryModel(this PostTheme model, int resourceId)
+		public static ThemewithResource ToGetThemeResource(this Theme model, Resource createdBy, Resource updatedBy)
+		{
+			return new ThemewithResource
+			{
+				ID = model.ID,
+				Uid = model.Uid,
+				Name=model.Name,
+				HeaderLogoExtension=model.HeaderLogoExtension,
+				HomePageBackgroundExtension=model.HomePageBackgroundExtension,
+				BrowserIconExtension=model.BrowserIconExtension,
+				BackColor = model.BackColor,
+				BreadcrumbLinkColor= model.BreadcrumbLinkColor,
+				ButtonBackColor= model.ButtonBackColor,
+				PrimaryButtonBackColor = model.PrimaryButtonBackColor,
+				HeaderBackColor = model.HeaderBackColor,
+				NavBarBackColor = model.NavBarBackColor,
+				NavBarBackSelectedColor = model.NavBarBackSelectedColor,
+				TabLinkColor = model.TabLinkColor,
+				TableHeaderBackColor = model.TableHeaderBackColor,
+				TableRowBackSelectedColor = model.TableRowBackSelectedColor,
+				CustomCss = model.CustomCss,
+				CreatedBy = model.CreatedBy,
+				CreatedOn = model.CreatedOn,
+				UpdatedBy = model.UpdatedBy,
+				UpdatedOn = model.UpdatedOn,
+				Locked = model.Locked,
+				CreatedByFullName = createdBy != null ? createdBy.FirstName + " " + createdBy.LastName : "Unknown",
+				CreatedByUid = createdBy != null ? createdBy.Uid : Guid.Empty,
+				UpdatedByFullName = updatedBy != null ? updatedBy.FirstName + " " + updatedBy.LastName : "Unknown",
+				UpdatedByUid = updatedBy != null ? updatedBy.Uid : Guid.NewGuid()
+			};
+		}
+
+		public static Theme ToRepositoryModel(this PostTheme model, int resourceId)
         {
             var date = DateTime.UtcNow;
 

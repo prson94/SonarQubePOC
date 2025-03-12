@@ -887,6 +887,26 @@ where	c.ID = @companyId";
 			return response;
 		}
 
+		public async Task<Resource> ReadUsersByTenantFromIDAsync(int companyId, int userid)
+		{
+			using (var connection = Connect(true))
+			{
+				var resource = await connection.QueryAsync<Resource>(
+					$"select r.* from [Resource] r inner join CompanyResource c on c.ResourceID = r.ID and c.CompanyID = @companyId and c.ResourceID = @userid",
+					new { companyId, userid }
+				);
+				if (resource == null)
+				{
+					return null;
+				}
+				else
+				{
+					return resource.ToList().FirstOrDefault();
+				}
+
+			}
+		}
+		
 		public async Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId)
 		{
 			var response = new RepositoryResponse<bool>(404);
@@ -1339,15 +1359,22 @@ end";
 			}
 		}
 
-		public async Task<List<Theme>> ReadThemesAsync(int companyId)
+		public async Task<List<ThemewithResource>> ReadThemesAsync(int companyId, Guid themeUid)
 		{
-			string Companythemefields = @"ID,Uid,Name,HeaderLogoExtension,
-										  HomePageBackgroundExtension,BrowserIconExtension,
-										  BackColor,BreadcrumbLinkColor,ButtonBackColor,
-										  PrimaryButtonBackColor,HeaderBackColor,NavBarBackColor,
-										  NavBarBackSelectedColor,TabLinkColor,TableHeaderBackColor,
-										  TableRowBackSelectedColor,CustomCss,CreatedBy,
-										  CreatedOn,UpdatedBy,UpdatedOn,Locked";
+			string Companythemefields = @"ct.ID,ct.Uid,ct.Name,ct.HeaderLogoExtension,
+										  ct.HomePageBackgroundExtension,ct.BrowserIconExtension,
+										  ct.BackColor,ct.BreadcrumbLinkColor,ct.ButtonBackColor,
+										  ct.PrimaryButtonBackColor,ct.HeaderBackColor,ct.NavBarBackColor,
+										  ct.NavBarBackSelectedColor,ct.TabLinkColor,ct.TableHeaderBackColor,
+										  ct.TableRowBackSelectedColor,ct.CustomCss,ct.CreatedBy,
+										  ct.CreatedOn,ct.UpdatedBy,ct.UpdatedOn,ct.Locked";
+
+			string addthemefilter = "";
+
+			if (themeUid != Guid.Empty)
+			{
+				addthemefilter = "and ct.uid = cast(@themeUid as uniqueidentifier)";
+			}
 			string sql = @$"declare @CurrentThemeID int = 0;
 
 						   select @CurrentThemeID = ID
@@ -1361,19 +1388,26 @@ end";
 							   where CompanyId = 0;
 						   end
 
-						   select case when Id = @CurrentThemeID then 1 else 0 end IsCurrent,
-						   {Companythemefields}
-						   from CompanyTheme 
-						   where CompanyId in (0,@companyId) 
-						   order by name,id";
+						   select case when ct.Id = @CurrentThemeID then 1 else 0 end IsCurrent,
+						   {Companythemefields},
+						   case when cr.id is null then cast(@emptyuid as uniqueidentifier) else cr.uid end CreatedByUid,
+						   case when cr.id is null then 'Unknown' else cr.FirstName + ' ' + cr.LastName end CreatedByFullName,
+						   case when ur.id is null then cast(@emptyuid as uniqueidentifier) else ur.uid end UpdatedByUid,
+						   case when ur.id is null then 'Unknown' else ur.FirstName + ' ' + ur.LastName end UpdatedByFullName
+						   from CompanyTheme ct
+						   left join [Resource] cr on ct.Createdby = cr.ID
+						   left join [Resource] ur on ct.Updatedby = ur.ID
+						   where ct.CompanyId in (0,@companyId) 
+						   {addthemefilter}
+						   order by ct.name,ct.id";
 			using (var connection = (SqlConnection)Connect(true))
 			{
-				return (await connection.QueryAsync<Theme>(sql, new { companyId})).ToList();
+				return (await connection.QueryAsync<ThemewithResource>(sql, new { companyId, themeUid,emptyuid = Guid.Empty })).ToList();
 			}
 		}
 
 
-		public async Task<Theme> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser)
+		public async Task<ThemewithResource> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser)
 		{
 			string sql = @"					
 					set nocount on;
@@ -1391,17 +1425,31 @@ end";
 					
 					if (@themeid is null)
 					begin
-						select top 1 * from CompanyTheme where CompanyId = 0;
+						select top 1 ct.*,
+						cast(@emptyuid as uniqueidentifier) CreatedByUid,
+						'Unknown' CreatedByFullName,
+						cast(@emptyuid as uniqueidentifier) UpdatedByUid,
+						'Unknown' UpdatedByFullName
+						from CompanyTheme ct 
+						where CompanyId = 0;
 					end
 					else
 					begin
-						select top 1 * from CompanyTheme where CompanyId = @companyId and ID = @themeid;
+						select top 1 ct.*,
+						case when cr.id is null then cast(@emptyuid as uniqueidentifier) else cr.uid end CreatedByUid,
+						case when cr.id is null then 'Unknown' else cr.FirstName + ' ' + cr.LastName end CreatedByFullName,
+						case when ur.id is null then cast(@emptyuid as uniqueidentifier) else ur.uid end UpdatedByUid,
+						case when ur.id is null then 'Unknown' else ur.FirstName + ' ' + ur.LastName end UpdatedByFullName
+						from CompanyTheme ct
+						left join [Resource] cr on ct.Createdby = cr.ID
+						left join [Resource] ur on ct.Updatedby = ur.ID
+						where ct.CompanyId = @companyId and ct.ID = @themeid;
 					end
 
 ";
 			using (var connection = (SqlConnection)Connect(true))
 			{
-				return (await connection.QueryAsync<Theme>(sql, new { companyId, CurrentUser })).FirstOrDefault();
+				return (await connection.QueryAsync<ThemewithResource>(sql, new { companyId, CurrentUser , emptyuid  = Guid.Empty})).FirstOrDefault();
 			}
 		}
 

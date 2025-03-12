@@ -34,6 +34,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
+using static IdentityModel.OidcConstants;
 namespace d360.web.Controllers.V2
 {
 	/// <summary>
@@ -1427,32 +1428,28 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
 		{
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				Guid themeUid = Guid.Empty;
+			var queryParams = Request.GetQueryNameValuePairs();
+			Guid themeUid = Guid.Empty;
 
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
+			{
+				if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
 				{
-					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
-					{
-						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorOnGet, Error.InvalidUidParameter);
-					}
+					return errorMessageArgumentResponse(Error.InvalidUidParameter);
 				}
+			}
 
-				List<Theme> themes = await Community.ReadThemesAsync(SecurityContext.CompanyID);
+			List<ThemewithResource> dbModels = await Community.ReadThemesAsync(SecurityContext.CompanyID, themeUid);
 
-				var apiModels = await ThemeRepository.GetThemesAsync(themes,themeUid, cancellationToken);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
-			}
-			catch (GenericException)
-			{
-				throw;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
-			}
+			var baseUri = await ThemeRepository.GetBaseUriTheme();
+
+			var apiModels = dbModels
+				   .ToList()
+				   .Select(m => m.ToGetModel(baseUri, SecurityContext.CompanyID))
+				   .OrderBy(t => t.Name)
+				   .ToList();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
 		}
 
 		/// <summary>
@@ -1469,112 +1466,105 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetCurrentThemeCss()
 		{
-			try
+			ThemewithResource themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			if (themerec == null)
 			{
-				Theme themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
-				var theme = await ThemeRepository.GetCurrentThemeByUserAsync(themerec);
+				throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
+			}
+			var theme = await ThemeRepository.GetCurrentThemeByUserAsync(themerec);
 
-				string textColorFromBackground(string backgroundColor)
+			string textColorFromBackground(string backgroundColor)
+			{
+				Color col = ColorTranslator.FromHtml(backgroundColor);
+				if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
 				{
-					Color col = ColorTranslator.FromHtml(backgroundColor);
-					if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
-					{
-						return "white";
-					}
-					return "black";
+					return "white";
 				}
+				return "black";
+			}
 
-				string hexToRGBA(string backgroundColor, float opacity)
-				{
-					Color col = ColorTranslator.FromHtml(backgroundColor);
-					return $"rgba({col.R},{col.G},{col.B},{opacity})";
-				}
+			string hexToRGBA(string backgroundColor, float opacity)
+			{
+				Color col = ColorTranslator.FromHtml(backgroundColor);
+				return $"rgba({col.R},{col.G},{col.B},{opacity})";
+			}
 
-				string BlendHexToRGB(string color, string backgroundColor, float opacity)
-				{
-					var col = ColorTranslator.FromHtml(color);
-					var background = ColorTranslator.FromHtml(backgroundColor);
-					var resultColor = Blend(col, background, opacity);
-					return $"rgba({resultColor.R},{resultColor.G},{resultColor.B})";
-				}
+			string BlendHexToRGB(string color, string backgroundColor, float opacity)
+			{
+				var col = ColorTranslator.FromHtml(color);
+				var background = ColorTranslator.FromHtml(backgroundColor);
+				var resultColor = Blend(col, background, opacity);
+				return $"rgba({resultColor.R},{resultColor.G},{resultColor.B})";
+			}
 
-				Color Blend(Color color, Color backColor, double amount)
-				{
-					byte r = (byte)(color.R * amount + backColor.R * (1 - amount));
-					byte g = (byte)(color.G * amount + backColor.G * (1 - amount));
-					byte b = (byte)(color.B * amount + backColor.B * (1 - amount));
-					return Color.FromArgb(r, g, b);
-				}
+			Color Blend(Color color, Color backColor, double amount)
+			{
+				byte r = (byte)(color.R * amount + backColor.R * (1 - amount));
+				byte g = (byte)(color.G * amount + backColor.G * (1 - amount));
+				byte b = (byte)(color.B * amount + backColor.B * (1 - amount));
+				return Color.FromArgb(r, g, b);
+			}
 
-				if (theme == null)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoActiveThemeExists);
-				}
+			if (theme == null)
+			{
+				return errorMessageArgumentResponse(Error.NoActiveThemeExists);
+			}
 
-				var css = new StringBuilder();
-				css.AppendLine(":root {");
-				css.AppendCssVariable("backColor", theme.BackColor);
-				css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-				css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-				css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-				css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-				css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-				css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
-				css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-				//secondary button select color is derived from primary button color
-				css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
-				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
-				css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-				css.AppendCssVariable("tableRowBackColorHover", BlendHexToRGB(theme.TableRowBackSelectedColor, "#ffffff", 0.35f));
-				css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			var css = new StringBuilder();
+			css.AppendLine(":root {");
+			css.AppendCssVariable("backColor", theme.BackColor);
+			css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+			css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+			css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+			css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+			css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+			css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
+			css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+			//secondary button select color is derived from primary button color
+			css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
+			css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+			css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+			css.AppendCssVariable("tableRowBackColorHover", BlendHexToRGB(theme.TableRowBackSelectedColor, "#ffffff", 0.35f));
+			css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			css.AppendLine("");
+			css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
+			css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
+			css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+
+			css.AppendCssVariable("calculatedHeaderTextColorOpacity20", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.2f));
+			css.AppendCssVariable("calculatedHeaderTextColorOpacity40", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.4f));
+
+			css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
+			css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
+			css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
+			css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
+			css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
+			css.AppendLine("");
+
+			var imgVersionString = $"?v={theme.UpdatedOn.Ticks.ToString()}";
+			var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
+			css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri}{imgVersionString})");
+
+			var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
+			css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri}{imgVersionString})");
+
+			css.AppendLine("}");
+
+			if (SecurityContext.ResourceID > 0)
+			{
+				//https://jira.syncsort.com/browse/GOV-21052
+				//Limited / Low-risk information disclosure via CSS overrides
+				var customCss = Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
 				css.AppendLine("");
-				css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
-				css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
-				css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+				css.Append(customCss);
+			}
 
-				css.AppendCssVariable("calculatedHeaderTextColorOpacity20", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.2f));
-				css.AppendCssVariable("calculatedHeaderTextColorOpacity40", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.4f));
-
-				css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
-				css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
-				css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
-				css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
-				css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
-				css.AppendLine("");
-
-				var imgVersionString = $"?v={theme.UpdatedOn.Ticks.ToString()}";
-				var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
-				css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri}{imgVersionString})");
-
-				var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
-				css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri}{imgVersionString})");
-
-				css.AppendLine("}");
-
-				if (SecurityContext.ResourceID > 0)
+			return ResponseMessage(
+				new HttpResponseMessage
 				{
-					//https://jira.syncsort.com/browse/GOV-21052
-					//Limited / Low-risk information disclosure via CSS overrides
-					var customCss = Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
-					css.AppendLine("");
-					css.Append(customCss);
-				}
-
-				return ResponseMessage(
-					new HttpResponseMessage
-					{
-						Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
-						StatusCode = HttpStatusCode.OK
-					});
-			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
-			}
+					Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+					StatusCode = HttpStatusCode.OK
+				});
 		}
 
 		/// <summary>
@@ -1591,47 +1581,36 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetThemeCssByUid(Guid uid)
 		{
-			try
-			{
-				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
-				if (theme == null)
+			if (theme == null)
+			{
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
+			}
+
+			var css = new StringBuilder();
+			css.AppendLine(":root {");
+			css.AppendCssVariable("backColor", theme.BackColor);
+			css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+			css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+			css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+			css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+			css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+			css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+			css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+			css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+			css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			css.AppendLine("}");
+
+			css.AppendLine("");
+			css.Append(theme.CustomCss + "");
+
+			return ResponseMessage(
+				new HttpResponseMessage
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
-				}
-
-				var css = new StringBuilder();
-				css.AppendLine(":root {");
-				css.AppendCssVariable("backColor", theme.BackColor);
-				css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-				css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-				css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-				css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-				css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-				css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
-				css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-				css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
-				css.AppendLine("}");
-
-				css.AppendLine("");
-				css.Append(theme.CustomCss + "");
-
-				return ResponseMessage(
-					new HttpResponseMessage
-					{
-						Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
-						StatusCode = HttpStatusCode.OK
-					});
-			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGet, Error.UnknownErrorInvestigatingMessage);
-			}
+					Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+					StatusCode = HttpStatusCode.OK
+				});
 		}
 
 		/// <summary>
@@ -1653,19 +1632,19 @@ select	r.uid as ResourceUid,
 			{
 				if (!IsCustomCssEnabled)
 				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnGet, Error.CustomCssNotAllowed);
+					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
 
 
 				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
+					return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 				}
 
 				if (string.IsNullOrEmpty(theme.CustomCss))
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.CustomCssNotFound);
+					return errorMessageArgumentResponse(Error.CustomCssNotFound);
 				}
 
 				return ResponseMessage(
@@ -1859,52 +1838,50 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostTheme(PostTheme requestModel, [FromUri] bool validationOnly = false)
 		{
-			try
+			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!string.IsNullOrEmpty(requestModel.CustomCss))
+				if (!IsCustomCssEnabled)
 				{
-					if (!IsCustomCssEnabled)
-					{
-						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.CustomCssNotAllowed);
-					}
+					return  errorMessageArgumentResponse(Error.CustomCssNotAllowed);
+				}
+			}
+
+			var repoTheme = requestModel.ToRepositoryModel(SecurityContext.ResourceID);
+			repoTheme.Validate();
+
+			var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, repoTheme.Name);
+
+			if (themerec !=null)
+			{
+				return errorMessageArgumentResponse(Error.ThemeNameMustBeUnique);
+			}
+
+			var responseModel = new GetTheme();
+
+			if (!validationOnly)
+			{
+				RepositoryResponse<bool> response = null;
+				var resource = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true);
+
+				if (!response.IsSuccess)
+				{
+					return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 				}
 
-				var repoTheme = requestModel.ToRepositoryModel(SecurityContext.ResourceID);
-				repoTheme.Validate();
+				var status = await ThemeRepository.PostThemeAsync(repoTheme, validationOnly);
 
-				var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, repoTheme.Name);
-
-				if (themerec !=null)
+				if (status == HttpStatusCode.OK)
 				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ThemeNameMustBeUnique);
+					var baseUri = await ThemeRepository.GetBaseUriTheme();
+
+					var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
+
+					responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
 				}
-
-				var responseModel = new GetTheme();
-
-				if (!validationOnly)
-				{
-					RepositoryResponse<bool> response = null;
-					response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true);
-					if (response.IsSuccess)
-					{
-						responseModel = await ThemeRepository.PostThemeAsync(repoTheme, validationOnly);
-					}
-					else
-					{
-						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorUpsertTheme);
-					}
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnCreate, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 		}
 
 		/// <summary>
@@ -1930,64 +1907,67 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutTheme(Guid uid, PutTheme requestModel)
 		{
-			try
+			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!string.IsNullOrEmpty(requestModel.CustomCss))
+				if (!IsCustomCssEnabled)
 				{
-					if (!IsCustomCssEnabled)
-					{
-						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
-					}
+					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
 				}
-
-				var existingTheme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
-
-				if (existingTheme == null)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
-				}
-
-				if (requestModel.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeInUseForIsCurrentEdit);
-				}
-
-				var nowPreviousTheme = existingTheme.CloneThis();
-
-				if (existingTheme.Locked)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeIsLocked);
-				}
-
-				existingTheme = requestModel.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
-				existingTheme.Validate();
-
-				var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, existingTheme.Name);
-
-				if (themerec != null && themerec.Uid != existingTheme.Uid)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeNameMustBeUnique);
-				}
-
-				RepositoryResponse<bool> response = null;
-				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, existingTheme, SecurityContext.ResourceID, true);
-				if (!response.IsSuccess)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorUpsertTheme);
-				}
-
-				var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel, existingTheme, nowPreviousTheme);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModel));
 			}
-			catch (GenericException ex)
+
+			var existingTheme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+
+			if (existingTheme == null)
 			{
-				throw ex;
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 			}
-			catch
+
+			if (requestModel.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(Error.ThemeInUseForIsCurrentEdit);
 			}
+
+			var nowPreviousTheme = existingTheme.CloneThis();
+
+			if (existingTheme.Locked)
+			{
+				return errorMessageArgumentResponse(Error.ThemeIsLocked);
+			}
+
+			existingTheme = requestModel.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
+			existingTheme.Validate();
+
+			var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, existingTheme.Name);
+
+			if (themerec != null && themerec.Uid != existingTheme.Uid)
+			{
+				return errorMessageArgumentResponse(Error.ThemeNameMustBeUnique);
+			}
+
+			RepositoryResponse<bool> response = null;
+			var createdBy = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, existingTheme.CreatedBy);
+			var updatedBy = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, existingTheme.UpdatedBy);
+			response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, existingTheme, SecurityContext.ResourceID, true);
+			if (!response.IsSuccess)
+			{
+				return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
+			}
+
+			var status = await ThemeRepository.PutThemeAsync(existingTheme, nowPreviousTheme);
+
+			var reponseModel = new GetTheme();
+
+			if (status == HttpStatusCode.OK)
+			{
+				var baseUri = await ThemeRepository.GetBaseUriTheme();
+
+				var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
+
+				reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
+			}
+
+
+			return ResponseMessage(Request.CreateResponse(status, reponseModel));
 		}
 
 
@@ -2009,40 +1989,29 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> MarkThemeAsCurrent(Guid uid)
 		{
-			try
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+			if (theme == null)
 			{
-				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
-				if (theme == null)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
-				}
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
+			}
 
-				RepositoryResponse<bool> response = null;
-				response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
-				if (response.IsSuccess)
-				{	
-					var success = await ThemeRepository.MarkThemeAsCurrentAsync(theme ,uid);
-					if (success)
-					{
-						return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
-					}
-					else
-					{
-						return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
-					}
+			RepositoryResponse<bool> response = null;
+			response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
+			if (response.IsSuccess)
+			{	
+				var success = await ThemeRepository.MarkThemeAsCurrentAsync(theme ,uid);
+				if (success)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
 				}
 				else
 				{
 					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
 				}
 			}
-			catch (GenericException ex)
+			else
 			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
 			}
 		}
 
