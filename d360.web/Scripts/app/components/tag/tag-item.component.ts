@@ -485,7 +485,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 	}
 
 	loadMenuItems() {
-		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectAsset(this.selection) } });
+		this.menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectAsset(this.selection); this.sidePanelService.setSidePanelState({ expanded: true }); } });
 		this.menuItems.push({ "title": $localize`Open`, callback: () => { this.openAssetDetails(this.selectedAsset) } });
 		this.menuItems.push({ "title": $localize`Open In New Tab`, callback: () => { this.openAssetDetails(this.selectedAsset,true) } });
 	}

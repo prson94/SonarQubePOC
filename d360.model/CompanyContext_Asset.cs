@@ -191,18 +191,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#endregion
 
-			#region Cross-references
-
-			Connection.Execute($@"
-								delete	T
-								from	AssetCrossReference T
-										inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-			addMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-			sw.Restart();
-
-			#endregion
-
 			#region Process diagram
 
 			if (canHaveProcess)
