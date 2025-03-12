@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric,PuneetGupta" id="Procedure.graph.AssetBrowser_Impact-v12">
+  <changeSet author="TDuric,PuneetGupta" id="Procedure.graph.AssetBrowser_Impact-v12.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -307,7 +307,11 @@ begin
 			I.ObjectHierarchyKey as [to],
 			try_cast(string_agg(cast([text] as nvarchar(max)), ', ') as nvarchar(250)) [text]
 	into #group_i
-	from #i I
+	from (select distinct 
+		  SubjectHierarchyKey,ObjectHierarchyKey,
+		 [text]
+			from #i 
+	) I
 	group by I.SubjectHierarchyKey,
 			I.ObjectHierarchyKey;
 	
