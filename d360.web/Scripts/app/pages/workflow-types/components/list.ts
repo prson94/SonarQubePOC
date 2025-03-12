@@ -8,6 +8,9 @@ import { State } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { BaseComponent } from '../../../components/shared/base.component';
 import { LoadingComponent } from '../../../_shared/components/loading';
+import { ColumnFilterComponent } from '../../../_shared/components/column-filter';
+import { SortIconComponent } from '../../../_shared/components/sort-icon';
+import { GridPagingInfoComponent } from '../../../_shared/components/grid-paging-info';
 import { TilesModule } from '../../../components/shared/tiles/tiles.module';
 import { TableModule } from 'primeng/table';
 
@@ -15,7 +18,10 @@ import { TableModule } from 'primeng/table';
 	selector: 'workflow-type-list',
 	templateUrl: 'list.html',
 	standalone: true,
-	imports: [CommonModule, LoadingComponent, TableModule, TilesModule]
+	imports: [
+		CommonModule, TableModule, TilesModule,
+		LoadingComponent, ColumnFilterComponent, SortIconComponent, GridPagingInfoComponent
+	]
 })
 export class WorkflowTypeList extends BaseComponent implements OnInit {
     @Output() onViewClick = new EventEmitter();

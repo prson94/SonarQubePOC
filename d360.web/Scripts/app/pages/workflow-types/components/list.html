@@ -18,7 +18,7 @@
 				@for (col of columns; track col) {
 				<th [pSortableColumn]="col.datafield">
 					{{col.text}}
-					<d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
+					<sort-icon [field]="col.datafield"></sort-icon>
 				</th>
 				}
 				<th style="width: 165px"></th>
@@ -26,7 +26,7 @@
 			<tr [hidden]="showSimpleFilter">
 				@for (col of columns; track col) {
 				<th>
-					<d3s-column-filter [field]="col.datafield"></d3s-column-filter>
+					<column-filter [field]="col.datafield"></column-filter>
 				</th>
 				}
 				<th></th>
@@ -37,15 +37,15 @@
 				@for (col of columns; track col) {
 				<td class="break-wrap">
 					@switch (col.type) {
-					
+
 					@case ("text") {
 					<span>{{item[col.datafield]}}</span>
 					}
-					
+
 					@case ("date") {
 					<span>{{item[col.datafield] | date:'shortDate'}}</span>
 					}
-					
+
 					@case ("State") {
 					<span>
 						@if (item[col.datafield] == 1) {<i class="fa fa-check enabled" title="True"></i>}
@@ -69,7 +69,7 @@
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="summary">
-			<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			<grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></grid-paging-info>
 		</ng-template>
 	</p-table>
 </div>
