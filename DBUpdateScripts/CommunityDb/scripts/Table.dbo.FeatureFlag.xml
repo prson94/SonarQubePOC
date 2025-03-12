@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.dbo.FeatureFlag-v1">
+ <changeSet author="Pappas" id="Table.dbo.FeatureFlag-v1.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[FeatureFlag]') and type in (N'U'))
@@ -13,14 +13,17 @@ begin
 	create table dbo.FeatureFlag (
 		Id smallint not null,
 		Slug varchar(100) not null,
-		TrueLabel varchar(25) null,
-		FalseLabel varchar(25) null,
+		TrueLabel varchar(250) null,
+		FalseLabel varchar(250) null,
 		[Description] varchar(500) null,
 		IsPermanent bit not null,
 		DefaultValue bit not null,
 		constraint PK_FeatureFlag primary key clustered (Id asc)
 	)
 end
+
+alter table dbo.FeatureFlag alter column FalseLabel varchar(250) null;
+alter table dbo.FeatureFlag alter column TrueLabel varchar(250) null;
 ]]>
   </sql>
  </changeSet>
