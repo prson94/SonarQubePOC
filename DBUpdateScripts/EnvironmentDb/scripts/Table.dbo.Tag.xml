@@ -62,7 +62,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Tag-Indices-v3">
+  <changeSet author="Pappas" id="Table.dbo.Tag-Indices-v3.1">
    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Tag_Uid_State_Value')
@@ -74,7 +74,13 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Tag_State_Value')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_Tag_State_Value ON [dbo].[Tag] ([State], [Value])
 END
+]]>
+  </sql>
+ </changeSet>
 
+ <changeSet author="Pappas" id="Table.dbo.Tag-FTI-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (
 	select	1
 	from	[sys].[fulltext_indexes] i 
@@ -83,11 +89,9 @@ IF NOT EXISTS (
 BEGIN
 	CREATE FULLTEXT INDEX ON dbo.Tag(Value) KEY INDEX PK_Tag ON fullTextCatalog
 END
-
 ]]>
   </sql>
  </changeSet>
-
 
  <changeSet author="Pappas" id="Table.dbo.Tag-Tag_AfterUpdate-v5">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
