@@ -11,9 +11,9 @@ export class ScoreDisplayPipe implements PipeTransform {
 		let roundedTxt = ((score * Math.pow(10, 2 + precision)) / Math.pow(10, precision)).toFixed(precision);
 		const roundedVal = parseFloat(roundedTxt);
 
-		if (roundedVal == 100 && score < 1) {
+		if (roundedVal === 100 && score < 1) {
 			roundedTxt = (roundedVal - Math.pow(10, 0 - precision)).toFixed(precision);
-		} else if (roundedVal == 0 && score > 0) {
+		} else if (roundedVal === 0 && score > 0) {
 			roundedTxt = (roundedVal + Math.pow(10, 0 - precision)).toFixed(precision);
 		}
 

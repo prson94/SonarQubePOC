@@ -45,7 +45,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
 			this.lowerThreshold = this.score.LowerThreshold;
 			check = true;
 		}
-		if (changes.score.currentValue.ScoreType != changes.score.previousValue.ScoreType) {
+		if (changes.score.currentValue.ScoreType !== changes.score.previousValue.ScoreType) {
 			this.setType();
 			check = true;
 		}
