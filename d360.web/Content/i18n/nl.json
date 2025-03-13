@@ -1,58 +1,58 @@
 {
-	"group": "Groep"
+	"addRule": "Regel toevoegen",
+	"after": "Na",
+	"apply": "Toepassen",
+	"before": "Voor",
+	"cancel": "Annuleren",
+	"choose": "Kiezen",
+	"clear": "Wissen",
+	"ct": "Bevat",
+	"dateAfter": "Datum ligt na",
+	"dateBefore": "Datum ligt voor",
+	"dateIs": "Datum is",
+	"dateNot": "Datum is niet",
+	"day_su": "Zo",
+	"day_sun": "Zo",
+	"day_sunday": "Zondag",
+	"day_mo": "Ma",
+	"day_mon": "Ma",
+	"day_monday": "Maandag",
+	"day_tu": "Di",
+	"day_tue": "Di",
+	"day_tuesday": "Dinsdag",
+	"day_we": "Wo",
+	"day_wed": "Wo",
+	"day_wednesday": "Woensdag",
+	"day_th": "Do",
+	"day_thu": "Do",
+	"day_thursday": "Donderdag",
+	"day_fr": "Vr",
+	"day_fri": "Vr",
+	"day_friday": "Vrijdag",
+	"day_sa": "Za",
+	"day_sat": "Za",
+	"day_saturday": "Zaterdag",
+	"eq": "Is gelijk aan",
+	"ew": "Eindigt met",
+	"group": "Groep",
+	"gt": "Groter dan",
+	"gte": "Groter dan of gelijk aan",
+	"is": "Is",
+	"isNot": "Is niet",
+	"lt": "Kleiner dan",
+	"lte": "kleiner dan of gelijk aan",
+	"matchAll": "Match alles",
+	"matchAny": "Match willekeurig",
+	"n": "Nee",
+	"nct": "Bevat niet",
+	"ne": "Is niet gelijk aan",
+	"noFilter": "Geen filter",
+	"removeRule": "Regel verwijderen",
+	"sw": "Begint met",
+	"upload": "Uploaden",
+	"y": "Ja"
 }
 /*
-	"sw": "Starts with": "Begint met"
-	"Contains": "Bevat"
-	"Not contains": "Bevat niet"
-	"Ends with": "Eindigt met"
-	"Equals": "Is gelijk aan"
-	"Not equals": "Is niet gelijk aan"
-	"No Filter": "Geen filter"
-	"Less than": "Kleiner dan"
-	"Less than or equal to": "kleiner dan of gelijk aan"
-	"Greater than": "Groter dan"
-	"Greater than or equal to": "Groter dan of gelijk aan"
-	"Is": "Is"
-	"Is not": "Is niet"
-	"Before": "Voor"
-	"After": "Na"
-	"Date is": "Datum is"
-	"Date is not": "Datum is niet"
-	"Date is before": "Datum ligt voor"
-	"Date is after": "Datum ligt na"
-	"Clear": "Wissen"
-	"Apply": "Toepassen"
-	"Match All": "Match alles"
-	"Match Any": "Match willekeurig"
-	"Add Rule": "Regel toevoegen"
-	"Remove Rule": "Regel verwijderen"
-	"Yes": "Ja"
-	"No": "Nee"
-	"Choose": "Kiezen"
-	"Upload": "Uploaden"
-	"Cancel": "Annuleren"
-	"Sunday": "Zondag"
-	"Monday": "Maandag"
-	"Tuesday": "Dinsdag"
-	"Wednesday": "Woensdag"
-	"Thursday": "Donderdag"
-	"Friday": "Vrijdag"
-	"Saturday": "Zaterdag"
-	"Sun": "Zo"
-	"Mon": "Ma"
-	"Tue": "Di"
-	"Wed": "Wo"
-	"Thu": "Do"
-	"Fri": "Vr"
-	"Sat": "Za"
-	"Su": "Zo"
-	"Mo": "Ma"
-	"Tu": "Di"
-	"We": "Wo"
-	"Th": "Do"
-	"Fr": "Vr"
-	"Sa": "Za"
 	"January": "Januari"
 	"February": "Februari"
 	"March": "Maart"
