@@ -31,14 +31,14 @@ export class GalleryBadgeComponent implements OnInit {
 		return this._precision;
 	}
 	set precision(val: number|string) {
-		this._precision = (typeof val == 'string') ? parseInt(val) : val;
+		this._precision = (typeof val === 'string') ? parseInt(val) : val;
 	}
 	_scoreValue: number = 0.123456789;
 	get scoreValue(): number {
 		return this._scoreValue;
 	}
 	set scoreValue(val: number | string) {
-		this._scoreValue = (typeof val == 'string') ? parseFloat(val) : val;
+		this._scoreValue = (typeof val === 'string') ? parseFloat(val) : val;
 	}
 
 	public get score(): AssetScore {
