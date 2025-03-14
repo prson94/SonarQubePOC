@@ -312,6 +312,7 @@
 	<include file="scripts/Procedure.api.UpsertItemFields.xml"/>
 	<include file="scripts/Procedure.api.DeleteGroups.xml"/>
 	<include file="scripts/Procedure.api.DeleteUsers.xml"/>
+	<include file="scripts/Procedure.api.UpsertAssets.xml"/>
 	<include file="scripts/Procedure.api.UpsertGroups.xml"/>
 	<include file="scripts/Procedure.api.UpsertUsers.xml"/>
 	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>

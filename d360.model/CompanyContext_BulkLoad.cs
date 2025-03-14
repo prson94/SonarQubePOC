@@ -694,8 +694,8 @@ end
 ";
 			await Connection.ExecuteAsync(sqlduplicate, new { load.ID, atID = assetType.ID });
 
-			List<AssetUpdate> putAssets = new List<AssetUpdate>();
-			List<AssetInsert> postAssets = new List<AssetInsert>();
+			var putAssets = new List<AssetApiModel>();
+			var postAssets = new List<AssetApiModel>();
 
 			List<LoadItem> loadItems = new List<LoadItem>();
 			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
@@ -823,7 +823,7 @@ inner join LoadItemColumn LIC on LoadID = @id and LIC.RowIndex = t.RowIndex";
 
 					if (!item.AssetUid.HasValue)
 					{
-						AssetInsert insert = new AssetInsert
+						var insert = new AssetApiModel
 						{
 							ExecutionItemUid = item.ExecutionItemUid,
 							Fields = new Dictionary<string, string>()
@@ -954,7 +954,7 @@ where S.KeyHash = @parentKeyHash
 					}
 					else
 					{
-						AssetUpdate update = new AssetUpdate
+						AssetApiModel update = new AssetApiModel
 						{
 							ExecutionItemUid = item.ExecutionItemUid
 						};

@@ -1,8 +1,12 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using Dapper;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Configuration;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +14,9 @@ namespace repositories.azure
 {
 	public abstract class Repository
 	{
+		// Commonly used sql expressions in thr repositories.
+		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
+
 		public int CurrentUserId { get; set; }
 
 		public Platform Platform { get { return Platform.Azure; } }
@@ -33,7 +40,58 @@ namespace repositories.azure
 				return commandTimeout;
 			}
 		}
+		
+		private string GetFullExceptionData(Exception ex, bool includeStacktrace = true, int characterLimit = 2000)
+		{
+			StringBuilder sb = new StringBuilder();
+			bool isSqlException = (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException));
 
+			if (isSqlException)
+			{
+				SqlException sqlException = (SqlException)ex.InnerException.InnerException;
+
+				foreach (SqlError sqlError in sqlException.Errors)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(" ");
+					}
+
+					sb.Append(sqlError.Message);
+				}
+			}
+			else
+			{
+				if (!ex.Message.Contains("inner exception for details"))
+				{
+					sb.Append(ex.Message);
+				}
+
+				var iex = ex.InnerException;
+				while (iex != null)
+				{
+					sb.Append("; ");
+					sb.Append(iex.Message);
+					if (includeStacktrace)
+					{
+						sb.Append("-----");
+						sb.Append(iex.StackTrace);
+					}
+					iex = iex.InnerException;
+				}
+			}
+
+			if (characterLimit == -1)
+			{
+				return sb.ToString();
+			}
+			else
+			{
+				string message = sb.ToString().Substring(0, Math.Min(characterLimit, sb.Length));
+				return message;
+			}
+		}
+		
 		protected async Task<GlobalReportingResource> GetUser(int? resId)
 		{
 			try
@@ -64,6 +122,91 @@ namespace repositories.azure
 
 				throw;
 			}
+		}
+
+		internal FieldValidationResult isFieldValid(FieldTypeValidation ft, string value)
+		{
+			FieldValidationResult result;
+			DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+			result = type.ValidateRestricted(ft.Name, ft.Type);
+			if (!result.IsValid)
+			{
+				return result;
+			}
+			result = type.ValidateRequirement(ft.Name, ft.IsRequired, value);
+			if (!result.IsValid)
+			{
+				return result;
+			}
+
+			switch (type)
+			{
+				case DataType.Boolean:
+					result = type.ValidateBoolean(ft.Name, value);
+					break;
+				case DataType.Date:
+					result = type.ValidateDate(ft.Name, value);
+					break;
+				case DataType.DateTime:
+					result = type.ValidateDateTime(ft.Name, value);
+					break;
+				case DataType.Decimal:
+					result = type.ValidateDecimal(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
+					break;
+				case DataType.Html:
+					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
+					break;
+				case DataType.Lookup:
+					result = type.ValidateList(ft.Name, ft.AllowMultipleValues, value);
+					break;
+				case DataType.Number:
+					result = type.ValidateNumber(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
+					break;
+				default:
+					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
+					break;
+			}
+
+			if (result.IsValid && string.IsNullOrEmpty(result.CorrectedValue))
+			{
+				result.CorrectedValue = value;
+			}
+
+			return result;
+		}
+
+		internal (bool, List<string>) parseFieldAndAddToRow(DataRow row, List<FieldTypeValidation> fieldTypes, Dictionary<string, string> fields)
+		{
+			var jsonArray = JArray.Parse("[]");
+			bool fieldsAreValid = true;
+			List<string> validationMessages = [];
+			foreach (var key in fields.Keys)
+			{
+				var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
+				if (ft != null)
+				{
+					var validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					if (validationResult.IsValid)
+					{
+						var jsonObject = JObject.Parse("{}");
+
+						jsonObject.Add("FieldName", key.Trim());
+						jsonObject.Add("FieldValue", validationResult.CorrectedValue);
+						jsonObject.Add("FieldTypeID", ft.ID);
+
+						jsonArray.Add(jsonObject);
+					}
+					else
+					{
+						fieldsAreValid = false;
+						validationMessages.Add(validationResult.Message);
+					}
+				}
+			}
+			row["CustomProperties"] = jsonArray.ToString();
+
+			return (fieldsAreValid, validationMessages);
 		}
 
 		protected async Task UpdateExecutionWithErrorFromException(ApiExecution execution, Exception ex)
@@ -156,58 +299,6 @@ namespace repositories.azure
 			catch (Exception)
 			{
 				throw;
-			}
-		}
-
-
-		private string GetFullExceptionData(Exception ex, bool includeStacktrace = true, int characterLimit = 2000)
-		{
-			StringBuilder sb = new StringBuilder();
-			bool isSqlException = (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException));
-
-			if (isSqlException)
-			{
-				SqlException sqlException = (SqlException)ex.InnerException.InnerException;
-
-				foreach (SqlError sqlError in sqlException.Errors)
-				{
-					if (sb.Length > 0)
-					{
-						sb.Append(" ");
-					}
-
-					sb.Append(sqlError.Message);
-				}
-			}
-			else
-			{
-				if (!ex.Message.Contains("inner exception for details"))
-				{
-					sb.Append(ex.Message);
-				}
-
-				var iex = ex.InnerException;
-				while (iex != null)
-				{
-					sb.Append("; ");
-					sb.Append(iex.Message);
-					if (includeStacktrace)
-					{
-						sb.Append("-----");
-						sb.Append(iex.StackTrace);
-					}
-					iex = iex.InnerException;
-				}
-			}
-
-			if (characterLimit == -1)
-			{
-				return sb.ToString();
-			}
-			else
-			{
-				string message = sb.ToString().Substring(0, Math.Min(characterLimit, sb.Length));
-				return message;
 			}
 		}
 	}

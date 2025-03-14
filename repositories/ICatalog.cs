@@ -21,9 +21,19 @@ namespace repositories
 
 		Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value);
 
-		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
+		Task<Asset> GetAsset(Guid? assetUid);
 
-		Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+
+		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
+
+		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
+
+		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
+
+		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
+
+		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
 		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
 
@@ -32,6 +42,8 @@ namespace repositories
 		Task<AssetDetail> ReadAssetDetail(string @object, int objectId);
 
 		Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
+
+		Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadAssetsAsync(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000);
 
@@ -60,6 +72,8 @@ namespace repositories
 		Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags);
 
 		Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes);
+		
+		Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<Semantic>> UpdateSemanticType();
 
@@ -67,16 +81,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 
-		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
-
-		Task<Asset> GetAsset(Guid? assetUid);
-
-		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
-
-		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
-
-		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
-
-		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
+		Task<RepositoryResponse<List<AssetApiResultModel>>> UpsertAssetsAsync(int executionId, List<AssetApiModel> models, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 	}
 }

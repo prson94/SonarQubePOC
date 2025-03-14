@@ -12,8 +12,8 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return new AssetInsert
-                {
+            return new AssetApiModel
+			{
                     ExecutionItemUid = Guid.Empty,
                     ParentUid = Guid.Empty,
                     Fields = new Dictionary<string, string>() {
@@ -74,8 +74,8 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return new AssetUpdate
-            {
+            return new AssetApiModel
+			{
                 ExecutionItemUid = Guid.Empty,
                 Uid = Guid.Empty,
                 ParentUid = Guid.Empty,
