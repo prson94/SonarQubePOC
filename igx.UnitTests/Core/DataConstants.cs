@@ -19,7 +19,7 @@ namespace igx.UnitTests.Core
 
         public class Tags
         {
-            public const string ValidName = "valid_tag_name";
+            public const string ValidName = "validTagName";
         }
 
 
