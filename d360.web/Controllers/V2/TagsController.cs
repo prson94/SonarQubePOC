@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
 			Guid _parentUid;
 			if (!Guid.TryParse(parentUid, out _parentUid))
 			{
-				return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, parentUid));
+				return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, "parentUid", parentUid));
 			}
 
 			var _childrenUids = new List<Guid>();
@@ -325,7 +325,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, item));
+					return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, "Uids", item));
 				}
 			}
 

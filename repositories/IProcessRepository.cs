@@ -14,7 +14,7 @@ namespace repositories
 
 		Task<List<ValidationError>> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId, bool isDiagramReplace, List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel, List<ProcessDiagramCopyMapper> pdCopyMapper);
 
-		Task<byte[]> GetDiagramExcel(Asset asset, byte[] image);
+		Task<ProcessDiagramExportModel> GetDiagramExport(long assetId);
 
 		Task<IEnumerable<ProcessDiagramBadge>> GetDiagramAssetBadges(Guid assetUid);
 
