@@ -3,7 +3,7 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading && tag">
-        <div class="asset-detail-header">
+        <div *ngIf="showTagDetails" class="asset-detail-header">
             <div class="asset-name">
                 {{tag.Value}}
             </div>
@@ -16,7 +16,7 @@
         </div>
 
         <div class="tagged-assets">
-            <div class="row">
+            <div *ngIf="showTagDetails" class="row">
                 <div class="row-header">
                     <label class="ig-label">
                         <span class="ng-star-inserted" i18n>Tagged Assets</span>

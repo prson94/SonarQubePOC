@@ -33,8 +33,8 @@ import { TagTypesViewModel } from './tag-types/tag-types.model';
 
 @Component({
     selector: 'd3s-admin-tags',
-    templateUrl: 'admin-tags.component.html',
-    styleUrl: 'admin-tags.component.less',
+	templateUrl: './admin-tags.component.html',
+	styleUrls: ['./admin-tags.component.less'],
     providers: [TagService]
 })
 
