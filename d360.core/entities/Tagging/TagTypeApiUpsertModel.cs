@@ -12,14 +12,6 @@ namespace d360.core.entities
 			set
 			{
 				string trimmedValue = value?.Trim();
-				if (trimmedValue != null && trimmedValue.IsValidForTag())
-				{
-					_value = trimmedValue;
-				}
-				else
-				{
-					throw new ArgumentException($"Provided TagType value '{value}' is not valid");
-				}
 			}
 		}
 	}

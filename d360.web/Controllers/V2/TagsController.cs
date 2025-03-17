@@ -171,7 +171,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTag(TagApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
@@ -201,6 +203,14 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Put(string tagUid, TagApiUpsertModel model)
 		{
 			Guid tagId;
+
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagUid, out tagId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
@@ -723,7 +733,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTagType(TagTypeApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
@@ -758,6 +770,13 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
 		{
 			Guid tagTypeId;
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagTypeUid, out tagTypeId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
