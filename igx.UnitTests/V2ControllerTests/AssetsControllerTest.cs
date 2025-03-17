@@ -134,10 +134,10 @@ namespace igx.UnitTests
             var assetUID = Guid.Parse(uid);
             bool isGoodUID = uid == DataConstants.ValidGUID;
 
-            var assetInsertList = new List<AssetInsert>();
+            var assetInsertList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetInsertList.Add(new AssetInsert() { });
+                assetInsertList.Add(new AssetApiModel() { });
             }
             IHttpActionResult actionResult;
             Task<HttpResponseMessage> responseMessageResult;
@@ -193,10 +193,10 @@ namespace igx.UnitTests
             var assetUID = Guid.Parse(uid);
             bool isGoodUID = !uid.StartsWith("000");
 
-            var assetUpdateList = new List<AssetUpdate>();
+            var assetUpdateList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetUpdateList.Add(new AssetUpdate() { });
+                assetUpdateList.Add(new AssetApiModel() { });
             }
             IHttpActionResult actionResult;
             Task<HttpResponseMessage> responseMessageResult;
@@ -331,10 +331,10 @@ namespace igx.UnitTests
                 RequestUri = testURI
             };
 
-            var assetInsertList = new List<AssetInsert>();
+            var assetInsertList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetInsertList.Add(new AssetInsert() { });
+                assetInsertList.Add(new AssetApiModel() { });
             }
 
             IHttpActionResult actionResult;
@@ -412,10 +412,10 @@ namespace igx.UnitTests
                 RequestUri = testURI
             };
 
-            var assetUpdateList = new List<AssetUpdate>();
+            var assetUpdateList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetUpdateList.Add(new AssetUpdate() { });
+                assetUpdateList.Add(new AssetApiModel() { });
             }
 
             IHttpActionResult actionResult;

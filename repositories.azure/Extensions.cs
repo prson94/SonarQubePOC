@@ -26,7 +26,7 @@ namespace repositories.azure
 	{
 		public static bool CheckForIncludeTotal(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_includetotal", bool defaultValue = true)
 		{
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName))
+			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -49,7 +49,7 @@ namespace repositories.azure
 			bool isValidParameter = true;
 
 			var sqlparameternameArgs = sqlParameterName.Replace("@", "");
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
+			if (queryParams.IsQueryParameterPresent(filterPropertyName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -116,7 +116,7 @@ namespace repositories.azure
 		{
 			int value = defaultPageSize;
 
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName))
+			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -140,7 +140,7 @@ namespace repositories.azure
 		{
 			int value = defaultPageNum;
 
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName))
+			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -162,7 +162,7 @@ namespace repositories.azure
 
 		public static string CheckForSortColumn(this IEnumerable<KeyValuePair<string, string>> queryParams, List<SortColumnOption> options, string defaultColumn, string parameterName = "_order")
 		{
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName))
+			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -180,7 +180,7 @@ namespace repositories.azure
 
 		public static string CheckForSortDirection(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_direction", string defaultValue = "asc")
 		{
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName))
+			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -214,11 +214,21 @@ namespace repositories.azure
 			}
 		}
 
+		public static bool IsQueryParameterPresent(this IEnumerable<KeyValuePair<string, string>> queryParams, string name)
+		{
+			return queryParams.ToList().Any(x => x.Key.ToLower() == name.ToLower());
+		}
+
+		public static string ReadQueryParameterValue(this IEnumerable<KeyValuePair<string, string>> queryParams, string name)
+		{
+			return queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == name.ToLower()).Value;
+		}
+
 		public static bool ValidateForQueryParameter<T>(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, ref string parameterValue)
 		{
 			bool isValid = true;
 			parameterValue = "";
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
+			if (queryParams.IsQueryParameterPresent(filterPropertyName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
@@ -260,7 +270,7 @@ namespace repositories.azure
 		public static bool ValidateForQueryParameterFromList(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, List<string> ValidFieldList, ref string parameterValue)
 		{
 			bool isValid = true;
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
+			if (queryParams.IsQueryParameterPresent(filterPropertyName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
