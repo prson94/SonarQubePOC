@@ -172,58 +172,38 @@ namespace d360.model
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,0) ua where ua.PermissionsBitMask & {(int)permission} = 0)
-																						begin
-																							select 0;
-																						end				                                                                        
-																						else
-																						begin
-																							select 1;
-																						end", new { t = assetTypeId, r = SecurityContext.ResourceID });
+			return Database.Connection.QuerySingle<bool>($@"
+declare	@assetTypePermissions int, 
+		@hasAssetTypePermission bit = 0
+
+select	@assetTypePermissions = dbo.GetCombinedPermissionsForUserByAssetTypeId(@t, @r);
+set		@hasAssetTypePermission = @assetTypePermissions & {(int)permission}
+
+select  @hasAssetTypePermission", new { t = assetTypeId, r = SecurityContext.ResourceID });
 		}
 
 		private bool HasPermission(long assetId, int assetTypeId, Permission permission)
 		{
 			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
-
 			if (isReadPermission)
 			{
-				Asset asset = Assets.Single(a => a.ID == assetId);
-
-				if (permission == Permission.ReadAsset)
-				{
-					return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, SecurityContext.ResourceID);
-				}
-
-				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
+				permission = Permission.ReadAsset;
 			}
-			else
-			{
-				return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																	begin
-																		select 1;
-																	end
-																else
-																	begin
-																		select 0;
-																end", new { assetId, t = assetTypeId, r = SecurityContext.ResourceID });
-			}
+
+			return Database.Connection.QuerySingle<bool>($@"
+declare	@assetPermissions int
+select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetId(@assetId, @r);
+select  (@assetTypePermissions & {(int)permission})
+", new { assetId, r = SecurityContext.ResourceID });
 		}
 
 		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
 		{
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = SecurityContext.ResourceID });
+			return Database.Connection.QuerySingle<bool>(
+				$"declare	@assetPermissions int;" +
+				$"select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
+				$"select	(@assetTypePermissions & {(int)permission})", 
+				new { type, objectId, r = SecurityContext.ResourceID });
 		}
 
 
@@ -1141,37 +1121,23 @@ where R.ID = @ID
 			return permissions;
 		}
 
-		private string permissionQuery = $@"
-			declare @permissionValues table (val int)
-
-			insert into @permissionValues
-			select PermissionsBitMask from UserAssetPermissionsByAssetID(@r,@assetTypeId,@assetId)
-
-			--check default read access if there are no permissions set and if user is not an administrator
-			if @IsAdministrator = 0 and
-				(select max(val) from @permissionValues) = 0 and 
-				(select DefaultPermissions from AssetType where id = @assetTypeId) = 0
-			begin
-				--15854 is a permission mask for all permissions except read
-				select 15854
-				return
-			end
-
-			select distinct val from @permissionValues";
-
 		public List<PermissionInfo> GetPermissions(long assetId, int assetTypeId)
 		{
 			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
+			int mask = 0;
 
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
+			//if (SecurityContext.IsAdministrator)
+			//{
+			//	mask = 15854;
+			//}
 
-			if (responsibilityAssignments.Any())
+			mask = Query<int>("select dbo.GetCombinedPermissionsForUserByAssetId(@assetId, @r)", new { r = SecurityContext.ResourceID, assetId }).First();
+			Permission CombinedPermission = (Permission)mask;
+
+			permissions.ForEach(p =>
 			{
-				permissions.ForEach(p =>
-				{
-					p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
-				});
-			}
+				p.Selected = (CombinedPermission & p.ID) == p.ID;
+			});
 
 			permissions.RemoveAll(i => !i.Selected);
 
@@ -1185,16 +1151,8 @@ where R.ID = @ID
 
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
-
-			if (responsibilityAssignments.Any())
-			{
-				return responsibilityAssignments.Any(i => (i & (int)Permission.ReadAsset) == (int)Permission.ReadAsset);
-			}
-			else
-			{
-				return true;
-			}
+			var perms = GetPermissions(assetId, assetTypeId);
+			return perms.Any(p => p.ID == Permission.ReadAsset);
 		}
 
 		public string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true)
@@ -1842,18 +1800,11 @@ where id = @IntersectTypeID";
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 
-																		 from asset a
-																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
-																		 where a.Object = @type and a.ObjectID = @id 
-																		 and ua.PermissionsBitMask & {(int)permission} = 0)
-																	begin
-																		select 0;
-																		end
-																	else
-																	begin
-																		select 1;
-																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
+			return Database.Connection.QuerySingle<bool>(
+				"declare	@assetPermissions int;" +
+				"select		@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
+				$"select	(@assetTypePermissions & {(int)permission})",
+				new { type, objectId, r = resourceId });
 		}
 
 		public bool HasAssetPermission(long id, Permission permission)

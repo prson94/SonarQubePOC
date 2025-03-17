@@ -81,6 +81,13 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+
+		Task<Asset> GetAsset(Guid? assetUid);
+
+		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
+
+		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 		Task<RepositoryResponse<List<AssetApiResultModel>>> UpsertAssetsAsync(int executionId, List<AssetApiModel> models, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 	}
 }

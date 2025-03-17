@@ -7,7 +7,6 @@ using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
@@ -39,17 +38,20 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository AssetRepository;
 		private readonly ICatalog ProcessRepository;
 		private readonly IQueueSource QueueSource;
+		private readonly ISecurity Security;
 
 		public ProcessController(
 			ICoreComponentSet set, 
 			IAssetRepository assetRepository,
 			ICatalog processRepository,
-			IQueueSource queueSource
+			IQueueSource queueSource,
+			ISecurity security
 			) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
 			QueueSource = queueSource;
+			Security = security;
 		}
 
 		/// <summary>
@@ -284,8 +286,11 @@ namespace d360.web.Controllers.V2
 					node["key"] = newKey.ToString();
 				}
 			}
-
-			if (! (await Catalog.HasAssetPermission(targetAsset.ID, Permission.EditAsset)))
+			
+			if (!Security.PermissionInMask(
+				Permission.EditAsset, 
+				await Security.ReadCombinedPermissionByAssetId(targetAsset.ID)
+				))
 			{
 				var err = new List<ValidationError>
 				{
