@@ -881,13 +881,13 @@ select * from [Resource] where ID = @userId";
 			dbArgs.Add("@password", PasswordHelper.HashPassword(password));
 			using (var connection = Connect())
 			{
-				model = await connection.QuerySingleAsync<Resource>("select * from [Resource] where Username = @username and [password] = @password", dbArgs);
+				model = await connection.QueryFirstOrDefaultAsync<Resource>("select * from [Resource] where Username = @username and [password] = @password", dbArgs);
 				if (model != null && companyId.HasValue)
 				{
 					dbArgs = new DynamicParameters();
 					dbArgs.Add("@companyId", companyId.Value);
 					dbArgs.Add("@resourceId", model.ID);
-					CompanyResource companyResource = await connection.QuerySingleAsync<CompanyResource>("select * from CompanyResource where CompanyId = @companyId and ResourceId = @resourceId", dbArgs);
+					CompanyResource companyResource = await connection.QueryFirstOrDefaultAsync<CompanyResource>("select * from CompanyResource where CompanyId = @companyId and ResourceId = @resourceId", dbArgs);
 					if (companyResource != null)
 					{
 						if (companyResource.State == d360.core.enums.CompanyResourceState.Active)
