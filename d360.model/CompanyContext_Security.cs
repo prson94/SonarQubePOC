@@ -193,7 +193,7 @@ select  @hasAssetTypePermission", new { t = assetTypeId, r = SecurityContext.Res
 			return Database.Connection.QuerySingle<bool>($@"
 declare	@assetPermissions int
 select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetId(@assetId, @r);
-select  (@assetTypePermissions & {(int)permission})
+select  (@assetPermissions & {(int)permission})
 ", new { assetId, r = SecurityContext.ResourceID });
 		}
 
@@ -202,7 +202,7 @@ select  (@assetTypePermissions & {(int)permission})
 			return Database.Connection.QuerySingle<bool>(
 				$"declare	@assetPermissions int;" +
 				$"select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
-				$"select	(@assetTypePermissions & {(int)permission})", 
+				$"select	(@assetPermissions & {(int)permission})", 
 				new { type, objectId, r = SecurityContext.ResourceID });
 		}
 
@@ -1803,7 +1803,7 @@ where id = @IntersectTypeID";
 			return Database.Connection.QuerySingle<bool>(
 				"declare	@assetPermissions int;" +
 				"select		@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
-				$"select	(@assetTypePermissions & {(int)permission})",
+				$"select	(@assetPermissions & {(int)permission})",
 				new { type, objectId, r = resourceId });
 		}
 

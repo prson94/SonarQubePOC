@@ -510,7 +510,7 @@ namespace d360.web.Controllers.V2
 			byte[] image = Convert.FromBase64String(result);
 
 
-			var dbResponse = await ProcessRepository.GetDiagramExport(asset.ID);
+			var dbResponse = await Catalog.GetDiagramExport(asset.ID);
 
 			var document = new SLDocument();
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
