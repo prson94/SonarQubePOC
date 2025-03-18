@@ -363,7 +363,7 @@ namespace d360.web.Controllers.V2
 
 		protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)
 		{
-			string json;
+			string json = string.Empty;
 
 			if(request.Content == null)
 			{
@@ -372,15 +372,14 @@ namespace d360.web.Controllers.V2
 
 			if (request.Content.IsMimeMultipartContent())
 			{
-				var streamProvider = new MultipartMemoryStreamProvider();
-				await request.Content.ReadAsMultipartAsync(streamProvider);
-
-				json = await streamProvider.Contents.Single().ReadAsStringAsync();
+				  var streamProvider = new MultipartMemoryStreamProvider();
+				  await request.Content.ReadAsMultipartAsync(streamProvider);
+					json = await streamProvider.Contents.Single().ReadAsStringAsync();
 			}
 			else
 			{
-				json = await request.Content.ReadAsStringAsync();
-			}
+					json = await request.Content.ReadAsStringAsync();
+			}			
 
 			if (deserializeAsIs)
 			{

@@ -357,6 +357,7 @@
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
+	<include file="scripts/Procedure.dbo.GetProcessDiagramExport.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderedTemplateBodyNg.xml"/>
 	<include file="scripts/Procedure.dbo.GetResponsibilityTypeBreakdown.xml"/>

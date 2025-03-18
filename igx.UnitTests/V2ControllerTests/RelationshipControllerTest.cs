@@ -4,6 +4,7 @@ using d360.core.resources;
 using d360.web.Controllers.V2;
 using d360.web.Services;
 using d360.web.Utilities;
+using DocumentFormat.OpenXml.EMMA;
 using FluentAssertions;
 using igx.UnitTests.Core;
 using Moq;
@@ -17,6 +18,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
@@ -60,97 +62,57 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetPredicatesAsync()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync();
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == DataConstants.GetPredicates().Count());
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+            Assert.True(data.Content.Count() == DataConstants.GetPredicates().Count());
         }
 
         [Fact]
         public async void GetPredicatesAsyncByGuid()
         {
             var actionResult = await relationshipsController.GetPredicatesAsync(DataConstants.GetPredicates().First().Uid);
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == 1);
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+            Assert.True(data.Content.Count() == 1);
         }
 
         [Fact]
         public async void GetPredicatesAsyncByType()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync(null, DataConstants.GetPredicates().First().Type);
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == 1);
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+            Assert.True(data.Content.Count() == 1);
         }
+
         [Fact]
         public async void GetPredicatesAsyncByName()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync(null, null, DataConstants.GetPredicates().First().Name);
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == 1);
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+			Assert.True(data.Content.Count() == 1);
         }
 
         [Fact]
         public async void GetPredicatesAsyncByInverse()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync(null, null, null, DataConstants.GetPredicates().First().Inverse);
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == 1);
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+			Assert.True(data.Content.Count() == 1);
         }
 
         [Fact]
         public async void GetPredicatesAsyncByUsage()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync(null, null, null, null, true);
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == 3);
-
+			var data = actionResult as OkNegotiatedContentResult<IEnumerable<PredicateApiViewModel>>;
+            Assert.True(data.Content.Count() == 3);
         }
 
         [Fact]
         public void GetPredicatesTypesAsync()
         {
-
             var actionResult = relationshipsController.GetPredicatesTypesAsync();
-
-            var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<PredicateTypeApiViewModel>>(str);
-
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count > 0); // Count is variable, depending on lineage version.
-
+			var data = actionResult as OkNegotiatedContentResult<List<PredicateTypeApiViewModel>>;
+            Assert.True(data.Content.Count > 0); // Count is variable, depending on lineage version.
         }
 
         [Fact]
@@ -337,17 +299,9 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetRelationshipTypesAsync()
         {
-
-            var actionResult = relationshipsController.GetRelationshipTypesAsync();
-
-            var str = await actionResult.Result.Content.ReadAsStringAsync();
-
-
-            Assert.True(actionResult.Result.IsSuccessStatusCode);
-            Assert.True(!string.IsNullOrEmpty(str));
-            var data = JsonConvert.DeserializeObject<List<IntersectTypeApiViewModel>>(str);
-            Assert.True(data.Count > 0);
-
+            var actionResult = await relationshipsController.GetRelationshipTypesAsync();
+			var data = actionResult as OkNegotiatedContentResult<List<IntersectTypeApiViewModel>>;
+            Assert.True(data.Content.Count > 0);
         }
 
         [Fact]
@@ -366,25 +320,23 @@ namespace igx.UnitTests.V2ControllerTests
 
 			var invalidIntersectTypeUid = Guid.Parse(DataConstants.InvalidGUID);
 
-			var expectedMessage = string.Format(Error.RelationshipTypeUIdNotFound, invalidIntersectTypeUid.ToString());
-
-			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model); };
-
-			await act.Should()
-					 .ThrowAsync<NotFoundBusinessLayerException>()
-					 .WithMessage(expectedMessage);
-        }
+			var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
+			
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.NotFound);
+		}
 
         [Fact]
         public async Task ERR_PostRelationshipsAsync_InvalidModel()
         {
 			var validIntersectTypeUid = Guid.Parse(DataConstants.ValidGUID);
-
-			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validIntersectTypeUid, null); };
-
-			await act.Should()
-					 .ThrowAsync<ArgumentException>();
-        }
+			var actionResult = await relationshipsController.PostRelationshipsAsync(validIntersectTypeUid, null);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
+			
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
+		}
 
         [Fact]
         public async Task ERR_PostRelationshipsAsync_MaxLimitReached()
@@ -398,13 +350,11 @@ namespace igx.UnitTests.V2ControllerTests
                 model.Add(new RelationshipInsert() { SubjectAssetUid = validUid });
             }
 
-			var expectedMessage = string.Format(Error.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
+			var actionResult = await relationshipsController.PostRelationshipsAsync(validUid, model);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
 
-			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
-
-			await act.Should()
-					 .ThrowAsync<ArgumentException>()
-					 .WithMessage(expectedMessage);
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
 		}
 
 		[Fact]
@@ -432,26 +382,24 @@ namespace igx.UnitTests.V2ControllerTests
         {
 			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
 
-			var expectedMessage = string.Format(Error.RelationshipTypeUIdNotFound, invalidUid.ToString());
-
 			var model = new RelationshipUpdates();
 
-			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(invalidUid, model); };
+			var actionResult = await relationshipsController.PutRelationshipsAsync(invalidUid, model);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
 
-			await act.Should()
-					 .ThrowAsync<NotFoundBusinessLayerException>()
-					 .WithMessage(expectedMessage);
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.NotFound);
 		}
 
         [Fact]
         public async Task ERR_PutRelationshipAsync_InvalidModel()
         {
 			var validUid = Guid.Parse(DataConstants.ValidGUID);
+			var actionResult = await relationshipsController.PutRelationshipsAsync(validUid, null);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
 
-			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(validUid, null); };
-
-			await act.Should()
-					 .ThrowAsync<ArgumentException>();
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
 		}
 
         [Fact]
@@ -460,19 +408,17 @@ namespace igx.UnitTests.V2ControllerTests
 			var maxSyncApiItemCount = 250;
 			var validUid = Guid.Parse(DataConstants.ValidGUID);
 
-			var expectedMessage = string.Format(Error.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
-
 			var model = new RelationshipUpdates();
             for (int i = 0; i <= maxSyncApiItemCount; i++)
             {
                 model.Add(new RelationshipUpdate());
             }
 
-			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(validUid, model); };
+			var actionResult = await relationshipsController.PutRelationshipsAsync(validUid, model);
+			var result = await actionResult.ExecuteAsync(new CancellationToken());
 
-			await act.Should()
-					 .ThrowAsync<ArgumentException>()
-					 .WithMessage(expectedMessage);
+			Assert.True(!result.IsSuccessStatusCode);
+			Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
 		}
 
         [Fact]
@@ -603,7 +549,6 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void ERR_DeleteRelationships_InvalidModel()
         {
-
             var guid = Guid.Parse(DataConstants.ValidGUID);
             var model = new RelationshipDeletes();
 
@@ -611,10 +556,8 @@ namespace igx.UnitTests.V2ControllerTests
             var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
 
-
             Assert.True(!result.IsSuccessStatusCode);
             Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
-
         }
     }
 }
