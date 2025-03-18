@@ -60,18 +60,6 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
 
-		private bool IsCustomCssEnabled {
-			get {
-				return GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS).Result;
-			}
-		}
-		private bool IsDashboardingEnabled {
-			get {
-				return GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED).Result;
-			}
-		}
-
-
 		public EnvironmentController(
 			ICoreComponentSet set, 
 			IThemeRepository themeRepository, 
@@ -1630,7 +1618,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
 					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
@@ -1840,7 +1828,7 @@ select	r.uid as ResourceUid,
 		{
 			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
 					return  errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
@@ -1909,7 +1897,7 @@ select	r.uid as ResourceUid,
 		{
 			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
 					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
 				}
@@ -2266,7 +2254,7 @@ select	r.uid as ResourceUid,
 				}
 			}
 
-			if (IsDashboardingEnabled)
+			if (await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 				return Ok(responseModel);
@@ -2317,7 +2305,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnCreate, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2427,7 +2415,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageForbiddenResponse(Error.EndpointNotAuthorizedMessage);
 			}
@@ -2517,7 +2505,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> DeleteDashboard(Guid uid)
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnDelete, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2559,7 +2547,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> UpdatePowerBiCredentials(PowerBiCredentials credentials)
 		{
-			if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED) || !SecurityContext.IsAdministrator)
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.DashboardingErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
 			}
