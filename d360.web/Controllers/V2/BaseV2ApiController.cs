@@ -365,6 +365,11 @@ namespace d360.web.Controllers.V2
 		{
 			string json;
 
+			if(request.Content == null)
+			{
+				return default;
+			}
+
 			if (request.Content.IsMimeMultipartContent())
 			{
 				var streamProvider = new MultipartMemoryStreamProvider();

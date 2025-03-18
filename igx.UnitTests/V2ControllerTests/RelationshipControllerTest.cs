@@ -498,7 +498,7 @@ namespace igx.UnitTests.V2ControllerTests
             var str = result.Content.ReadAsStringAsync();
 
             Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
         }
 
         [Fact]
