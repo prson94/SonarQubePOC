@@ -4,6 +4,8 @@ using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;

@@ -29,10 +29,6 @@ namespace repositories
 
 		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 
-		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
-
-		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
-
 		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
 		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
@@ -81,13 +77,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 
-		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
-
-		Task<Asset> GetAsset(Guid? assetUid);
-
-		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
-
-		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 		Task<RepositoryResponse<List<AssetApiResultModel>>> UpsertAssetsAsync(int executionId, List<AssetApiModel> models, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 	}
 }
