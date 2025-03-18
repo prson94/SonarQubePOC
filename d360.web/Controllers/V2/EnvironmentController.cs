@@ -1850,7 +1850,7 @@ select	r.uid as ResourceUid,
 			{
 				RepositoryResponse<bool> response = null;
 				var resource = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
-				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true);
+				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true, true);
 
 				if (!response.IsSuccess)
 				{

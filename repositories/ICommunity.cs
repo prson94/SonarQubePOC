@@ -124,7 +124,7 @@ namespace repositories
 
 		Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser);
 
-		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false);
+		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false, bool IsNew = false);
 
 		Task<RepositoryResponse<bool>> RemoveThemeAsync(int companyId, Guid uid);
 
