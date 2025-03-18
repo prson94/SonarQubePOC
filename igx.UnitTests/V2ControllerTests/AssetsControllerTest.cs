@@ -281,7 +281,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)
@@ -515,7 +515,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)
