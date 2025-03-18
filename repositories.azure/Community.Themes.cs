@@ -220,7 +220,7 @@ namespace repositories.azure
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false)
+		public async Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false, bool IsNew = false)
 		{
 			var userErrorMessages = new List<string>();
 
@@ -232,6 +232,14 @@ namespace repositories.azure
 				response.StatusCode = 400;
 
 				return response;
+			}
+			
+			if (IsNew)
+			{
+				if (theme.Uid == Guid.Empty)
+				{
+					theme.Uid = Guid.NewGuid();
+				}
 			}
 
 			var sql = @$"
@@ -278,7 +286,7 @@ begin
 				CustomCss,
 				CreatedBy,CreatedOn,
 				UpdatedBy,UpdatedOn,
-				Locked
+				Locked,Uid
 				) 
 	values (@companyId, @Name,@IsCurrent,@HeaderLogoExtension,
 				@HomePageBackgroundExtension,@BrowserIconExtension,
@@ -290,7 +298,7 @@ begin
 				@CustomCss,
 				COALESCE(@CreatedBy,@CurrentUser),COALESCE(@CreatedOn,getutcdate()),
 				COALESCE(@UpdatedBy,@CurrentUser),COALESCE(@UpdatedOn,getutcdate()),
-				@Locked) 
+				@Locked, @Uid) 
 end";
 
 			using (var connection = (SqlConnection)Connect())
