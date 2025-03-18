@@ -365,20 +365,21 @@ namespace d360.web.Controllers.V2
 		{
 			string json = string.Empty;
 
-			if (request.Content != null)
-			{ 
-				if (request.Content.IsMimeMultipartContent())
-				{
-					var streamProvider = new MultipartMemoryStreamProvider();
-					await request.Content.ReadAsMultipartAsync(streamProvider);
-
-					json = await streamProvider.Contents.Single().ReadAsStringAsync();
-				}
-				else
-				{
-					json = await request.Content.ReadAsStringAsync();
-				}			
+			if(request.Content == null)
+			{
+				return default;
 			}
+
+			if (request.Content.IsMimeMultipartContent())
+			{
+				  var streamProvider = new MultipartMemoryStreamProvider();
+				  await request.Content.ReadAsMultipartAsync(streamProvider);
+					json = await streamProvider.Contents.Single().ReadAsStringAsync();
+			}
+			else
+			{
+					json = await request.Content.ReadAsStringAsync();
+			}			
 
 			if (deserializeAsIs)
 			{
