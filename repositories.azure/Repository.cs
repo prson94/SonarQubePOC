@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using System;
@@ -122,6 +123,69 @@ namespace repositories.azure
 
 				throw;
 			}
+		}
+
+		
+		public bool PermissionInMask(Permission p, int mask)
+		{
+			Permission pMask = (Permission)mask;
+			return (pMask & p) == p;
+		}
+
+		public async Task<int> ReadCombinedPermissionByAssetId(long id)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetId(@id, @currentUserId)", new { id, CurrentUserId });
+			}
+			return permissions;
+		}
+		public async Task<int> ReadCombinedPermissionByAssetLegacy(string @object, int id)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+			}
+			return permissions;
+		}
+		public async Task<int> ReadCombinedPermissionByAssetUid(Guid uid)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+			}
+			return permissions;
+		}
+
+		public async Task<int> ReadCombinedPermissionByAssetTypeId(int id)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeId(@id, @currentUserId)", new { id, CurrentUserId });
+			}
+			return permissions;
+		}
+		public async Task<int> ReadCombinedPermissionByAssetTypeLegacy(string @object, int id)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+			}
+			return permissions;
+		}
+		public async Task<int> ReadCombinedPermissionByAssetTypeUid(Guid uid)
+		{
+			int permissions = 0;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+			}
+			return permissions;
 		}
 
 		internal FieldValidationResult isFieldValid(FieldTypeValidation ft, string value)

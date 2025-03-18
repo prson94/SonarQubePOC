@@ -29,10 +29,6 @@ namespace repositories
 
 		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 
-		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
-
-		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
-
 		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
 		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
