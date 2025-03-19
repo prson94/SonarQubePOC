@@ -178,7 +178,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
-			var response = await Catalog.CreateTagAsync(model.Value, model.TagTypeUid);
+			var response = await Catalog.CreateTagAsync(model.Value?.Trim(), model.TagTypeUid);
 			return (response.IsSuccess) ?
 				Ok(response.Data) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
@@ -226,7 +226,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			var response = await Catalog.UpdateTagAsync(tagId, model.Value);
+			var response = await Catalog.UpdateTagAsync(tagId, model.Value?.Trim());
 
 			if (response.IsSuccess)
 			{
@@ -741,7 +741,7 @@ namespace d360.web.Controllers.V2
 			}
 			if(model?.Value.Length > 0  && model.Value?.Length <= 50)
 			{
-				var response = await Catalog.CreateTagTypeAsync(model.Value);
+				var response = await Catalog.CreateTagTypeAsync(model.Value?.Trim());
 				return (response.IsSuccess) ?
 					Ok(response.Data) :
 					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
@@ -787,7 +787,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.Invalid);
 			}
 
-			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
+			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value?.Trim());
 			if (response.IsSuccess)
 			{
 				var responseModel = await Catalog.ReadTagTypeAsync(tagTypeId);
