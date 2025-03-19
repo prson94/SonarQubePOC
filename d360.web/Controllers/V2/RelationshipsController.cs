@@ -1552,7 +1552,7 @@ namespace d360.web.Controllers.V2
 			{
 				dbArgs.Add("assetUid", asset.uid);
 				var permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-				if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
+				if ((permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0) || SecurityContext.IsAdministrator)
 				{
 					relationshipsCountQuery = $@"drop table if exists #relationshipCountMap
 								create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
