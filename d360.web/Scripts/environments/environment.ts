@@ -7,7 +7,8 @@ declare var VersionNumber: string;
 export const environment = {
 	production: false,
 	version: typeof VersionNumber === "undefined" ? "" : VersionNumber,
-    timeStamp: "{BUILD_TIMESTAMP}"
+	timeStamp: "{BUILD_TIMESTAMP}",
+	appInsights: "InstrumentationKey=540e47d4-1cf5-4647-86b1-3c5478eaf78e;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=bd3bdb48-93d6-4833-821d-d3ee225280da"
 };
 
 /*
