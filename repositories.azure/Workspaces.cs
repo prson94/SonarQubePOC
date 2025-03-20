@@ -6,7 +6,6 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
