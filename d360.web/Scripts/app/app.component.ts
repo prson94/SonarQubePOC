@@ -6,6 +6,9 @@ import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
+import { AngularPlugin } from '@microsoft/applicationinsights-angularplugin-js';
+import { ApplicationInsights } from '@microsoft/applicationinsights-web';
+import { environment } from '../environments/environment';
 
 declare var CurrentResourceID;
 declare var VersionNumber: string;
@@ -81,7 +84,29 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             }
         });
 
-        this.config.setTranslation(this.primeNgTranslations);
+		this.config.setTranslation(this.primeNgTranslations);
+
+		const angularPlugin = new AngularPlugin();
+		const appInsights = new ApplicationInsights({
+			config: {
+				connectionString: environment.appInsights,
+				// *** If you're adding the Click Analytics plug-in, delete the next line. ***  
+				extensions: [angularPlugin],
+				// *** Add the Click Analytics plug-in. ***
+				// extensions: [angularPlugin, clickPluginInstance],
+				extensionConfig: {
+					[angularPlugin.identifier]: { router: this.router }
+					// *** Add the Click Analytics plug-in. ***
+					// [clickPluginInstance.identifier]: clickPluginConfig
+				}
+			}
+		});
+		appInsights.loadAppInsights();
+		appInsights.setAuthenticatedUserContext(CurrentResourceID);
+		//appInsights.addTelemetryInitializer((envelope) => {
+		//	envelope.tags = envelope.tags || [];
+		//	envelope.tags['ai.cloud.role'] = 'testTag';
+		//});
     }
 
     ngAfterContentInit() {

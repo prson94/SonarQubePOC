@@ -1025,6 +1025,7 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\sort-icon.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\models\feature-flags.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
+    <TypeScriptCompile Include="Scripts\environments\environment.qa.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
