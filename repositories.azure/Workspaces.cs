@@ -6,6 +6,7 @@ using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -1098,7 +1099,18 @@ select @assetId;
 							}
 							else
 							{
-								var validationResult = isFieldValid(fieldType, (user.Fields[field] ?? "").Trim());
+								FieldValidationResult validationResult = new FieldValidationResult();
+								DataType type = (DataType)Enum.Parse(typeof(DataType), fieldType.Type);
+								if (type == DataType.Boolean || type == DataType.Date ||
+												type == DataType.DateTime || type == DataType.Decimal || type == DataType.Number)
+								{
+									validationResult = isFieldValid(fieldType, user.Fields[field]);
+								}
+								else
+								{
+									validationResult = isFieldValid(fieldType, (user.Fields[field] ?? "").Trim());
+								}
+
 								if (!validationResult.IsValid)
 								{
 									success = false;
