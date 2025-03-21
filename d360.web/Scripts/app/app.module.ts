@@ -24,6 +24,7 @@ import { FeatureFlagsInitService } from './services/feature-flags-init.service';
 import { forkJoin } from "rxjs";
 import { SessionTimeoutModalModule } from './components/session-timeout-modal/session-timeout-modal.module';
 import { ApplicationinsightsAngularpluginErrorService } from '@microsoft/applicationinsights-angularplugin-js';
+import { CompanySettingsService } from './services/settings.service';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -35,6 +36,10 @@ export function featureFlagsFromCommunity(provider: FeatureFlagsInitService) {
 
 export function settingsInitializer(provider: SettingsProviderService) {
 	return () => forkJoin(provider.loadSettings(), provider.loadApplicationSettings());
+}
+
+export function userVariablesInitializer(provider: CompanySettingsService) {
+	return () => provider.loadUserVariables();
 }
 
 export function localeInitializer(localeId: string) {                  
@@ -106,6 +111,12 @@ export function localeInitializer(localeId: string) {
 			multi: true,
 			useFactory: featureFlagsFromCommunity,
 			deps: [FeatureFlagsInitService]
+		},
+		{
+			provide: APP_INITIALIZER,
+			multi: true,
+			useFactory: userVariablesInitializer,
+			deps: [CompanySettingsService]
 		},
 		{
             provide: APP_INITIALIZER,

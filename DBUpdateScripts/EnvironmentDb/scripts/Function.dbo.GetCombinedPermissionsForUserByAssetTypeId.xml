@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1">
+ <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissionsForUserByAssetTypeId] 
@@ -47,6 +47,21 @@ begin
 	if not exists (select 1 from @permissions) and @defaultPermissions is not null
 	begin
 		insert into @permissions values(@defaultPermissions)
+	end
+
+	if not exists (select Id from @permissions where Id & 1 = 1)
+	begin
+		if @defaultPermissions = 1
+		begin
+			insert into @permissions values(@defaultPermissions)
+		end
+		else
+		begin
+			if exists (select top 1 1 from [dbo].[ResponsibilitySummary] where AssetTypeID = @id and ApplyToType = 0 and ResourceID = @userId)
+			begin
+				insert into @permissions values(1)
+			end
+		end
 	end
 
 	set	@combinedPermissionMask = dbo.GetCombinedPermissions(@permissions);
