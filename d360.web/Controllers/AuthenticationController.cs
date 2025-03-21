@@ -69,7 +69,7 @@ namespace d360.web.Controllers
 
 			// Serialize the authentication request to XML for transmission.
 			var authnRequestXml = authnRequest.ToXml();
-			Log.LogTrace($"createAuthnRequest => Idp Endpoint: {saml.IdpSsoEndpoint}");
+			//Log.LogTrace($"createAuthnRequest => Idp Endpoint: {saml.IdpSsoEndpoint}");
 
             return authnRequestXml;
         }
@@ -80,28 +80,20 @@ namespace d360.web.Controllers
             {
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
                 {
-					Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
+					//Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
 
                     if (saml.IdpCertificateFile != null)
                     {
                         var x509Certificate = new X509Certificate2(saml.IdpCertificateFile);
                         
-                        if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
-                        {
-                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
-                        }
-                        else
+                        if (!SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
                         {
                             throw new ArgumentNullException(core.resources.Error.FailedToVerifySignature);
                         }
                     }
                     else
                     {
-                        if (SAMLAssertionSignature.Verify(assertionXml))
-                        {
-                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
-                        }
-                        else
+                        if (!SAMLAssertionSignature.Verify(assertionXml))
                         {
                             throw new ArgumentNullException(core.resources.Error.FailedToVerifySignatureNoIDP);
                         }
@@ -181,7 +173,7 @@ namespace d360.web.Controllers
                             break;
                         }
                     }
-					Log.LogInformation($"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}");
+					//Log.LogInformation($"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}");
 				}
                 else
                 {
@@ -206,7 +198,7 @@ namespace d360.web.Controllers
 
                     isCompanyAdministrator = await Community.ReadShouldUserBeAutoAdminByGroupMembershipAsync(SecurityContext.CompanyID, SecurityContext.DomainSettingID, allGroups);
 					
-					Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
+					//Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
 				}
 
 				if (resource == null)
@@ -215,7 +207,7 @@ namespace d360.web.Controllers
 
                     if (SecurityContext.AllowNewUserLogin && !string.IsNullOrEmpty(userName))
                     {
-						Log.LogInformation($"Creating resource account for Username: {userName} and Email: {eMail}.");
+						//Log.LogInformation($"Creating resource account for Username: {userName} and Email: {eMail}.");
 
 						firstName = string.IsNullOrEmpty(firstName) ? "Unknown" : firstName;
 						lastName = string.IsNullOrEmpty(lastName) ? "Unknown" : lastName;
@@ -260,7 +252,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}, Email: {eMail} .");
+						//Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}, Email: {eMail} .");
 
 						if (companyResource.State == CompanyResourceState.Active)
                         {
@@ -309,7 +301,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogWarning($"User attempting to log in does not have access. Username: {userName}, Email: {eMail}.");
+						//Log.LogWarning($"User attempting to log in does not have access. Username: {userName}, Email: {eMail}.");
 						return Redirect("/noaccess");
                     }
                 }
@@ -317,7 +309,7 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-				Log.LogTrace($"Resource account exists for Username: {userName}, Email: {eMail} . Now authorizing with cookie.");
+				//Log.LogTrace($"Resource account exists for Username: {userName}, Email: {eMail} . Now authorizing with cookie.");
 
 				if (resource.ID > 0)
                 {
@@ -548,7 +540,17 @@ namespace d360.web.Controllers
                 }
             }
 
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
+			string finalErrorMessage = "";
+			if (string.IsNullOrEmpty(eMail))
+			{
+				finalErrorMessage += "No email address could be found in authentication response.";
+			}
+			if (resource == null)
+			{
+				finalErrorMessage += "No resource account could be created for the incoming authentication.";
+			}
+			Log.LogError(finalErrorMessage);
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest, finalErrorMessage); //If you made this far, then error occurred.
         }
 
 		void saveUserAsLocalResource(Resource resource, DateTime loggedInOn)
@@ -602,11 +604,11 @@ namespace d360.web.Controllers
 					var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
                     var authnRequestXml = createAuthnRequest(saml);
 
-                    Log.LogTrace($"Login => relayState: {returnUrl}");
+                    //Log.LogTrace($"Login => relayState: {returnUrl}");
 
                     if (saml.SignInitialSSORequest)
                     {
-                        Log.LogTrace($"Login => signing initial authentication request");
+                        //Log.LogTrace($"Login => signing initial authentication request");
 
                         using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx"))
                         {
@@ -619,7 +621,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        Log.LogTrace($"Login => not signing initial authentication request");
+                        //Log.LogTrace($"Login => not signing initial authentication request");
 
                         var hashString = "";
                         switch (saml.HashAlgorithmType)
@@ -720,12 +722,8 @@ namespace d360.web.Controllers
 			SAMLResponse samlResponse = null;
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out XmlElement samlResponseXml, out string relayState);
 
-            Log.LogInformation($"samlResponseXml: {samlResponseXml.InnerXml}");
-
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
-
-			Log.LogInformation($"IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}");
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
@@ -733,8 +731,6 @@ namespace d360.web.Controllers
 				var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
 				SAMLAssertion samlAssertion = null;
-
-				Log.LogInformation($"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}");
 
 				if (samlResponse.GetAssertions().Count > 0)
                 {
@@ -814,7 +810,7 @@ namespace d360.web.Controllers
 						customClaims.Add(attName, attValue);
 					}
                 }
-				Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, Email :  {eMail}, FirstName: {firstName}, LastName: {lastName}");
+				//Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, Email :  {eMail}, FirstName: {firstName}, LastName: {lastName}");
 
                 System.Action addSamlAssertionToCookie = () =>
                 {
@@ -836,7 +832,9 @@ namespace d360.web.Controllers
             {
                 string errorMessage = null;
 
-                if (samlResponse.Status.StatusMessage != null)
+				Log.LogInformation($"samlResponseXml: {samlResponseXml.InnerXml}");
+
+				if (samlResponse.Status.StatusMessage != null)
                 {
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
@@ -905,11 +903,10 @@ namespace d360.web.Controllers
 
             if (response.IsError)
             {
+				Log.LogTrace($"Token Response: {response.Raw}");
 				Log.LogCritical(response.Exception, $"Got error from RequestAuthorizationCodeTokenAsync.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
             }
-
-			Log.LogTrace($"Token Response: {response.Raw}");
 
 			var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);

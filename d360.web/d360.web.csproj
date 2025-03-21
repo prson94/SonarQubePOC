@@ -1014,7 +1014,6 @@
     <TypeScriptCompile Include="Scripts\app\pages\workflow-types\components\list.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\workflow-types\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lastCallTime.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\column-filter.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\comment-form.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\grid-paging-info.ts" />
@@ -1024,8 +1023,8 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-tag-input.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\sort-icon.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\models\feature-flags.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\models\user-variables.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
-    <TypeScriptCompile Include="Scripts\environments\environment.qa.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
