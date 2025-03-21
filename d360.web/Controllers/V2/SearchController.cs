@@ -575,7 +575,7 @@ namespace d360.web.Controllers.V2
 		private async Task<List<string>> GetVisibleCategories()
 		{
 			bool useElastic = await UseElasticAsync();
-			var exclude = new List<AssetTypeClass>() { AssetTypeClass.Group, AssetTypeClass.User };
+			var exclude = new List<AssetTypeClass> { AssetTypeClass.Group, AssetTypeClass.User };
 			if(!useElastic)
 			{
 				exclude.Add(AssetTypeClass.Diagram);
