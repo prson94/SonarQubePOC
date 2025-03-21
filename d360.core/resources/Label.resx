@@ -1820,4 +1820,13 @@
   <data name="version" xml:space="preserve">
     <value>Version</value>
   </data>
+  <data name="AssignmentsPage" xml:space="preserve">
+    <value>Assignments</value>
+  </data>
+  <data name="RequestsPage" xml:space="preserve">
+    <value>Requests</value>
+  </data>
+  <data name="DataCatalogPage" xml:space="preserve">
+    <value>Data Catalog</value>
+  </data>
 </root>

@@ -673,6 +673,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Assignments.
+        /// </summary>
+        public static string AssignmentsPage {
+            get {
+                return ResourceManager.GetString("AssignmentsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Auto Display Parent.
         /// </summary>
         public static string AutoDisplayParent {
@@ -1110,6 +1119,15 @@ namespace d360.core.resources {
         public static string DashboardsTab {
             get {
                 return ResourceManager.GetString("DashboardsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data Catalog.
+        /// </summary>
+        public static string DataCatalogPage {
+            get {
+                return ResourceManager.GetString("DataCatalogPage", resourceCulture);
             }
         }
         
@@ -3423,6 +3441,15 @@ namespace d360.core.resources {
         public static string RequestCertificationDraft_Name {
             get {
                 return ResourceManager.GetString("RequestCertificationDraft_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requests.
+        /// </summary>
+        public static string RequestsPage {
+            get {
+                return ResourceManager.GetString("RequestsPage", resourceCulture);
             }
         }
         
