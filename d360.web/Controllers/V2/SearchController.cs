@@ -574,8 +574,15 @@ namespace d360.web.Controllers.V2
 
 		private async Task<List<string>> GetVisibleCategories()
 		{
+			bool useElastic = await UseElasticAsync();
+			var exclude = new List<AssetTypeClass>() { AssetTypeClass.Group, AssetTypeClass.User };
+			if(!useElastic)
+			{
+				exclude.Add(AssetTypeClass.Diagram);
+			}
+
 			List<string> visibleCategories = assetTypeClasses
-				.Where(c => Company.AssetTypes.Any(at => at.Class == c && at.Class != AssetTypeClass.Diagram && at.Class != AssetTypeClass.Group && at.Class != AssetTypeClass.User))
+				.Where(c => Company.AssetTypes.Any(at => at.Class == c && !exclude.Contains(at.Class)))
 				.Select(c => c.ToString()).ToList();
 
 			//if (Company.Semantics.Any() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser()))
