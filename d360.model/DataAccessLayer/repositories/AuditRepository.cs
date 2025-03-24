@@ -89,7 +89,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
 			string viewnamerepl = "dbo.AuditViewCustomFilter";
 
-			if (startDate.HasValue && endDate.HasValue)
+			if (startDate.HasValue && endDate.HasValue && !assetTypeUid.HasValue && !assetUid.HasValue)
 			{
 				if ((endDate.Value - startDate.Value).TotalDays <= 10)
 				{
@@ -321,7 +321,7 @@ FROM 	reporting.global_audit ga with (index(IX_ReportingAudit_Date_Include))
 			select uid, Name as DisplayName, 'Semantic' as Object, S.id as ObjectID, null as AssetTypeClass 
 			from dbo.Semantic S where ((ga.Object = 'Semantic' and S.id = ga.ObjectID) or (ga.ActionObject = 'Semantic' and s.id = ga.ActionObjectID))
 		) AD
-	 ) a";
+	 ) az ";
 			}
 		}
 
