@@ -284,20 +284,31 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("FieldType_Percentage", resourceCulture);
             }
         }
-        
-        /// <summary>
+
+		/// <summary>
+		///   Looks up a localized string similar to Reference Item List from Relationship.
+		/// </summary>
+		public static string FieldType_ReferenceItemListFromRel
+		{
+			get
+			{
+				return ResourceManager.GetString("FieldType_ReferenceItemListFromRel", resourceCulture);
+			}
+		}
+
+		        /// <summary>
         ///   Looks up a localized string similar to Reference Item List from Relationship.
         /// </summary>
-        public static string FieldType_ReferenceItemListFromRel {
+        public static string FieldType_ReferenceList {
             get {
-                return ResourceManager.GetString("FieldType_ReferenceItemListFromRel", resourceCulture);
+                return ResourceManager.GetString("FieldType_ReferenceList", resourceCulture);
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Relation Lookup.
-        /// </summary>
-        public static string FieldType_RelationLookup {
+/// <summary>
+		///   Looks up a localized string similar to Relation Lookup.
+		/// </summary>
+		public static string FieldType_RelationLookup {
             get {
                 return ResourceManager.GetString("FieldType_RelationLookup", resourceCulture);
             }

@@ -1890,6 +1890,7 @@ where id = @IntersectTypeID";
             DataType.FieldFromRelationship.ToString(),
             DataType.OwnershipLookup.ToString(),
             DataType.RefListRelationship.ToString(),
+			DataType.ReferenceList.ToString(),
             DataType.JsonElement.ToString(),
             DataType.Tag.ToString(),
             DataType.JSON.ToString(),
