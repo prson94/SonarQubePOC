@@ -6,44 +6,50 @@ import { IconService } from '../../../services/icon.service';
 import { FavoritesManagementService } from './FavoritesManagementService';
 
 @Component({
-    selector: 'd3s-site-menu-favorite-item',
-    templateUrl: './site-menu-favorite-item.component.html',
-    styleUrls: ['./site-menu-favorite-item.component.less']
+	selector: 'd3s-site-menu-favorite-item',
+	templateUrl: './site-menu-favorite-item.component.html',
+	styleUrls: ['./site-menu-favorite-item.component.less']
 })
 export class SiteMenuFavoriteItemComponent {
-    @Input() favorite: FavoriteViewModel;
+	@Input() favorite: FavoriteViewModel;
 
-    constructor(private iconService: IconService, private store: FavoritesManagementService) { }
+	constructor(private iconService: IconService, private store: FavoritesManagementService) { }
 
-    AssetTypeClass = AssetTypeClass;
-    FavoritePageType = FavoritePageType;
+	AssetTypeClass = AssetTypeClass;
+	FavoritePageType = FavoritePageType;
 
-    public get iconName() {
-        if (this.favorite.AssetTypeClass != null) {
-            return this.iconService.getIconIdByClass(AssetTypeClass[this.favorite.AssetTypeClass]);
+	private iconByPageType = new Map<FavoritePageType, string>([
+		[ FavoritePageType.SearchResultsPage, 'fa-search' ],
+		[ FavoritePageType.DashboardPage, 'fa-tachometer' ],
+		[ FavoritePageType.HomePage, 'fa-home' ],
+		[ FavoritePageType.CommunityPage, 'fa-group' ],
+		[ FavoritePageType.WorkflowPage, 'fa-usb' ],
+		[ FavoritePageType.SemanticTypePage, 'fa-tags' ],
+		[ FavoritePageType.DataCatalogPage, 'gov-data-catalog-icon'],
+		[ FavoritePageType.AssignmentsPage, 'fa-list'],
+		[ FavoritePageType.RequestsPage, 'fa-plus-square-o']
+	]);
+
+	public get iconName() {
+		if (this.favorite.AssetTypeClass !== null && this.favorite.AssetTypeClass !== undefined) {
+			const icon = this.iconService.getIconIdByClass(AssetTypeClass[this.favorite.AssetTypeClass]);
+			if (icon !== '') {
+				return 'fa-' + icon;
+			}
         }
 
-        const iconByPageType = new Map([
-            [FavoritePageType.SearchResultsPage, 'search'],
-            [FavoritePageType.DashboardPage, 'tachometer'],
-            [FavoritePageType.HomePage, 'home'],
-            [FavoritePageType.CommunityPage, 'group'],
-            [FavoritePageType.WorkflowPage, 'usb'],
-            [FavoritePageType.SemanticTypePage, 'tags']
-        ]);
-
-        switch (this.favorite.PageType) {
+		switch (this.favorite.PageType) {
             case FavoritePageType.Artifact: {
-                return 'question-circle';
+                return 'fa-question-circle';
             }
-            default: {
-                const icon = iconByPageType.get(this.favorite.PageType);
+			default: {
+				const icon = this.iconByPageType.get(this.favorite.PageType);
                 if (icon != null) {
                     return icon;
                 }
-                return 'question-circle';
+                return 'fa-question-circle';
             }
-        }
+		}
     }
 
     homePageRoute$ = this.store.state$.pipe(
@@ -52,5 +58,5 @@ export class SiteMenuFavoriteItemComponent {
 
     searchText$ = this.store.state$.pipe(
         map((x) => x.searchText)
-    );
+	);
 }
