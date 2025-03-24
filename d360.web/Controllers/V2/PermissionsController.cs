@@ -33,13 +33,6 @@ namespace d360.web.Controllers.V2
         private readonly IAssetRepository AssetRepository;
 		private readonly ISecurity Security;
 
-		private bool IsNewPermissions
-		{
-			get {
-				return GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED).Result;
-			}
-		}
-
         public PermissionsController(ICoreComponentSet set, IAssetRepository repository, ISecurity security) : base(set)
         {
             AssetRepository = repository;
@@ -64,7 +57,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetPermissionsByUid(Guid assetUid)
         {
-			if (IsNewPermissions)
+			if (await GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED))
 			{
 				var permissions = await Security.ReadPermissionsByAssetAsync(assetUid);
 				return Ok(permissions.Data);
@@ -110,7 +103,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {
-			if (IsNewPermissions)
+			if (await GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED))
 			{
 				var permissions = await Security.ReadPermissionsByAssetTypeAsync(assetTypeUid);
 				return Ok(permissions.Data);

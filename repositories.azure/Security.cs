@@ -279,7 +279,7 @@ select * from [security].[Role] where Id = @roleId;",
 		{
 			RepositoryResponse<IEnumerable<PermissionInfo>> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var sql = @"
 declare @assetTypeId int, @assetId bigint, @DefaultPermissions int, @Permissions int
@@ -330,7 +330,7 @@ select @Permissions";
 		{
 			RepositoryResponse<IEnumerable<PermissionInfo>> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var sql = @"
 declare @assetTypeId int, @DefaultPermissions int, @Permissions int;
@@ -371,7 +371,7 @@ select @Permissions";
 		{
 			RepositoryResponse<IEnumerable<AssetOwnerModel>> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var sql = @"
 declare @assetTypeId int, @assetId bigint
@@ -412,7 +412,7 @@ where	AssetTypeId = @assetTypeId and o.IsVisible = 1";
 		{
 			RepositoryResponse<IEnumerable<ReadSecurityPolicy>> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var sql = @"
 select	ru.uid,
@@ -480,7 +480,7 @@ for json path;";
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryMultipleAsync(
 					"select uid as [value], Name as [label] from security.[Role]; " +
@@ -507,7 +507,7 @@ for json path;";
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryMultipleAsync(
 					"declare @id int; select @id = Id from AssetType where Uid = @assetTypeUid; " +
@@ -528,7 +528,7 @@ for json path;";
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryAsync<dynamic>(
 					@"
@@ -553,7 +553,7 @@ order by tap.DisplayPath",
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryAsync<dynamic>(
 					@"
@@ -576,7 +576,7 @@ order by p.DisplayPath",
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryAsync<dynamic>("select a.uid as [value], g.Name as [label] from [Group] g inner join Asset a on a.Object = 'Group' and a.ObjectID = g.ID order by g.Name");
 				response.Data = query;
@@ -589,7 +589,7 @@ order by p.DisplayPath",
 		{
 			RepositoryResponse<dynamic> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				var query = await connection.QueryAsync<dynamic>("select uid as [value], FirstName + ' ' + LastName + ' (' + Email + ')' as [label] from reporting.Global_Resource where State = 1 order by LastName, FirstName, Email");
 				response.Data = query;
@@ -602,7 +602,7 @@ order by p.DisplayPath",
 		{
 			RepositoryResponse<IEnumerable<ReadRole>> response = new(200);
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QueryAsync<ReadRole>(
 					"select uid, Name, Description, [Permissions], UpdatedOn from security.[Role] order by Name"

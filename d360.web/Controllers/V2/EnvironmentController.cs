@@ -129,10 +129,8 @@ namespace d360.web.Controllers.V2
 				ResourceName = res.FullName,
 				ResourceEmail = res.Email,
 				VersionNumber = typeof(EnvironmentController).Assembly.GetName().Version.ToString(),
-				DataDogApplicationId = ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "",
-				DataDogClientToken = ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "",
-				DataDogService = ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "",
-				ApplicationLanguageSetting = ""
+				ApplicationLanguageSetting = "",
+				ApplicationInsightsConnectionString = Config.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING")
 			};
 
 			return Request.CreateResponse(HttpStatusCode.OK, data);

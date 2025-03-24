@@ -240,48 +240,56 @@ namespace d360.web
 				builder.RegisterType<Catalog>().As<ICatalog>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<History>().As<IHistory>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Scoring>().As<IScoring>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Search>().As<ISearch>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Social>().As<ISocial>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Workflow>().As<IWorkflow>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.WorkspaceId = "";

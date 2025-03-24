@@ -24,7 +24,7 @@ export class SemanticBaseComponent extends AssetGridBaseComponent {
 			this.semanticTypesEnabled = flag;
 		});
 
-        if (!this.semanticTypesEnabled) {
+		if (this.semanticTypesEnabled != undefined && !this.semanticTypesEnabled) {
             this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
         }        
     }

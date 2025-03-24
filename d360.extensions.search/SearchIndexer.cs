@@ -723,7 +723,7 @@ namespace d360.extensions.search
 							AssetID = o.AssetID,
 							ItemUniqueID = o.ItemUniqueID,
 							AssetType = o.TypeName,
-							RelativeUrl = $"asset/{o.Uid.ToString().ToLower()}",
+							RelativeUrl = (assetClass == AssetTypeClass.Diagram) ? o.Url : $"asset/{o.Uid.ToString().ToLower()}",
 							Uid = o.Uid,
 							AssetTypeUid = o.AssetTypeUid,
 							AssetPath = GetPathArrayFromSegments(o.Segments),

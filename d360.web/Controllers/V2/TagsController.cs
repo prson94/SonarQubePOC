@@ -171,12 +171,14 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTag(TagApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
-			var response = await Catalog.CreateTagAsync(model.Value, model.TagTypeUid);
+			var response = await Catalog.CreateTagAsync(model.Value?.Trim(), model.TagTypeUid);
 			return (response.IsSuccess) ?
 				Ok(response.Data) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
@@ -201,6 +203,14 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Put(string tagUid, TagApiUpsertModel model)
 		{
 			Guid tagId;
+
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagUid, out tagId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
@@ -216,7 +226,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			var response = await Catalog.UpdateTagAsync(tagId, model.Value);
+			var response = await Catalog.UpdateTagAsync(tagId, model.Value?.Trim());
 
 			if (response.IsSuccess)
 			{
@@ -723,13 +733,15 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTagType(TagTypeApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 			if(model?.Value.Length > 0  && model.Value?.Length <= 50)
 			{
-				var response = await Catalog.CreateTagTypeAsync(model.Value);
+				var response = await Catalog.CreateTagTypeAsync(model.Value?.Trim());
 				return (response.IsSuccess) ?
 					Ok(response.Data) :
 					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
@@ -758,6 +770,13 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
 		{
 			Guid tagTypeId;
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagTypeUid, out tagTypeId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
@@ -768,7 +787,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.Invalid);
 			}
 
-			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
+			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value?.Trim());
 			if (response.IsSuccess)
 			{
 				var responseModel = await Catalog.ReadTagTypeAsync(tagTypeId);

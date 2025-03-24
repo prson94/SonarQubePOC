@@ -15,10 +15,14 @@ namespace repositories.azure
 {
 	public abstract class Repository
 	{
+		public bool CurrentUserIsAdmin { get; set; }
+
 		// Commonly used sql expressions in thr repositories.
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 
 		public int CurrentUserId { get; set; }
+
+		internal readonly int MAX_PERMISSIONS_MASK = 15854;
 
 		public Platform Platform { get { return Platform.Azure; } }
 
@@ -135,27 +139,49 @@ namespace repositories.azure
 		public async Task<int> ReadCombinedPermissionByAssetId(long id)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetId(@id, @currentUserId)", new { id, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else 
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetId(@id, @currentUserId)", new { id, CurrentUserId });
+				}			
 			}
 			return permissions;
 		}
 		public async Task<int> ReadCombinedPermissionByAssetLegacy(string @object, int id)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+				}
 			}
 			return permissions;
 		}
 		public async Task<int> ReadCombinedPermissionByAssetUid(Guid uid)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+				}
 			}
 			return permissions;
 		}
@@ -163,27 +189,48 @@ namespace repositories.azure
 		public async Task<int> ReadCombinedPermissionByAssetTypeId(int id)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeId(@id, @currentUserId)", new { id, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeId(@id, @currentUserId)", new { id, CurrentUserId });
+				}
 			}
 			return permissions;
 		}
 		public async Task<int> ReadCombinedPermissionByAssetTypeLegacy(string @object, int id)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
+				}
 			}
 			return permissions;
 		}
 		public async Task<int> ReadCombinedPermissionByAssetTypeUid(Guid uid)
 		{
 			int permissions = 0;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			if (CurrentUserIsAdmin)
 			{
-				permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+				permissions = MAX_PERMISSIONS_MASK;
+			}
+			else
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@uid, @currentUserId)", new { uid, CurrentUserId });
+				}
 			}
 			return permissions;
 		}
