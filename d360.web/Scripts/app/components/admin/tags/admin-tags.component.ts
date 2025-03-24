@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { SidePanelButton } from '../../../models/side-panel.model';
+import { AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
 import {
     AdvancedFilterFieldType,
     Filters,
@@ -26,9 +28,7 @@ import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
 import { PopupMenu } from "../../shared/controls/popup-menu/popup-menu.component";
 import { SidePanelService } from "../../../services/side-panel.service";
 import { IOutputData } from "angular-split";
-import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
-import { TagDetailComponent } from './tag-details/tag-detail.component';
 import { TagTypesViewModel } from './tag-types/tag-types.model';
 
 @Component({
@@ -56,11 +56,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
     editPopupTitle: string = $localize`Edit Tag`;
 	private generalTagTypeUId = '00000001-0000-0000-0000-b00000000011';
 
+	protected sidePanelButtons: SidePanelButton[] = [
+		new SidePanelButton({
+			label: $localize`Information`,
+			tooltip: $localize`Information`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Select one of the links on the left to display its information`,
+			notApplicableMessage: $localize`Information is not available for the selected option`,
+			multipleSelectedMessage: $localize`Select a single link to display it’s information`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: true
+		})];
+
 	sidePanelStorageKey: string = '';
 	selectedItem: Record<string, object>;
 
-	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
+	sidePanelOpen: boolean = false;
+	secondarySidePanelOpen: boolean = false;
+	secondarySidePanel: string = "item";
+	selectedForSecondaryPanel: unknown;
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
@@ -70,7 +88,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	menuItems: any = [];
 	menuItemsForDelete: any = [];
 	itemToEdit: TagType;
-	@ViewChild('tagDetail', { static: false }) tagDetails: TagDetailComponent;
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
@@ -128,6 +145,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
 				this.sidePanelService.setSidePanelState({ expanded: true });
 				this.sidePanelOpen = true;
 				this.cdRef.markForCheck();
+			}
+			if (res.type === 'Asset') {
+				this.selectedForSecondaryPanel = res.data;
+				this.sidePanelService.setSidePanelState({ expanded: true });
+				this.secondarySidePanel = "item";
+				this.secondarySidePanelOpen = true;
+			} else {
+				this.selected = null;
+				this.selectedForInfoPanel = { AssetUid: res.data.AssetUid, Object: res.data.Object };
 			}
 		});
 	}
@@ -555,5 +581,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
     editTag(toEditTag: TagType){
         this.selected[0] = toEditTag;
         this.showEditor = true;
-    }
+	}
+
+	protected updatePanelHeader(headerLabel: string): void {
+		this.sidePanelButtons[0].label = headerLabel;
+	}
 }
