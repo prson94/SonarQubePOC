@@ -20,5 +20,6 @@
 		public static readonly string USE_ELASTIC_SEARCH = "search-use-elastic";
         public static readonly string USE_ASSET_FIELD = "asset-field-table";
 		public static readonly string USE_INTERSECT_FIELD = "intersect-field-table";
+		public static readonly string FIELDTYPE_REFERENCE_LIST = "fieldtype-referencelist-conversion";
 	}
 }

@@ -41,6 +41,7 @@ namespace d360.extensions.search
 			"Relationship",
 			"FieldFromRelationship",
 			"RefListRelationship",
+			"ReferenceList",
 			"JSON"
 		}.AsReadOnly();
 

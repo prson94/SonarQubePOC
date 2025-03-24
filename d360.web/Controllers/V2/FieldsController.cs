@@ -102,7 +102,13 @@ namespace d360.web.Controllers.V2
 			{
 				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
-			var results = await FieldsRepository.GetFieldTypes(queryParams);
+
+			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
+			var excludeTypes = new KeyValuePair<string, string>("_excludetypes", newReferenceList ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString());
+			var queryParamsExpanded = queryParams.ToList();
+			queryParamsExpanded.Add(excludeTypes);
+
+			var results = await FieldsRepository.GetFieldTypes(queryParamsExpanded);
 
 			if (results.Item2.StatusCode != HttpStatusCode.OK)
 			{
@@ -262,6 +268,13 @@ namespace d360.web.Controllers.V2
 						}
 					}
 				}
+			}
+
+			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
+			if ((!newReferenceList && model.Fields.Any(f => f.Type?.ReferenceList != null)) || (newReferenceList && model.Fields.Any(f => f.Type?.ComputedRelationshipReferenceList != null)))
+			{
+				var forbiddenType = newReferenceList ? "ComputedRelationshipReferenceList" : "ReferenceList";
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, $"Field type {forbiddenType} is not supported");
 			}
 
 			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);
