@@ -87,13 +87,23 @@ namespace d360.model.DataAccessLayer.repositories
             IReadOnlyList<OrderByModel> orderByList
         )
         {
-            var viewName = "SELECT * " +
-						   "  FROM dbo.AuditViewCustomFilter" +
-                           " WHERE (@assetUid IS NULL OR ActionAssetUid = @assetUid)" +
-                           "   AND (@assetTypeUid IS NULL OR ActionAssetTypeUid = @assetTypeUid)" +
-                           "   AND (@action IS NULL OR Action = @action)" +
-                           "   AND (@startDate IS NULL OR Date >= @startDate)" +
-                           "   AND (@endDate IS NULL OR Date <= @endDate)";
+			string viewnamerepl = "dbo.AuditViewCustomFilter";
+
+			if (startDate.HasValue && endDate.HasValue)
+			{
+				if ((endDate.Value - startDate.Value).TotalDays <= 10)
+				{
+					viewnamerepl = await GetAuditDateRangeQuery();
+				}
+			}
+
+			var viewName = @$"SELECT * 
+							  FROM {viewnamerepl}
+							  WHERE (@assetUid IS NULL OR ActionAssetUid = @assetUid)
+							  AND(@assetTypeUid IS NULL OR ActionAssetTypeUid = @assetTypeUid)
+							  AND(@action IS NULL OR Action = @action)
+							  AND(@startDate IS NULL OR Date >= @startDate)
+							  AND(@endDate IS NULL OR Date <= @endDate)";
 
             var fieldList = new List<DefaultFilter>
             {
@@ -205,5 +215,115 @@ namespace d360.model.DataAccessLayer.repositories
 
             return result;
         }
-    }
+
+		public async Task<string> GetAuditDateRangeQuery()
+		{
+			string query = @"select count(1)
+							from sys.indexes
+							where name = 'IX_ReportingAudit_Date_Include'
+							and object_id= object_id(N'Reporting.Global_Audit')";
+
+			int isExists = await CompanyContext.QueryFirstOrDefaultAsync<int>(query);
+
+			if (isExists == 0)
+			{
+				return "dbo.AuditViewCustomFilter";
+			}
+			else
+			{
+				return @"(
+SELECT 	ad.uid AS [Uid],
+		ad.DisplayValue as [Name],
+		r.uid as [ResourceUid],
+		CAST(IIF ( R.State = 3, 1, 0 ) AS BIT) AS [ResourceIsDeleted],
+		R.FirstName + ' ' + R.LastName AS [ResourceName],
+		ga.Date as [Date],
+		ga.action as [Action],
+		ActionA.uid as [ActionAssetUid],
+		ActionAT.uid as [ActionAssetTypeUid],
+		CASE 
+			WHEN ga.ActionObject = 'Intersect' then 'Relationship'
+			WHEN ga.ActionObject = 'IntersectType' then 'RelationshipType'
+			ELSE ga.ActionObject
+		END AS [ActionObject],
+		CASE 
+			WHEN ga.ActionObjectTypeName = 'Intersect Type'
+			THEN 'Relationship Type'
+			WHEN ga.ActionObjectTypeName = '$IntersectTypeName'
+			THEN COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectTypeName,'--RelationShip Not Found--')
+			ELSE ga.ActionObjectTypeName
+		END AS [ActionObjectTypeName],
+		case when ga.ActionObjectName = '$IntersectName' then COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectName,'--RelationShip Not Found--') else ga.actionObjectName end AS [ActionObjectName],
+		replace(ga.actionDescription,'$IntersectTypeName','Relationship') AS [ActionDescription],
+		COALESCE(FT.FriendlyName,fa.FieldName) as [Field],
+		CASE 
+			WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
+			ELSE fa.Value
+		END AS [NewValue],
+		COALESCE(AT.Class, AD.AssetTypeClass) AS [Class],
+		ga.[Version],
+		CASE 
+			WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
+			ELSE fa.PreviousValue
+		END AS [PreviousValue],
+		ft.[Type] as [FieldType],
+		ga.id Auditid
+FROM 	reporting.global_audit ga with (index(IX_ReportingAudit_Date_Include))
+		LEFT JOIN reporting.global_fieldaudit fa on ( fa.auditid = ga.id)
+		left JOIN [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+		LEFT JOIN AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+		LEFT JOIN Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
+		LEFT JOIN AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
+		LEFT JOIN FieldType FT on FT.ID = fa.FieldTypeID
+		outer apply (
+					Select I.SubjectName Relationship_ActionObjectName,
+					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Object = ga.Object and I.ObjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					union all
+					Select I.ObjectName Relationship_ActionObjectName,
+					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Subject = ga.Object and I.SubjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					) RelationPlaceHolderResolve
+			cross apply (
+			select uid, DisplayValue, Object, objectid, AssetTypeClass 
+			from AssetDetail a where ((a.Object = ga.Object and a.objectid = ga.ObjectID) or (a.Object = ga.ActionObject and a.objectid = ga.ActionObjectID))
+			union  all
+			select uid, value as DisplayName, 'Tag' as Object, id as ObjectID, 11 as AssetTypeClass 
+			from Tag t where ((ga.Object = 'Tag' and t.id = ga.ObjectID) or (ga.ActionObject = 'Tag' and t.id = ga.ActionObjectID))
+			union  all
+			select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass 
+			from dbo.IssueType where ((ga.Object = 'IssueType' and id = ga.ObjectID) or (ga.ActionObject = 'IssueType' and id = ga.ActionObjectID))
+			union  all
+			select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass 
+			from dbo.[IntersectType] IT
+			outer APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  
+			where ((ga.Object = 'IntersectType' and IT.id = ga.ObjectID) or (ga.ActionObject = 'IntersectType' and IT.id = ga.ActionObjectID))
+			union  all
+			select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass 
+			from dbo.ResponsibilityType rt where ((ga.Object = 'ResponsibilityType' and rt.id = ga.ObjectID) or (ga.ActionObject = 'ResponsibilityType' and rt.id = ga.ActionObjectID))
+			union all
+			select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass 
+			from dbo.[Report] r where ((ga.Object = 'Report' and r.id = ga.ObjectID) or (ga.ActionObject = 'Report' and r.id = ga.ActionObjectID))
+			union all
+			select MA.uid, AT.Name as DisplayName, 'MetricAllocation' as Object, MA.ID as ObjectID, null as AssetTypeClass 
+			from metrics.Allocation MA 
+			inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid 
+			where ((ga.Object = 'MetricAllocation' and MA.id = ga.ObjectID) or (ga.ActionObject = 'MetricAllocation' and MA.id = ga.ActionObjectID))
+			union all
+			select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass 
+			from dbo.[Predicate] p where ((ga.Object = 'Predicate' and p.id = ga.ObjectID) or (ga.ActionObject = 'Predicate' and p.id = ga.ActionObjectID))
+			union all
+			select uid, name as DisplayName, Object, ObjectID, Class as AssetTypeClass 
+			from dbo.AssetType atc where ((atc.Object = ga.Object and atc.objectid = ga.ObjectID) or (atc.Object = ga.ActionObject and atc.objectid = ga.ActionObjectID))
+			union all
+			select uid, Name as DisplayName, 'Semantic' as Object, S.id as ObjectID, null as AssetTypeClass 
+			from dbo.Semantic S where ((ga.Object = 'Semantic' and S.id = ga.ObjectID) or (ga.ActionObject = 'Semantic' and s.id = ga.ActionObjectID))
+		) AD
+	 ) a";
+			}
+		}
+
+	}
 }
