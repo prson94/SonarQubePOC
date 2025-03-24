@@ -319,6 +319,7 @@
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.api.CompleteExecution.xml"/>
+	<include file="scripts/Procedure.api.ValidateLookupFields.xml"/>
 	<include file="scripts/Procedure.api.UpsertChangeLog.xml"/>
 	<include file="scripts/Procedure.api.UpsertItemFields.xml"/>
 	<include file="scripts/Procedure.api.DeleteGroups.xml"/>
