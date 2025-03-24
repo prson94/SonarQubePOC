@@ -17,6 +17,7 @@ import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../services/side-panel.service';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
     selector: 'semantic-definition',
@@ -40,7 +41,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
     sidePanelLoading: boolean = false;
     sidePanelStorageKey: string;
     isAdmin: boolean = false;
-    showEditor: boolean = false;
+	showEditor: boolean = false;
+	iscallGetdata: boolean = false;
+	uid: string = "";
 
     constructor(
         private route: ActivatedRoute,
@@ -57,22 +60,27 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         private headerActionsService: HeaderActionsService,
     ) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
-        this.isAdmin = this.authenticationService.isAdmin;
-    }
-
-
+		this.isAdmin = this.authenticationService.isAdmin;
+		if (this.semanticTypesEnabled == undefined) {
+			featureFlagService.getFlagValue(FeatureFlags.SemanticTypesUiFlag).then((flag) => {
+				this.semanticTypesEnabled = flag;
+				this.getData(this.uid);
+			});
+		}
+	}
 
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
-            const uid = params['semanticTypeUid'];
-			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
-			this.logSemanticAction(UsageAction.View, uid);
-            this.getData(uid);
+            this.uid = params['semanticTypeUid'];
+			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType',null,null,this.uid);
+			this.logSemanticAction(UsageAction.View, this.uid);
+			this.getData(this.uid);
         });
     }
 
-    getData(uid: string) {
-        if (this.semanticTypesEnabled) {
+	getData(uid: string) {
+		if (this.semanticTypesEnabled && !this.iscallGetdata) {
+			this.iscallGetdata = true;
             this.isLoading = true;
             this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
                 this.semanticType = s.items[0];
@@ -138,8 +146,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
     }
 
     editSemantic($event) {
-        this.headerActionsService.emitFavoritesChange();    
-        this.getData(this.semanticType.uid);
+		this.headerActionsService.emitFavoritesChange();
+		this.iscallGetdata = false;
+		this.getData(this.semanticType.uid);
         this.showEditor = false;
     }
 
