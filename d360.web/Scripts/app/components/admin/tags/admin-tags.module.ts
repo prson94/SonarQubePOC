@@ -34,9 +34,11 @@ import { TagDetailComponent } from './tag-details/tag-detail.component';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-assets-detail.module';
 import { TagDetailModule } from './tag-details/tag-detail.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 @NgModule({
 	imports: [
+		AssetPreviewModule,
 		TaggedAssetDetailModule,
 		PropertyGroupModule,
         CommonModule,

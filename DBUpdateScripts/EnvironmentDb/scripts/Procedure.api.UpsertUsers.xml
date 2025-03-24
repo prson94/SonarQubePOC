@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.8">
+  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.10">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[UpsertUsers]
@@ -137,6 +137,21 @@ begin
 	delete	f
 	from	#Fields f
 			inner join #Items t on f.ItemNumber = t.ItemNumber and IsValid = 0;
+			
+	
+	exec api.ValidateLookupFields @lookupFieldsPassedByValue;
+	
+	update T
+	set T.IsValid = 0,
+	T.Message = 'Invalid lookup value for field ' + F.FieldName + '. '
+	from #Items T
+	inner join #Fields f on f.ItemNumber = t.ItemNumber 
+	inner join FieldType s on s.ID = f.FieldTypeID and s.[Type] = 'Lookup'
+	where coalesce(f.FieldValue,'') !='' and f.LookupValue is null and T.IsValid  is null;
+
+	delete f
+	from #Fields f
+	inner join #Items T on f.ItemNumber = t.ItemNumber and t.IsValid = 0;
 
 	-- Start load sucessfull record.
 	begin try
