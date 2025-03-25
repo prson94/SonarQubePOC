@@ -113,7 +113,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (!string.IsNullOrEmpty(fieldDataType))
 						{
-								fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+							fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
 						}
 						else
 						{
@@ -336,7 +336,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			long offset = (pageSize == 0 ? 250 : (long)pageSize) * ((pageNum == 0 ? 1 : (long)pageNum) - 1);
-			if (offset < 0)
+			if (offset < 0 || pageNum > 21474836)
 			{
 				if (pageNum > 21474836)
 				{
