@@ -264,7 +264,16 @@ where	g.id = @groupId;
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
 					simpleQueryFilters.Add(@"g.Name like @simpleFilter");
-					dbArgs.Add("@simpleFilter", "%" + simpleFilter + "%");
+					if (simpleFilter.Contains("*"))
+					{
+						simpleFilter = GetEscapedFilterString(simpleFilter);
+						dbArgs.Add("@simpleFilter", simpleFilter);
+					}
+					else
+					{
+						simpleFilter = GetEscapedFilterString(simpleFilter);
+						dbArgs.Add("@simpleFilter", "%" + simpleFilter + "%");
+					}
 				}
 			}
 
@@ -1315,5 +1324,40 @@ select @assetId;
 			}
 			return usersvalidate;
 		}
+
+		#region "SimpleFilter"
+		private string GetEscapedFilterString(string filter, bool isContains = false)
+		{
+			return wildcardValue(escapeForSQLLike(filter), isContains);
+		}
+
+		private string escapeForSQLLike(string value, bool isContains = true)
+		{
+			char[] escapeChars = new char[] { '%', '_', '^', '[' };
+			string escapedValue = "";
+
+			foreach (char c in value)
+			{
+				if (escapeChars.Contains(c))
+				{
+					escapedValue += $"[{c}]";
+				}
+				else
+				{
+					escapedValue += c;
+				}
+			}
+
+			return escapedValue;
+		}
+
+		private string wildcardValue(string value, bool isContains = true)
+		{
+			value = value.Replace("*", "%").Replace("?", "_");
+			value = isContains ? $"%{value}%" : $"{value}%";
+
+			return value;
+		}
+		#endregion
 	}
 }
