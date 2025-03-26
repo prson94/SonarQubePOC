@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1.1">
+ <changeSet author="Pappas,PuneetGupta" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1.3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissionsForUserByAssetTypeId] 
@@ -28,19 +28,32 @@ begin
 
 	declare @permissions dbo.Ids;
 
+	declare @ResponsibilityTemp table (ResponsibilityTypeID int,RuleID int);
+	
+	insert into @ResponsibilityTemp
+	select distinct rr.ResponsibilityTypeID,rr.ID RuleID
+	from Asset a
+	inner join ResponsibilityRuleResultAsset ra on ra.AssetTypeID = 0 and ra.AssetID = a.ID 
+	inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID and ra.AssetID > 0
+	where a.AssetTypeID = @id;
+	
+	insert into @ResponsibilityTemp
+	select	distinct rr.ResponsibilityTypeID,rr.ID RuleID
+	from	ResponsibilityRuleResultAsset ra
+			inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID
+	where ra.AssetTypeID = @id and ra.AssetID = 0;
+	
 	insert into @permissions
 		select	relation.[PermissionsBitMask]
 		from	ResponsibilityTypeRelation relation
 				inner join (
 							select	rr.ResponsibilityTypeID
-							from	ResponsibilityRuleResultAsset ra
-									inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID and ra.AssetTypeID = @id and ra.AssetID = 0
-									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.ID and rs.SecurityAsset = 'R' and rs.SecurityAssetID = @userId
+							from	@ResponsibilityTemp rr
+									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.RuleID and rs.SecurityAsset = 'R' and rs.SecurityAssetID = @userId
 							union
 							select	rr.ResponsibilityTypeID
-							from	ResponsibilityRuleResultAsset ra
-									inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID and ra.AssetTypeID = @id and ra.AssetID = 0
-									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.ID and rs.SecurityAsset = 'G' 
+							from	@ResponsibilityTemp rr
+									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.RuleID and rs.SecurityAsset = 'G' 
 									inner join ResourceGroup rg on rg.GroupID = rs.SecurityAssetID and rg.ResourceID = @userId
 							) p on p.ResponsibilityTypeID = relation.ResponsibilityTypeID and relation.ObjectType = @object and relation.ObjectID = @objectId;
 
