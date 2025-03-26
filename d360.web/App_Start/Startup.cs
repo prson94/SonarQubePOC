@@ -112,10 +112,6 @@ namespace d360.web
 
 				#region Config Setting Reader   
 
-				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
-					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.ReadOnlyConnection);
-					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
 						i.Instance.ApiKey = Config.GetValue<string>("MandrillApiKey");

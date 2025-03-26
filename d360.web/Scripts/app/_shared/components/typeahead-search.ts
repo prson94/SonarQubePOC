@@ -3,42 +3,33 @@ import {
     ChangeDetectorRef,
     Component,
     Input,
-    NgModule,
     OnDestroy,
     OnInit,
     SimpleChange
 } from '@angular/core';
-import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
-import { SearchService } from '../../../services/search.service';
-import { AuthenticationService } from '../../../services/authentication.service';
-import { SearchResult } from '../../../models/search-result.model';
-import { Router, RouterModule } from '@angular/router';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { SearchSession } from '../../search/search-session';
+import { Router } from '@angular/router';
 import { Subject, SubscriptionLike as ISubscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { CoreModule } from '../../components/shared/core.module';
+import { DataCyModule } from '../../directives/ig-data-cy.directive';
+import { SearchResult } from '../../models/search-result.model';
+import { CompanySettingEnum } from '../../models/settings.model';
+import { AssetPath } from '../../pages/search/components/asset-path';
+import { AuthenticationService } from '../../services/authentication.service';
+import { SearchService } from '../../services/search.service';
+import { CompanySettingsService } from '../../services/settings.service';
+import { TypeaheadSearchService } from '../../services/typeahead-search.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FormsModule } from '@angular/forms';
 
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { TreeModule } from 'primeng/tree';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { DialogModule } from 'primeng/dialog';
-import { SharedModule } from 'primeng/api';
-import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
-import { CompanySettingsService } from '../../../services/settings.service';
-import { CompanySettingEnum } from '../../../models/settings.model';
-import { DataCyModule } from '../../../directives/ig-data-cy.directive';
-import { PipesModule } from '../../../pipes/pipes.module';
-import { DirectivesModule } from "../../../directives/directives.module";
-
 @Component({
-    selector: 'd3s-header-typeahead-search',
-    templateUrl: 'typeahead-search.component.html',
-    providers: [TypeaheadSearchService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'typeahead-search',
+    templateUrl: 'typeahead-search.html',
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	standalone: true,
+	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule]
 })
-
-export class TypeaheadSearchComponent implements OnDestroy, OnInit {
+export class TypeaheadSearch implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
     @Input() autocompletePlaceholder: string = $localize`Search Govern...`;
     @Input() additionalCssClasses: string = '';
@@ -135,8 +126,17 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     search(event) {
         this.searchText = event.query;
-        this.isSearchInProgress = true;
-        this.typeAheadQuery$.next(event.query);
+		this.isSearchInProgress = true;
+		this.searchService.getTypeAheadResults(this.searchText, 20, this.options)
+			.subscribe((data) => {
+				this.results = data;
+				if (this.results.length > 0) {
+					this.results.push(this.endSearchAllOption);
+				}
+				this.isSearchInProgress = false;
+				this.ref.markForCheck();
+			});
+        //this.typeAheadQuery$.next(event.query);
     }
 
     openSearch() {
@@ -147,9 +147,9 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     private navigateQuery(q: string) {
         const url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
-        if (!this.keepFilter) {
-            SearchSession.removeState(q);
-		}
+  //      if (!this.keepFilter) {
+  //          SearchSession.removeState(q);
+		//}
 		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
     }
 
@@ -167,7 +167,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (ac) {
             window.setTimeout(() => {
                 if (ac && ac.el && ac.el.nativeElement) {
-                    var inputs = ac.el.nativeElement.getElementsByClassName('p-autocomplete-input');
+                    const inputs = ac.el.nativeElement.getElementsByClassName('p-autocomplete-input');
                     if (inputs && inputs.length > 0) {
                         inputs[0].blur();
                     }
@@ -205,6 +205,10 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         }
     }
 
+	get searchInProgressCss() {
+		return this.isSearchInProgress ? "fa-spinner fa-spin" : "fa-search";
+	}
+
     public showType(result: SearchResult): boolean {
         if (result.Group === "Semantic Type") {
             return false;
@@ -212,37 +216,4 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         return (typeof result.Type !== "undefined");
     }
 }
-
-
-@NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
-
-        RouterModule,
-
-        DataCyModule,
-        PipesModule,
-        //d3s
-        AssetPathWidgetModule,
-
-        //primeng        
-        AutoCompleteModule,
-        OverlayPanelModule,
-        SharedModule,
-        TreeModule,
-        DialogModule,
-        DirectivesModule
-    ],
-    declarations: [
-        TypeaheadSearchComponent
-    ],
-    exports: [
-        TypeaheadSearchComponent
-    ],
-    providers: [
-        
-    ]
-})
-export class TypeaheadSearchModule { }
 

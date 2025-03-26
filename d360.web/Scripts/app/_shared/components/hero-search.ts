@@ -1,19 +1,21 @@
 ﻿import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
 import { SelectItem, OverlayOptions } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
-import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { BaseComponent } from '../../components/shared/base.component';
+import { TypeaheadSearch } from './typeahead-search';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'd3s-hero-search-input',
-	templateUrl: 'hero-search-input.html',
-	styleUrls: ['/hero-search-input.less'],
-    providers: [TypeaheadSearchService],
+    selector: 'hero-search',
+	templateUrl: 'hero-search.html',
+	styleUrls: ['/hero-search.less'],
+	standalone: true,
+	imports: [FormsModule, MultiSelectModule, TypeaheadSearch]
 })
-
-export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class HeroSearch extends BaseComponent implements OnInit, AfterViewInit {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 

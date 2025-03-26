@@ -10,8 +10,8 @@ namespace repositories
 	{
 		Task<RepositoryResponse<SearchModel>> ReadResultsAsync(
 			string phrase,
-			bool includeFields, bool includePath, bool includeScore, bool aggregationOnly,
-			List<AssetTypeClass> limitedToClasses = null, List<string> limitedToTypes = null,
+			bool includeFields, bool includePath, bool includeScore, bool includeAggregations,
+			List<AssetTypeClass> limitedToClasses = null, List<Guid> limitedToTypes = null,
 			int offset = 0, int take = 250);
 	}
 }

@@ -3,12 +3,14 @@
 
 @Component({
 	selector: "scroller-widget",
-	templateUrl: "./scroller-widget.component.html",
-	styleUrls: ["./scroller-widget.component.less"],
+	templateUrl: "./scroller-widget.html",
+	styleUrls: ["./scroller-widget.less"],
+	standalone: true,
+	imports: [],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: { '(window:resize)': 'checkSize()' }
 })
-export class ScrollerWidgetComponent implements OnInit {
+export class ScrollerWidget implements OnInit {
 
 	showScrollButtons: boolean = false;
 	disableScrollLeft: boolean = false;
@@ -62,6 +64,10 @@ export class ScrollerWidgetComponent implements OnInit {
 			return element.getBoundingClientRect().right - element.getBoundingClientRect().left;
 		}
 		return NaN;
+	}
+
+	disabledCss(value: boolean): string {
+		return value ? "disabled" : "";
 	}
 
 	scroll(direction: string) {

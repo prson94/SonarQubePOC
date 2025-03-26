@@ -60,7 +60,7 @@ const routes: Routes = [
 	{ path: "group", loadChildren: () => import("./components/group/group.module").then((m) => m.GroupModule) },
 	{ path: "home", loadComponent: () => import("./pages/home/index").then((c) => c.HomeIndex) },
 	{ path: "gallery", loadChildren: () => import("./components/gallery/gallery.module").then((m) => m.GalleryModule) },
-	{ path: "search", loadChildren: () => import("./components/search/search.module").then((m) => m.SearchModule) },
+	{ path: "search", loadComponent: () => import("./pages/search/index").then((m) => m.SearchIndex) },
 	{ path: "workflow", loadChildren: () => import("./components/workflow/workflow.module").then((m) => m.WorkflowModule) },
 	{ path: "dashboard", loadChildren: () => import("./components/sidebar/dashboard/dashboard.module").then((m) => m.DashboardModule) },
 	{ path: "sidebar/itemfollow", loadChildren: () => import("./components/sidebar/itemfollow/itemfollow.module").then((m) => m.ItemFollowModule) },

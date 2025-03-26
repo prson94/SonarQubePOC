@@ -1,0 +1,73 @@
+﻿<div #item class="{{additionalCssClasses}} header-search" (keyup)="checkKey($event,ac)">
+    <div class="header-search-input">
+        <p-autoComplete #ac size="300"
+                        styleClass="global-search-typeahead"
+                        scrollHeight="400px"
+                        [igDataCy]="'Header_Typeahead_Search'"
+                        [(ngModel)]="result"
+                        [suggestions]="results"
+                        field="Name"
+                        (completeMethod)="search($event)"
+                        [placeholder]="autocompletePlaceholder"
+                        [minLength]="1"
+                        maxlength="255"
+                        (onBlur)="blurHandler()"
+                        (onFocus)="focusHandler()"
+                        (onClear)="clearValue()"
+                        (onSelect)="selectItem(ac)"
+                        (onKeyUp)="syncSearchText($event)">
+            <ng-template let-result pTemplate="item">
+				<div>
+					@if (result?.Type == endSearchAllTypeToken) {
+					<div class="search-typeahead-suggestion"
+						 [igDataCy]="'Search_Suggestion_Show_All_Results'">
+						<div class="card-row search-all-row">
+							<div class="search-all-res"><i class="folder-icon searchall fa fa-search"></i><span class="displayname" i18n>Show All Results</span></div>
+							<span class="right-text" i18n>Hit <strong>Enter</strong> to see all matches</span>
+						</div>
+					</div>
+					}
+					@else {
+					<div class="search-typeahead-suggestion" [igDataCy]="result.DisplayName | replaceString : ' ' : '_'">
+						<div class="card-row top-row">
+							@if (result?.Icon) {<i class="folder-icon fa {{result.Icon}}"></i>}
+							@if (result?.ImageUrl) {<span class="folder-icon"><img [src]="result.ImageUrl" /></span>}
+							<span class="displayname">{{result.DisplayName}}</span>
+						</div>
+						<div class="card-row description-row">
+							<span class="category">
+								{{result?.Group}}
+								@if (showType(result)) {
+								<span><i class="fa fa-angle-right"></i><span [innerHtml]="result?.Type"></span></span>
+								}
+							</span>
+						</div>
+						@if (result?.AssetPath) {
+						<div class="card-row description-row">
+							<div class="asset-path">
+								<asset-path [path]="result.AssetPath"></asset-path>
+							</div>
+						</div>
+						}
+						<div class="card-row tags-row">
+							@if (result?.Tags) {
+							<span class="tag-list-container">
+								@for (tag of result?.Tags; track tag) {
+								<button igButton class="search-tag" (click)="navigateToTag(tag, $event, ac)">
+									<span class="tag-item-wrapper" [innerHtml]="tag.Value"></span>
+								</button>
+								}
+							</span>
+							}
+						</div>
+					</div>
+					}
+
+				</div>
+            </ng-template>
+        </p-autoComplete>
+        <span class="search-button {{showBigButton ? 'big' : ''}}" (click)="openSearch()">
+            <i class="fa" [class]="searchInProgressCss"></i>
+        </span>
+    </div>
+</div>

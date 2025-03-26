@@ -21,8 +21,6 @@ import { HomeCustomization } from './components/home-customization';
 import { HelpMenuModule } from '../../components/shared/helpmenu/helpmenu.module';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DayOfWeekInputModule } from '../../components/shared/small-widgets/dayofweek-input/dayofweek-input.component';
-import { SiteModalModule } from '../../components/shared/modal/gov-modal.module';
-import { AdminSearchModule } from '../../components/admin/search/admin-search.module';
 import { IgNumberFieldModule } from '../../components/shared/controls/number-picker/number-input.component';
 import { SelectItem } from 'primeng/api';
 
@@ -31,7 +29,6 @@ import { SelectItem } from 'primeng/api';
 	templateUrl: './index.html',
 	standalone: true,
 	imports: [
-		AdminSearchModule,
 		CheckboxModule,
 		CommonModule,
 		DayOfWeekInputModule,
@@ -42,8 +39,7 @@ import { SelectItem } from 'primeng/api';
 		IgCheckboxModule,
 		IgNumberFieldModule,
 		IpRestrictions,
-		SiteMenuConfiguration,
-		SiteModalModule
+		SiteMenuConfiguration
 	],
     styles: [`
         .remove {
@@ -444,10 +440,6 @@ export class SettingsIndex extends AdminBaseComponent {
                 }
             });
     }
-	
-	rebuildPartialSearchIndex(): void {
-		this.isPartialRebuildModalVisible = true;
-	}
 
     public isDisabled(model: CompanyRebuildJobStatusApiModel): boolean {
         return (+model.state === +CompanyRebuildJobStatusState.Active);

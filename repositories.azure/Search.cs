@@ -15,7 +15,7 @@ namespace repositories.azure
 		public Search(DapperConnectionProvider provider) : base(provider) { }
 
 		private string buildFullTextSql(
-			bool aggregationOnly, bool isFreeText, 
+			bool includeAggregations, bool isFreeText, 
 			bool includeFields, bool includePath, bool includeScores, 
 			List<int> classes = null, List<int> assetTypeIds = null)
 		{
@@ -42,8 +42,10 @@ namespace repositories.azure
 				}
 			}
 
-			sql += $@"
-;with cte as (
+			Action<int> appendCte = (int id) =>
+			{
+				sql += $@"
+;with cte{id} as (
 	select		s.[Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
@@ -64,29 +66,33 @@ namespace repositories.azure
 				{cteFilterSql}
 )
 ";
-			if (aggregationOnly)
+			};
+
+			if (includeAggregations)
 			{
+				appendCte(1);
+
 				sql += $@"
 insert into #aggregations
 	select	t.Uid, t.Class, t.Name, count(1) as ResultCount
 	from	Asset a
 			inner join AssetType t on t.ID = a.AssetTypeID
-	where	a.ID in (select Id from cte)
+	where	a.ID in (select Id from cte1)
 	group by t.Uid, t.Class, t.Name;";
 			}
-			else 
-			{
-				sql += $@"
+			
+			appendCte(2);
+			sql += $@"
 insert into #results ([Rank], [Id])
 	select	ir.[Rank], ir.Id
 	from	(
 			select	row_number() over (partition by Id order by [Rank] desc) as RowNum, [Rank], Id
-			from	cte 
+			from	cte2
 			) ir 
 	where	ir.RowNum = 1
 	order by [Rank] offset @offset rows fetch next @take rows only;";
-			}
 
+			
 			string includeFieldSql = "select '[]'";
 			if (includeFields)
 			{
@@ -142,7 +148,7 @@ select	a.Uid,
 		a.Object + '|' + cast(a.ID as varchar(50)) as ID,
 		a.Object,
 		a.ObjectId,
-		a.DisplayValue as [Name],
+		adv.DisplayValue as [Name],
 		t.Class,
 		t.Name as [Type],
 		t.Uid as AssetTypeUid,
@@ -152,6 +158,7 @@ select	a.Uid,
 		({includePathSql}) as _AssetPath,
 		({includeScoresSql}) as _Scores
 from	Asset a
+		inner join AssetDisplayValue adv on adv.AssetID = a.ID
 		inner join AssetType t on t.ID = a.AssetTypeID
 		left join AssetTypeStyle s on s.ID = a.AssetTypeID
 		inner join #results r on r.Id = a.Id
@@ -165,8 +172,8 @@ order by r.[Rank] desc;";
 
 		public async Task<RepositoryResponse<SearchModel>> ReadResultsAsync(
 			string phrase, 
-			bool includeFields, bool includePath, bool includeScore, bool aggregationOnly,
-			List<AssetTypeClass> _classes = null, List<string> _types = null,
+			bool includeFields, bool includePath, bool includeScore, bool includeAggregations,
+			List<AssetTypeClass> _classes = null, List<Guid> _types = null,
 			int offset = 0, int take = 250)
 		{
 			RepositoryResponse<SearchModel> response = new(200);
@@ -187,7 +194,7 @@ order by r.[Rank] desc;";
 			{
 				using (var connection = ConnectionProvider.Connect(true))
 				{
-					types = (await connection.QueryAsync<int>("select ID from AssetType where Name in @typeNames", new { typeNames = _types })).ToList();
+					types = (await connection.QueryAsync<int>("select ID from AssetType where Uid in @uids", new { uids = _types })).ToList();
 				}
 			}
 
@@ -199,7 +206,7 @@ order by r.[Rank] desc;";
 			isFreeText = !containsConjunction && !containsDoubleQuote;
 
 			// Generate the SQL to run.
-			var sql = buildFullTextSql(aggregationOnly, isFreeText, includeFields, includePath, includeScore, classes, types);
+			var sql = buildFullTextSql(includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
 
 			parameters.Add("@phrase", phrase);
 
@@ -209,7 +216,10 @@ order by r.[Rank] desc;";
 
 				var aggregations = (await dbResponse.ReadAsync<SearchResultAggregation>()).ToList();
 				var results = (await dbResponse.ReadAsync<SearchResult>()).ToList();
-				int total = aggregations.Sum(a => a.ResultCount);
+
+				int total = (includeAggregations) ? 
+					aggregations.Sum(a => a.ResultCount) : 
+					results.Count;
 
 				var classAggregations = aggregations
 					.GroupBy(a => a.Class)
@@ -236,7 +246,7 @@ order by r.[Rank] desc;";
 				response.Data = new SearchModel
 				{
 					Matches = total,
-					Aggregations = new Dictionary<string, List<SearchResultAggregation>> { { "category", aggregations } },
+					Aggregations = aggregations,
 					Results = results
 				};
 			}
