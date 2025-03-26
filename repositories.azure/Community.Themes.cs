@@ -115,7 +115,7 @@ namespace repositories.azure
 					end
 					else
 					begin
-						select CustomCss where CompanyId in (0, @companyId) and ID = @themeid;
+						select coalesce(CustomCss, '') from CompanyTheme where CompanyId in (0, @companyId) and ID = @themeid;
 					end
 
 ";
