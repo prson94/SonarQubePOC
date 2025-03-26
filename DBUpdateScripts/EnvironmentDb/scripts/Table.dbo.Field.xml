@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.dbo.Field-v3.1">
+ <changeSet author="Pappas" id="Table.dbo.Field-v6">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
@@ -34,7 +34,7 @@ BEGIN
 	ALTER TABLE [dbo].[Field] CHECK CONSTRAINT [FK_Field_FieldType]
 END
 
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Field]') AND name = 'ReferenceListID')
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Field]') AND name = 'ReferenceListID')
 BEGIN
     alter table [dbo].[Field] add [ReferenceListID] int sparse
 END
