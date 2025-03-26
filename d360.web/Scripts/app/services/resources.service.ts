@@ -247,7 +247,10 @@ export class ResourcesService extends BaseObservableService {
         return this.http.post('/api/v2/membership/users/me/apikey', model, httpOptions)
             .pipe(
                 map((response) => <ResourceAPICredentials>response),
-                catchError((err) => this.handleError(err))
+				catchError((err) => {
+					const handler = this.handleError(err);
+					return throwError(err);
+				})
             );
     }
 
