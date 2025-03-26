@@ -19,7 +19,7 @@ namespace d360.web
         {
             IOwinContext context = new OwinContext(environment);
 
-			if (context.Response.ContentType == "application/json")
+			if (context.Response.ContentType == "application/json" || (context.Request.Path.HasValue && context.Request.Path.Value.Contains("environment/theme")))
 			{
 				context.Response.Headers.Add("Cache-Control", new string[] { "no-store" });
 			}
