@@ -32,7 +32,7 @@ module.exports = {
 			filename: 'remoteEntry.js',
 			exposes: {
 				'./HomeIndex': 'Scripts/app/pages/home/index',
-				'./SearchModule': 'Scripts/app/components/search/search.module.ts',
+				'./SearchIndex': 'Scripts/app/pages/search/index',
 				'./AssetModule': 'Scripts/app/components/asset/asset.module.ts',
 				'./AssetsBaseModule': 'Scripts/app/components/assets-base/assets-base.module.ts',
 				'./HierarchyModule': 'Scripts/app/components/hierarchy/hierarchy.module.ts',

@@ -3,16 +3,17 @@ import { SearchPathComponent } from '../../../models/search-result.model';
 import { escape, isNil } from "lodash-es";
 
 @Component({
-    selector: 'asset-path-widget',
-    template: `<ng-container>
-                    <ng-container *ngFor="let section of path; last as isLast">
-                        <span class="assetname" [innerHtml]="formatKey(section)"></span>
-                        <span *ngIf="showType(section)" class="assettype"> ({{section.AssetType}})</span>
-                        <i *ngIf="!isLast" class="fa fa-angle-right assetpathseparator"></i>
-                </ng-container>
-            </ng-container>`
+    selector: 'asset-path',
+	template: `<ng-container>
+					@for (section of path; track path; let isLast = $last) {
+						<span class="assetname" [innerHtml]="formatKey(section)"></span>
+						@if (showType(section)) { <span class="assettype"> ({{section.AssetType}})</span> }
+						@if (!isLast) { <i class="fa fa-angle-right assetpathseparator"></i> }
+					}
+            </ng-container>`,
+	standalone: true
 })
-export class AssetPathWidgetComponent {
+export class AssetPath {
 
     @Input() path: SearchPathComponent[];
     @Input() withType: boolean = false;

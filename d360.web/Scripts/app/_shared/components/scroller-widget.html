@@ -1,0 +1,18 @@
+﻿<div class="field-bar-outer">
+	@if (showScrollButtons) {
+	<button class="left field-scroller" (click)="scroll('L')" [class]="disabledCss(disableScrollLeft)" [disabled]="disableScrollLeft">
+		<i class="fa fa-chevron-circle-left"></i>
+	</button>
+	<div #fieldScroller class="field-bar can-overflow">
+		<ng-content></ng-content>
+	</div>
+	<button class="right field-scroller" (click)="scroll('R')" [class]="disabledCss(disableScrollRight)" [disabled]="disableScrollRight">
+		<i class="fa fa-chevron-circle-right"></i>
+	</button>
+	}
+	@else {
+	<div #fieldScroller class="field-bar can-overflow">
+		<ng-content></ng-content>
+	</div>
+	}
+</div>

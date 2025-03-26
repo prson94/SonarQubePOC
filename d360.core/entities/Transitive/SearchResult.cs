@@ -97,7 +97,7 @@ namespace d360.core.entities
 	{
 		public int Matches { get; set; }
 
-		public new Dictionary<string, List<SearchResultAggregation>> Aggregations { get; set; }
+		public List<SearchResultAggregation> Aggregations { get; set; }
 
 		public List<SearchResult> Results { get; set; }
 	}

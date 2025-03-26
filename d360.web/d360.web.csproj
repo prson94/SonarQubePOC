@@ -722,6 +722,8 @@
     <Content Include="Scripts\app\pages\home\components\board-tile.html" />
     <Content Include="Scripts\app\pages\home\components\shortcut-display.html" />
     <Content Include="Scripts\app\pages\home\index.html" />
+    <Content Include="Scripts\app\pages\search\components\result.html" />
+    <Content Include="Scripts\app\pages\search\index.html" />
     <Content Include="Scripts\app\pages\settings\components\home-customization.html" />
     <Content Include="Scripts\app\pages\settings\components\ip-restrictions.html" />
     <Content Include="Scripts\app\pages\settings\index.html" />
@@ -736,7 +738,9 @@
     <Content Include="Scripts\app\_shared\components\column-filter.html" />
     <Content Include="Scripts\app\_shared\components\comment-form.html" />
     <Content Include="Scripts\app\_shared\components\grid-paging-info.html" />
+    <Content Include="Scripts\app\_shared\components\hero-search.html" />
     <Content Include="Scripts\app\_shared\components\loading.html" />
+    <Content Include="Scripts\app\_shared\components\scroller-widget.html" />
     <Content Include="Scripts\app\_shared\components\social-board.html" />
     <Content Include="Scripts\app\_shared\components\comment-item.html" />
     <Content Include="Scripts\app\_shared\components\sort-icon.html" />
@@ -952,9 +956,12 @@
     <Content Include="Scripts\app\components\admin\security\policy.less" />
     <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
     <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
-    <Content Include="Scripts\app\components\search\hero-search-input.less" />
     <Content Include="Scripts\app\pages\settings\components\site-menu-folder-edit.less" />
     <Content Include="Scripts\app\pages\settings\components\site-menu-configuration.less" />
+    <Content Include="Scripts\app\pages\search\index.less" />
+    <Content Include="Scripts\app\pages\search\components\result.less" />
+    <Content Include="Scripts\app\_shared\components\scroller-widget.less" />
+    <Content Include="Scripts\app\_shared\components\hero-search.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1000,8 +1007,12 @@
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-details-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\board-tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\home\components\search.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\shortcut-display.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\search\components\asset-path.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\search\components\result.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\search\index.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\settings\components\home-customization.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\settings\components\ip-restrictions.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\settings\index.ts" />
@@ -1017,7 +1028,9 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\column-filter.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\comment-form.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\grid-paging-info.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\hero-search.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\loading.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\scroller-widget.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-board.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\comment-item.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-tag-input.ts" />
@@ -1151,11 +1164,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.checkbox.directive.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\search\admin-search.table.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.ts" />
@@ -1341,20 +1349,6 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\scroller-widget\scroller-widget.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\scroller-widget\scroller-widget.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search-state.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\semantic\semantic-asset-list-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\semantic\semantic-asset-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\semantic\semantic-detail.component.ts" />
@@ -1576,7 +1570,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\segments-tooltip.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\search\typeahead-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\typeahead-search.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\semantic-editor\semantic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\semantic-editor\semantic-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
@@ -2010,7 +2004,6 @@
     <None Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.html" />
     <None Include="Scripts\app\components\admin\scoring\measure-history.component.html" />
     <None Include="Scripts\app\components\admin\scoring\measure-list.component.html" />
-    <None Include="Scripts\app\components\admin\search\admin-search.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <None Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
@@ -2138,11 +2131,6 @@
     <None Include="Scripts\app\components\rule\rule-item.component.html" />
     <None Include="Scripts\app\components\rule\rule-list.component.html" />
     <None Include="Scripts\app\components\rule\rule-results-grid.component.html" />
-    <None Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
-    <None Include="Scripts\app\components\search\hero-search-input.html" />
-    <None Include="Scripts\app\components\search\scroller-widget\scroller-widget.component.html" />
-    <None Include="Scripts\app\components\search\search-result-item.component.html" />
-    <None Include="Scripts\app\components\search\search.component.html" />
     <None Include="Scripts\app\components\semantic\semantic-asset-list-grid.component.html" />
     <None Include="Scripts\app\components\semantic\semantic-asset-list.component.html" />
     <None Include="Scripts\app\components\semantic\semantic-detail.component.html" />
@@ -2281,7 +2269,7 @@
     <None Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
     <None Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <None Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.html" />
-    <None Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
+    <None Include="Scripts\app\_shared\components\typeahead-search.html" />
     <None Include="Scripts\app\components\shared\semantic-editor\semantic-editor.component.html" />
     <None Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <None Include="Scripts\app\components\shared\sidepanel\side-panel.component.html" />
@@ -2355,7 +2343,6 @@
     <None Include="Scripts\app\components\admin\relationships\sidepanel-wrapper\admin-relationships-sidepanel-wrapper.component.less" />
     <None Include="Scripts\app\components\admin\responsibilities\responsibility-rule.less" />
     <None Include="Scripts\app\components\admin\scoring\measure-editor.less" />
-    <None Include="Scripts\app\components\admin\search\admin-search.component.less" />
     <None Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
     <None Include="Scripts\app\components\assets-grid\asset-grid.less" />
     <None Include="Scripts\app\components\assignments\assignment-asset-list\assignment-asset-list.component.less" />
@@ -2395,10 +2382,6 @@
     <None Include="Scripts\app\components\reference-v2\list\reference-item-type-list-v2.component.less" />
     <None Include="Scripts\app\components\resource\api-key\resource-api.component.less" />
     <None Include="Scripts\app\components\rule\rule-results-grid.component.less" />
-    <None Include="Scripts\app\components\search\explain-widget\explain-widget.component.less" />
-    <None Include="Scripts\app\components\search\scroller-widget\scroller-widget.component.less" />
-    <None Include="Scripts\app\components\search\search-result-item.component.less" />
-    <None Include="Scripts\app\components\search\search.component.less" />
     <None Include="Scripts\app\components\semantic\semanticTypes.less" />
     <None Include="Scripts\app\components\shared\asset-detail\asset-detail-category.component.less" />
     <None Include="Scripts\app\components\shared\asset-detail\asset-detail.component.less" />
@@ -2500,10 +2483,6 @@
     <ProjectReference Include="..\d360.extensions.mail\d360.extensions.mail.csproj">
       <Project>{5a4d446e-7e53-4526-a61b-2a971720471a}</Project>
       <Name>d360.extensions.mail</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\d360.extensions.search\d360.extensions.search.csproj">
-      <Project>{55b21612-ead9-4fc3-8368-119b15ed5571}</Project>
-      <Name>d360.extensions.search</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions.storage\d360.extensions.storage.csproj">
       <Project>{b355e1bc-0512-4dcc-b04a-5d90018ea9f9}</Project>

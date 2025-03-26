@@ -1,0 +1,225 @@
+﻿<div class="search-page-full">
+    <div #title class="title-bar search">
+        <div class="title">
+            <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
+            <h1 i18n>Search Results</h1>
+            <div class="titlebar-search">
+                <div class="field grow mr10">
+                    <typeahead-search [additionalCssClasses]="'gov-search'"
+									  i18n-autocompletePlaceholder
+                                      autocompletePlaceholder="What are you looking for?"
+                                      [searchOptions]="searchTypes"
+                                      [defaultValue]="searchText"
+                                      [keepFilter]="true">
+                    </typeahead-search>
+                </div>
+            </div>
+        </div>
+    </div>
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="sidePanelService.draggableAreaWidth"
+              class="search-container split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="search-content">
+            <div class="filterbar">
+                <div>&nbsp;</div>
+                <div class="grid-action-buttons">
+                    <div [pTooltip]="searchExportTooltip"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                class="ig-button-secondary"
+                                icon="fa-download"
+                                [disabled]="!isExportEnabled()"
+                                [loading]="isExportInProgress"
+                                (click)="doExport()">
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            <div class="cardlist">
+                @if (isLoading) {
+                <loading></loading>
+                }
+                @else {
+                @if (resultCount > 0) {
+                @for (result of searchResults?.Results; track result) {
+                <result [result]="result" [selection]="selection" (onSelect)="resultSelected($event)"></result>
+                }
+                }
+                @else {
+                <div class="row">
+                    <div class="tile tile-detail search-nodata">
+                        <header i18n>Your search did not find any results.</header>
+                        <span style="padding-left:15px"
+                              i18n>Suggestions:</span>
+                        <ul>
+                            <li i18n>Check your spelling</li>
+                            <li i18n>Try broader search criteria</li>
+                            <li i18n>Try a different keyword</li>
+                        </ul>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+            <d3s-paginator [page]="pageNumber"
+                           [rows]="resultsPerPage"
+                           [totalRecords]="resultCount"
+                           (onPageChange)="paginate($event)"
+                           [hideLastButton]="true"></d3s-paginator>
+            @if (sidePanelOpen && secondarySidePanelOpen) {
+            <div #semanticTile class="secondary-side-panel">
+                <div class="panel-header">
+                    <span class="header-label" i18n>Information</span>
+                    <div class="button-container">
+                        <button igButton
+                                [attr.data-cy]="'Semantic_Secondary_Close'"
+                                icon="fa-times"
+                                (click)="secondarySidePanelOpen=false;"
+                                i18n-tooltip
+                                tooltip="Close"
+                                class="close-button">
+						</button>
+                    </div>
+                </div>
+				<div class="details-container">
+					@if (semanticType) {
+					<semantic-detail [qualifier]="semanticType.qualifier"
+										[isSidePanel]="true"
+										[showHeader]="true"
+										[semanticType]="semanticType"
+										(close)="secondarySidePanelOpen=false;"
+										(linkClicked)="secondaryPanelOpen($event)">
+					</semantic-detail>
+					}
+
+					@if (resourceUid && secondarySidePanel=='user') {
+					<ig-asset-detail [objectUID]="resourceUid"
+									 [objectType]="'Resource'"
+									 [useAccordion]="true"
+									 [shouldBePadded]="true"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="true"
+									 [interceptLinkClick]="true"
+									 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+					}
+
+					@if (secondarySidePanel=='status') {
+					<semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+					}
+				</div>
+            </div>
+            }
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel">
+			<side-panel (expandedChange)="sidePanelOpen=$event"
+						(selectedPanelChange)="sidePanelTab=$event"
+						[expanded]="sidePanelOpen"
+						[selectedItem]="selection"
+						[panelApplies]="panelApplies"
+						hasProfiling="true"
+						[setMinMaxWidth]="false"
+						hasDetail="true"
+						[height]="'calc(100vh - 210px)'"
+						[extraButtons]="extraButtons"
+						[storageKey]="sidePanelStorageKey">
+				@if (sidePanelOpen && selection != null && sidePanelLoading) {
+				<d3s-loading [isLoading]="true"></d3s-loading>
+				}
+
+				@if (sidePanelOpen && sidePanelTab === 'filters') {
+				<d3s-check-tree #catagoryFilter
+								[loading]="treeLoading"
+								[value]="categories"
+								[(selection)]="selectedFilters"
+								(selectionChange)="filterCheckTree($event)"
+								[emptyMessage]="'No categories found'">
+				</d3s-check-tree>
+				}
+
+				@if (sidePanelOpen && selection?.AssetUid != null && !sidePanelLoading) {
+
+				@if (sidePanelTab === 'dataprofile' && selection?.HasProfiling) {
+				<data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+				}
+
+				@if (sidePanelTab === 'detail' && selection.ObjectType === 'Semantic Type') {
+				<semantic-detail [qualifier]="getQualifier(selection)"
+								 [isSidePanel]="true"
+								 [showHeader]="true"
+								 (linkClicked)="secondaryPanelOpen($event)">
+				</semantic-detail>
+				}
+
+				@if (sidePanelTab === 'detail' && selection.ObjectType !== 'Semantic Type') {
+
+				@if (!selectedReferenceItem && !selectedTag) {
+				<ig-asset-detail #assetDetail
+								 [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
+								 [objectType]="selectedAsset ? selectedAsset.type : selection.ObjectType"
+								 [useAccordion]="true"
+								 [shouldBePadded]="false"
+								 [showHeader]="true"
+								 [showHeaderLine]="false"
+								 [spacerHeight]="'16px'"
+								 [tooltipAlign]="'left'"
+								 [isSidePanel]="true"
+								 [hasEditLink]="false"
+								 [hasAddRelationshipsPermissions]="false"
+								 [hasModifyRelationshipsPermissions]="false"
+								 [hasDeleteRelationshipsPermissions]="false"
+								 [interceptLinkClick]="true"
+								 (onEditClick)="assetGrid.triggerEdit($event)"></ig-asset-detail>
+				}
+
+				@if (selectedReferenceItem) {
+				<ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+									  [highlightUid]="selectedReferenceItem.assetUid"
+									  [baseUrl]="selectedReferenceItem.url">
+				</ig-asset-type-detail>
+				}
+
+				@if (selectedTag) {
+				<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+				}
+
+				}
+
+				}
+			</side-panel>
+        </as-split-area>
+    </as-split>
+
+
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+	<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+			   (onClose)="showEditor=false"
+			   [showTitle]="false"
+			   [isVisible]="showEditor">
+		@if (showEditor) {
+		<asset-editor #dynamicEditor
+					  [objectID]="selection?.AssetUid"
+					  [objectType]="selection?.ObjectType"
+					  [title]="assetEditorTitle"
+					  [selection]="selection"
+					  [objectTypeUid]="selection?.Data?.AssetTypeUid"
+					  [assetTypePath]="''"
+					  (saveClick)="saveItem($event)"
+					  [showAsModal]="true"
+					  [isV2API]="true"
+					  (closeClick)="showEditor=false"></asset-editor>
+		}
+	</d3s-modal>
+</div>

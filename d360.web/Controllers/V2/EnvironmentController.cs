@@ -103,9 +103,6 @@ namespace d360.web.Controllers.V2
 					case CompanyRebuildJobToken.DisplayValues:
 						Company.RebuildDisplayValuesRequest();
 						break;
-					case CompanyRebuildJobToken.SearchIndex:
-						Company.RebuildIndexRequest();
-						break;
 				}
 			}
 			return (response.IsSuccess) ?

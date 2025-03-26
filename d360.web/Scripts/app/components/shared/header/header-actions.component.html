@@ -1,7 +1,7 @@
 ﻿<div *ngIf="enabled" #actions class="header-action-container" (window:resize)="onResize($event)">
 	<ul class="header-actions-list">
 		<li class="header-action-li spacer" *ngIf="headerActionsService.showSearch">
-			<d3s-header-typeahead-search></d3s-header-typeahead-search>
+			<typeahead-search></typeahead-search>
 		</li>
 		<li class="header-action-li spacer" *ngIf="hasRaiseIssueButton && headerActionsService.showRaiseIssue">
 			<d3s-raise-issue [assetTypeUid]="assetTypeUid" [assetUid]="assetUid"></d3s-raise-issue>
