@@ -261,7 +261,9 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var response = await Search.ReadResultsAsync(query, false, true, false, false, null, null, 0, num ?? 7);
+			var typeaheadQuery = $"\"{query}*\"";
+
+			var response = await Search.ReadResultsAsync(typeaheadQuery, false, true, false, false, null, null, 0, num ?? 7);
 			loadSearchResultUris(response.Data.Results);
 			return Ok(response.Data.Results);
 		}

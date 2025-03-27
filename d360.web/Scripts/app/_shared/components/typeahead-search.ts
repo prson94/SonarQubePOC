@@ -5,7 +5,7 @@ import {
     Input,
     OnDestroy,
     OnInit,
-    SimpleChange
+	SimpleChange
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, SubscriptionLike as ISubscription } from 'rxjs';
@@ -21,13 +21,14 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FormsModule } from '@angular/forms';
+import { ReplaceStringPipe } from '../../pipes/replace.pipe';
 
 @Component({
     selector: 'typeahead-search',
     templateUrl: 'typeahead-search.html',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
-	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule]
+	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule, ReplaceStringPipe]
 })
 export class TypeaheadSearch implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
@@ -83,11 +84,12 @@ export class TypeaheadSearch implements OnDestroy, OnInit {
     createSubscription() {
         if (this.searchSub) {this.searchSub.unsubscribe();}
         this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, this.options)
-            .subscribe((data) => {
-                this.results = data;
-                if (this.results.length > 0) {
-                    this.results.push(this.endSearchAllOption);
-                }
+			.subscribe((data) => {
+				const _results = data;
+                if (_results.length > 0) {
+                    _results.push(this.endSearchAllOption);
+				}
+				this.results = [..._results];
                 this.isSearchInProgress = false;
                 this.ref.markForCheck();
             });
@@ -124,19 +126,10 @@ export class TypeaheadSearch implements OnDestroy, OnInit {
         event.stopPropagation();
     }
 
-    search(event) {
+	search(event) {
         this.searchText = event.query;
 		this.isSearchInProgress = true;
-		this.searchService.getTypeAheadResults(this.searchText, 20, this.options)
-			.subscribe((data) => {
-				this.results = data;
-				if (this.results.length > 0) {
-					this.results.push(this.endSearchAllOption);
-				}
-				this.isSearchInProgress = false;
-				this.ref.markForCheck();
-			});
-        //this.typeAheadQuery$.next(event.query);
+        this.typeAheadQuery$.next(event.query);
     }
 
     openSearch() {
