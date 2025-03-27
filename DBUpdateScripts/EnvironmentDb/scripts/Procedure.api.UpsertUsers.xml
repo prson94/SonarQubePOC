@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.10">
+  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.11">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[UpsertUsers]
@@ -176,13 +176,12 @@ begin
 
 		if (@syncwithcommunity = 1)
 		begin
-		
 			update T
 			Set T.UpdatedOn = coalesce(S.UpdatedOn,T.UpdatedOn,@date),
 				T.CreatedOn = coalesce(T.CreatedOn,@date),
-				T.LastLoggedInOn = coalesce(S.LastLoggedInOn,T.LastLoggedInOn)
+				T.LastLoggedInOn = case when year(coalesce(S.LastLoggedInOn,T.LastLoggedInOn)) <= 1901 then null else coalesce(S.LastLoggedInOn,T.LastLoggedInOn) end
 			from reporting.Global_Resource as T
-			inner join #Items S on (T.ResourceID = S.ObjectID and S.IsValid is null)
+			inner join #Items S on (T.ResourceID = S.ObjectID and S.IsValid is null);
 		end
 
 		-- Asset
