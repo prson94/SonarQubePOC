@@ -97,6 +97,7 @@ namespace d360.web
 				builder.AddWebApiExceptionHandler<UnauthorizedWebApi2ExceptionHandler>();
 				builder.AddWebApiExceptionHandler<ForbiddenWebApi2ExceptionHandler>();
 				builder.RegisterType<WebApi2ExceptionHandlerMediator>().AsSelf().SingleInstance();
+				builder.RegisterType<BusinessExceptionHandler>().SingleInstance();
 
 				builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
 				builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();

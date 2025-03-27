@@ -393,6 +393,7 @@
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionLogger.cs" />
     <Compile Include="Handlers\Exceptions\BadRequestWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\BusinessExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\DefaultWebApi2ExceptionHandler.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\UserIDCheckMiddleware.cs" />

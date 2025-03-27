@@ -5,6 +5,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.utils.excel;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ using System.Xml.XPath;
 namespace d360.web.Controllers.V2
 {
 	[ValidateModel] // [ValidateCompanyState]
+	[BusinessExceptionHandler]
 	public class BaseV2ApiController : BaseApiController
 	{
 		public BaseV2ApiController(ICoreComponentSet set) : base(set)
