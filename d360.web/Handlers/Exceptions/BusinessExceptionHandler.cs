@@ -12,11 +12,10 @@ namespace d360.web.Handlers.Exceptions
 	{
 		public override void OnException(HttpActionExecutedContext actionExecutedContext)
 		{
-			base.OnException(actionExecutedContext);
 			if (actionExecutedContext.Exception is FilterExpressionParserException)
 			{
 				var ex = actionExecutedContext.Exception as FilterExpressionParserException;
-				actionExecutedContext.Response = CreateResponse(new ProblemDetailsResponse()
+				actionExecutedContext.Response = CreateResponse(new ProblemDetailsResponse
 				{
 					Status = (int)ex.StatusCode,
 					Detail = ex.StackTrace,
