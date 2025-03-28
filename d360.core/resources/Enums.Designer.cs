@@ -284,20 +284,27 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("FieldType_Percentage", resourceCulture);
             }
         }
-
-		/// <summary>
-		///   Looks up a localized string similar to Reference Item List from Relationship.
-		/// </summary>
-		public static string FieldType_ReferenceItemListFromRel
-		{
-			get
-			{
-				return ResourceManager.GetString("FieldType_ReferenceItemListFromRel", resourceCulture);
-			}
-		}
-
-		        /// <summary>
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reference Item List from Relationship.
+        /// </summary>
+        public static string FieldType_ReferenceItemListFromRel {
+            get {
+                return ResourceManager.GetString("FieldType_ReferenceItemListFromRel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference Item List from Relationship.
+        /// </summary>
+        public static string FieldType_ReferenceItemListFromRel1 {
+            get {
+                return ResourceManager.GetString("FieldType_ReferenceItemListFromRel1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference List.
         /// </summary>
         public static string FieldType_ReferenceList {
             get {
@@ -305,10 +312,10 @@ namespace d360.core.resources {
             }
         }
         
-/// <summary>
-		///   Looks up a localized string similar to Relation Lookup.
-		/// </summary>
-		public static string FieldType_RelationLookup {
+        /// <summary>
+        ///   Looks up a localized string similar to Relation Lookup.
+        /// </summary>
+        public static string FieldType_RelationLookup {
             get {
                 return ResourceManager.GetString("FieldType_RelationLookup", resourceCulture);
             }

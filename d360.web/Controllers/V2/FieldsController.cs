@@ -881,12 +881,16 @@ namespace d360.web.Controllers.V2
 					.Where(x => x.value != DataType.JsonElement.ToString())
 					.Where(x => x.value != DataType.OwnershipLookup.ToString())
 					.Where(x => x.value != DataType.RefListRelationship.ToString())
+					.Where(x => x.value != DataType.ReferenceList.ToString())
 					.Where(x => x.value != DataType.ComplexRelationLookup.ToString())
 					.Where(x => x.value != DataType.Relationship.ToString())
 					.Where(x => x.value != DataType.Score.ToString())
 					.Where(x => x.value != DataType.Tag.ToString())
 					.ToList();
 			}
+
+			var unusedReferenceType = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST) ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString();
+			dataTypeOptions = dataTypeOptions.Where(x => x.value != unusedReferenceType).ToList();
 
 			var jsonFieldType = new Dictionary<string, string> {
 				{ "Boolean", "bit" },
