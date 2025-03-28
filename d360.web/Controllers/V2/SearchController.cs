@@ -1,11 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.queue;
 using d360.core.resources;
 using d360.core.search;
 using d360.extensions;
-using d360.extensions.search;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -18,7 +16,6 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -43,7 +40,6 @@ namespace d360.web.Controllers.V2
 	]
 	public class SearchController : BaseV2ApiController
 	{
-		private readonly ISearchSource SearchSource;
 		private readonly IAssetRepository AssetRepository;
 		private readonly IQueueSource Queue;
 		private readonly ISemanticsRepository SemanticsRepository;
@@ -54,11 +50,8 @@ namespace d360.web.Controllers.V2
 
 		ISearch Search;
 
-		async Task<bool> UseElasticAsync() { return await GetFeatureFlagValue(FlagList.USE_ELASTIC_SEARCH); }
-
-		public SearchController(ICoreComponentSet set, ISearch search, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository, IQueueSource queue) : base(set)
+		public SearchController(ICoreComponentSet set, ISearch search, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository, IQueueSource queue) : base(set)
 		{
-			SearchSource = searchSource;
 			AssetRepository = assetRepository;
 			Queue = queue;
 			SemanticsRepository = semanticsRepository;
@@ -72,8 +65,8 @@ namespace d360.web.Controllers.V2
 				{ Label.AssetTypeClass_Model, "#Models" },
 				{ Label.AssetTypeClass_Reference, "#Reference" },
 				{ Label.AssetTypeClass_Rule, "#Data Quality" },
-				{ Label.AssetTypeClass_Policy, "#Policy" },
-				{ Label.AssetTypeClass_SemanticType, "#SemanticTypes" }
+				{ Label.AssetTypeClass_Policy, "#Policy" }//,
+				//{ Label.AssetTypeClass_SemanticType, "#SemanticTypes" }
 			};
 		}
 
@@ -115,30 +108,15 @@ namespace d360.web.Controllers.V2
 		{
 			if (!string.IsNullOrEmpty(phrase))
 			{
-				bool useElastic = await UseElasticAsync();
-				if (useElastic)
-				{
-					var limitation = await GetQueryLimitation();
-					var result = SearchSource.GetSearchResults(SecurityContext.CompanyID, phrase, 200, 0, limitation);
-					result.Results.ForEach(i =>
-					{
-						i.AbsoluteUrl = string.Format($"https://{SecurityContext.CompanyPrefix}.data3sixty.com/{i.Url}");
-					});
+				//var queryParams = Request.GetQueryNameValuePairs();
+				//int pageNumber = queryParams.CheckForPageNumber();
+				//int pageSize = queryParams.CheckForPageSize();
+				//int offset = (pageNumber - 1) * pageSize;
+				//int take = pageSize;
+				var response = await Search.ReadResultsAsync(phrase, false, true, false, false, null, null, 0, 200);
+				loadSearchResultUris(response.Data.Results);
 
-					return Ok(result.Results);
-				}
-				else 
-				{
-					//var queryParams = Request.GetQueryNameValuePairs();
-					//int pageNumber = queryParams.CheckForPageNumber();
-					//int pageSize = queryParams.CheckForPageSize();
-					//int offset = (pageNumber - 1) * pageSize;
-					//int take = pageSize;
-					var response = await Search.ReadResultsAsync(phrase, false, true, false, false, null, null, 0, 200);
-					loadSearchResultUris(response.Data.Results);
-
-					return Ok(response.Data);				
-				}
+				return Ok(response.Data);				
 			}
 
 			return Ok();
@@ -172,7 +150,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = false)
 		]
-		public async Task<IHttpActionResult> GetResultsAsync(QueryRequest queryRequest)
+		public async Task<IHttpActionResult> ReadResultsAsync(QueryRequest queryRequest)
 		{
 			var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 			
@@ -185,121 +163,62 @@ namespace d360.web.Controllers.V2
 
 			HttpResponseMessage response;
 
-			bool useElastic = await UseElasticAsync();
-			if (useElastic)
+			List<AssetTypeClass> classes = null;
+			List<Guid> types = null;
+
+			// Parse Aggregate Filters by looking at raw incoming text.
+			if (queryRequest.AggregationFilters.Count > 0)
 			{
-				var resultset = new IndexResults();
-				if (!string.IsNullOrEmpty(queryRequest.Term))
+				var rawClasses = queryRequest.AggregationFilters.Where(f => f.Class.HasValue);
+				if (rawClasses.Count() > 0)
 				{
-					//Convert Tag filters to Tag UID filters
-					queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f =>
+					var classList = AssetTypeClass.BusinessAsset.GetAsList();
+					foreach (var rawClass in rawClasses)
 					{
-						FieldFilter taguids = new FieldFilter
+						var assetTypeClass = classList.FirstOrDefault(cl => cl.ID == rawClass.Class);
+						if (assetTypeClass != null)
 						{
-							Field = "TagUids",
-							Connector = f.Connector,
-							Operator = f.Operator,
-							MatchWords = f.MatchWords,
-							Values = f.Values.Select(v => Company.Tags.FirstOrDefault(t => t.Value == v).uid.ToString()).ToArray()
-						};
-						queryRequest.FieldFilters.Add(taguids);
-					});
-
-					queryRequest.FieldFilters.RemoveAll(f => f.Field == "Tags");
-					queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
-					var limitation = await GetQueryLimitation();
-					resultset = SearchSource.GetSearchResultsWithAggregation(SecurityContext.CompanyID, queryRequest, limitation);
-
-					int augmentTime = 0;
-
-					if (resultset.Results.Any())
-					{
-						Stopwatch timer = new Stopwatch();
-						timer.Start();
-
-						await AugmentResults(resultset.Results).ConfigureAwait(false);
-
-						timer.Stop();
-						augmentTime = Convert.ToInt32(Math.Round(timer.Elapsed.TotalMilliseconds));
+							if (classes == null) classes = new List<AssetTypeClass>();
+							classes.Add(assetTypeClass.ID);
+						}
 					}
-
-					resultset.ElapsedMS.Add("Augment", augmentTime);
 				}
 
-				if (isStreamResponse)
-				{
-					SLDocument document = ResultsAsExcel(resultset);
-					// Select the first worksheet as the active one.
-					var firstSheet = document.GetWorksheetNames()[0];
-					document.SelectWorksheet(firstSheet);
+				types = queryRequest.AggregationFilters
+					.Where(f => f.Uid.HasValue && f.Uid != Guid.Empty)
+					.Select(f => f.Uid.Value)
+					.ToList();
+			}
 
-					var stream = new MemoryStream();
-					document.SaveAs(stream);
+			var dbResponse = await Search.ReadResultsAsync(
+				queryRequest.Term, 
+				true, true, true, 
+				queryRequest.IncludeAggregations, 
+				classes, 
+				types, 
+				queryRequest.From, queryRequest.Size
+				);
+			
+			loadSearchResultUris(dbResponse.Data.Results);
 
-					response = createFileResponseMessage(HttpStatusCode.OK, "SearchResults.xlsx", stream.ToArray());
-				}
-				else
-				{
-					response = Request.CreateResponse(HttpStatusCode.OK, resultset);
-				}
+			if (isStreamResponse)
+			{
+				SLDocument document = SearchResultsAsExcel(dbResponse.Data.Results);
+				// Select the first worksheet as the active one.
+				var firstSheet = document.GetWorksheetNames()[0];
+				document.SelectWorksheet(firstSheet);
 
-				return ResponseMessage(response);
+				var stream = new MemoryStream();
+				document.SaveAs(stream);
+
+				response = createFileResponseMessage(HttpStatusCode.OK, "SearchResults.xlsx", stream.ToArray());
 			}
 			else
 			{
-				List<AssetTypeClass> classes = null;
-				List<string> types = null;
-
-				// Parse Aggregate Filters by looking at raw incoming text.
-				if (queryRequest.AggregationFilters.Count > 0)
-				{
-					var rawClasses = queryRequest.AggregationFilters.FirstOrDefault(f => f.Field.ToLower() == "category");
-					if (rawClasses != null && rawClasses.Values.Length > 0)
-					{
-						var classList = AssetTypeClass.BusinessAsset.GetAsList();
-						foreach (var rawClass in rawClasses.Values)
-						{
-							var assetTypeClass = classList.FirstOrDefault(cl => cl.Name == rawClass);
-							if (assetTypeClass != null)
-							{
-								classes.Add(assetTypeClass.ID);
-							}
-						}
-					}
-
-					var rawAssetTypeNames = queryRequest.AggregationFilters.FirstOrDefault(f => f.Field.ToLower() == "assettype");
-					if (rawAssetTypeNames != null && rawAssetTypeNames.Values.Length > 0)
-					{
-						foreach (var rawAssetTypeName in rawAssetTypeNames.Values)
-						{
-							types.Add(rawAssetTypeName);
-						}
-					}
-				}
-
-				bool aggregationOnly = (queryRequest.Aggregations.Count == 1);
-				var dbResponse = await Search.ReadResultsAsync(queryRequest.Term, true, true, true, aggregationOnly, classes, types, queryRequest.From, queryRequest.Size);
-				loadSearchResultUris(dbResponse.Data.Results);
-
-				if (isStreamResponse)
-				{
-					SLDocument document = SearchResultsAsExcel(dbResponse.Data.Results);
-					// Select the first worksheet as the active one.
-					var firstSheet = document.GetWorksheetNames()[0];
-					document.SelectWorksheet(firstSheet);
-
-					var stream = new MemoryStream();
-					document.SaveAs(stream);
-
-					response = createFileResponseMessage(HttpStatusCode.OK, "SearchResults.xlsx", stream.ToArray());
-				}
-				else
-				{
-					response = Request.CreateResponse(HttpStatusCode.OK, dbResponse.Data);
-				}
-
-				return ResponseMessage(response);
+				response = Request.CreateResponse(HttpStatusCode.OK, dbResponse.Data);
 			}
+
+			return ResponseMessage(response);
 		}
 
 		/// <summary>
@@ -329,8 +248,12 @@ namespace d360.web.Controllers.V2
 		{
 			if (!string.IsNullOrWhiteSpace(categories))
 			{
-				IEnumerable<string> categoryList = categories.Split(',').Select(c => c.Trim());
-				IEnumerable<string> invalidCategories = categoryList.Except(await GetVisibleCategories());
+				var categoryList = categories.Split(',')
+					.Select(c => c.Trim())
+					.Where(o => Enum.TryParse<AssetTypeClass>(o, out _))
+					.Select(o => (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), o));
+
+				var invalidCategories = categoryList.Except(await GetVisibleCategories());
 
 				if (invalidCategories.Any())
 				{
@@ -338,25 +261,11 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			bool useElastic = await UseElasticAsync();
-			if (useElastic)
-			{
-				IList<TypeaheadResult> res = null;
-				if (!string.IsNullOrEmpty(query))
-				{
-					var limitation = await GetQueryLimitation();
-					res = SearchSource.GetTypeaheadResults(SecurityContext.CompanyID, query, limitation, num.GetValueOrDefault(7), categories).ToList();
-					await AugmentResults(res).ConfigureAwait(false);
-				}
+			var typeaheadQuery = $"\"{query}*\"";
 
-				return Ok(res);
-			}
-			else
-			{
-				var response = await Search.ReadResultsAsync(query, false, true, false, false, null, null, 0, num ?? 7);
-				loadSearchResultUris(response.Data.Results);
-				return Ok(response.Data.Results);
-			}
+			var response = await Search.ReadResultsAsync(typeaheadQuery, false, true, false, false, null, null, 0, num ?? 7);
+			loadSearchResultUris(response.Data.Results);
+			return Ok(response.Data.Results);
 		}
 
 		/// <summary>
@@ -372,25 +281,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetCategories()
 		{
-			List<string> visibleCategories = await GetVisibleCategories();
-			return Ok(visibleCategories);
-		}
-
-		/// <summary>
-		/// Returns search index count by category
-		/// </summary>
-		/// <returns></returns>
-		[
-			HttpGet,
-			Route("status"),
-			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "Search index count aggregated by Category", typeof(IndexResults)),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public IHttpActionResult GetStatus()
-		{
-			var resultset = SearchSource.GetStatusSearch(SecurityContext.CompanyID, true);
-			return Ok(resultset);
+			var visibleCategories = await GetVisibleCategories();
+			return Ok(visibleCategories.Select(o => o.GetName()));
 		}
 
 		/// <summary>
@@ -413,17 +305,23 @@ namespace d360.web.Controllers.V2
 				FROM [dbo].[AssetType] at
 				cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P 
 				WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)")).ToList();
-			types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
+			
+			List<IndexableType> classes = assetTypeClasses
+				.Where(c => types.Any(at => at.Class == (int)c))
+				.Select(c => new IndexableType { 
+					Name = c.ToString(), 
+					Class = (int)c, 
+					AssetTypeUid = Guid.Empty, 
+					ClassName = c.ToString() 
+				}).ToList();
 
-			List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
-
-			if (await GetFeatureFlagValue(FlagList.SEMANTIC_TYPES_API))
-			{
-				classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
-			}
+			//if (await GetFeatureFlagValue(FlagList.SEMANTIC_TYPES_API))
+			//{
+			//	classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
+			//}
 
 			//Overload "Predicate" class as a representation for synonyms
-			classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
+			//classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
 
 			classes.AddRange(types);
 
@@ -431,103 +329,6 @@ namespace d360.web.Controllers.V2
 			classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
 
 			return Ok(classes);
-		}
-
-		/// <summary>
-		/// Lists counts of items in search index by Category and AssetType
-		/// </summary>
-		/// <returns></returns>
-		[
-			HttpGet,
-			Route("indexableStatus"),
-			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "List of indexable Categories and Asset Types", typeof(List<IndexableStatus>)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true),
-			RequireAdminPermissions
-		]
-		public async Task<IHttpActionResult> GetIndexableStatus()
-		{
-			List<IndexableCount> dbCounts = await GetDatabaseCounts();
-			List<IndexableCount> esStatus = SearchSource.GetStatusList(SecurityContext.CompanyID);
-			List<IndexableStatus> queueStatus = (await Company.QueryAsync<IndexableStatus>(@"
-				SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate
-				FROM [queue].[Search]
-				WHERE Active = 1
-				AND DATEDIFF(day, LastUpdate, GETDATE()) <= 7")).ToList();
-
-			IEnumerable<IndexableStatus> status = dbCounts.Select(db => {
-				var res = new IndexableStatus
-				{
-					Class = db.Class,
-					ClassName = SearchIndexer.GetCategoryFromClass(db.Class),
-					AssetTypeUid = db.AssetTypeUid,
-					DatabaseCount = db.CurrentCount,
-					Status = 0
-				};
-
-				var st = queueStatus.Find((s) => s.Class == db.Class && s.AssetTypeUid == db.AssetTypeUid);
-				if(st != null)
-				{
-					res.TargetCount = st.TargetCount;
-					res.Start = st.Start;
-					res.LastUpdate = st.LastUpdate;
-					res.Status = st.Status;
-				}
-
-				var es = esStatus.Find((s) => s.ClassName == res.ClassName && s.AssetTypeUid == res.AssetTypeUid);
-				if (es != null)
-				{
-					res.CurrentCount = es.CurrentCount;
-				}
-
-				if(res.Class == (int)AssetTypeClass.Reference)
-				{
-					res.Class = (int)AssetTypeClass.ReferenceItemType;
-				}
-
-				return res;
-			});
-
-			return Ok(status);
-		}
-
-		/// <summary>
-		/// Rebuild search index for Category or Asset Type
-		/// </summary>
-		/// <param name="Class">Category class id</param>
-		/// <param name="assetTypeUid">Asset Type UID</param>
-		/// <returns></returns>
-		[
-			HttpPost,
-			Route("rebuild"),
-			SwaggerResponse(HttpStatusCode.OK, "Queues a rebuild request.", typeof(ConfirmResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true),
-			RequireAdminPermissions
-		]
-		public async Task<IHttpActionResult> DoRebuild(List<SearchPartialRebuildRequest> rebuildRequests)
-		{
-			var response = new ConfirmResponse();
-			SearchIndexer indexer = new SearchIndexer(Company.Connection, SecurityContext.CompanyID, SearchSource);
-			rebuildRequests.ForEach(r => {
-				AssetTypeClass assetTypeClass = (AssetTypeClass)r.Class;
-				var origin = "QueueRebuildRequest, class: " + assetTypeClass.ToString();
-				ReindexModel model = new ReindexModel { CompanyID = SecurityContext.CompanyID, Category = assetTypeClass.ToString() };
-				if (r.AssetTypeUid != Guid.Empty)
-				{
-					model.AssetTypeUid = r.AssetTypeUid;
-					origin += ", asset type uid: " + r.AssetTypeUid.ToString();
-				}
-				model.Origin = origin;
-				if (indexer.CanCreatePendingDBLog(assetTypeClass, r.AssetTypeUid))
-				{
-					Queue.CreateMessage(constants.Queue.Search, model);
-				}
-			});
-			response.message = "Rebuild queued";
-
-			return Ok(response);
 		}
 
 		#region Enrich elastic results with DB data
@@ -572,18 +373,13 @@ namespace d360.web.Controllers.V2
 			{ Label.AssetTypeClass_DiagramAsset, "fa-share-alt" }
 		};
 
-		private async Task<List<string>> GetVisibleCategories()
+		private async Task<List<AssetTypeClass>> GetVisibleCategories()
 		{
-			bool useElastic = await UseElasticAsync();
-			var exclude = new List<AssetTypeClass> { AssetTypeClass.Group, AssetTypeClass.User };
-			if(!useElastic)
-			{
-				exclude.Add(AssetTypeClass.Diagram);
-			}
+			var exclude = new List<AssetTypeClass> { AssetTypeClass.Group, AssetTypeClass.User, AssetTypeClass.Diagram };
 
-			List<string> visibleCategories = assetTypeClasses
+			List<AssetTypeClass> visibleCategories = assetTypeClasses
 				.Where(c => Company.AssetTypes.Any(at => at.Class == c && !exclude.Contains(at.Class)))
-				.Select(c => c.ToString()).ToList();
+				.Select(c => c).ToList();
 
 			//if (Company.Semantics.Any() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, await GetFeatureFlagUser()))
 			//{
@@ -677,58 +473,16 @@ namespace d360.web.Controllers.V2
 				return string.Format(Error.SizeTooBig, 5000);
 			}
 
-			if (queryRequest.Aggregations.Any())
-			{
-				IEnumerable<string> unsupportedAggregations = queryRequest.Aggregations.Except(supportedAggregations);
-
-				if (unsupportedAggregations.Any())
-				{
-					return string.Format(Error.AggregationUnsupported, string.Join(", ", unsupportedAggregations));
-				}
-			}
-
 			if (queryRequest.AggregationFilters.Any())
 			{
-				IEnumerable<string> aggFilters = queryRequest.AggregationFilters.Select(f => f.Field);
-				IEnumerable<string> unsupportedAggFilters = aggFilters.Except(supportedAggregationFilters);
-
-				if (unsupportedAggFilters.Any())
+				if (queryRequest.AggregationFilters.Exists(f => f.Class.HasValue))
 				{
-					return string.Format(Error.AggregationFilterUnsupported, string.Join(", ", unsupportedAggFilters));
-				}
-
-				if (queryRequest.AggregationFilters.Exists(f => f.Field == "Category"))
-				{
-					IEnumerable<string> categoryList = queryRequest.AggregationFilters.Where(f => f.Field == "Category").FirstOrDefault().Values;
-					IEnumerable<string> invalidCategories = categoryList.Except(await GetVisibleCategories());
-
+					IEnumerable<AssetTypeClass> categoryList = queryRequest.AggregationFilters.Where(f => f.Class.HasValue).Select(c => c.Class.Value);
+					IEnumerable<AssetTypeClass> invalidCategories = categoryList.Except(await GetVisibleCategories());
 					if (invalidCategories.Any())
 					{
 						return string.Format(Error.CategoryNotAvailable, string.Join(", ", invalidCategories));
 					}
-				}
-			}
-
-			if (queryRequest.FieldFilters.Any())
-			{
-				IEnumerable<string> fieldFilters = queryRequest.FieldFilters.Select(f => f.Field);
-				IEnumerable<string> unsupportedFields = fieldFilters.Except(supportedFields);
-				var unsupportedTags = new List<string>();
-
-				if (unsupportedFields.Any())
-				{
-					return string.Format(Error.FieldUnsupported, string.Join(", ", unsupportedFields));
-				}
-
-				queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f =>
-				{
-					var foo = f.Values.Where(v => !Company.Tags.Any(t => t.Value == v)).ToList();
-					unsupportedTags.AddRange(foo);
-				});
-
-				if(unsupportedTags.Any())
-				{
-					return string.Format(Error.TagsNotAvailable, string.Join(", ", unsupportedTags));
 				}
 			}
 
@@ -1228,16 +982,16 @@ namespace d360.web.Controllers.V2
 				blockedCategories.Add(AssetTypeClass.SemanticType.ToString());
 			}
 
-			if (blockedCategories.Any())
-			{
-				limits.AggregationFilters.Add(
-					new AggregationFilter
-					{
-						Field = "Category",
-						Values = blockedCategories.ToArray()
-					}
-				);
-			}
+			//if (blockedCategories.Any())
+			//{
+			//	limits.AggregationFilters.Add(
+			//		new AggregationFilter
+			//		{ 
+			//			Class = "Category",
+			//			Uid = blockedCategories.ToArray()
+			//		}
+			//	);
+			//}
 
 			return limits;
 		}

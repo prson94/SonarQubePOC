@@ -121,10 +121,6 @@
       <Project>{5a4d446e-7e53-4526-a61b-2a971720471a}</Project>
       <Name>d360.extensions.mail</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.extensions.search\d360.extensions.search.csproj">
-      <Project>{55b21612-ead9-4fc3-8368-119b15ed5571}</Project>
-      <Name>d360.extensions.search</Name>
-    </ProjectReference>
     <ProjectReference Include="..\d360.extensions.storage\d360.extensions.storage.csproj">
       <Project>{b355e1bc-0512-4dcc-b04a-5d90018ea9f9}</Project>
       <Name>d360.extensions.storage</Name>

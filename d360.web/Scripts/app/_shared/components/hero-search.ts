@@ -1,0 +1,89 @@
+﻿import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { SelectItem, OverlayOptions } from 'primeng/api';
+import { SearchService } from '../../services/search.service';
+import { AuthenticationService } from '../../services/authentication.service';
+import { CompanySettingsService } from '../../services/settings.service';
+import { BaseComponent } from '../../components/shared/base.component';
+import { TypeaheadSearch } from './typeahead-search';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+    selector: 'hero-search',
+	templateUrl: 'hero-search.html',
+	styleUrls: ['/hero-search.less'],
+	standalone: true,
+	imports: [FormsModule, MultiSelectModule, TypeaheadSearch]
+})
+export class HeroSearch extends BaseComponent implements OnInit, AfterViewInit {
+    @Input() isExactMatch: boolean = true;
+    @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
+
+	searchObjectTypes: SelectItem[] = [];
+
+	overlayOpts: OverlayOptions = {
+		showTransitionOptions: "0ms ease-out",
+		hideTransitionOptions: "0ms ease-in",
+		baseZIndex: 2
+	};
+
+    constructor(
+        protected authenticationService: AuthenticationService,
+        protected searchService: SearchService,
+        protected settingsService: CompanySettingsService
+    ) {
+		super(settingsService);
+    }
+
+    ngOnInit() {
+        this.searchService.getSearchCategories(this.authenticationService.isAdmin, false).subscribe((cat) => {
+            this.searchObjectTypes = cat.map((set) => {
+                return {
+                    label: set.title,
+                    value: set.value
+                };
+            });
+            const availableTypes = this.searchObjectTypes.map((x) => x.value);
+            this.searchTypes = this.searchTypes.filter((st) => availableTypes.indexOf(st) >= 0);
+
+            this.setEventTypeLabel();
+        });
+    }
+
+    ngAfterViewInit(): void {
+        this.setEventTypeLabel();
+	}
+
+    setEventTypeLabel() {
+        const label = (document.getElementById('searchMultiSelect')
+            .getElementsByClassName('p-multiselect-label-container')[0]
+			.getElementsByClassName('p-multiselect-label')[0]);
+		if (label) {
+			if (this.searchTypes.length === 0) {
+				label.textContent = $localize`Search All Categories`;
+			} else if (this.searchTypes.length === 1) {
+				label.textContent = $localize`Search` + ' ' + this.searchObjectTypes.filter((x) => this.searchTypes.indexOf(x.value) >= 0).map((x) => x.label).join(', ');
+			} else if (this.searchTypes.length === this.searchObjectTypes.length) {
+				label.textContent = $localize`Search All Categories`;
+			} else {
+				label.textContent = $localize`Search ${this.searchTypes.length} Categories`;
+			}
+		}
+	}
+
+	setSelectAllLabel() {
+		const searchMultiSelect = document.getElementById('searchMultiSelect');
+		if (!searchMultiSelect) {
+			return;
+		}
+		if (searchMultiSelect.getElementsByClassName("select-all-label").length === 0
+			&& searchMultiSelect.getElementsByClassName("p-multiselect-header").length !== 0
+		) {
+			const selectAllLabel = document.createElement("span");
+			selectAllLabel.className = "select-all-label";
+			selectAllLabel.innerText = $localize`Search All Categories`;
+			document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header")[0]
+				.getElementsByClassName("p-checkbox")[0].append(selectAllLabel);
+		}
+	}
+}

@@ -75,15 +75,6 @@ export interface SearchAggregation {
     Items: SearchAggregation[];
 }
 
-export interface SearchAggregations {
-    category: SearchAggregation[];
-}
-
-export interface SearchTiming {
-    Query: number;
-    Augment: number;
-}
-
 export class SearchModel {
 	Aggregations: SearchAggregation[];
 	Total: number;
@@ -91,10 +82,8 @@ export class SearchModel {
 
 export class SearchResults {
     Results: SearchFullResult[];
-	Aggregations: SearchAggregations;
-	ResultAggregations: SearchAggregation[];
+	Aggregations: SearchAggregation[];
     Matches: number;
-    ElapsedMS: SearchTiming;
 }
 
 export class SearchResultFieldDisplay {
@@ -107,88 +96,35 @@ export class SearchResultFieldDisplay {
     Empty: boolean;
 }
 
-
-
 export class SearchAggregationFilter {
-    Field: string;
-    Values: string[];
-    public constructor(init?: Partial<SearchAggregationFilter>) {
-        Object.assign(this, init);
-    }
-}
-
-export enum SearchConnector {
-    And,
-    Or
-}
-
-export enum SearchOperator {
-    Contains,
-    NotContains
-}
-
-export class SearchFieldFilter {
-    Field: string;
-    Values: string[];
-    MatchWords: boolean = false;
-    Connector: SearchConnector = SearchConnector.Or;
-    Operator: SearchOperator = SearchOperator.Contains;
-    public constructor(init?: Partial<SearchFieldFilter>) {
-        Object.assign(this, init);
-    }
+    Uid?: string;
+	Class?: string;
 }
 
 export class SearchQuery {
     Term: string;
     Size: number;
 	From: number;
-	includeAggregations: boolean;
-    AggregationFilters: SearchAggregationFilter[];
-    FieldFilters: SearchFieldFilter[];
-    Aggregations: string[];
-    SearchConnector: SearchConnector = SearchConnector.And;
-    public constructor(init?: Partial<SearchQuery>) {
-        Object.assign(this, init);
-    }
-    Explain: boolean;
-    Force: boolean;
-}
+	IncludeAggregations: boolean;
+    AggregationFilters?: SearchAggregationFilter[];
 
-export class SearchCheckTreeVal {
-    key: string;
-    type: string;
-    public constructor(k: string, t: string) {
-        this.key = k;
-        this.type = t;
-    }
-}
-
-export class SearchState {
-    Term: string;
-    Size: number;
-    From: number;
-    SearchTypes: string[];
-    CheckTreeKeys: SearchCheckTreeVal[];
-    AdvancedFilters: SearchFieldFilter[];
-    SearchConnector: SearchConnector;
-    Querytime: Date;
-    public constructor(init?: Partial<SearchState>) {
+	public constructor(init?: Partial<SearchQuery>) {
         Object.assign(this, init);
     }
 }
 
 export class SearchAssetDetail {
-    uid: string;
-    Status: string;
-    Path: string[][];
-    DisplayValue: string;
-    TypeName: string;
-    Object: string;
-    ObjectId: number;
-    Id: number;
+	uid: string;
+	Status: string;
+	Path: string[][];
+	DisplayValue: string;
+	TypeName: string;
+	Object: string;
+	ObjectId: number;
+	Id: number;
 }
 
 export class SearchDetail {
-    AssetDetail: SearchAssetDetail;
-    Scores: AssetScore[];
+	AssetDetail: SearchAssetDetail;
+	Scores: AssetScore[];
 }

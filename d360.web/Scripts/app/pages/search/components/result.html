@@ -1,0 +1,78 @@
+﻿<div class="card-res"
+	 tabindex="0"
+	 (touchend)="onTouchEnd()"
+	 (click)="onClick()"
+	 (keydown)="onKeyDown($event)"
+	 (focus)="onFocus()"
+	 [class]="isSelectedCss">
+	<div class="card-row title-row">
+		@if (result?.Icon) {
+		<div class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></div>
+		}
+		@if (result?.ImageUrl) {
+		<div class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></div>
+		}
+		<div (click)="navigateLink()" class="name" [innerText]="result?.DisplayName"></div>
+		@if (showStatus) {
+		<d3s-simple-badge [badgeValue]="result?.Status" [badgeType]="'Status'"></d3s-simple-badge>
+		}
+		<div class="right-container">
+			@if (result?.Scores.length > 0) {
+			<div #scorecontainer class="d3s-score-container">
+				@for(score of result.Scores; track score) {
+				<d3s-score-badge [score]="score" [precision]="1"></d3s-score-badge>
+				}
+			</div>
+			}
+			<div class="menu-container">
+				<button type="button" igButton #cardmenubutton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="More..."></button>
+				<ig-popup-menu [items]="menuitems" #cardmenu (onSelect)="clickMenuItem($event)"></ig-popup-menu>
+			</div>
+		</div>
+	</div>
+	<div class="card-row elide-container">
+		<div class="path category elided" title="{{formatPathAsString()}}">
+			{{result?.Group}}
+			@if (result?.AssetPath?.length) {
+			<span><i class="fa fa-angle-right"></i><asset-path [path]="result.AssetPath" [withType]="true"></asset-path></span>
+			}
+		</div>
+
+	</div>
+	@if (result?.Description) {
+	<div class="card-row elide-container description"><div class="elided" [innerHtml]="result.Description" title="{{result.Description}}"></div></div>
+	}
+	@if (result?.Tags && result?.Tags.length > 0) {
+	<div class="card-row tags tagsnomanagewidth">
+		<d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)" [assetUID]="result?.Uid"></d3s-tag-view>
+	</div>
+	}
+	@if (result?.Fields && result?.Fields.length > 0) {
+	<div class="card-row">
+		<scroller-widget>
+			@for (item of result?.Fields; track item) {
+			<div class="search-result-field">
+				@if (item.Prefix || item.Suffix) {
+				<div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+				}
+				@else {
+				<div class="label" title="{{item.Label}}">{{item.Label}}:</div><div class="value" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+				}
+			</div>
+			}
+		</scroller-widget>
+	</div>
+	}
+	@if (result?.SemanticName) {
+	<div class="card-row">
+		<scroller-widget>
+			<div class="search-result-field">
+				<div class="label nomax"><ng-container i18n>Semantic Type Name</ng-container>:</div><div class="value nomax">{{ result.SemanticName }}</div>
+			</div>
+			<div class="search-result-field">
+				<div class="label nomax"><ng-container i18n>Semantic Type Qualifier</ng-container>:</div><div class="value nomax">{{ result.SemanticQualifier }}</div>
+			</div>
+		</scroller-widget>
+	</div>
+	}
+</div>
