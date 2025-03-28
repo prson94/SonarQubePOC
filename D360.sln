@@ -82,6 +82,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "constants", "constants\cons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PbixExporter", "PbixExporter\PbixExporter.csproj", "{821CD444-A77F-4C66-A847-16F3134B328D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.indexer", "igx.jobs.indexer\igx.jobs.indexer.csproj", "{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,6 +204,10 @@ Global
 		{821CD444-A77F-4C66-A847-16F3134B328D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{821CD444-A77F-4C66-A847-16F3134B328D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{821CD444-A77F-4C66-A847-16F3134B328D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -237,6 +243,7 @@ Global
 		{EBAF95C1-4A6E-49D2-A44B-8A0021413F8E} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{CF258379-3C5F-49A3-8A4E-A3D1D5BFCA72} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{821CD444-A77F-4C66-A847-16F3134B328D} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}

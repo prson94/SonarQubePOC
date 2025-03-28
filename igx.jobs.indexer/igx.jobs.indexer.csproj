@@ -65,12 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="jobs\Indexer.cs" />
-    <Compile Include="jobs\IndexMaintainance.cs" />
-    <Compile Include="jobs\PostExecutionIndexListener.cs" />
-    <Compile Include="models\FieldSqlModel.cs" />
-    <Compile Include="models\IPagedQuerySqlModel.cs" />
-    <Compile Include="models\ResponsibilitySqlModel.cs" />
-    <Compile Include="models\TagSqlModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
