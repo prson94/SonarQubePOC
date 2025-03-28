@@ -151,13 +151,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         });
 
-        this.dynEditorService.lookupFieldUpdated.subscribe((res) => {
+		this.dynEditorService.lookupFieldUpdated.subscribe((res) => {
             if (this.field && this.field.ParentFieldTypeName && res.fieldName === this.field.ParentFieldTypeName) {
 				this.form.controls[this.field.FieldName].setValue(null);
                 this.field.Items = [];
                 this.lookupSelectedValue = [];
 				this.lookupValues = [];
 				if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+					this.checkAndSetDisabledForLookup();
+					this.lazyMap.clear();
 					this.initLazyList();
 				}
             }
@@ -394,11 +396,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.ed = null;
     }
 
-    onFieldChanges(data: any) {
+	onFieldChanges(data: any) {
         this.isDirty = true;
         if (this.field.FieldType === 'Lookup') {
             this.field.Value = data;
-            this.listItemChange.emit({ field: this.field, value: data });
+			this.listItemChange.emit({ field: this.field, value: data });
+
+			if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+				this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+			}
+
         }
         else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
@@ -772,8 +779,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
             return $localize`Select a ${this.field.ParentFieldTypeName}`;
-        }
-        return this.field.Required ? $localize`Value Required` : $localize`Optional`;
+		}
+		return this.getPlaceholder();
     }
 
     get isLookupFieldDisabled(): boolean {
@@ -781,7 +788,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             return !this.lookupParentValue;
         }
         return false;
-    }
+	}
+
+	checkAndSetDisabledForLookup() {
+		if (this.isLookupFieldDisabled) {
+			this.form.controls[this.field.FieldName].disable()
+		} else {
+			this.form.controls[this.field.FieldName].enable()
+		}
+	}
 
 	lookupFieldClicked($event: PointerEvent) {
         if (this.isLookupFieldDisabled) {
@@ -795,7 +810,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     get lookupParentValue(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
-            var pField = this.form.controls[this.field.ParentFieldTypeName];
+			var pField = this.form.controls[this.field.ParentFieldTypeName];
             if (pField && pField.value) {
                 if (Array.isArray(pField.value)) {
                     return (pField.value as string[]).join(",");
@@ -825,6 +840,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				this.initLazyList();
 			}
 		}
+		this.checkAndSetDisabledForLookup();
 	}
 
 	initLazyList() {
