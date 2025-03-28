@@ -143,7 +143,7 @@
                                 </div>
                             </ng-container>
                             <ng-template #placeholder>
-                                {{ getPlaceholder() }}
+                                {{ lookupSelectPlaceholder }}
                             </ng-template>
                         </ng-template>
 
@@ -190,7 +190,7 @@
                                          [required]="isRequired()"
                                          [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                          [emptyMessage]="emptyMessage"
-                                         [placeholder]="getPlaceholder()"
+                                         [placeholder]="lookupSelectPlaceholder"
                                          [appendTo]="'body'"
                                          [virtualScroll]="true"
                                          [virtualScrollItemSize]="32"
@@ -228,7 +228,7 @@
                                             [initialItems]="fieldItems"
                                             [required]="isRequired()"
                                             [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
-                                            [placeholder]="getPlaceholder()"
+                                            [placeholder]="lookupSelectPlaceholder"
                                             [appendTo]="'body'"
                                             display="chip"
                                             [virtualScroll]="true"
