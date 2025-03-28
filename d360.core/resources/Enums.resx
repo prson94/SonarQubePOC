@@ -195,6 +195,9 @@
   <data name="FieldType_ReferenceItemListFromRel" xml:space="preserve">
     <value>Reference Item List from Relationship</value>
   </data>
+  <data name="FieldType_ReferenceList" xml:space="preserve">
+    <value>Reference List</value>
+  </data>
   <data name="FieldType_RelationLookup" xml:space="preserve">
     <value>Relation Lookup</value>
   </data>
