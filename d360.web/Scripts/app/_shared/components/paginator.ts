@@ -17,13 +17,14 @@ export enum LABEL_STYLE {
 }
 
 @Component({
-    selector: 'd3s-paginator',
-    templateUrl: "./paginator-bar-component.html",
-    styleUrls: ["paginator-bar-component.less"],
+    selector: 'paginator',
+	templateUrl: "./paginator.html",
+	styleUrls: ["paginator.less"],
+	standalone: true,
+	imports: [],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-
-export class PaginatorComponent implements OnChanges, OnInit {
+export class Paginator implements OnChanges, OnInit {
     @Input() rows: number;
     @Input() page: number;
     @Input() totalRecords: number;
@@ -33,24 +34,16 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() hideSettings: boolean = false;
     @Output() onPageChange = new EventEmitter();
     itemsPerPageOptions = [10, 25, 50, 100];
-    itemsPerPage: number = 25;
     pageOptions = [1];
-    visableNumbers: number = 5;
-    constructor(
-        ref: ChangeDetectorRef,
-        private router: Router
-    ) {
-    }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['page'] != null && !changes['page'].firstChange) || (changes['totalRecords'] != null && !changes['totalRecords'].firstChange))
-            {this.CheckVisableNumbers();}
+		if ((changes['page'] != null && !changes['page'].firstChange) || (changes['totalRecords'] != null && !changes['totalRecords'].firstChange)) {
+			this.checkVisibleNumbers();
+		}
     }
 
     ngOnInit(): void {
-        this.itemsPerPage = 25;
-        this.page = 0;
-        this.CheckVisableNumbers();
+        this.checkVisibleNumbers();
     }
 
     public isAngle(): boolean {
@@ -59,32 +52,53 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     get labelFirst() {
         return this.isAngle() ? "&laquo;" : "First";
-    }
+	}
+
     get labelLast() {
         return this.isAngle() ? "&raquo;" : "Last";
     }
-    get labelPrevious() {
+
+	get labelPrevious() {
         return this.isAngle() ? "&lsaquo;" : "Previous";
-    }
-    get labelNext() {
+	}
+
+	get previousCss() {
+		let css = '';
+		css += this.isAngle() ? "angle" : "";
+		css += this.isFirstPage() ? " disabled" : "";
+		return css;
+	}
+
+	get labelNext() {
         return this.isAngle() ? "&rsaquo;" : "Next";
-    }
+	}
+
+	get nextCss() {
+		let css = '';
+		css += this.isAngle() ? "angle" : "";
+		css += this.isLastPage() ? " disabled" : "";
+		return css;
+	}
+
+	pageSelectedCss(cpage: number): string {
+		return (this.page === cpage) ? 'selected' : '';
+	}
 
     changePageNumber(newItemsPerPage: number) {
-        this.page = Math.floor((this.page * this.itemsPerPage) / newItemsPerPage);
-        this.itemsPerPage = newItemsPerPage;
-        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
+		this.page = Math.floor((this.page * this.rows) / newItemsPerPage);
+		this.rows = newItemsPerPage;
+		this.paginate(this.rows, this.page);
     }
 
     isFirstPage(): boolean {
-        if (this.page === 0) {
+        if (this.page === 1) {
             return true;
         }
         return false;
     }
 
     isLastPage(): boolean {
-        if (this.getPageCount() <= (this.page + 1)) {
+        if (this.getPageCount() <= this.page) {
             return true;
         }
         return false;
@@ -93,8 +107,8 @@ export class PaginatorComponent implements OnChanges, OnInit {
     changePageToFirst(event: any): void {
         if (this.isFirstPage())
             {return;}
-        this.page = 0;
-        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
+        this.page = 1;
+		this.paginate(this.rows, this.page);
     }
 
     changePageToPrev(event: any): void {
@@ -102,7 +116,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
             {return;}
         else {this.page--;}
 
-        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
+		this.paginate(this.rows, this.page);
     }
 
     changePageToNext(event: any): void {
@@ -110,41 +124,41 @@ export class PaginatorComponent implements OnChanges, OnInit {
             {return;}
         else
             {this.page++;}
-        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
-    }
+		this.paginate(this.rows, this.page);
+	}
+
     changePageToLast(event: any): void {
         if (this.isLastPage())
             {return;}
         else
-            {this.page = this.getPageCount() - 1;}
-        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
-    }
+            {this.page = this.getPageCount();}
+		this.paginate(this.rows, this.page);
+	}
+
     onPageLinkClick(page: number): void {
         if (page !== undefined && (this.page !== page)) {
             this.page = page;
-            this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
+			this.paginate(this.rows, this.page);
         }
     }
 
     getPageCount(): number {
-        if (this.totalRecords > 0) {
-            {
-                return Math.ceil(this.totalRecords / this.itemsPerPage);
-            }
+		if (this.totalRecords > 0) {
+			return Math.ceil(this.totalRecords / this.rows);
         }
         return 1;
     }
 
-    paginate(size, page, firstItemIndex) {
-        this.CheckVisableNumbers();
-        this.onPageChange.emit({ size, page, first: firstItemIndex });
+    paginate(rows, page) {
+        this.checkVisibleNumbers();
+        this.onPageChange.emit({ rows, page });
     }
 
-    CheckVisableNumbers() {
+    checkVisibleNumbers() {
         this.pageOptions = [];
         const currentPage = this.page + 1, totalPages = this.getPageCount();
         const step = 2; // Current page +- step
-        const paging = [];      
+        const paging = [];
 
         //end pagination at CurrentPage+2 or total pages, whichever is smallest, but up to step*2 + 1 options
         const end = Math.min(Math.max(currentPage + step, 1 + 2 * step), totalPages);
@@ -159,14 +173,14 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     get fromDisplayValue() {
-        return Math.min((this.page * this.itemsPerPage) + 1, this.totalRecords);
+		return Math.min((this.page * this.rows) + 1, this.totalRecords);
     }
 
     get toDisplayValue() {
-        if (this.totalRecords <= this.itemsPerPage) {
+		if (this.totalRecords <= this.rows) {
             return this.totalRecords;
         } else {
-            return Math.min((this.page * this.itemsPerPage) + this.itemsPerPage, this.totalRecords);
+			return Math.min((this.page * this.rows) + this.rows, this.totalRecords);
         }
     }
 }

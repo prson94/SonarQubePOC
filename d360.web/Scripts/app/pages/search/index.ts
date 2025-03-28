@@ -25,7 +25,6 @@ import { LoadingComponent } from '../../_shared/components/loading';
 import { ResultItem } from './components/result';
 import { AngularSplitModule } from 'angular-split';
 import { CoreModule } from '../../components/shared/core.module';
-import { PaginatorModule } from '../../components/shared/small-widgets/paginator/paginator-bar-module';
 import { SemanticsModule } from '../../components/semantic/semantics.module';
 import { AssetDetailModule } from '../../components/shared/asset-detail/asset-detail.module';
 import { AssetEditorModule } from '../../components/shared/asset-editor/asset-editor.module';
@@ -41,6 +40,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SidePanelModule } from '../../components/shared/sidepanel/side-panel.module';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearch } from '../../_shared/components/typeahead-search';
+import { Paginator } from '../../_shared/components/paginator';
 
 @Component({
     selector: 'd3s-search',
@@ -56,7 +56,7 @@ import { TypeaheadSearch } from '../../_shared/components/typeahead-search';
 		CoreModule,
 		DataProfileModule,
 		LoadingComponent,
-		PaginatorModule,
+		Paginator,
 		ResultItem,
 		SemanticsModule,
 		SidePanelModule,
@@ -185,11 +185,6 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 				this.loadResults(true);
 			}
         });
-
-   //     this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
-   //         this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
-			//this.searchExportTooltip = (pageCount <= this.exportLimit) ? $localize`Export to Excel` : $localize`No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
-   //     });
     }
 
 	loadResults(includeAggregations: boolean) {
@@ -233,6 +228,9 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 				// Then we should reset the total result count.
 				this.categories = this.convertCataegoriesToCheckTreeNodes(results.Aggregations);
 				this.resultCount = results.Matches;
+
+				this.canExport = this.resultCount <= this.exportLimit;
+				this.searchExportTooltip = (this.resultCount <= this.exportLimit) ? $localize`Export to Excel` : $localize`No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
 			}
 		});
 	}
@@ -348,9 +346,7 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
     paginate(data) {
         /*
             event.page: New page number
-            event.first: Index of first record
-            event.rows: Number of rows to display in new page            
-            event.pageCount: Total number of pages
+            event.rows: Number of rows to display in new page
         */
 		this.pageNumber = data.page;
 		this.resultsPerPage = data.rows;

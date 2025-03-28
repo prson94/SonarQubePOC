@@ -740,6 +740,7 @@
     <Content Include="Scripts\app\_shared\components\grid-paging-info.html" />
     <Content Include="Scripts\app\_shared\components\hero-search.html" />
     <Content Include="Scripts\app\_shared\components\loading.html" />
+    <Content Include="Scripts\app\_shared\components\paginator.html" />
     <Content Include="Scripts\app\_shared\components\scroller-widget.html" />
     <Content Include="Scripts\app\_shared\components\social-board.html" />
     <Content Include="Scripts\app\_shared\components\comment-item.html" />
@@ -962,6 +963,7 @@
     <Content Include="Scripts\app\pages\search\components\result.less" />
     <Content Include="Scripts\app\_shared\components\scroller-widget.less" />
     <Content Include="Scripts\app\_shared\components\hero-search.less" />
+    <Content Include="Scripts\app\_shared\components\paginator.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1030,6 +1032,7 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\grid-paging-info.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\hero-search.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\loading.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\paginator.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\scroller-widget.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-board.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\comment-item.ts" />
@@ -1589,8 +1592,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\checktreenode.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.ts" />
@@ -1627,10 +1628,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-response-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-relationship-change-details.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.routes.ts" />
@@ -2277,7 +2274,6 @@
     <None Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\ownership-list\ownership-list.component.html" />
-    <None Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\simple-badge\simple-badge.component.html" />
     <None Include="Scripts\app\components\shared\small-widgets\user-avatar\user-avatar.component.html" />
@@ -2293,8 +2289,6 @@
     <None Include="Scripts\app\components\shared\workflow\workflowmonitor-step-field-change-details.component.html" />
     <None Include="Scripts\app\components\shared\workflow\workflowmonitor-step-form-details.component.html" />
     <None Include="Scripts\app\components\shared\workflow\workflowmonitor-step-grid.component.html" />
-    <None Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
-    <None Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <None Include="Scripts\app\components\sidebar\assignments\assignment-sidebar.component.html" />
     <None Include="Scripts\app\components\sidebar\audit\audit-page.component.html" />
     <None Include="Scripts\app\components\sidebar\audit\audit.component.html" />
@@ -2444,7 +2438,6 @@
     <None Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.less" />
     <None Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.less" />
     <None Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.less" />
-    <None Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.less" />
     <None Include="Scripts\app\components\shared\table-data-transfer\table-data-transfer.component.less" />
     <None Include="Scripts\app\components\shared\tabs\tabs.component.less" />
     <None Include="Scripts\app\components\shared\user\user-list.component.less" />

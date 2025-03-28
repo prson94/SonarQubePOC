@@ -1,9 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
-using Newtonsoft.Json;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,26 +42,38 @@ namespace repositories.azure
 
 			Action<int> appendCte = (int id) =>
 			{
+				string permissionJoin = "";
+				if (!CurrentUserIsAdmin)
+				{
+					permissionJoin = 
+						" inner join dbo.Asset ap on ap.ID = a.AssetId" +
+						" inner join dbo.AssetType apt on apt.Id = ap.AssetTypeId" +
+						" where (" +
+						"	apt.DefaultPermissions & 1 = 1 " +
+						"	or exists (select 1 from dbo.ResponsibilityDetail where (AssetID = ap.ID OR (AssetID = 0 AND AssetTypeID = apt.ID)) and ResourceID = @CurrentUserId and PermissionsBitMask & 1 = 1)" +
+						")";
+				}
+
 				sql += $@"
 ;with cte{id} as (
 	select		s.[Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
 				inner join {ftTableFunction}(AssetDisplayValue, DisplayValue, @phrase) s on s.[Key] = a.AssetID 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
 	union
 	select		s.[Rank],
 				a.AssetId as Id
 	from		Field a 
 				inner join {ftTableFunction}(Field, FormattedValue, @phrase) s on s.[Key] = a.ID and a.AssetID is not null 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
 	union
 	select		s.[Rank],
 				a.AssetID as Id
 	from		AssetTag a
 				inner join Tag t on t.ID = a.TagID
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
 )
 ";
 			};
