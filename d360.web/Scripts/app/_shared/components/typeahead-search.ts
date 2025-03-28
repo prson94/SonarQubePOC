@@ -21,14 +21,14 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FormsModule } from '@angular/forms';
-import { ReplaceStringPipe } from '../../pipes/replace.pipe';
+import { PipesModule } from '../../pipes/pipes.module';
 
 @Component({
     selector: 'typeahead-search',
     templateUrl: 'typeahead-search.html',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
-	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule, ReplaceStringPipe]
+	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule, PipesModule]
 })
 export class TypeaheadSearch implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
@@ -56,7 +56,7 @@ export class TypeaheadSearch implements OnDestroy, OnInit {
 
     constructor(
         private router: Router,
-        private settingsService: CompanySettingsService,
+        settingsService: CompanySettingsService,
         private searchService: SearchService,
         private authenticationService: AuthenticationService,
         private typeaheadSearchService: TypeaheadSearchService,
