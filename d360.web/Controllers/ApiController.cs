@@ -5200,8 +5200,8 @@ where v.id = {0}", id)).FirstOrDefault();
 				days *= -1;
 				dbArgs.Add("@d", days);
 				innerQuery = @"select  at.Name,
-						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
-						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) < @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) < @d then 0 else 1 end as Total,
 						at.id as Id								
 				from    Asset a
 						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
