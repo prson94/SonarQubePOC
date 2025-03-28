@@ -1796,7 +1796,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequiredFieldError, "apiSecret"));
 			}
 
-			if (resource.IsSuccess)
+			if (!resource.IsSuccess)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUser);
 			}
