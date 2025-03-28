@@ -1075,7 +1075,7 @@ namespace d360.web.Controllers
 		{
 			if (!Guid.TryParse(uid, out var guid))
 			{
-				return Request.CreateResponse(HttpStatusCode.BadRequest, Error.CustomUidNotValid);
+				return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(Error.CustomUidNotValid, "uid", uid));
 			}
 
 			int objectId = Company.GetObjectId(guid, type);

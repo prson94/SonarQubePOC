@@ -116,7 +116,7 @@ namespace igx.jobs.apiexecutionprocessor
 										if (assetType != null)
 										{
 											log.LogTrace($"Get PostAssets payload: {DateTime.UtcNow:hh:mm:ss}");
-											var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
+											var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetApiModel>>(info.StorageFolder, info.RequestFileName);
 
 											log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
 											resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
@@ -138,7 +138,7 @@ namespace igx.jobs.apiexecutionprocessor
 										if (assetType != null)
 										{
 											log.LogTrace($"Get PutAssets payload: {DateTime.UtcNow:hh:mm:ss}");
-											var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
+											var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetApiModel>>(info.StorageFolder, info.RequestFileName);
 
 											log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
 											resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);

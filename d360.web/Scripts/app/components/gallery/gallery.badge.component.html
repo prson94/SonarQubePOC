@@ -60,6 +60,34 @@
         </div>
         <p>Custom-Dark is for a backgroundColor override which is assumed to be dark, hence the text is white.</p>
     </div>
+    <div class="gallery-section">
+        <h4>Interactive score-bade</h4>
+        <p>The score-badge is a small widget that uses the badge component.</p>
+        <div style="display:flex">
+            <div style="width:300px">
+                <b>Settings:</b>
+                <div>
+                    Label: &nbsp;&nbsp;<ig-switch [(ngModel)]="scoreType" trueLabel="DQ" falseLabel="GV"></ig-switch>
+                </div>
+                <div>
+                    Value (bewteeen 0 and 1): <ig-number-input [(ngModel)]="scoreValue" [step]="0.001" [min]="0" [max]="1"></ig-number-input>
+                </div>
+                <div>
+                    Precision (between 0 and 5): <ig-number-input [(ngModel)]="precision" [step]="1" [min]="0" [max]="5"></ig-number-input>
+                </div>
+                <div>
+                    Small badge: &nbsp;&nbsp;<ig-switch [(ngModel)]="useMiniBadge"></ig-switch>
+                </div>
+            </div>
+            <div>
+                <b>Score Badge</b><br />
+                <div class="d3s-score-container">
+                    <d3s-score-badge [score]="score" [precision]="precision" [useMiniBadge]="useMiniBadge">
+                    </d3s-score-badge>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="tile tile-detail">

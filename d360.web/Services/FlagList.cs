@@ -18,5 +18,8 @@
 		public static readonly string TAGGING_NEW_UI_ENABLED = "tagging-new-administration-ui";
 		public static readonly string TAGGING_VALUE_LIMiTATION_ENABLED = "tagging-value-limitation";
 		public static readonly string USE_ELASTIC_SEARCH = "search-use-elastic";
+        public static readonly string USE_ASSET_FIELD = "asset-field-table";
+		public static readonly string USE_INTERSECT_FIELD = "intersect-field-table";
+		public static readonly string FIELDTYPE_REFERENCE_LIST = "fieldtype-referencelist-conversion";
 	}
 }

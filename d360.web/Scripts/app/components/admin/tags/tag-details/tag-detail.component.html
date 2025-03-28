@@ -4,23 +4,6 @@
     </div>
     <div *ngIf="!isLoading">
         <ng-container>
-            <div class="asset-detail-header">
-                <!--<div class="asset-name">
-                    {{this.selectedItem.Value}}
-                </div>
-                <div class="class-name" *ngIf="!hideClassName && subtitle">
-                    {{subtitle}}
-                </div>-->
-                <!--<div>
-                    <a  (click)="open();" i18n>Open</a> <span *ngIf="hasOpenLink" class="grey-delimiter">|</span>
-                    <a (click)="open(true);" i18n>Open in New Tab</a>
-                    <ng-container>
-                        <a (click)="onEditClick.emit({assetUid:model.AssetUid, type:model.Object, assetTypeUid:assetTypeUID})" i18n>Edit</a>
-                    </ng-container>
-                </div>-->
-            </div>
-        </ng-container>
-        <ng-container>
             <div class="windowtabs">
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">Details</button>
                 <button [class]="(tab == 'taggedassets') ? 'tab-selected' : 'tab'" (click)="clickTab('taggedassets')" [disabled]="isLoading" i18n>Tagged Assets</button>
@@ -28,7 +11,7 @@
         </ng-container>
         <ng-container [ngSwitch]="tab">
             <ng-container *ngSwitchCase="'taggedassets'">
-                <ig-tagged-assets-detail [uid]="selectedItem.uid"></ig-tagged-assets-detail>
+                <ig-tagged-assets-detail [uid]="selectedItem.uid" [showTagDetails]="false"></ig-tagged-assets-detail>
             </ng-container>
 
             <ng-container *ngSwitchCase="'detail'">
@@ -36,13 +19,13 @@
                     <ig-property-group [showHeaderLine]="true" title="General" i18n-title>
                         <div inputs>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Name</label>
                                     <div>
                                         {{this.selectedItem.Value}}
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Tag Type</label>
                                     <div>
                                         {{this.selectedItem.TagTypeValue}}
@@ -59,7 +42,7 @@
                     <ig-property-group [showHeaderLine]="true" title="System Fields" i18n-title>
                         <div inputs>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>
                                         UID
                                     </label>
@@ -67,25 +50,25 @@
                                         {{this.selectedItem.uid}}
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Date Created</label>
                                     <span>
                                         {{ (this.selectedItem.CreatedOn | date: dateFormat) }}
                                     </span>
                                 </div>
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Date Last Modified</label>
                                     <span>
                                         {{ (this.selectedItem.UpdatedOn | date: dateFormat) }}
                                     </span>
                                 </div>
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Created By</label>
                                     <a (click)="resourceClicked(this.selectedItem.CreatedByUid)">
                                         {{ this.selectedItem.CreatedBy }}
                                      </a>
                                 </div>
-                                <div class="row">
+                                <div class="row ig-value ng-star-inserted">
                                     <label class="ig-label" i18n>Last Modified By</label>
                                     <a (click)="resourceClicked(this.selectedItem.UpdatedByUid)">
                                         {{ this.selectedItem.UpdatedBy }}

@@ -1,28 +1,28 @@
 {
-	"group": "Groupe"
+	"after": "Après",
+	"apply": "Appliquer",
+	"before": "Avant",
+	"clear": "Effacer",
+	"ct": "Contient",
+	"dateAfter": "La date est après",
+	"dateBefore": "La date est avant",
+	"dateIs": "La date est",
+	"dateNot": "La date n’est pas",
+	"eq": "Égal à",
+	"ew": "Se termine par",
+	"group": "Groupe",
+	"gt": "Supérieur à",
+	"gte": "Supérieur ou égal à",
+	"is": "Est",
+	"isNot": "N’est pas",
+	"lt": "Inférieur à",
+	"lte": "Inférieur ou égal à",
+	"nct": "Ne contient pas",
+	"ne": "Pas égal à",
+	"noFilter": "Aucun filtre",
+	"sw": "Commence par"
 }
 /*
-	"sw": "Starts with": "Commence par"
-	"Contains": "Contient"
-	"Not contains": "Ne contient pas"
-	"Ends with": "Se termine par"
-	"Equals": "Égal à"
-	"Not equals": "Pas égal à"
-	"No Filter": "Aucun filtre"
-	"Less than": "Inférieur à"
-	"Less than or equal to": "Inférieur ou égal à"
-	"Greater than": "Supérieur à"
-	"Greater than or equal to": "Supérieur ou égal à"
-	"Is": "Est"
-	"Is not": "N’est pas"
-	"Before": "Avant"
-	"After": "Après"
-	"Date is": "La date est"
-	"Date is not": "La date n’est pas"
-	"Date is before": "La date est avant"
-	"Date is after": "La date est après"
-	"Clear": "Effacer"
-	"Apply": "Appliquer"
 	"Match All": "Tout mettre en correspondance"
 	"Match Any": "Mettre en correspondance l’un des éléments"
 	"Add Rule": "Ajouter une règle"

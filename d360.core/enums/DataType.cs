@@ -85,7 +85,10 @@ namespace d360.core
         Counter = 1 << 28,
 
 		[Description("System")]
-		System = 1 << 29
+		System = 1 << 29,
+
+		[Description("Reference List")]
+		ReferenceList = 1 << 30
 	}
 
     public class DataTypeInfo
@@ -221,6 +224,7 @@ namespace d360.core
                 case DataType.Tag: return Enums.FieldType_Tag;
                 case DataType.Text: return Enums.FieldType_SimpleText;
 				case DataType.System: return Enums.FieldType_System;
+				case DataType.ReferenceList: return Enums.FieldType_ReferenceList;
 
 				default: throw new ArgumentOutOfRangeException("DataType");
             }

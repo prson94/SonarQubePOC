@@ -503,33 +503,34 @@ from    api.ExecutionAsset T
             if (!SecurityContext.IsAdministrator)
             {
                 Connection.Execute($@"
-									declare @hasAssetTypePermission bit = 0
+declare	@assetTypePermissions int, 
+		@hasAssetTypePermission bit = 0
 
-									select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissionsByAssetID(@resourceID, @assetTypeID, 0) where PermissionsBitMask & @p = @p) then 1 else 0 end
+select	@assetTypePermissions = dbo.GetCombinedPermissionsForUserByAssetTypeId(@assetTypeID, @resourceID);
+set		@hasAssetTypePermission = @assetTypePermissions & @p
 
-									if @hasAssetTypePermission = 0
-									begin
+if @hasAssetTypePermission = 0
+begin
+	drop table if exists #tempcheckpermission;
 
-										drop table if exists #tempcheckpermission;
+	select	usrper.AssetID
+	into	#tempcheckpermission
+	from	api.Execution E
+			cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
+	where	E.ExecutionID = @executionID
+			and usrper.PermissionsBitMask & @p = @p
+	group by usrper.AssetID;
 
-										select usrper.AssetID
-										into #tempcheckpermission
-										from api.Execution E
-										cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
-										where E.ExecutionID = @executionID
-										and usrper.PermissionsBitMask & @p = @p
-										group by usrper.AssetID;
+	create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
 
-										create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
-
-										update	T
-										set		T.Success = 0,
-												T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
-										from    api.{apiTableName} T
-										where   T.ExecutionID = @executionID
-												and T.AssetID is not null
-												and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
-									end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	from    api.{apiTableName} T
+	where   T.ExecutionID = @executionID
+			and T.AssetID is not null
+			and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
+end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
             }
         }
 

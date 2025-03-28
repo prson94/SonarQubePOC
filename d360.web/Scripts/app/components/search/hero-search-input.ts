@@ -1,4 +1,4 @@
-﻿import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
+﻿import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem, OverlayOptions } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
@@ -13,7 +13,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     providers: [TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
@@ -31,7 +31,6 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
         protected settingsService: CompanySettingsService
     ) {
 		super(settingsService);
-		this.setLabelInterval = setInterval(this.setSelectAllLabel, 50);
     }
 
     ngOnInit() {
@@ -53,12 +52,6 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
         this.setEventTypeLabel();
 	}
 
-	ngOnDestroy() {
-		if (this.setLabelInterval) {
-			clearInterval(this.setLabelInterval);
-		}
-	}
-
     setEventTypeLabel() {
         const label = (document.getElementById('searchMultiSelect')
             .getElementsByClassName('p-multiselect-label-container')[0]
@@ -76,8 +69,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 		}
 	}
 
-	setLabelInterval;
-	private setSelectAllLabel() {
+	setSelectAllLabel() {
 		const searchMultiSelect = document.getElementById('searchMultiSelect');
 		if (!searchMultiSelect) {
 			return;
@@ -85,9 +77,6 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 		if (searchMultiSelect.getElementsByClassName("select-all-label").length === 0
 			&& searchMultiSelect.getElementsByClassName("p-multiselect-header").length !== 0
 		) {
-			if (this.setLabelInterval) {
-				clearInterval(this.setLabelInterval);
-			}
 			const selectAllLabel = document.createElement("span");
 			selectAllLabel.className = "select-all-label";
 			selectAllLabel.innerText = $localize`Search All Categories`;

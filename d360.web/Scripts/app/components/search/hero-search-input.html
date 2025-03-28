@@ -10,6 +10,7 @@
                    [maxSelectedLabels]="1"
                    (ngModelChange)="searchTypes=$event;"
                    (onChange)="setEventTypeLabel()"
+                   (onPanelShow)="setSelectAllLabel()"
                    [dropdownIcon]="'fa fa-chevron-down nm'">
     </p-multiSelect>
     <div class="field mr10">

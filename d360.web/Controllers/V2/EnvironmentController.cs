@@ -60,18 +60,6 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
 
-		private bool IsCustomCssEnabled {
-			get {
-				return GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS).Result;
-			}
-		}
-		private bool IsDashboardingEnabled {
-			get {
-				return GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED).Result;
-			}
-		}
-
-
 		public EnvironmentController(
 			ICoreComponentSet set, 
 			IThemeRepository themeRepository, 
@@ -141,10 +129,8 @@ namespace d360.web.Controllers.V2
 				ResourceName = res.FullName,
 				ResourceEmail = res.Email,
 				VersionNumber = typeof(EnvironmentController).Assembly.GetName().Version.ToString(),
-				DataDogApplicationId = ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "",
-				DataDogClientToken = ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "",
-				DataDogService = ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "",
-				ApplicationLanguageSetting = ""
+				ApplicationLanguageSetting = "",
+				ApplicationInsightsConnectionString = Config.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING")
 			};
 
 			return Request.CreateResponse(HttpStatusCode.OK, data);
@@ -1552,9 +1538,7 @@ select	r.uid as ResourceUid,
 
 			if (SecurityContext.ResourceID > 0)
 			{
-				//https://jira.syncsort.com/browse/GOV-21052
-				//Limited / Low-risk information disclosure via CSS overrides
-				var customCss = Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
+				var customCss = await Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
 				css.AppendLine("");
 				css.Append(customCss);
 			}
@@ -1630,7 +1614,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
 					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
@@ -1840,9 +1824,9 @@ select	r.uid as ResourceUid,
 		{
 			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
-					return  errorMessageArgumentResponse(Error.CustomCssNotAllowed);
+					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
 			}
 
@@ -1862,23 +1846,16 @@ select	r.uid as ResourceUid,
 			{
 				RepositoryResponse<bool> response = null;
 				var resource = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
-				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme,SecurityContext.ResourceID , true);
+				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme, SecurityContext.ResourceID , true, true);
 
 				if (!response.IsSuccess)
 				{
 					return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 				}
 
-				var status = await ThemeRepository.PostThemeAsync(repoTheme, validationOnly);
-
-				if (status == HttpStatusCode.OK)
-				{
-					var baseUri = await ThemeRepository.GetBaseUriTheme();
-
-					var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
-
-					responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
-				}
+				var baseUri = await ThemeRepository.GetBaseUriTheme();
+				var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
+				responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
 			}
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
@@ -1909,9 +1886,9 @@ select	r.uid as ResourceUid,
 		{
 			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
+					return errorMessageResponse(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
 				}
 			}
 
@@ -1953,21 +1930,11 @@ select	r.uid as ResourceUid,
 				return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 			}
 
-			var status = await ThemeRepository.PutThemeAsync(existingTheme, nowPreviousTheme);
+			var baseUri = await ThemeRepository.GetBaseUriTheme();
+			var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
+			var reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
 
-			var reponseModel = new GetTheme();
-
-			if (status == HttpStatusCode.OK)
-			{
-				var baseUri = await ThemeRepository.GetBaseUriTheme();
-
-				var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
-
-				reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
-			}
-
-
-			return ResponseMessage(Request.CreateResponse(status, reponseModel));
+			return Ok(reponseModel);
 		}
 
 
@@ -1995,24 +1962,11 @@ select	r.uid as ResourceUid,
 				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 			}
 
-			RepositoryResponse<bool> response = null;
-			response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
-			if (response.IsSuccess)
-			{	
-				var success = await ThemeRepository.MarkThemeAsCurrentAsync(theme ,uid);
-				if (success)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
-				}
-				else
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
-				}
-			}
-			else
-			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
-			}
+			var response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
+
+			return response.IsSuccess ?
+				Ok(new ConfirmResponse { message = "Theme marked as current." }) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -2033,44 +1987,31 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> DeleteTheme(Guid uid)
 		{
-			try
+			var theme = await Community.ReadThemeUidAsync( SecurityContext.CompanyID, uid);
+
+			if (theme == null)
 			{
-				var theme = await Community.ReadThemeUidAsync( SecurityContext.CompanyID, uid);
-
-				if (theme == null)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
-				}
-
-				if (theme.Locked)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
-				}
-
-				if (theme.IsCurrent)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
-				}
-
-				RepositoryResponse<bool> response = null;
-				response = await Community.RemoveThemeAsync(SecurityContext.CompanyID, uid);
-				if (!response.IsSuccess)
-				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorRemoveTheme);
-				}
-
-				var status = await ThemeRepository.Delete(uid, theme);
-
-				return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
+				return errorMessageNotFoundResponse(Error.ThemeWithUidNotFound);
 			}
-			catch (GenericException ex)
+
+			if (theme.Locked)
 			{
-				throw ex;
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
 			}
-			catch
+
+			if (theme.IsCurrent)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnDelete, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
 			}
+
+			RepositoryResponse<bool> response = null;
+			response = await Community.RemoveThemeAsync(SecurityContext.CompanyID, uid);
+			if (!response.IsSuccess)
+			{
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorRemoveTheme);
+			}
+
+			return Ok(new ConfirmResponse { message = "Theme removed." });
 		}
 
 
@@ -2114,39 +2055,25 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> ConvertImageToDataUrl()
 		{
-			const string ERROR_HEADING = "Error converting css";
+			var c = await Request.Content.ReadAsMultipartAsync();
+			var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
 
-			try
+			if (file == null)
 			{
-				var c = await Request.Content.ReadAsMultipartAsync();
-				var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
-
-				if (file == null)
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, "You must provide an image file to convert.");
-				}
-
-				byte[] bytes = await file.ReadAsByteArrayAsync();
-				string extension =  Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
-
-				var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
-				if (!goodExtensions.Contains(extension))
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, "You must provide a valid image file.");
-				}
-
-				var dataUri = bytes.GetDataUrlFromStream(extension);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataUri));
+				return errorMessageArgumentResponse("You must provide an image file to convert.");
 			}
-			catch (GenericException ex)
+
+			byte[] bytes = await file.ReadAsByteArrayAsync();
+			string extension =  Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+
+			var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
+			if (!goodExtensions.Contains(extension))
 			{
-				throw ex;
+				return errorMessageArgumentResponse("You must provide a valid image file.");
 			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			var dataUri = bytes.GetDataUrlFromStream(extension);
+			return Ok(dataUri);
 		}
 
 		/// <summary>
@@ -2266,7 +2193,7 @@ select	r.uid as ResourceUid,
 				}
 			}
 
-			if (IsDashboardingEnabled)
+			if (await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 				return Ok(responseModel);
@@ -2317,7 +2244,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnCreate, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2427,7 +2354,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageForbiddenResponse(Error.EndpointNotAuthorizedMessage);
 			}
@@ -2517,7 +2444,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> DeleteDashboard(Guid uid)
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnDelete, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2559,7 +2486,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> UpdatePowerBiCredentials(PowerBiCredentials credentials)
 		{
-			if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED) || !SecurityContext.IsAdministrator)
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.DashboardingErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
 			}

@@ -1,12 +1,8 @@
-﻿using AngleSharp.Common;
-using d360.core;
-using d360.core.enums;
+﻿using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
-using d360.extensions.info;
 using d360.extensions.search;
 using d360.model;
-using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -133,16 +129,34 @@ namespace igx.jobs.indexer
 			}
 			else
 			{
-				int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);
+				int timeoutHours = 12;
+				if (int.TryParse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"], out int _timeoutHours)) {
+					timeoutHours = _timeoutHours;
+				}
+
 				await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Active, timeoutHours);
-				await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
-				await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Inactive, timeoutHours);
+				var updateStatus = await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
+				if (updateStatus)
+				{
+					await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Inactive, timeoutHours);
+				}
 			}
         }
 
-        public async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
+        public async Task<bool> RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
         {
 			await companyConn.OpenIfClosed();
+
+			var alreadyRunningSql = @"select sign(count(*))
+				from queue.Search
+				where AssetTypeUid = '00000000-0000-0000-0000-000000000000'
+				and status in (1, 2, 3)
+				and active = 1";
+			var alreadyRunning = companyConn.Query<int>(alreadyRunningSql).First();
+			if(alreadyRunning > 0)
+			{
+				return false;
+			}
 
 			var sql = "select case " +
 					  "	WHEN a.dist > 30000 THEN 30000 " +
@@ -200,6 +214,7 @@ namespace igx.jobs.indexer
             });
 
 			companyConn.CloseIfOpened();
+			return true;
         }
 
         private Tuple<byte, byte> GetNGramLimits(SqlConnection context)

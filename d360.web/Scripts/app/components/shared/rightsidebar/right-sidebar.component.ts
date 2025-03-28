@@ -23,7 +23,6 @@ import { Subscription } from 'rxjs';
 import { sortBy, startsWith } from "lodash-es";
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
-import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -66,7 +65,7 @@ import { TabsModule } from '../tabs/tabs.module';
 		DirectivesModule,
 		TabsModule
 	],
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
+    providers: [ObjectStatisticsService, ArtifactService, WorkflowService],
     styleUrls: ['./right-sidebar.component.less'],
 })
 
@@ -122,7 +121,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     constructor(
         private secondaryNavService: SecondaryNavService,
         protected objectStatisticsService: ObjectStatisticsService,
-        private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,

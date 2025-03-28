@@ -563,9 +563,8 @@ namespace d360.model.DataAccessLayer
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
 							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.SubjectAssetTypeID, I.SubjectAssetID) perm" : "")}
 							where {subjectClause}
-							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and dbo.GetCombinedPermissionsForUserByAssetId(I.SubjectAssetID, @CurrentResourceID) & @ReadPremission = @ReadPremission" : "")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
@@ -582,9 +581,8 @@ namespace d360.model.DataAccessLayer
 							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							{(!SecurityContext.IsAdministrator && !isdiagramClass ? "cross apply dbo.UserAssetPermissionsByAssetID(@CurrentResourceID, I.ObjectAssetTypeID, I.ObjectAssetID) perm" : "")}
 							where fia.id is null and {objectClause}
-							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and (perm.PermissionsBitMask is null or perm.PermissionsBitMask & @ReadPremission = @ReadPremission)" : "")}
+							{(!SecurityContext.IsAdministrator && !isdiagramClass ? " and dbo.GetCombinedPermissionsForUserByAssetId(I.ObjectAssetID, @CurrentResourceID) & @ReadPremission = @ReadPremission" : "")}
 							option(recompile);
 							";
 

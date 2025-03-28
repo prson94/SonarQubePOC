@@ -3666,7 +3666,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3699,7 +3699,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -3713,7 +3713,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3746,7 +3746,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{

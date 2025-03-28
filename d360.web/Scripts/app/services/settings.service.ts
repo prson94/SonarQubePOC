@@ -17,6 +17,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
 import { SettingsProviderService } from "@precisely/di-suite-ng/govern";
+import { UserVariables } from "../_shared/models/user-variables";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
@@ -29,6 +30,8 @@ declare var CurrentResourceUid;
 export class CompanySettingsService extends BaseObservableService {
 	private _appSettings: AppSettingModel[] = null;
 	private _settings: SettingsGetModel[] = null;
+
+	userVariables: UserVariables = null;
 
 	get appSettings(): AppSettingModel[] {
 		if (!this._appSettings) {
@@ -224,13 +227,27 @@ export class CompanySettingsService extends BaseObservableService {
 			);
 	}
 
-	getUserVariables() {
-		return this.http
-			.get(`api/v2/environment/uservariables`)
-			.pipe(
-				map((res) => res as JsonResult),
-				catchError((err) => this.handleError(err))
-			);
+	loadUserVariables() {
+		this.http.get(`api/v2/environment/uservariables`).subscribe((res: UserVariables) => {
+			this.userVariables = res;
+		});
+	}
+
+	getUserVariables(): Observable<UserVariables> {
+		let obs: Observable<UserVariables>;
+		if (this.userVariables) {
+			obs = of(this.userVariables);
+		}
+		else {
+			obs = this.http
+				.get<UserVariables>(`api/v2/environment/uservariables`)
+				.pipe(
+					tap((res) => this.userVariables = res),
+					map((res) => res),
+					catchError((err) => this.handleError(err))
+				);
+		}
+		return obs;
 	}
 
 	private _currentResourceID: number | undefined;
