@@ -188,6 +188,15 @@ order by r.[Rank] desc;";
 		{
 			RepositoryResponse<SearchModel> response = new(200);
 
+			if (take <= 0)
+			{
+				take = 25;
+			}
+			if (offset <= 0) 
+			{
+				offset = 0;
+			}
+
 			var parameters = new DynamicParameters();
 			parameters.Add("@offset", offset);
 			parameters.Add("@take", take);
