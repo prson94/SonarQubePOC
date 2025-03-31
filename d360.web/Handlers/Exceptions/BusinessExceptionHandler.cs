@@ -15,16 +15,17 @@ namespace d360.web.Handlers.Exceptions
 			if (actionExecutedContext.Exception is FilterExpressionParserException)
 			{
 				var ex = actionExecutedContext.Exception as FilterExpressionParserException;
-				actionExecutedContext.Response = CreateResponse(new ProblemDetailsResponse
+				var problemDetails = new ProblemDetailsResponse
 				{
 					Status = (int)ex.StatusCode,
-					Detail = ex.StackTrace,
-					Title = ex.Message,
+					Detail = ex.Message,
+					Title = "Filter expression parser error",
 					Type = "error",
 					Method = actionExecutedContext.Request.Method.Method,
 					Instance = actionExecutedContext.Request.RequestUri.ToString(),
 
-				});
+				};
+				actionExecutedContext.Response = CreateResponse(problemDetails);
 				return;
 			}
 		}
