@@ -74,6 +74,14 @@ namespace repositories.azure
 				inner join Tag t on t.ID = a.TagID
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
 				{cteFilterSql} {permissionJoin}
+	union
+	select	s.[Rank],
+			a.AssetId as Id
+	from	dbo.Asset o
+			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id)
+			inner join Semantic st on st.Qualifier = a.TypeQualifier and st.EffectiveDate <= a.ProfileSetDate
+			inner join CONTAINSTABLE(Semantic, Qualifier, @phrase) s on s.[Key] = st.ID
+			{cteFilterSql} {permissionJoin}
 )
 ";
 			};
