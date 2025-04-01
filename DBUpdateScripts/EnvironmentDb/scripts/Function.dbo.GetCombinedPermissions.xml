@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissions-v1">
+ <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissions-v1.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissions] 
@@ -27,10 +27,10 @@ begin
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 7, 1) from @permissions where (get_bit(Id, 7) = 1)	-- Delete	(128)
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 8, 1) from @permissions where (get_bit(Id, 8) = 1)	-- Edit		(256)
 
-	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 10, 1) from @permissions where (get_bit(Id, 5) = 1)	-- Read		(1024)
-	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 11, 1) from @permissions where (get_bit(Id, 6) = 1)	-- Add		(2048)
-	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 12, 1) from @permissions where (get_bit(Id, 7) = 1)	-- Delete	(4096)
-	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 13, 1) from @permissions where (get_bit(Id, 8) = 1)	-- Edit		(8192)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 10, 1) from @permissions where (get_bit(Id, 10) = 1)	-- Read		(1024)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 11, 1) from @permissions where (get_bit(Id, 11) = 1)	-- Add		(2048)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 12, 1) from @permissions where (get_bit(Id, 12) = 1)	-- Delete	(4096)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 13, 1) from @permissions where (get_bit(Id, 13) = 1)	-- Edit		(8192)
 
 	return @combinedPermissionMask
 end
