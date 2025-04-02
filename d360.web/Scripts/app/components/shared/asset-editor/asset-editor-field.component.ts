@@ -828,7 +828,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			if (this.field.Items.length > 0 && this.field.Items.some((x) => x.Selected === false)) {
 				const lookupValues = this.field.Items;
 				if (lookupValues[0].value === '') {
-					lookupValues.shift;
+					lookupValues.shift();
+				}
+				if (lookupValues[0].hasAssetReadAccess === undefined) {
+					lookupValues.forEach((item) => item.hasAssetReadAccess = true);
 				}
 				this.lazyMap.set('', lookupValues)
 				this.lazyLookupValues = [...lookupValues];
