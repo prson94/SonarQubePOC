@@ -51,7 +51,8 @@ export class TagService extends BaseObservableService {
             .pipe(map((response) => <any>response),
 				catchError((err) => {
 					this.handleError(err, true);
-					return of([0]);
+					this.messages.showError('Error', err.error.message);
+					return of([{ error: true, message: '' }]);
 				}));
     }
 
