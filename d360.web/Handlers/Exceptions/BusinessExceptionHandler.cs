@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Web.Http.Filters;
 using d360.model.helpers.filters;
+using Newtonsoft.Json;
 
 namespace d360.web.Handlers.Exceptions
 {
@@ -19,7 +18,7 @@ namespace d360.web.Handlers.Exceptions
 				{
 					Status = (int)ex.StatusCode,
 					Detail = ex.Message,
-					Title = "Filter expression parser error",
+					Title = "Filter expression parse error",
 					Type = "error",
 					Method = actionExecutedContext.Request.Method.Method,
 					Instance = actionExecutedContext.Request.RequestUri.ToString(),
@@ -33,7 +32,7 @@ namespace d360.web.Handlers.Exceptions
 		public static HttpResponseMessage CreateResponse(ProblemDetailsResponse data)
 		{
 			var response = new HttpResponseMessage(HttpStatusCode.BadRequest);
-			var json = JsonSerializer.Serialize(data);
+			var json = JsonConvert.SerializeObject(data, Formatting.Indented);
 
 			response.Content = new StringContent(json);
 			response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
