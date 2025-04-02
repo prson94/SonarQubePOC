@@ -2089,46 +2089,52 @@ select	r.uid as ResourceUid,
 		public async Task<IHttpActionResult> Base64Images(Guid uid)
 		{
 			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+			if (theme == null)
+			{
+				return errorMessageNotFoundResponse(Error.ThemeWithUidNotFound);
+			}
+
 			var response = new ThemeBase64Data();
+
 			if (theme.HomePageBackgroundExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+				response.HomeBackground = await GetImageAsString(url, theme.HomePageBackgroundExtension);
 			}
 
 			if (theme.BrowserIconExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+				response.Icon = await GetImageAsString(url, theme.BrowserIconExtension);
 			}
 
 			if (theme.HeaderLogoExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+				response.HeaderLogo = await GetImageAsString(url, theme.HeaderLogoExtension);
 			}
 
 			return Ok(response);
 		}
 
+		private async Task<string> GetImageAsString(string url, string extension)
+		{
+			try
+			{
+				using (var stream = new MemoryStream())
+				{
+					await _storage.GetFileStream("themes", url, stream);
+					return stream.ToArray().GetDataUrlFromStream(extension);
+				}
+			} catch (FileNotFoundException ex)
+			{
+				return null;
+			}
+		}
+
 
 		#endregion
-
 		#region Dashboard Endpoints
-
 		/// <summary>
 		/// Gets a list of dashboards in an environment.
 		/// </summary>
