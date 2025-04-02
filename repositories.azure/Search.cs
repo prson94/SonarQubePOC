@@ -56,13 +56,13 @@ namespace repositories.azure
 
 				sql += $@"
 ;with cte{id} as (
-	select		s.[Rank],
+	select		s.[Rank]*4 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
 				inner join {ftTableFunction}(AssetDisplayValue, DisplayValue, @phrase) s on s.[Key] = a.AssetID 
 				{cteFilterSql} {permissionJoin}
 	union
-	select		s.[Rank],
+	select		s.[Rank]*3 as [Rank],
 				a.AssetId as Id
 	from		Field a 
 				inner join {ftTableFunction}(Field, FormattedValue, @phrase) s on s.[Key] = a.ID and a.AssetID is not null 
@@ -75,7 +75,7 @@ namespace repositories.azure
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
 				{cteFilterSql} {permissionJoin}
 	union
-	select	s.[Rank],
+	select	s.[Rank]*2 as [Rank],
 			a.AssetId as Id
 	from	dbo.Asset o
 			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id)
@@ -231,6 +231,11 @@ order by r.[Rank] desc;";
 			bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
 			bool containsDoubleQuote = phrase.Contains("\"");
 			isFreeText = !containsConjunction && !containsDoubleQuote;
+
+			if (isFreeText && words.Length > 1)
+			{
+				phrase = $"\"{phrase}\"";
+			}
 
 			// Generate the SQL to run.
 			var sql = buildFullTextSql(includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
