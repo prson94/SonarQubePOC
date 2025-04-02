@@ -70,12 +70,14 @@ namespace d360.web.Controllers.V2
 			};
 		}
 
-		string cleanPhrase(string phrase, bool addQuotesAround = true)
+		string cleanPhrase(string phrase)
 		{
-			bool hasDoubleQuotes = (phrase.StartsWith("\"") && !phrase.EndsWith("\"")) || (phrase.EndsWith("\"") && !phrase.StartsWith("\""));
+			bool hasDoubleQuotes = (phrase.StartsWith("\"") && !phrase.EndsWith("\"")) 
+				|| (phrase.EndsWith("\"") && !phrase.StartsWith("\""))
+				|| (phrase.StartsWith("\"") && phrase.EndsWith("\""));
 
 			phrase = phrase.Replace("\"", "");
-			if (hasDoubleQuotes && addQuotesAround)
+			if (hasDoubleQuotes)
 			{
 				phrase = $"\"{phrase}\"";
 			}
@@ -263,7 +265,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetTypeaheads(string query, string categories = null, int? num = null)
 		{
-			query = cleanPhrase(query, false);
+			query = cleanPhrase(query);
 			if (!string.IsNullOrWhiteSpace(categories))
 			{
 				var categoryList = categories.Split(',')
@@ -279,9 +281,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var typeaheadQuery = $"\"{query}*\"";
-
-			var response = await Search.ReadResultsAsync(typeaheadQuery, false, true, false, false, null, null, 0, num ?? 7);
+			var response = await Search.ReadResultsAsync(query, false, true, false, false, null, null, 0, num ?? 7);
 			loadSearchResultUris(response.Data.Results);
 			return Ok(response.Data.Results);
 		}
