@@ -14,10 +14,11 @@ namespace d360.web.Handlers.Exceptions
 			if (actionExecutedContext.Exception is FilterExpressionParserException)
 			{
 				var ex = actionExecutedContext.Exception as FilterExpressionParserException;
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				var problemDetails = new ProblemDetailsResponse
 				{
 					Status = (int)ex.StatusCode,
-					Detail = ex.Message,
+					Detail = errorMessage,
 					Title = "Filter expression parse error",
 					Type = "error",
 					Method = actionExecutedContext.Request.Method.Method,
