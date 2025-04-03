@@ -148,6 +148,22 @@ namespace d360.web.Controllers
 					resource = response.Data;
 				}
 
+				if (resource == null)
+				{
+					Log.LogInformation($"Did not find resource account (Secondary location) for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
+					response = await Community.ReadUserByEmailAsync(eMail, false);
+					if (response.IsSuccess && response.Data != null)
+					{
+						resource = response.Data;
+					}
+				}
+
+				if (resource == null)
+				{
+					Log.LogInformation($"Did not find resource account (Primary location) for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
+					return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);
+				}
+
 				//If there is a domain whitelist, make sure the user has access
 				string domainWhitelistString = await GetCachedSettingValueById<string>(Setting.EmailDomainWhitelist);
                 bool isDomainWhitelisted;
@@ -226,7 +242,11 @@ namespace d360.web.Controllers
 						{
 							resource.ID = userCreateResponse.Data;
 						}
-                    }
+						else
+						{
+							Log.LogInformation($"Error during create user . Username: {userName}. Other info: (Email : {eMail}, First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
+						}
+					}
                 }
                 
 				if (resource != null)
@@ -874,6 +894,7 @@ namespace d360.web.Controllers
 			}
 			if (openIdRequest == null)
 			{
+				Log.LogError($"Could not find openIdRequest(fromSecondary).");
 				openIdRequest = await Community.GetOpenIdRequestAsync(state, false);			// Read from primary
 			}
 
@@ -1089,7 +1110,7 @@ namespace d360.web.Controllers
                     {
                         var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
 
-                        var lr = new LogoutRequest
+						var lr = new LogoutRequest
                         {
                             NameID = new NameID(resource.Data.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
                             Issuer = new Issuer(APP_ID)

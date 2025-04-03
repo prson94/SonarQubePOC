@@ -634,11 +634,11 @@ where	c.ID = @companyId";
 			return response;
 		}
 
-		private async Task<RepositoryResponse<Resource>> readUserByIdentifierAsync(string identifierName, string sql, object parameters)
+		private async Task<RepositoryResponse<Resource>> readUserByIdentifierAsync(string identifierName, string sql, object parameters, bool fromSecondary)
 		{
 			var response = new RepositoryResponse<Resource>(null, 404, false, $"User not found based on {identifierName} provided.");
 
-			using (var connection = Connect(true))
+			using (var connection = Connect(fromSecondary))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<Resource>(sql, parameters);
 				if (response.Data != null)
@@ -652,24 +652,24 @@ where	c.ID = @companyId";
 			return response;
 		}
 
-		public async Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email)
+		public async Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email, bool fromSecondary = true)
 		{
-			return await readUserByIdentifierAsync("email", $"select * from [Resource] where lower(Email) = @email", new { email });
+			return await readUserByIdentifierAsync("email", $"select * from [Resource] where lower(Email) = @email", new { email }, fromSecondary);
 		}
 
-		public async Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId)
+		public async Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId, bool fromSecondary = true)
 		{
-			return await readUserByIdentifierAsync("Id", $"select * from [Resource] where ID = @userId", new { userId });
+			return await readUserByIdentifierAsync("Id", $"select * from [Resource] where ID = @userId", new { userId }, fromSecondary);
 		}
 
-		public async Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId)
+		public async Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId, bool fromSecondary = true)
 		{
-			return await readUserByIdentifierAsync("Uid", $"select * from [Resource] where Uid = @userId", new { userId });
+			return await readUserByIdentifierAsync("Uid", $"select * from [Resource] where Uid = @userId", new { userId }, fromSecondary);
 		}
 
-		public async Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username)
+		public async Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username,  bool fromSecondary = true )
 		{
-			return await readUserByIdentifierAsync("username", $"select * from [Resource] where lower(Username) = @username", new { username });
+			return await readUserByIdentifierAsync("username", $"select * from [Resource] where lower(Username) = @username", new { username }, fromSecondary);
 		}
 
 		public async Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null)
