@@ -94,7 +94,19 @@ namespace d360.web.Controllers.V2
 					r.Icon = "fa-book";
 				}
 
-				if(r.Class == AssetTypeClass.Diagram && r.Url != null)
+				if (r.Class == AssetTypeClass.User)
+				{
+					r.Url = $"/users/{r.Uid}";
+					r.AbsoluteUrl = $"https://{SecurityContext.CompanyPrefix}.data3sixty.com/users/{r.Uid}";
+
+				}
+				else if (r.Class == AssetTypeClass.Group)
+				{
+					r.Url = $"/admin/groups";
+					r.AbsoluteUrl = $"https://{SecurityContext.CompanyPrefix}.data3sixty.com/admin/groups";
+
+				}
+				else if (r.Class == AssetTypeClass.Diagram && r.Url != null)
 				{
 					r.AbsoluteUrl = $"https://{SecurityContext.CompanyPrefix}.data3sixty.com{r.Url}";
 				}
