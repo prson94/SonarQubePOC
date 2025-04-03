@@ -145,7 +145,7 @@ namespace d360.web.Controllers.V2
 				//int offset = (pageNumber - 1) * pageSize;
 				//int take = pageSize;
 
-				phrase = cleanPhrase(phrase);
+				//phrase = cleanPhrase(phrase);
 				var response = await Search.ReadResultsAsync(phrase, false, true, false, false, null, null, 0, 200);
 				loadSearchResultUris(response.Data.Results);
 
@@ -199,7 +199,7 @@ namespace d360.web.Controllers.V2
 			List<AssetTypeClass> classes = null;
 			List<Guid> types = null;
 
-			queryRequest.Term = cleanPhrase(queryRequest.Term);
+			//queryRequest.Term = cleanPhrase(queryRequest.Term);
 
 			// Parse Aggregate Filters by looking at raw incoming text.
 			if (queryRequest.AggregationFilters.Count > 0)
@@ -281,7 +281,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetTypeaheads(string query, string categories = null, int? num = null)
 		{
-			query = cleanPhrase(query);
+			//query = cleanPhrase(query);
 			if (!string.IsNullOrWhiteSpace(categories))
 			{
 				var categoryList = categories.Split(',')
