@@ -2,186 +2,208 @@
           [class.side-panel-close]="!sidePanelOpen"
           (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
           unit="pixel" direction="horizontal" class="col s12 split" style="display: flex">
-        <as-split-area class="tile tile-detail main-panel">
-            <d3s-tags-header (onTagTypeSelected)="loadTagsOnTagTypeSelected($event)"></d3s-tags-header>
-            <div class="row">
-                <div class="col l12 m12 s12">
-                    <div class="admin-tags-tile tile tile-detail theme-new">
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <ng-container *ngIf="!isLoading">
-                            <div class="grid-actions-header column-layout">
-                                <div class="grid-actions-header-row">
-                                    <div class="simple-search">
-                                        <ig-search-field mode="Keypress"
-                                                         [debounce]="600"
-                                                         (onSearch)="onSearch($event)"
-                                                         [(ngModel)]="filters.globalSearch">
-                                        </ig-search-field>
-                                    </div>
-                                    <div class="grid-action-buttons">
+    <as-split-area class="tile tile-detail main-panel">
+        <d3s-tags-header (onTagTypeSelected)="loadTagsOnTagTypeSelected($event)"></d3s-tags-header>
+        <div class="row">
+            <div class="col l12 m12 s12">
+                <div class="admin-tags-tile tile tile-detail theme-new">
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    <ng-container *ngIf="!isLoading">
+                        <div class="grid-actions-header column-layout">
+                            <div class="grid-actions-header-row">
+                                <div class="simple-search">
+                                    <ig-search-field mode="Keypress"
+                                                     [debounce]="600"
+                                                     (onSearch)="onSearch($event)"
+                                                     [(ngModel)]="filters.globalSearch">
+                                    </ig-search-field>
+                                </div>
+                                <div class="grid-action-buttons">
+                                    <button igButton
+                                            [igDataCy]="'Button_Add'"
+                                            pTooltip="Add"
+                                            tooltipPosition="top"
+                                            tooltipStyleClass="ig-tooltip"
+                                            class="ig-button-primary"
+                                            icon="fa-plus"
+                                            (click)="add()">
+                                    </button>
+
+                                    <div pTooltip="Export to Excel"
+                                         tooltipPosition="left"
+                                         tooltipStyleClass="ig-tooltip">
                                         <button igButton
-                                                [igDataCy]="'Button_Add'"
-                                                pTooltip="Add"
-                                                tooltipPosition="top"
-                                                tooltipStyleClass="ig-tooltip"
-                                                class="ig-button-primary"
-                                                icon="fa-plus"
-                                                (click)="add()">
+                                                class="ig-button-secondary"
+                                                [igDataCy]="'Button_Export'"
+                                                icon="fa-download"
+                                                (click)="export()">
                                         </button>
-
-                                        <div pTooltip="Export to Excel"
-                                             tooltipPosition="left"
-                                             tooltipStyleClass="ig-tooltip">
-                                            <button igButton
-                                                    class="ig-button-secondary"
-                                                    [igDataCy]="'Button_Export'"
-                                                    icon="fa-download"
-                                                    (click)="export()">
-                                            </button>
-                                        </div>
-
-                                        <div *ngIf="selected.length > 1">
-                                            <div style="padding-left:10px">
-                                                {{selected.length}} items selected
-                                            </div>
-
-                                            <div class="token-popup-menu" *ngIf="menuItemsForDelete">
-                                                <button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
-                                                <ig-popup-menu [items]="menuItemsForDelete"
-                                                               #tokenMenu
-                                                               [tabIndex]="1"></ig-popup-menu>
-                                            </div>
-
-                                            <button class="ig-float-popup-container" #floatButton>
-                                                <ig-popup-menu [items]="menuItemsForDelete" #floatMenu [tabIndex]="1">
-                                                </ig-popup-menu>
-                                            </button>
-                                        </div>
                                     </div>
-                                </div>
-                                <div class="grid-actions-header-row">
-                                    <advanced-filtering [loadIdentifier]="'AdminTags'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-                                </div>
-                            </div>
 
-                            <p-table #dt
-                                     [value]="tags"
-                                     [globalFilterFields]="['Value','UseCount','CreatedOn','CreatedBy']"
-                                     [rowsPerPageOptions]="defaultPagingOptions"
-                                     sortField="Value"
-                                     [sortOrder]="1"
-                                     [pageLinks]="3"
-                                     [paginator]="true"
-                                     [rows]="25"
-                                     [(selection)]="selected">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th style="width: 5%;" (click)="selectAllCheckboxes($event);" class="enable-pointer-events">
-                                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                        </th>
-                                        <th [pSortableColumn]="'Value'" style="width: 50%">
-                                            <ng-container i18n>Name</ng-container>
-                                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
-                                        </th>
-                                        <th [pSortableColumn]="'UseCount'" style="width: 40%">
-                                            <ng-container i18n>Use count</ng-container>
-                                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
-                                        </th>
-                                        <th></th>
-                                        <th></th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr>
-                                        <td (click)="selectCheckBox($event,item,el);" class="enable-pointer-events">
-                                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                        </td>
-                                        <td>
-                                            <a (click)="openTagDetails(item);">{{item.Value}}</a>
-                                        </td>
-                                        <td>{{item.UseCount}}</td>
-                                        <td>
-                                            <div class="RowTools">
-                                                <span (click)="selectSingleItem(null,item)"
-                                                      class="ig-button-icon fa fa-info-circle info-icon"
-                                                      [ngClass]="{'active': item.isSelected}"></span>
-                                            </div>
-                                        </td>
-                                        <td style="padding-left:0" #assetGridTools>
-                                            <div class="token-popup-menu" *ngIf="menuItems">
-                                                <button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);selectSingleItem(null,item)"></button>
-                                                <ig-popup-menu [items]="menuItems"
-                                                               #tokenMenu
-                                                               [tabIndex]="1"></ig-popup-menu>
-                                            </div>
+                                    <div *ngIf="selected.length > 1">
+                                        <div style="padding-left:10px">
+                                            {{selected.length}} items selected
+                                        </div>
 
-                                            <button class="ig-float-popup-container" #floatButton>
-                                                <ig-popup-menu [items]="menuItems" #floatMenu [tabIndex]="1">
-                                                </ig-popup-menu>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </ng-template>
-                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                                </ng-template>
-                            </p-table>
-                        </ng-container>
+                                        <div class="token-popup-menu" *ngIf="menuItemsForDelete">
+                                            <button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
+                                            <ig-popup-menu [items]="menuItemsForDelete"
+                                                           #tokenMenu
+                                                           [tabIndex]="1"></ig-popup-menu>
+                                        </div>
 
-                        <d3s-dynamic-editor [objectID]="selected[0]?.uid"
-                                            [objectType]="'Tag'"
-                                            [title]="'Tag'"
-                                            [selection]="selected[0]"
-                                            (saveClick)="saveTag($event)"
-                                            [showAsModal]="true"
-                                            [modalTitle]="editPopupTitle"
-                                            [isModalVisible]="showEditor"
-                                            (closeClick)="closeEditor()">
-
-                        </d3s-dynamic-editor>
-                        <d3s-delete-form *ngIf="selected.length != 0"
-                                         [callback]="theDeleteCallback"
-                                         [method]="'callback'"
-                                         [items]="selected"
-                                         [showAsModal]="true"
-                                         [modalTitle]="deletePopupTitle"
-                                         [isModalVisible]="showDelete"
-                                         (onCancel)="showDelete=false;">
-                            <div prompt>
-                                <div *ngIf="selected.length == 1">
-                                    <ng-container i18n>
-                                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
-                                    </ng-container>
-                                    <ng-container *ngIf="this.selected[0].UseCount > 0">
-                                        (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} <ng-container i18n>assets</ng-container> </d3s-tag-usage> <ng-container i18n>tagged</ng-container>)
-                                    </ng-container>
-                                </div>
-                                <div *ngIf="selected.length > 1">
-                                    <ng-container i18n>Please confirm that you wish to delete following tags</ng-container>:
-                                    <div style="max-height: 75vh; overflow-y: auto;">
-                                        <table class="table-borderless table">
-                                            <tr *ngFor="let t of selected">
-                                                <td>
-                                                    <div class="table-tag-value ig-elide" title="{{t.Value}}">{{t.Value}}</div>
-                                                </td>
-                                                <td style="width:160px;" *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
-                                            </tr>
-                                        </table>
+                                        <button class="ig-float-popup-container" #floatButton>
+                                            <ig-popup-menu [items]="menuItemsForDelete" #floatMenu [tabIndex]="1">
+                                            </ig-popup-menu>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
+                            <div class="grid-actions-header-row">
+                                <advanced-filtering [loadIdentifier]="'AdminTags'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                            </div>
+                        </div>
 
-                        </d3s-delete-form>
-                        <d3s-admin-tags-consolidate [tags]="selected"
-                                                    [modalTitle]="'Consolidate Tags'"
-                                                    [isModalVisible]="showConsolidate"
-                                                    (onCancel)="showConsolidate=false"
-                                                    [callback]="theConsolidateCallback">
-                        </d3s-admin-tags-consolidate>
-                    </div>
+                        <p-table #dt
+                                 [value]="tags"
+                                 [globalFilterFields]="['Value','UseCount','CreatedOn','CreatedBy']"
+                                 [rowsPerPageOptions]="defaultPagingOptions"
+                                 sortField="Value"
+                                 [sortOrder]="1"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
+                                 [rows]="25"
+                                 [(selection)]="selected">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 5%;" (click)="selectAllCheckboxes($event);" class="enable-pointer-events">
+                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                    </th>
+                                    <th [pSortableColumn]="'Value'" style="width: 50%">
+                                        <ng-container i18n>Name</ng-container>
+                                        <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'UseCount'" style="width: 40%">
+                                        <ng-container i18n>Use count</ng-container>
+                                        <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr>
+                                    <td (click)="selectCheckBox($event,item,el);" class="enable-pointer-events">
+                                        <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                    </td>
+                                    <td>
+                                        <a (click)="openTagDetails(item);">{{item.Value}}</a>
+                                    </td>
+                                    <td>{{item.UseCount}}</td>
+                                    <td>
+                                        <div class="RowTools">
+                                            <span (click)="selectSingleItem(null,item)"
+                                                  class="ig-button-icon fa fa-info-circle info-icon"
+                                                  [ngClass]="{'active': item.isSelected}"></span>
+                                        </div>
+                                    </td>
+                                    <td style="padding-left:0" #assetGridTools>
+                                        <div class="token-popup-menu" *ngIf="menuItems">
+                                            <button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);selectSingleItem(null,item)"></button>
+                                            <ig-popup-menu [items]="menuItems"
+                                                           #tokenMenu
+                                                           [tabIndex]="1"></ig-popup-menu>
+                                        </div>
+
+                                        <button class="ig-float-popup-container" #floatButton>
+                                            <ig-popup-menu [items]="menuItems" #floatMenu [tabIndex]="1">
+                                            </ig-popup-menu>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+                    </ng-container>
+
+                    <d3s-dynamic-editor [objectID]="selected[0]?.uid"
+                                        [objectType]="'Tag'"
+                                        [title]="'Tag'"
+                                        [selection]="selected[0]"
+                                        (saveClick)="saveTag($event)"
+                                        [showAsModal]="true"
+                                        [modalTitle]="editPopupTitle"
+                                        [isModalVisible]="showEditor"
+                                        (closeClick)="closeEditor()">
+
+                    </d3s-dynamic-editor>
+                    <d3s-delete-form *ngIf="selected.length != 0"
+                                     [callback]="theDeleteCallback"
+                                     [method]="'callback'"
+                                     [items]="selected"
+                                     [showAsModal]="true"
+                                     [modalTitle]="deletePopupTitle"
+                                     [isModalVisible]="showDelete"
+                                     (onCancel)="showDelete=false;">
+                        <div prompt>
+                            <div *ngIf="selected.length == 1">
+                                <ng-container i18n>
+                                    Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
+                                </ng-container>
+                                <ng-container *ngIf="this.selected[0].UseCount > 0">
+                                    (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} <ng-container i18n>assets</ng-container> </d3s-tag-usage> <ng-container i18n>tagged</ng-container>)
+                                </ng-container>
+                            </div>
+                            <div *ngIf="selected.length > 1">
+                                <ng-container i18n>Please confirm that you wish to delete following tags</ng-container>:
+                                <div style="max-height: 75vh; overflow-y: auto;">
+                                    <table class="table-borderless table">
+                                        <tr *ngFor="let t of selected">
+                                            <td>
+                                                <div class="table-tag-value ig-elide" title="{{t.Value}}">{{t.Value}}</div>
+                                            </td>
+                                            <td style="width:160px;" *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </d3s-delete-form>
+                    <d3s-admin-tags-consolidate [tags]="selected"
+                                                [modalTitle]="'Consolidate Tags'"
+                                                [isModalVisible]="showConsolidate"
+                                                (onCancel)="showConsolidate=false"
+                                                [callback]="theConsolidateCallback">
+                    </d3s-admin-tags-consolidate>
                 </div>
             </div>
-        </as-split-area>
+        </div>
+        <div>
+            <ng-container *ngIf="secondarySidePanelOpen">
+                <div class="secondary-side-panel fixed-side-panel div-secondary">
+                    <div class="panel-header">
+                        <span class="header-label" i18n>Asset Information</span>
+                        <div class="button-container">
+                            <button igButton icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                        </div>
+                    </div>
+                    <div class="details-container">
+                        <div>
+                            <ng-container *ngIf="secondarySidePanel === 'item'">
+                                <asset-preview [assetUid]="this.selectedForSecondaryPanel.AssetUid"
+                                               [assetType]="this.selectedForSecondaryPanel.Object"
+                                               [hasEditLink]="false"
+                                               [hasOpenLink]="true"></asset-preview>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </as-split-area>
         <as-split-area [size]="getSidePanelWidth()"
                        [minSize]="getSidePanelMinWidth()"
                        [maxSize]="getSidePanelMaxWidth()"
@@ -227,26 +249,5 @@
             </side-panel>
 
         </as-split-area>
-        <div>
-        <ng-container *ngIf="secondarySidePanelOpen">
-            <div class="secondary-side-panel fixed-side-panel div-secondary" >
-                <div class="panel-header">
-                    <span class="header-label" i18n>Asset Information</span>
-                    <div class="button-container">
-                        <button igButton icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
-                    </div>
-                </div>
-                <div class="details-container">
-                    <div>
-                        <ng-container *ngIf="secondarySidePanel === 'item'">
-                            <asset-preview [assetUid]="this.selectedForSecondaryPanel.AssetUid"
-                                           [assetType]="this.selectedForSecondaryPanel.Object"
-                                           [hasEditLink]="false"
-                                           [hasOpenLink]="true"></asset-preview>
-                        </ng-container>
-                    </div>
-                </div>
-            </div>
-        </ng-container>
-    </div>
+        
 </as-split>
