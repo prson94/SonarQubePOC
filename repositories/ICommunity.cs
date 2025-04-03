@@ -70,13 +70,13 @@ namespace repositories
 
 		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
 
-		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email);
+		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email,bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId);
+		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId);
+		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username);
+		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username, bool fromSecondary = true);
 
 		Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null);
 
