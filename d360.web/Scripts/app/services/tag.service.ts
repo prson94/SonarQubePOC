@@ -52,7 +52,7 @@ export class TagService extends BaseObservableService {
 				catchError((err) => {
 					this.handleError(err, true);
 					this.messages.showError('Error', err.error.message);
-					return of([{ error: true, message: '' }]);
+					return of({ error: true, message: "" }); 
 				}));
     }
 
