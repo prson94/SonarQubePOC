@@ -1853,6 +1853,11 @@ select	r.uid as ResourceUid,
 				var baseUri = await ThemeRepository.GetBaseUriTheme();
 				var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
 				responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
+
+				await addStorageFile(responseModel.Uid, "icon", repoTheme.BrowserIcon, repoTheme.BrowserIconExtension);
+				await addStorageFile(responseModel.Uid, "logo", repoTheme.HeaderLogo, repoTheme.HeaderLogoExtension);
+				await addStorageFile(responseModel.Uid, "background", repoTheme.HomePageBackground, repoTheme.HomePageBackgroundExtension);
+
 			}
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
@@ -1901,12 +1906,14 @@ select	r.uid as ResourceUid,
 				return errorMessageArgumentResponse(Error.ThemeInUseForIsCurrentEdit);
 			}
 
-			var nowPreviousTheme = existingTheme.CloneThis();
-
 			if (existingTheme.Locked)
 			{
 				return errorMessageArgumentResponse(Error.ThemeIsLocked);
 			}
+
+			var deleteIcon = (requestModel.Icon == "" && existingTheme.BrowserIconExtension != null);
+			var deleteLogo = (requestModel.HeaderLogo == "" && existingTheme.HeaderLogoExtension != null);
+			var deleteBackground = (requestModel.HomeBackground == "" && existingTheme.HomePageBackgroundExtension != null);
 
 			existingTheme = requestModel.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
 			existingTheme.Validate();
@@ -1927,11 +1934,45 @@ select	r.uid as ResourceUid,
 				return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 			}
 
+			if (deleteIcon)
+			{
+				await deleteStorageFile(existingTheme.Uid, "icon", existingTheme.BrowserIconExtension);
+			}
+			if (deleteLogo)
+			{
+				await deleteStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogoExtension);
+			}
+			if (deleteBackground)
+			{
+				await deleteStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackgroundExtension);
+			}
+
+			await addStorageFile(existingTheme.Uid, "icon", existingTheme.BrowserIcon, existingTheme.BrowserIconExtension);
+			await addStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogo, existingTheme.HeaderLogoExtension);
+			await addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
+
 			var baseUri = await ThemeRepository.GetBaseUriTheme();
 			var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
 			var reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
 
 			return Ok(reponseModel);
+		}
+
+		private async Task addStorageFile(Guid uid, string fileSuffix, byte[] content, string extension)
+		{
+			if (content != null && content.Length > 0)
+			{
+				var path = $"{SecurityContext.CompanyID}/{uid.ToString().ToLowerInvariant()}_{fileSuffix}{extension}";
+				var contentType = MimeTypeExtensionsMap.GetMimeType(extension);
+				var stream = new MemoryStream(content);
+				await _storage.CreateFile("themes", path, stream, contentType);
+			}
+		}
+
+		private async Task deleteStorageFile(Guid uid, string fileSuffix, string extension)
+		{
+			var path = $"{SecurityContext.CompanyID}/{uid.ToString().ToLowerInvariant()}_{fileSuffix}{extension}";
+			await _storage.DeleteFile("themes", path);
 		}
 
 
