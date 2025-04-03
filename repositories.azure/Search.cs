@@ -228,15 +228,16 @@ order by r.[Rank] desc;";
 
 			bool isFreeText = true;
 
-			var words = phrase.ToLower().Split(' ');
-			bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
-			bool containsDoubleQuote = phrase.Contains("\"");
-			isFreeText = !containsConjunction && !containsDoubleQuote;
+			//var words = phrase.ToLower().Split(' ');
+			//bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
+			//bool containsDoubleQuote = phrase.Contains("\"");
+			isFreeText = false;//!containsConjunction && !containsDoubleQuote;
 
-			if (isFreeText && words.Length > 1)
-			{
-				phrase = $"\"{phrase}\"";
-			}
+			phrase = phrase.ConvertPhraseToFullTextSearch();
+			//if (isFreeText && words.Length > 1)
+			//{
+			//	phrase = $"\"{phrase}\"";
+			//}
 
 			// Generate the SQL to run.
 			var sql = buildFullTextSql(includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
