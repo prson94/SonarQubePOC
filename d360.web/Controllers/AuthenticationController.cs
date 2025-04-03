@@ -161,7 +161,6 @@ namespace d360.web.Controllers
 				if (resource == null)
 				{
 					Log.LogInformation($"Did not find resource account (Primary location) for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
-					return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);
 				}
 
 				//If there is a domain whitelist, make sure the user has access
