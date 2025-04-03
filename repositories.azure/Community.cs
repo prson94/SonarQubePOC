@@ -65,11 +65,23 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod)
 		{
 			RepositoryResponse<bool> response = new(400);
-			var sql = 
-				"insert into CompanyResource (CompanyID, ResourceID, IsAdministrator, LastLoggedInOn, [State]) " +
-				"values (@companyId, @resourceId, @isAdministrator, @loggedInOn, @state); " +
-				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
-				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";
+			var sql = @"
+if exists(select 1 from CompanyResource where CompanyId = @companyId and ResourceId = @resourceId)
+begin
+	update	CompanyResource
+	set		IsAdministrator = @isAdministrator,
+			LastLoggedInOn = @loggedInOn,
+			State = @state
+	where	CompanyID = @companyId and ResourceID = @resourceId;
+end
+else
+begin
+	insert into CompanyResource (CompanyID, ResourceID, IsAdministrator, LastLoggedInOn, [State])
+	values (@companyId, @resourceId, @isAdministrator, @loggedInOn, @state);
+end
+insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date])
+values (@companyId, @resourceId, @authMethod, @loggedInOn);";
+
 			using (var connection = Connect())
 			{
 				int recordsCount = await connection.ExecuteAsync(
