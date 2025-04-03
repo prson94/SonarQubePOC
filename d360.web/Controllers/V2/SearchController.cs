@@ -94,7 +94,11 @@ namespace d360.web.Controllers.V2
 					r.Icon = "fa-book";
 				}
 
-				if (r.Class != AssetTypeClass.Reference)
+				if(r.Class == AssetTypeClass.Diagram && r.Url != null)
+				{
+					r.AbsoluteUrl = $"https://{SecurityContext.CompanyPrefix}.data3sixty.com{r.Url}";
+				}
+				else if (r.Class != AssetTypeClass.Reference)
 				{
 					r.Url = $"/asset/{r.Uid}";
 					r.AbsoluteUrl = $"https://{SecurityContext.CompanyPrefix}.data3sixty.com/asset/{r.Uid}";

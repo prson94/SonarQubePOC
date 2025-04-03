@@ -159,7 +159,7 @@ from	(
 for json path";
 			}
 
-			sql += $@"
+	sql += $@"
 select * from #aggregations;
 
 select	a.Uid,
@@ -174,7 +174,8 @@ select	a.Uid,
 		pr.HasProfiling,
 		({includeFieldSql}) as _Fields,
 		({includePathSql}) as _AssetPath,
-		({includeScoresSql}) as _Scores
+		({includeScoresSql}) as _Scores,
+		case when t.Class = 15 then dbo.GenerateAssetUrl(a.ID) else null end as Url
 from	Asset a
 		inner join AssetDisplayValue adv on adv.AssetID = a.ID
 		inner join AssetType t on t.ID = a.AssetTypeID
