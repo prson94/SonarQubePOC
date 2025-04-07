@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { of } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -48,7 +49,11 @@ export class TagService extends BaseObservableService {
         const url = `api/v2/tags/${uid}?cascade=${cascade}`;
         return this.http.delete(url)
             .pipe(map((response) => <any>response),
-                catchError((err) => this.handleError(err, true)));
+				catchError((err) => {
+					this.handleError(err, true);
+					this.messages.showError('Error', err.error.message);
+					return of({ error: true, message: "" }); 
+				}));
     }
 
     deleteTags(tags: TagType[]): Observable<any> {

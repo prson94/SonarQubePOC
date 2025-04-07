@@ -318,6 +318,8 @@ end
 		public async Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository)
 		{
 			string sqlstmt = string.Empty;
+			bool isFieldtypeDatePK = false;
+
 			if (load == null)
 			{
 				throw new ArgumentNullException("load cannot be null");
@@ -368,6 +370,13 @@ end
 				intersectTypeId = intersectType?.ID;
 			}
 
+			var fldtypedate = Filter<FieldType>(f => f.AssetTypeID == assetType.ID && (f.Type == "Date" || f.Type == "DateTime") && f.IsPartOfKey).FirstOrDefault();
+
+			if (fldtypedate != null)
+			{
+				isFieldtypeDatePK = true;
+			}
+			
 			await Connection.OpenAsync();
 
 			//calculate key hashes and resolve lookup values
@@ -447,7 +456,7 @@ end
 						await Connection.ExecuteAsync(sqlstmt, new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
 					}
 
-					CalculateProposedKeyHashesBulkLoad(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
+					CalculateProposedKeyHashesBulkLoad(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField", isFieldtypeDatePK);
 
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
@@ -482,10 +491,10 @@ end
 
 						if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
 						{
-							sqlstmt = @"
+							sqlstmt = $@"
 									declare @assetttypeID int = (select @atID);
 									declare @fieldtypeid int = 0;
-
+									declare @Type varchar(100)='';
 									drop table if exists #tempfielddata;
 									drop table if exists #tempcalasset;
 									drop table if exists #AssetActiveKey;
@@ -493,7 +502,8 @@ end
 									create table #AssetActiveKey (Uid uniqueidentifier,ActiveKey varchar(32))
 
 									----Below statement to get first fieldtypeid primary key column order by columnorder
-									select top 1    @fieldtypeid =  ft.ID
+									select top 1    @fieldtypeid =  ft.ID,
+													@Type = ft.type
 									from            #BulkExecutionField f
 													inner join FieldType ft on f.FieldTypeID = ft.id and FT.IsPartOfKey = 1
 									order by        ft.ColumnOrder,FT.Name;
@@ -502,10 +512,10 @@ end
 									-- Calculate only for requested data only.
 									-- Later it help to get qualified asset
 
-									select distinct     TRIM(FieldValue) FieldValue
-									into                #tempfielddata
-									from                #BulkExecutionField
-									where               FieldTypeID = @fieldtypeid;
+									select distinct {(isFieldtypeDatePK ? "case when @Type like 'Date%' then convert(varchar(25),try_Cast(FieldValue as datetime),120 )  else TRIM(FieldValue) end" : "TRIM(FieldValue)")} FieldValue
+									into  #tempfielddata
+									from  #BulkExecutionField
+									where FieldTypeID = @fieldtypeid;
 
 									-- getting asset information of qualified fieldvalue with fieldtypeid.
 									select  a.uid [AssetUid],
@@ -516,7 +526,7 @@ end
 									from    Field f
 											inner join asset a on a.ID = f.AssetID
 									where   FieldTypeID = @fieldtypeid
-											and exists (select 1 from #tempfielddata t where t.FieldValue = trim(f.FormattedValue));
+											and exists (select 1 from #tempfielddata t where t.FieldValue = {(isFieldtypeDatePK ? "case when @Type like 'Date%' then convert(varchar(25),try_Cast(f.FormattedValue as datetime),120 )  else TRIM(f.FormattedValue) end" : "TRIM(f.FormattedValue)")} );
 
 									-- create clustered index on AssetUid because no further insert,delete,update on temporary table
 									create clustered index idx_tempasset on #tempcalasset([AssetUid]);
@@ -526,7 +536,8 @@ end
 										begin
 											insert into #AssetActiveKey(Uid,ActiveKey)
 											select		t.AssetUid [Uid],
-														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + 
+														STRING_AGG({(isFieldtypeDatePK ? "case when ft.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 )  else coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 											from		#tempcalasset t
 														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
 														left join Asset P on P.ID = I.SubjectAssetID 
@@ -539,7 +550,7 @@ end
 										begin
 											insert into #AssetActiveKey(Uid,ActiveKey)
 											select		t.AssetUid [Uid],
-														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+														utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when ft.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 )  else coalesce(F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 											from		#tempcalasset t
 														left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
 														left join Asset P on P.ID = I.SubjectAssetID 
@@ -566,7 +577,7 @@ end
 						}
 						else
 						{
-							sqlstmt = @"
+							sqlstmt = $@"
 
 								drop table if exists #AssetActiveKey;
 
@@ -576,7 +587,7 @@ end
 									begin
 										insert into #AssetActiveKey(Uid,ActiveKey)
 										select		A.Uid,
-													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG({(isFieldtypeDatePK ? "case when ft.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 )  else coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 										from		Asset A
 													outer apply dbo.getassetlevelbyid(A.ID) L
 													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
@@ -589,7 +600,7 @@ end
 									begin
 										insert into #AssetActiveKey(Uid,ActiveKey)
 										select		A.Uid,
-													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+													utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG({(isFieldtypeDatePK ? "case when ft.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 )  else coalesce(F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 										from		Asset A
 													outer apply dbo.getassetlevelbyid(A.ID) L
 													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
@@ -614,6 +625,7 @@ end
 							await Connection.ExecuteAsync(sqlstmt, new { atID = assetType.ID, load.ID, maxLevel }, transaction: trans, commandTimeout: timeout);
 						}
 					}
+
 
 					if (assetType.Class == AssetTypeClass.Model)
 					{
@@ -694,8 +706,8 @@ end
 ";
 			await Connection.ExecuteAsync(sqlduplicate, new { load.ID, atID = assetType.ID });
 
-			List<AssetUpdate> putAssets = new List<AssetUpdate>();
-			List<AssetInsert> postAssets = new List<AssetInsert>();
+			var putAssets = new List<AssetApiModel>();
+			var postAssets = new List<AssetApiModel>();
 
 			List<LoadItem> loadItems = new List<LoadItem>();
 			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
@@ -823,7 +835,7 @@ inner join LoadItemColumn LIC on LoadID = @id and LIC.RowIndex = t.RowIndex";
 
 					if (!item.AssetUid.HasValue)
 					{
-						AssetInsert insert = new AssetInsert
+						var insert = new AssetApiModel
 						{
 							ExecutionItemUid = item.ExecutionItemUid,
 							Fields = new Dictionary<string, string>()
@@ -954,7 +966,7 @@ where S.KeyHash = @parentKeyHash
 					}
 					else
 					{
-						AssetUpdate update = new AssetUpdate
+						AssetApiModel update = new AssetApiModel
 						{
 							ExecutionItemUid = item.ExecutionItemUid
 						};

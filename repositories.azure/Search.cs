@@ -1,9 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
-using Newtonsoft.Json;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +13,7 @@ namespace repositories.azure
 		public Search(DapperConnectionProvider provider) : base(provider) { }
 
 		private string buildFullTextSql(
-			bool aggregationOnly, bool isFreeText, 
+			bool includeAggregations, bool isFreeText, 
 			bool includeFields, bool includePath, bool includeScores, 
 			List<int> classes = null, List<int> assetTypeIds = null)
 		{
@@ -42,51 +40,77 @@ namespace repositories.azure
 				}
 			}
 
-			sql += $@"
-;with cte as (
-	select		s.[Rank],
+			Action<int> appendCte = (int id) =>
+			{
+				string permissionJoin = "";
+				if (!CurrentUserIsAdmin)
+				{
+					permissionJoin = 
+						" inner join dbo.Asset ap on ap.ID = a.AssetId" +
+						" inner join dbo.AssetType apt on apt.Id = ap.AssetTypeId" +
+						" where (" +
+						"	apt.DefaultPermissions & 1 = 1 " +
+						"	or exists (select 1 from dbo.ResponsibilityDetail where (AssetID = ap.ID OR (AssetID = 0 AND AssetTypeID = apt.ID)) and ResourceID = @CurrentUserId and PermissionsBitMask & 1 = 1)" +
+						")";
+				}
+
+				sql += $@"
+;with cte{id} as (
+	select		s.[Rank]*4 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
 				inner join {ftTableFunction}(AssetDisplayValue, DisplayValue, @phrase) s on s.[Key] = a.AssetID 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
 	union
-	select		s.[Rank],
+	select		s.[Rank]*3 as [Rank],
 				a.AssetId as Id
 	from		Field a 
 				inner join {ftTableFunction}(Field, FormattedValue, @phrase) s on s.[Key] = a.ID and a.AssetID is not null 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
 	union
 	select		s.[Rank],
 				a.AssetID as Id
 	from		AssetTag a
 				inner join Tag t on t.ID = a.TagID
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
-				{cteFilterSql}
+				{cteFilterSql} {permissionJoin}
+	union
+	select	s.[Rank]*2 as [Rank],
+			a.AssetId as Id
+	from	dbo.Asset o
+			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id)
+			inner join Semantic st on st.Qualifier = a.TypeQualifier and st.EffectiveDate <= a.ProfileSetDate
+			inner join CONTAINSTABLE(Semantic, Qualifier, @phrase) s on s.[Key] = st.ID
+			{cteFilterSql} {permissionJoin}
 )
 ";
-			if (aggregationOnly)
+			};
+
+			if (includeAggregations)
 			{
+				appendCte(1);
+
 				sql += $@"
 insert into #aggregations
 	select	t.Uid, t.Class, t.Name, count(1) as ResultCount
 	from	Asset a
 			inner join AssetType t on t.ID = a.AssetTypeID
-	where	a.ID in (select Id from cte)
+	where	a.ID in (select Id from cte1)
 	group by t.Uid, t.Class, t.Name;";
 			}
-			else 
-			{
-				sql += $@"
+			
+			appendCte(2);
+			sql += $@"
 insert into #results ([Rank], [Id])
 	select	ir.[Rank], ir.Id
 	from	(
 			select	row_number() over (partition by Id order by [Rank] desc) as RowNum, [Rank], Id
-			from	cte 
+			from	cte2
 			) ir 
 	where	ir.RowNum = 1
 	order by [Rank] offset @offset rows fetch next @take rows only;";
-			}
 
+			
 			string includeFieldSql = "select '[]'";
 			if (includeFields)
 			{
@@ -135,14 +159,14 @@ from	(
 for json path";
 			}
 
-			sql += $@"
+	sql += $@"
 select * from #aggregations;
 
 select	a.Uid,
 		a.Object + '|' + cast(a.ID as varchar(50)) as ID,
 		a.Object,
 		a.ObjectId,
-		a.DisplayValue as [Name],
+		adv.DisplayValue as [Name],
 		t.Class,
 		t.Name as [Type],
 		t.Uid as AssetTypeUid,
@@ -150,8 +174,10 @@ select	a.Uid,
 		pr.HasProfiling,
 		({includeFieldSql}) as _Fields,
 		({includePathSql}) as _AssetPath,
-		({includeScoresSql}) as _Scores
+		({includeScoresSql}) as _Scores,
+		case when t.Class = 15 then dbo.GenerateAssetUrl(a.ID) else null end as Url
 from	Asset a
+		inner join AssetDisplayValue adv on adv.AssetID = a.ID
 		inner join AssetType t on t.ID = a.AssetTypeID
 		left join AssetTypeStyle s on s.ID = a.AssetTypeID
 		inner join #results r on r.Id = a.Id
@@ -165,11 +191,20 @@ order by r.[Rank] desc;";
 
 		public async Task<RepositoryResponse<SearchModel>> ReadResultsAsync(
 			string phrase, 
-			bool includeFields, bool includePath, bool includeScore, bool aggregationOnly,
-			List<AssetTypeClass> _classes = null, List<string> _types = null,
+			bool includeFields, bool includePath, bool includeScore, bool includeAggregations,
+			List<AssetTypeClass> _classes = null, List<Guid> _types = null,
 			int offset = 0, int take = 250)
 		{
 			RepositoryResponse<SearchModel> response = new(200);
+
+			if (take <= 0)
+			{
+				take = 25;
+			}
+			if (offset <= 0) 
+			{
+				offset = 0;
+			}
 
 			var parameters = new DynamicParameters();
 			parameters.Add("@offset", offset);
@@ -187,19 +222,25 @@ order by r.[Rank] desc;";
 			{
 				using (var connection = ConnectionProvider.Connect(true))
 				{
-					types = (await connection.QueryAsync<int>("select ID from AssetType where Name in @typeNames", new { typeNames = _types })).ToList();
+					types = (await connection.QueryAsync<int>("select ID from AssetType where Uid in @uids", new { uids = _types })).ToList();
 				}
 			}
 
 			bool isFreeText = true;
 
-			var words = phrase.ToLower().Split(' ');
-			bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
-			bool containsDoubleQuote = phrase.Contains("\"");
-			isFreeText = !containsConjunction && !containsDoubleQuote;
+			//var words = phrase.ToLower().Split(' ');
+			//bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
+			//bool containsDoubleQuote = phrase.Contains("\"");
+			isFreeText = false;//!containsConjunction && !containsDoubleQuote;
+
+			phrase = phrase.ConvertPhraseToFullTextSearch();
+			//if (isFreeText && words.Length > 1)
+			//{
+			//	phrase = $"\"{phrase}\"";
+			//}
 
 			// Generate the SQL to run.
-			var sql = buildFullTextSql(aggregationOnly, isFreeText, includeFields, includePath, includeScore, classes, types);
+			var sql = buildFullTextSql(includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
 
 			parameters.Add("@phrase", phrase);
 
@@ -209,7 +250,10 @@ order by r.[Rank] desc;";
 
 				var aggregations = (await dbResponse.ReadAsync<SearchResultAggregation>()).ToList();
 				var results = (await dbResponse.ReadAsync<SearchResult>()).ToList();
-				int total = aggregations.Sum(a => a.ResultCount);
+
+				int total = (includeAggregations) ? 
+					aggregations.Sum(a => a.ResultCount) : 
+					results.Count;
 
 				var classAggregations = aggregations
 					.GroupBy(a => a.Class)
@@ -236,7 +280,7 @@ order by r.[Rank] desc;";
 				response.Data = new SearchModel
 				{
 					Matches = total,
-					Aggregations = new Dictionary<string, List<SearchResultAggregation>> { { "category", aggregations } },
+					Aggregations = aggregations,
 					Results = results
 				};
 			}

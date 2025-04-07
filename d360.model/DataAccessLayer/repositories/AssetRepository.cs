@@ -3666,7 +3666,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3699,7 +3699,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -3713,7 +3713,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3746,7 +3746,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -4237,39 +4237,41 @@ drop table if exists #tempAssetsIds;
 							drop table if exists #TempAssetpremission;
 							drop table if exists #TempAssetCount;
 
+							CREATE TABLE #TempAssetpremission(ASSETTYPEID INT,AssetID BIGINT);
+							CREATE index idx_TempAssetpremission on #TempAssetpremission(ASSETTYPEID);
+
 							CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
 							CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
 
+							insert into #TempAssetpremission(ASSETTYPEID,AssetID)
 							select distinct att.id assettypeid, up.assetid
-							 into #TempAssetpremission
 							from assettype att
 							cross apply dbo.userassetpermissions(@resourceId, att.id) up
 							 where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
 							{assetTypePermissionWhere};
 
 								IF EXISTS(SELECT 1 FROM #TempAssetpremission)
-														BEGIN
-
-									INSERT INTO #TempAssetCount
-															select Att.ID, count(1) RecordCount
-															 from AssetType Att
-															inner join Asset A on Att.ID = A.AssetTypeID
-															where att.class in @filterClasses
-															{assetTypePermissionWhere}
-							and NOT EXISTS (select 1 from #TempAssetpremission U
-															where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
-															GROUP BY Att.ID
-														END
-														ELSE
-														BEGIN
-															INSERT INTO #TempAssetCount
-															select Att.ID , count(1) RecordCount
-															from AssetType Att
-															inner join Asset A on Att.ID = A.AssetTypeID
-															where att.class in @filterClasses
-							{assetTypePermissionWhere}
-							group by Att.ID
-							END ";
+									BEGIN
+										INSERT INTO #TempAssetCount
+										select Att.ID, count(1) RecordCount
+										from AssetType Att
+										inner join Asset A on Att.ID = A.AssetTypeID
+										where att.class in @filterClasses
+										{assetTypePermissionWhere}
+										and NOT EXISTS (select 1 from #TempAssetpremission U
+										where U.ASSETTYPEID = Att.ID and (U.AssetID = A.ID or U.AssetID = 0))	
+										GROUP BY Att.ID
+									END
+								ELSE
+									BEGIN
+										INSERT INTO #TempAssetCount
+										select Att.ID , count(1) RecordCount
+										from AssetType Att
+										inner join Asset A on Att.ID = A.AssetTypeID
+										where att.class in @filterClasses
+										{assetTypePermissionWhere}
+										group by Att.ID
+									END ";
 
 			}
 
@@ -4305,7 +4307,11 @@ drop table if exists #tempAssetsIds;
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
-					order by att.name";
+					order by att.name
+
+					drop table if exists #TempAssetpremission;
+					drop table if exists #TempAssetCount;
+					";
 
 			return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId =  SecurityContext.ResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
 		}

@@ -242,6 +242,7 @@ namespace d360.core.entities
 		{
 			return new ThemewithResource
 			{
+				IsCurrent = model.IsCurrent,
 				ID = model.ID,
 				Uid = model.Uid,
 				Name=model.Name,

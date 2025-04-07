@@ -1,40 +1,39 @@
 {
-	"group": "Gruppe"
-
+	"addRule": "Regel hinzufügen",
+	"after": "Nach",
+	"apply": "Übernehmen",
+	"before": "Vor",
+	"cancel": "Abbrechen",
+	"choose": "Auswählen",
+	"clear": "Löschen",
+	"ct": "Enthält",
+	"dateAfter": "Datum ist nach",
+	"dateBefore": "Datum ist vor",
+	"dateIs": "Datum ist",
+	"dateNot": "Datum ist nicht",
+	"eq": "Gleich",
+	"ew": "Endet mit",
+	"group": "Gruppe",
+	"gt": "Größer als",
+	"gte": "Größer oder gleich",
+	"is": "Ist",
+	"isNot": "Ist nicht",
+	"lt": "Kleiner als",
+	"lte": "Kleiner oder gleich",
+	"matchAny": "Eine erfüllt",
+	"matchAll": "Alle erfüllt",
+	"n": "Nein",
+	"nct": "Enthält nicht",
+	"ne": "Ungleich",
+	"noFilter": "Kein Filter",
+	"removeRule": "Regel entfernen",
+	"sw": "Beginnt mit",
+	"upload": "Hochladen",
+	"y": "Ja"
 
 }
 
 /*
-	"sw": "Starts with": "Beginnt mit"
-	"Contains": "Enthält"
-	"Not contains": "Enthält nicht"
-	"Ends with": "Endet mit"
-	"Equals": "Gleich"
-	"Not equals": "Ungleich"
-	"No Filter": "Kein Filter"
-	"Less than": "Kleiner als"
-	"Less than or equal to": "Kleiner oder gleich"
-	"Greater than": "Größer als"
-	"Greater than or equal to": "Größer oder gleich"
-	"Is": "Ist"
-	"Is not": "Ist nicht"
-	"Before": "Vor"
-	"After": "Nach"
-	"Date is": "Datum ist"
-	"Date is not": "Datum ist nicht"
-	"Date is before": "Datum ist vor"
-	"Date is after": "Datum ist nach"
-	"Clear": "Löschen"
-	"Apply": "Übernehmen"
-	"Match All": "Alle erfüllt"
-	"Match Any": "Eine erfüllt"
-	"Add Rule": "Regel hinzufügen"
-	"Remove Rule": "Regel entfernen"
-	"Yes": "Ja"
-	"No": "Nein"
-	"Choose": "Auswählen"
-	"Upload": "Hochladen"
-	"Cancel": "Abbrechen"
 	"Sunday": "Sonntag"
 	"Monday": "Montag"
 	"Tuesday": "Dienstag"

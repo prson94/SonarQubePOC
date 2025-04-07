@@ -70,13 +70,13 @@ namespace repositories
 
 		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
 
-		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email);
+		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email,bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId);
+		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId);
+		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username);
+		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username, bool fromSecondary = true);
 
 		Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null);
 
@@ -124,7 +124,7 @@ namespace repositories
 
 		Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser);
 
-		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false);
+		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false, bool IsNew = false);
 
 		Task<RepositoryResponse<bool>> RemoveThemeAsync(int companyId, Guid uid);
 

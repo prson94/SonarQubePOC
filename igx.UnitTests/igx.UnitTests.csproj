@@ -92,8 +92,6 @@
     <Compile Include="ScoringTests\OperatorTests-DecimalCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateTimeCompares.cs" />
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
-    <Compile Include="SearchTests\ElasticSourceTests.cs" />
-    <Compile Include="SearchTests\SearchIndexerTests.cs" />
     <Compile Include="ServicesTests\CommonExceptionHandlerTests.cs" />
     <Compile Include="ServicesTests\Exceptions\ExceptionTestBase.cs" />
     <Compile Include="ServicesTests\Exceptions\ExceptionWithDefaultConstructorsTestBase.cs" />
@@ -144,10 +142,6 @@
       <Project>{59c0ac72-75a8-41d1-975c-999ccd8a891e}</Project>
       <Name>d360.extensions.events</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.extensions.search\d360.extensions.search.csproj">
-      <Project>{55b21612-ead9-4fc3-8368-119b15ed5571}</Project>
-      <Name>d360.extensions.search</Name>
-    </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
@@ -157,7 +151,7 @@
       <Name>d360.model</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.web\d360.web.csproj">
-      <Project>{DF57BE56-958B-4C4D-B82C-6B61297434AB}</Project>
+      <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
       <Name>d360.web</Name>
     </ProjectReference>
     <ProjectReference Include="..\repositories\repositories.csproj">

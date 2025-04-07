@@ -24,10 +24,12 @@ import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
 import { DropdownCategoryGroupPipe } from './dropdown-category-filter.pipe';
 
 @NgModule({
-    imports: [CommonModule],
+	imports: [
+		CommonModule,
+		ReplaceStringPipe
+	],
     declarations: [
         ArrayToSelectItemPipe,
-        ReplaceStringPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         MetricConditionDisabledFilterPipe,

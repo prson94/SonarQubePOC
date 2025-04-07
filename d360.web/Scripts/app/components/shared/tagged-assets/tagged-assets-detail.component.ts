@@ -32,7 +32,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 
 export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
-    @Input() uid: string;
+	@Input() uid: string;
+	@Input() showTagDetails: boolean = true; 
     isLoading: boolean = false;
 
     isAdmin: boolean = false;

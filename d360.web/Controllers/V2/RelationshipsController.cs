@@ -80,24 +80,10 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
+		public async Task<IHttpActionResult> GetPredicatesAsync(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
 		{
-			var prefix = "Relationships.GetPredicatesAsync => ";
-			string errorMessage;
-
-			try
-			{
-				IEnumerable<PredicateApiViewModel> predicates = await RelationshipRepository.GetPredicates(PredicateUid, Type, Name, Inverse, IsUsed);
-
-				return Request.CreateResponse(HttpStatusCode.OK, predicates);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			var predicates = await RelationshipRepository.GetPredicates(PredicateUid, Type, Name, Inverse, IsUsed);
+			return Ok(predicates);
 		}
 
 		/// <summary>
@@ -218,33 +204,20 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of predicate functional types.", typeof(List<PredicateTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public HttpResponseMessage GetPredicatesTypesAsync()
+		public IHttpActionResult GetPredicatesTypesAsync()
 		{
-			var prefix = "Relationships.GetPredicatesTypesAsync => ";
-			string errorMessage;
+			var types = PredicateType.DataLineage.GetAsList()
+				.Where(i => !i.Obsolete)
+				.Select(i => new PredicateTypeApiViewModel
+				{
+					Type = i.ID,
+					Name = i.Name,
+					Description = i.Description
+				})
+				.OrderBy(i => i.Name)
+				.ToList();
 
-			try
-			{
-				var types = PredicateType.DataLineage.GetAsList()
-					.Where(i => !i.Obsolete)
-					.Select(i => new PredicateTypeApiViewModel
-					{
-						Type = i.ID,
-						Name = i.Name,
-						Description = i.Description
-					})
-					.OrderBy(i => i.Name)
-					.ToList();
-
-				return Request.CreateResponse(HttpStatusCode.OK, types);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Ok(types);
 		}
 
 		/// <summary>
@@ -412,203 +385,183 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_includePath", "Includes Asset path values to both object and subject side.  The default is false meaning relationships will not return asset path.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a relationship. Filtering is done using 'Contains' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),			
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
 		]
 		public async Task<HttpResponseMessage> GetRelationshipsAsync(CancellationToken cancellationToken, State? State = null)
 		{
-			var prefix = "Relationships.GetRelationshipsAsync => ";
-			string errorMessage;
-
-			try
+			if (cancellationToken == default)
 			{
-				if (cancellationToken == null)
+				cancellationToken = CancellationToken.None;
+			}
+
+			#region Validation
+
+			var queryParams = Request.GetQueryNameValuePairs().ToList();
+			var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+			Guid RelationshipTypeUid = Guid.Empty;
+			Guid AssetUid = Guid.Empty;
+
+			if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "relationshiptypeuid").Value;
+				Guid.TryParse(value, out RelationshipTypeUid);
+				if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
 				{
-					cancellationToken = CancellationToken.None;
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidRelatioshipTypeUid);
 				}
-
-				#region Validation
-
-				var queryParams = Request.GetQueryNameValuePairs().ToList();
-				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-				Guid RelationshipTypeUid = Guid.Empty;
-				Guid AssetUid = Guid.Empty;
-
-				if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "relationshiptypeuid").Value;
-					Guid.TryParse(value, out RelationshipTypeUid);
-					if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidRelatioshipTypeUid);
-					}
-					else
-					{
-						if (!RelationshipRepository.AnyExists(RelationshipTypeUid))
-						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, RelationshipTypeUid.ToString()));
-						}
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "predicateuid"))
-				{
-					Guid PredicateUid = Guid.Empty;
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "predicateuid").Value;
-					Guid.TryParse(value, out PredicateUid);
-					if (PredicateUid == null || PredicateUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidPredicateUid);
-					}
-					else
-					{
-						if (!RelationshipRepository.AnyPredicateExists(PredicateUid))
-						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.PredicateUidNotFound, PredicateUid.ToString()));
-						}
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "subjectuid"))
-				{
-					Guid SubjectUid = Guid.Empty;
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "subjectuid").Value;
-					Guid.TryParse(value, out SubjectUid);
-					if (SubjectUid == null || SubjectUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidSubjectUid);
-					}
-					else
-					{
-						if (!AssetRepository.DoesAssetExists(SubjectUid))
-						{
-							var assetType = AssetRepository.GetAssetTypeByUID(SubjectUid);
-							if (assetType == null || assetType.Class != AssetTypeClass.Reference)
-							{
-								return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, SubjectUid.ToString()));
-							}
-						}
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "objectuid"))
-				{
-					Guid ObjectUid = Guid.Empty;
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "objectuid").Value;
-					Guid.TryParse(value, out ObjectUid);
-					if (ObjectUid == null || ObjectUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidObjectUid);
-					}
-					else
-					{
-						if (!AssetRepository.DoesAssetExists(ObjectUid))
-						{
-							var assetType = AssetRepository.GetAssetTypeByUID(ObjectUid);
-							if (assetType == null || assetType.Class != AssetTypeClass.Reference)
-							{
-								return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.ObjectUidNotFound, ObjectUid.ToString()));
-							}
-						}
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
-					Guid.TryParse(value, out AssetUid);
-
-					if (!AssetRepository.DoesAssetExists(AssetUid))
-					{
-						var assetType = AssetRepository.GetAssetTypeByUID(AssetUid);
-						if (assetType == null || assetType.Class != AssetTypeClass.Reference)
-						{
-							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, AssetUid.ToString()));
-						}
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-
-					if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.DirectionAllowedForRelation);
-					}
-
-					if (!new[] { "asc", "desc" }.Contains(value))
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest,string.Format(Error.InvalidDirection,value));
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_order"))
-				{
-					if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.OrderForRelation);
-					}
-					var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-
-					var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.IntersectTypeID = I.ID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
-					fieldTypes.Add("object.[path]");
-					fieldTypes.Add("subject.[path]");
-					if (AssetUid != Guid.Empty)
-					{
-						fieldTypes.Add("relationshiptypename");
-						fieldTypes.Add("assetpath");
-					}
-
-					if (!fieldTypes.Contains(orderValue))
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidOrderValue);
-					}
-				}
-
-				#endregion
-
-				string isValid = isPageSizeAndNumValid(queryParams);
-
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, isValid);
-				}
-
-				HttpResponseMessage response;
-
-				if (isStreamResponse)
-				{
-					var items = await RelationshipRepository.GetRelationshipsExcel(queryParams, cancellationToken: cancellationToken);
-
-					var stream = new MemoryStream();
-					items.SaveAs(stream);
-					byte[] bytes = stream.ToArray();
-					response = createFileResponseMessage(HttpStatusCode.OK, "GetRelationships.xlsx", bytes);
-					
-					return response;
-				}
-
 				else
 				{
-					var results = await RelationshipRepository.GetRelationships(queryParams, cancellationToken: cancellationToken);
-					response = Request.CreateResponse(HttpStatusCode.OK, results);
-					
-					return response;
+					if (!RelationshipRepository.AnyExists(RelationshipTypeUid))
+					{
+						return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, RelationshipTypeUid.ToString()));
+					}
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "predicateuid"))
+			{
+				Guid PredicateUid = Guid.Empty;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "predicateuid").Value;
+				Guid.TryParse(value, out PredicateUid);
+				if (PredicateUid == null || PredicateUid == Guid.Empty)
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidPredicateUid);
+				}
+				else
+				{
+					if (!RelationshipRepository.AnyPredicateExists(PredicateUid))
+					{
+						return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.PredicateUidNotFound, PredicateUid.ToString()));
+					}
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "subjectuid"))
+			{
+				Guid SubjectUid = Guid.Empty;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "subjectuid").Value;
+				Guid.TryParse(value, out SubjectUid);
+				if (SubjectUid == null || SubjectUid == Guid.Empty)
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidSubjectUid);
+				}
+				else
+				{
+					if (!AssetRepository.DoesAssetExists(SubjectUid))
+					{
+						var assetType = AssetRepository.GetAssetTypeByUID(SubjectUid);
+						if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+						{
+							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, SubjectUid.ToString()));
+						}
+					}
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "objectuid"))
+			{
+				Guid ObjectUid = Guid.Empty;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "objectuid").Value;
+				Guid.TryParse(value, out ObjectUid);
+				if (ObjectUid == null || ObjectUid == Guid.Empty)
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidObjectUid);
+				}
+				else
+				{
+					if (!AssetRepository.DoesAssetExists(ObjectUid))
+					{
+						var assetType = AssetRepository.GetAssetTypeByUID(ObjectUid);
+						if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+						{
+							return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.ObjectUidNotFound, ObjectUid.ToString()));
+						}
+					}
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
+				Guid.TryParse(value, out AssetUid);
+
+				if (!AssetRepository.DoesAssetExists(AssetUid))
+				{
+					var assetType = AssetRepository.GetAssetTypeByUID(AssetUid);
+					if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+					{
+						return ReturnApiError(HttpStatusCode.NotFound, string.Format(Error.SubjectUidNotFound, AssetUid.ToString()));
+					}
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+
+				if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.DirectionAllowedForRelation);
 				}
 
+				if (!new[] { "asc", "desc" }.Contains(value))
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest,string.Format(Error.InvalidDirection,value));
+				}
 			}
-			catch (FilterExpressionParserException ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				
-				return ReturnApiError(HttpStatusCode.BadRequest, errorMessage);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
+			{
+				if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.OrderForRelation);
+				}
+				var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+
+				var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.IntersectTypeID = I.ID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
+				fieldTypes.Add("object.[path]");
+				fieldTypes.Add("subject.[path]");
+				if (AssetUid != Guid.Empty)
+				{
+					fieldTypes.Add("relationshiptypename");
+					fieldTypes.Add("assetpath");
+				}
+
+				if (!fieldTypes.Contains(orderValue))
+				{
+					return ReturnApiError(HttpStatusCode.BadRequest, Error.InvalidOrderValue);
+				}
+			}
+
+			#endregion
+
+			string isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				return ReturnApiError(HttpStatusCode.BadRequest, isValid);
+			}
+
+			HttpResponseMessage response;
+
+			if (isStreamResponse)
+			{
+				var items = await RelationshipRepository.GetRelationshipsExcel(queryParams, cancellationToken: cancellationToken);
+
+				var stream = new MemoryStream();
+				items.SaveAs(stream);
+				byte[] bytes = stream.ToArray();
+				response = createFileResponseMessage(HttpStatusCode.OK, "GetRelationships.xlsx", bytes);
+					
+				return response;
+			}
+
+			else
+			{
+				var results = await RelationshipRepository.GetRelationships(queryParams, cancellationToken: cancellationToken);
+				response = Request.CreateResponse(HttpStatusCode.OK, results);
+					
+				return response;
 			}
 		}
 
@@ -627,15 +580,13 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipAsync(Guid uid)
+		public async Task<IHttpActionResult> GetRelationshipAsync(Guid uid)
 		{
-			var prefix = "Relationships.GetRelationshipAsync => ";
-
 			var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
 				
 			if (intersect == null || uid == Guid.Empty)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipUidNotFound_Explicit, uid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipUidNotFound_Explicit, uid.ToString()));
 			}
 
 			var hasObjectReadPermission = Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.ReadRelationships);
@@ -643,17 +594,17 @@ namespace d360.web.Controllers.V2
 				
 			if (!hasObjectReadPermission || !hasSubjectReadPermission)
 			{
-				throw new ForbiddenBusinessLayerException(Error.ViewthisRelationNotAllowed);
+				return errorMessageForbiddenResponse(Error.ViewthisRelationNotAllowed);
 			}
 
 			var result = await RelationshipRepository.GetRelationship(uid);
 				
 			if (result == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Error.InvalidGuid, uid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.InvalidGuid, uid.ToString()));
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, result);
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -891,7 +842,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null,
+		public async Task<IHttpActionResult> GetRelationshipTypesAsync(Guid? PredicateUid = null,
 																   Guid? AssetTypeUid = null,
 																   State? State = null,
 																   bool? includeHasFieldTypes = null,
@@ -903,84 +854,71 @@ namespace d360.web.Controllers.V2
 																   bool? includeHasFieldFromRelationship = null,
 																   bool? includeHasListableRelationship = null)
 		{
-			var prefix = "Relationships.GetRelationshipTypesAsync => ";
-			string errorMessage;
+			List<KeyValuePair<string, string>> queryParams = new List<KeyValuePair<string, string>>();
 
-			try
+			if (AssetTypeUid.HasValue)
 			{
-				List<KeyValuePair<string, string>> queryParams = new List<KeyValuePair<string, string>>();
-
-				if (AssetTypeUid.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("AssetTypeUid", AssetTypeUid.Value.ToString()));
-				}
-
-				if (PredicateUid.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("PredicateUid", PredicateUid.Value.ToString()));
-				}
-
-				if (State.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
-				}
-
-				if (includeHasFieldTypes.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
-				}
-
-				if (includeHasRelationships.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeHasRelationships", includeHasRelationships.ToString()));
-				}
-
-				if (includeTotalRelationshipCount.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeTotalRelationshipCount", includeTotalRelationshipCount.ToString()));
-				}
-
-				if (includeCreatedModifiedBy.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeCreatedModifiedBy", includeCreatedModifiedBy.ToString()));
-				}
-
-				if (RelationshipTypeUid.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.Value.ToString()));
-				}
-
-				if (includeDisplayFormat.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeDisplayFormat", includeDisplayFormat.ToString()));
-				}
-
-				if (includeHasFieldFromRelationship.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldFromRelationship", includeHasFieldFromRelationship.ToString()));
-				}
-
-				if (includeHasListableRelationship.HasValue)
-				{
-					queryParams.Add(new KeyValuePair<string, string>("includeHasListableRelationship", includeHasListableRelationship.ToString()));
-				}
-
-				var types = await RelationshipRepository.GetRelationshipTypes(queryParams);
-
-				if (types == null)
-				{
-					types = new List<IntersectTypeApiViewModel>(); // Will send back empty list, which matches expectation for API specification.
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, types);
+				queryParams.Add(new KeyValuePair<string, string>("AssetTypeUid", AssetTypeUid.Value.ToString()));
 			}
-			catch (Exception ex)
+
+			if (PredicateUid.HasValue)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+				queryParams.Add(new KeyValuePair<string, string>("PredicateUid", PredicateUid.Value.ToString()));
 			}
+
+			if (State.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
+			}
+
+			if (includeHasFieldTypes.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
+			}
+
+			if (includeHasRelationships.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeHasRelationships", includeHasRelationships.ToString()));
+			}
+
+			if (includeTotalRelationshipCount.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeTotalRelationshipCount", includeTotalRelationshipCount.ToString()));
+			}
+
+			if (includeCreatedModifiedBy.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeCreatedModifiedBy", includeCreatedModifiedBy.ToString()));
+			}
+
+			if (RelationshipTypeUid.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.Value.ToString()));
+			}
+
+			if (includeDisplayFormat.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeDisplayFormat", includeDisplayFormat.ToString()));
+			}
+
+			if (includeHasFieldFromRelationship.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeHasFieldFromRelationship", includeHasFieldFromRelationship.ToString()));
+			}
+
+			if (includeHasListableRelationship.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("includeHasListableRelationship", includeHasListableRelationship.ToString()));
+			}
+
+			var types = await RelationshipRepository.GetRelationshipTypes(queryParams);
+
+			if (types == null)
+			{
+				types = new List<IntersectTypeApiViewModel>(); // Will send back empty list, which matches expectation for API specification.
+			}
+
+			return Ok(types);
 		}
 
 		/// <summary>
@@ -997,24 +935,10 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> IsTransformPredicateExists(int assetTypeId)
+		public async Task<IHttpActionResult> IsTransformPredicateExists(int assetTypeId)
 		{
-			var prefix = "Relationships.IsTransformPredicateExists => ";
-			string errorMessage;
-
-			try
-			{
-				var result = await RelationshipRepository.IsTransformPredicateExists(assetTypeId);
-
-				return Request.CreateResponse(HttpStatusCode.OK, result);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			var result = await RelationshipRepository.IsTransformPredicateExists(assetTypeId);
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -1031,7 +955,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of available options to create relationships from, given the subject and optional predicate.", typeof(List<AllowedIntersectionType>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypePossibilitiesAsync()
+		public async Task<IHttpActionResult> GetRelationshipTypePossibilitiesAsync()
 		{
 			var subjectUidString = Request.GetQueryString("subjectUid");
 			Guid subjectUid;
@@ -1040,13 +964,13 @@ namespace d360.web.Controllers.V2
 
 			if (string.IsNullOrEmpty(subjectUidString))
 			{
-				throw new RestApiException(HttpStatusCode.BadRequest, "subjectUid cannot be empty.");
+				return errorMessageArgumentResponse("subjectUid cannot be empty.");
 			}
 			else 
 			{
 				if (!Guid.TryParse(subjectUidString, out subjectUid))
 				{
-					throw new RestApiException(HttpStatusCode.BadRequest, "subjectUid must be a valid unique identifier.");
+					return errorMessageArgumentResponse("subjectUid must be a valid unique identifier.");
 				}
 			}
 
@@ -1055,7 +979,7 @@ namespace d360.web.Controllers.V2
 				Guid pId;
 				if (!Guid.TryParse(predicateUidString, out pId))
 				{
-					throw new RestApiException(HttpStatusCode.BadRequest, "predicateUid must be a valid unique identifier.");
+					return errorMessageArgumentResponse("predicateUid must be a valid unique identifier.");
 				}
 				else 
 				{
@@ -1065,7 +989,7 @@ namespace d360.web.Controllers.V2
 
 			var types = await Company.GetAllowedIntersectionTypes(subjectUid, predicateUid);
 
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("types/{id:int}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
@@ -1100,20 +1024,20 @@ namespace d360.web.Controllers.V2
 		{
 			if (applicationId != null && applicationId.Length > 200)
 			{
-				throw new ArgumentException(Error.ApplicationIdMaxLengthViolated);
+				return errorMessageArgumentResponse(Error.ApplicationIdMaxLengthViolated);
 			}
 
 			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 			if (intersectType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 			else
 			{
 				if (intersectType.SubjectClass == intersectType.ObjectClass && intersectType.SubjectClass == AssetTypeClass.Reference
 					&& intersectType.ObjectAssetTypeID == intersectType.SubjectAssetTypeID)
 				{
-					throw new ForbiddenBusinessLayerException(string.Format(Error.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
+					return errorMessageForbiddenResponse(string.Format(Error.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
 				}
 			}
 
@@ -1124,12 +1048,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationships == null)
 			{
-				throw new ArgumentException(Error.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				return errorMessageArgumentResponse(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			var execution = getApiExecution(
@@ -1176,18 +1100,16 @@ namespace d360.web.Controllers.V2
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Relationships.PutRelationshipsAsync => ";
-
 			if (applicationId != null && applicationId.Length > 200)
 			{
-				throw new ArgumentException(Error.ApplicationIdMaxLengthViolated);
+				return errorMessageArgumentResponse(Error.ApplicationIdMaxLengthViolated);
 			}
 
 			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
 			if (intersectType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
 
 			if (relationships == null)
@@ -1197,12 +1119,12 @@ namespace d360.web.Controllers.V2
 
 			if (relationships == null)
 			{
-				throw new ArgumentException(Error.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
-				throw new ArgumentException(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+				return errorMessageArgumentResponse(string.Format(Error.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 
 			var execution = getApiExecution(
@@ -1249,46 +1171,36 @@ namespace d360.web.Controllers.V2
 			bool triggerWorkflow = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Relationships.PostBulkRelationshipsAsync => ";
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
-
-				if (intersectType == null)
-				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
-				}
-
-				if (relationships == null)
-				{
-					relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
-				}
-
-				if (relationships == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(
-					relationships.Count,
-					new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId, ApiExecutionAction.PostRelationships);
-
-				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+			if (intersectType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
+
+			if (relationships == null)
+			{
+				relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
+			}
+
+			if (relationships == null)
+			{
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(
+				relationships.Count,
+				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+				applicationId: applicationId, ApiExecutionAction.PostRelationships);
+
+			ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
+			
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -1316,46 +1228,35 @@ namespace d360.web.Controllers.V2
 			bool triggerWorkflow = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Relationships.PutBulkRelationshipsAsync => ";
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
-
-				if (intersectType == null)
-				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
-				}
-
-				if (relationships == null)
-				{
-					relationships = readRequestJsonContent<RelationshipUpdates>(Request, true).Result;
-				}
-
-				if (relationships == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(
-					relationships.Count,
-					new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId, ApiExecutionAction.PutRelationships);
-
-				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPutRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+			if (intersectType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
+
+			if (relationships == null)
+			{
+				relationships = readRequestJsonContent<RelationshipUpdates>(Request, true).Result;
+			}
+
+			if (relationships == null)
+			{
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(
+				relationships.Count,
+				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+				applicationId: applicationId, ApiExecutionAction.PutRelationships);
+
+			ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPutRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -1374,66 +1275,42 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
 		{
-			var prefix = "Relationships.GetExecutionStatus => ";
-			string errorMessage;
 			var summaryOnly = false;
 			var queryParams = Request.GetQueryNameValuePairs();
 
-			try
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
 			{
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
-				{
-					bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
-				}
-
-				var dbExecutionItem = ExecutionsRepository.GetExecutionItemByUid(executionID);
-
-				if (dbExecutionItem == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ExecutionUIDNotFound)).ConfigureAwait(false);
-				}
-
-				var info = new ApiExecutionInfo { CompanyID = SecurityContext.CompanyID, ExecutionID = executionID };
-
-				List<DatabaseBulkAssetResult> results = null;
-				bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
-
-				if (!summaryOnly && finished)
-				{
-					results = await RelationshipRepository.GetBulkResults(info);
-				}
-
-				var statusModel = new ApiExecutionStatusModel
-				{
-					CompletedOn = dbExecutionItem.CompletedOn,
-					Error = dbExecutionItem.Error,
-					Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
-					Processed = dbExecutionItem.Processed,
-					StartedOn = dbExecutionItem.StartedOn,
-					Total = dbExecutionItem.Total,
-					Results = results
-				};
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							statusModel
-						)
-					)
-				);
+				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 			}
-			catch (ArgumentException)
+
+			var dbExecutionItem = ExecutionsRepository.GetExecutionItemByUid(executionID);
+			if (dbExecutionItem == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ExecutionUIDNotFound)).ConfigureAwait(false);
+				return errorMessageNotFoundResponse(Error.ExecutionUIDNotFound);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
+			var info = new ApiExecutionInfo { CompanyID = SecurityContext.CompanyID, ExecutionID = executionID };
+
+			List<DatabaseBulkAssetResult> results = null;
+			bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
+
+			if (!summaryOnly && finished)
+			{
+				results = await RelationshipRepository.GetBulkResults(info);
 			}
+
+			var statusModel = new ApiExecutionStatusModel
+			{
+				CompletedOn = dbExecutionItem.CompletedOn,
+				Error = dbExecutionItem.Error,
+				Fields = JObject.Parse(dbExecutionItem.Fields),
+				Processed = dbExecutionItem.Processed,
+				StartedOn = dbExecutionItem.StartedOn,
+				Total = dbExecutionItem.Total,
+				Results = results
+			};
+
+			return Ok(statusModel);
 		}
 
 		#endregion
@@ -1462,47 +1339,35 @@ namespace d360.web.Controllers.V2
 			bool triggerWorkflow = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
-
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
-
-				if (intersectType == null)
-				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
-				}
-
-				if (relationships == null)
-				{
-					relationships = readRequestJsonContent<RelationshipDeletes>(Request, true).Result;
-				}
-
-				if (relationships == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(
-					relationships.Count,
-					new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId, ApiExecutionAction.DeleteRelationships);
-
-				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+			if (intersectType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+				return errorMessageNotFoundResponse(string.Format(Error.RelationshipTypeUIdNotFound, intersectTypeUid.ToString()));
 			}
+
+			if (relationships == null)
+			{
+				relationships = readRequestJsonContent<RelationshipDeletes>(Request, true).Result;
+			}
+
+			if (relationships == null)
+			{
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(
+				relationships.Count,
+				new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
+				applicationId: applicationId, ApiExecutionAction.DeleteRelationships);
+
+			ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 
@@ -1673,113 +1538,98 @@ namespace d360.web.Controllers.V2
 			Route("counts/{assetUid}"),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship counts per relationship type for an asset.", typeof(List<AssetTypeCountModel>)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipCounts(Guid assetUid)
+		public async Task<IHttpActionResult> GetRelationshipCounts(Guid assetUid)
 		{
-			var prefix = "Relationships.GetRelationshipCounts => ";
-			string errorMessage;
+			var result = new List<RelationshipCountModel>();
+			string relationshipsCountQuery = string.Empty;
 
-			try
+			var dbArgs = new DynamicParameters();
+
+			var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+			if (asset != null)
 			{
-				var result = new List<RelationshipCountModel>();
-				string relationshipsCountQuery = string.Empty;
-
-				var dbArgs = new DynamicParameters();
-
-				var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
-				if (asset != null)
+				dbArgs.Add("assetUid", asset.uid);
+				var permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
+				if ((permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0) || SecurityContext.IsAdministrator)
 				{
-					dbArgs.Add("assetUid", asset.uid);
-					var permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-					if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
-					{
-						relationshipsCountQuery = $@"drop table if exists #relationshipCountMap
-									create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
-
-									;with cte as (
-												select it.uid as IntersectTypeUid, 1 as IsSubject, a.uid as SubjectUid, TA.uid as ObjectUid from dbo.asset a 
-												inner join [Intersect] i on i.subjectAssetID = a.id
-												inner join [IntersectType] it on it.id = i.intersecttypeid
-												inner join [Asset] TA ON i.objectAssetId = ta.id
-												where a.uid = @assetuid
-												union
-												select it.uid as IntersectTypeUid, 0 as IsSubject,TA.uid as SubjectUid, a.uid as ObjectUid  from dbo.asset a 
-												inner join [Intersect] i on i.objectAssetID = a.id
-												inner join [IntersectType] it on it.id = i.intersecttypeid
-												inner join [Asset] TA ON i.subjectAssetID = ta.id
-												where a.uid = @assetuid
-										)
-									insert into #relationshipCountMap
-									select IntersectTypeUid, IsSubject, count(*) as 'Count'
-									from cte
-									group by IntersectTypeUid,IsSubject
-
-									;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
-										from Asset a
-											inner join [Intersect] i on i.subjectAssetID = a.id and i.ObjectAssetID = 0
-											inner join IntersectType it on it.ID = i.IntersectTypeID
-											inner join assettype at on at.id = i.ObjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
-										where a.uid = @assetuid
-										group by it.uid
-									union 
-									select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
-										from Asset a
-											inner join [Intersect] i on i.objectAssetID = a.id and i.SubjectAssetID = 0
-											inner join IntersectType it on it.ID = i.IntersectTypeID
-											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
-										where a.uid = @assetuid
-										group by it.uid
-									)
-									insert into #relationshipCountMap
-									select IntersectTypeUid, IsSubject,Count from cte
-
-									select distinct * from #relationshipCountMap";
-					}
-
-				}
-				else if (asset == null)
-				{
-					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
-					if (assetType != null)
-					{
-						dbArgs.Add("id", assetType.ID);
-
-						relationshipsCountQuery = @"drop table if exists #relationshipCountMap
+					relationshipsCountQuery = $@"drop table if exists #relationshipCountMap
 								create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
 
+								;with cte as (
+											select it.uid as IntersectTypeUid, 1 as IsSubject, a.uid as SubjectUid, TA.uid as ObjectUid from dbo.asset a 
+											inner join [Intersect] i on i.subjectAssetID = a.id
+											inner join [IntersectType] it on it.id = i.intersecttypeid
+											inner join [Asset] TA ON i.objectAssetId = ta.id
+											where a.uid = @assetuid
+											union
+											select it.uid as IntersectTypeUid, 0 as IsSubject,TA.uid as SubjectUid, a.uid as ObjectUid  from dbo.asset a 
+											inner join [Intersect] i on i.objectAssetID = a.id
+											inner join [IntersectType] it on it.id = i.intersecttypeid
+											inner join [Asset] TA ON i.subjectAssetID = ta.id
+											where a.uid = @assetuid
+									)
 								insert into #relationshipCountMap
-								select lower(it.uid), 0, count(*) from [Intersect] I
-								inner join IntersectType IT on IT.ID = I.IntersectTypeID
-								where I.ObjectAssetTypeId = @id
-								group by it.uid
+								select IntersectTypeUid, IsSubject, count(*) as 'Count'
+								from cte
+								group by IntersectTypeUid,IsSubject
 
+								;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
+									from Asset a
+										inner join [Intersect] i on i.subjectAssetID = a.id and i.ObjectAssetID = 0
+										inner join IntersectType it on it.ID = i.IntersectTypeID
+										inner join assettype at on at.id = i.ObjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
+									where a.uid = @assetuid
+									group by it.uid
+								union 
+								select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
+									from Asset a
+										inner join [Intersect] i on i.objectAssetID = a.id and i.SubjectAssetID = 0
+										inner join IntersectType it on it.ID = i.IntersectTypeID
+										inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
+									where a.uid = @assetuid
+									group by it.uid
+								)
 								insert into #relationshipCountMap
-								select lower(it.uid), 1, count(*) from [Intersect] I
-								inner join IntersectType IT on IT.ID = I.IntersectTypeID
-								where I.subjectAssetTypeId = @id
-								group by it.uid
+								select IntersectTypeUid, IsSubject,Count from cte
+
 								select distinct * from #relationshipCountMap";
-						}
 				}
 
-				if (!string.IsNullOrEmpty(relationshipsCountQuery))
-				{
-					result = (await Company.QueryAsync<RelationshipCountModel>(relationshipsCountQuery, dbArgs)).ToList();
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, result);
 			}
-			catch (Exception ex)
+			else if (asset == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
+				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
+				if (assetType != null)
+				{
+					dbArgs.Add("id", assetType.ID);
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+					relationshipsCountQuery = @"drop table if exists #relationshipCountMap
+							create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
+
+							insert into #relationshipCountMap
+							select lower(it.uid), 0, count(*) from [Intersect] I
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID
+							where I.ObjectAssetTypeId = @id
+							group by it.uid
+
+							insert into #relationshipCountMap
+							select lower(it.uid), 1, count(*) from [Intersect] I
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID
+							where I.subjectAssetTypeId = @id
+							group by it.uid
+							select distinct * from #relationshipCountMap";
+					}
 			}
+
+			if (!string.IsNullOrEmpty(relationshipsCountQuery))
+			{
+				result = (await Company.QueryAsync<RelationshipCountModel>(relationshipsCountQuery, dbArgs)).ToList();
+			}
+
+			return Ok(result);
+
 		}
 
 		/// <summary>
@@ -1797,101 +1647,88 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesForComplexField(Guid assetUid, string fieldName = null)
+		public async Task<IHttpActionResult> GetRelationshipTypesForComplexField(Guid assetUid, string fieldName = null)
 		{
-			var prefix = "Relationships.GetRelationshipTypesForComplexField => ";
-			string errorMessage;
+			var asset = AssetRepository.GetAssetByUID(assetUid);
+			var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+			var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
-			try
+			if (fieldType.Type != DataType.ComplexRelationLookup.ToString())
 			{
-				var asset = AssetRepository.GetAssetByUID(assetUid);
-				var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
-				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+				return Ok(new List<IntersectTypeApiViewModel>());
+			}
 
-				if (fieldType.Type != DataType.ComplexRelationLookup.ToString())
+			var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+			var definition = ftl.ParseComplexLookupDefinition();
+			var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
+
+			List<Guid> relationshipTypes = new List<Guid>();
+
+			foreach (var f in fields)
+			{
+				if (f.Type == DataType.Relationship.ToString())
 				{
-					return Request.CreateResponse(HttpStatusCode.OK, new List<IntersectTypeApiViewModel>());
+					relationshipTypes.Add(Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid);
 				}
+			}
 
-				var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
-				var definition = ftl.ParseComplexLookupDefinition();
-				var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("uids", relationshipTypes);
+			var sql = $@"
+			select	I.Id,
+					I.Uid,
+					I.State as State,
+					coalesce(I.IsSystem, 0) as IsSystem,
+					P.UID as 'Predicate.Uid',
+					coalesce(P.[Type],0) as 'Predicate.Type',
+					coalesce(P.Name,'') as 'Predicate.Name',
+					coalesce(P.Inverse,'') as 'Predicate.Inverse',
+					S.Uid as 'Subject.Uid',		
+					coalesce(SP.[Path], S.Name) as 'Subject.Name',
+					coalesce(S.Class, 0) as 'Subject.Class',
+					I.SubjectCardinality as 'Subject.Cardinality',
+					O.Uid as 'Object.Uid',
+					coalesce(OP.[Path], O.Name)  as 'Object.Name',
+					coalesce(O.Class, 0) as 'Object.Class',
+					I.ObjectCardinality as 'Object.Cardinality'
+			from	IntersectType I
+					left join [Predicate] P on P.ID = I.PredicateID
 
-				List<Guid> relationshipTypes = new List<Guid>();
-
-				foreach (var f in fields)
-				{
-					if (f.Type == DataType.Relationship.ToString())
-					{
-						relationshipTypes.Add(Company.IntersectTypes.FirstOrDefault(x => x.ID == f.LookupObjectID).uid);
-					}
-				}
-
-				var dbArgs = new DynamicParameters();
-				dbArgs.Add("uids", relationshipTypes);
-				var sql = $@"
-				select	I.Id,
-						I.Uid,
-						I.State as State,
-						coalesce(I.IsSystem, 0) as IsSystem,
-						P.UID as 'Predicate.Uid',
-						coalesce(P.[Type],0) as 'Predicate.Type',
-						coalesce(P.Name,'') as 'Predicate.Name',
-						coalesce(P.Inverse,'') as 'Predicate.Inverse',
-						S.Uid as 'Subject.Uid',		
-						coalesce(SP.[Path], S.Name) as 'Subject.Name',
-						coalesce(S.Class, 0) as 'Subject.Class',
-						I.SubjectCardinality as 'Subject.Cardinality',
-						O.Uid as 'Object.Uid',
-						coalesce(OP.[Path], O.Name)  as 'Object.Name',
-						coalesce(O.Class, 0) as 'Object.Class',
-						I.ObjectCardinality as 'Object.Cardinality'
-				from	IntersectType I
-						left join [Predicate] P on P.ID = I.PredicateID
-
-						left join AssetType S on S.ID = I.SubjectAssetTypeID
-						outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
+					left join AssetType S on S.ID = I.SubjectAssetTypeID
+					outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
 		
-						left join AssetType O on O.ID = I.ObjectAssetTypeID
-						outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+					left join AssetType O on O.ID = I.ObjectAssetTypeID
+					outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 
-				where	I.Uid in @uids
-						for json path";
+			where	I.Uid in @uids
+					for json path";
 
-				var models = await Company.GetDatabaseJsonAsObjectAsync<List<JObject>>(sql, dbArgs, ApiTimeout);
+			var models = await Company.GetDatabaseJsonAsObjectAsync<List<JObject>>(sql, dbArgs, ApiTimeout);
 
-				if (models == null)
-				{
-					return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
-				}
+			if (models == null)
+			{
+				return Ok(new List<string>());
+			}
 
-				foreach (var item in models)
-				{
-					var objectUid = Guid.Parse(item.GetValue("Object")["Uid"].ToString());
-					var subjectUid = Guid.Parse(item.GetValue("Subject")["Uid"].ToString());
+			foreach (var item in models)
+			{
+				var objectUid = Guid.Parse(item.GetValue("Object")["Uid"].ToString());
+				var subjectUid = Guid.Parse(item.GetValue("Subject")["Uid"].ToString());
 					
-					foreach (var r in definition.Relations)
+				foreach (var r in definition.Relations)
+				{
+					if (objectUid == r.AssetTypeUid)
 					{
-						if (objectUid == r.AssetTypeUid)
-						{
-							item["SideOfRelationship"] = "Object";
-						}
-						else if (subjectUid == r.AssetTypeUid)
-						{
-							item["SideOfRelationship"] = "Subject";
-						}
+						item["SideOfRelationship"] = "Object";
+					}
+					else if (subjectUid == r.AssetTypeUid)
+					{
+						item["SideOfRelationship"] = "Subject";
 					}
 				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, models);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Ok(models);
 		}
 	}
 }

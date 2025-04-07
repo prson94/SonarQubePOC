@@ -71,75 +71,75 @@
             "extraWebpackConfig": "webpack.config.js",
             "commonChunk": false
           },
-          "configurations": {
-			"production": {
-				"fileReplacements": [
-					{
-						"replace": "Scripts/environments/environment.ts",
-						"with": "Scripts/environments/environment.prod.ts"
-					}
-				],
-				"optimization": true,
-				"outputHashing": "all",
-				"sourceMap": false,
-				"namedChunks": false,
-				"extractLicenses": true,
-				"localize": true,
-				"vendorChunk": true,
-				"buildOptimizer": true,
-				"extraWebpackConfig": "webpack.prod.config.js",
-				"budgets": [
-					{
-						"type": "initial",
-						"maximumWarning": "4mb",
-						"maximumError": "6mb"
-					}
-				]
+			"configurations": {
+				"production": {
+					"fileReplacements": [
+						{
+							"replace": "Scripts/environments/environment.ts",
+							"with": "Scripts/environments/environment.prod.ts"
+						}
+					],
+					"optimization": true,
+					"outputHashing": "all",
+					"sourceMap": false,
+					"namedChunks": false,
+					"extractLicenses": true,
+					"localize": true,
+					"vendorChunk": true,
+					"buildOptimizer": true,
+					"extraWebpackConfig": "webpack.prod.config.js",
+					"budgets": [
+						{
+							"type": "initial",
+							"maximumWarning": "4mb",
+							"maximumError": "6mb"
+						}
+					]
+				},
+				"development": {
+					"optimization": false,
+					"outputHashing": "none",
+					"sourceMap": true,
+					"namedChunks": true,
+					"extractLicenses": true,
+					"vendorChunk": true,
+					"buildOptimizer": false,
+					"polyfills": "Scripts/polyfills.dev.ts",
+					"localize": false,
+					"outputPath": "Scripts/dist/en",
+					"progress": true
+				},
+				"en": {
+					"localize": [
+						"en"
+					]
+				},
+				"nl-NL": {
+					"localize": [
+						"nl-NL"
+					]
+				},
+				"de-DE": {
+					"localize": [
+						"de-DE"
+					]
+				},
+				"es-ES": {
+					"localize": [
+						"es-ES"
+					]
+				},
+				"fr-FR": {
+					"localize": [
+						"fr-FR"
+					]
+				},
+				"it-IT": {
+					"localize": [
+						"it-IT"
+					]
+				}
 			},
-			"development": {
-				"optimization": false,
-				"outputHashing": "none",
-				"sourceMap": true,
-				"namedChunks": true,
-				"extractLicenses": true,
-				"vendorChunk": true,
-				"buildOptimizer": false,
-				"polyfills": "Scripts/polyfills.dev.ts",
-				"localize": false,
-				"outputPath": "Scripts/dist/en",
-				"progress": true
-			},
-			"en": {
-				"localize": [
-					"en"
-				]
-			},
-			"nl-NL": {
-				"localize": [
-					"nl-NL"
-				]
-			},
-			"de-DE": {
-				"localize": [
-					"de-DE"
-				]
-			},
-			"es-ES": {
-				"localize": [
-					"es-ES"
-				]
-			},
-			"fr-FR": {
-				"localize": [
-					"fr-FR"
-				]
-			},
-			"it-IT": {
-				"localize": [
-					"it-IT"
-				]
-			}
-          },
           "defaultConfiguration": ""
         },
         "serve": {

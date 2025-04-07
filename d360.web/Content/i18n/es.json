@@ -1,107 +1,111 @@
 {
-	"group": "Grupo"
+	"addRule": "Añadir regla",
+	"admin": "Administrador",
+	"after": "Después",
+	"apply": "Aplicar",
+	"before": "Antes",
+	"choose": "Seleccione",
+	"cancel": "Cancelar",
+	"clear": "Borrar",
+	"connectorLabel": "Etiqueta de conector",
+	"createConnectorLabel": "Crear nueva etiqueta de conector",
+	"ct": "Contiene",
+	"dateAfter": "Fecha posterior a",
+	"dateBefore": "Fecha anterior a",
+	"dateIs": "Fecha específica",
+	"dateNot": "Excluir fecha",
+	"day_su": "D",
+	"day_sun": "Do.",
+	"day_sunday": "Domingo",
+	"day_mo": "L",
+	"day_mon": "Lu.",
+	"day_monday": "Lunes",
+	"day_tu": "M",
+	"day_tue": "Ma.",
+	"day_tuesday": "Martes",
+	"day_we": "X",
+	"day_wed": "Mi.",
+	"day_wednesday": "Miércoles",
+	"day_th": "J",
+	"day_thu": "Ju.",
+	"day_thursday": "Jueves",
+	"day_fr": "F.",
+	"day_fri": "Vi.",
+	"day_friday": "Viernes",
+	"day_sa": "S",
+	"day_sat": "Sá.",
+	"day_saturday": "Sábado",
+	"enabled ": "Activado ",
+	"enterPassword": "Introducir una contraseña",
+	"eq": "Igual que",
+	"export": "Exportar",
+	"ew": "Termina por",
+	"grammaticAlloc": "Asignación de tipo gramatical",
+	"group": "Grupo",
+	"gt": "Mayor que",
+	"gte": "Mayor o igual que",
+	"is": "Es",
+	"isNot": "No es",
+	"lt": "Menor que",
+	"lte": "Menor o igual que",
+	"matchAll": "Contener todos los valores",
+	"matchAny": "Contener cualquiera de los valores",
+	"medium": "Medio",
+	"month_1_3char": "Ene",
+	"month_1_full": "Enero",
+	"month_2_3char": "Feb",
+	"month_2_full": "Febrero",
+	"month_3_3char": "Mar",
+	"month_3_full": "Marzo",
+	"month_4_3char": "Abr",
+	"month_4_full": "Abril",
+	"month_5_3char": "May",
+	"month_5_full": "May",
+	"month_6_3char": "Jun",
+	"month_6_full": "Junio",
+	"month_7_3char": "Jul",
+	"month_7_full": "Julio",
+	"month_8_3char": "Ago",
+	"month_8_full": "Agosto",
+	"month_9_3char": "Sep",
+	"month_9_full": "Septiembre",
+	"month_10_3char": "Oct",
+	"month_10_full": "Octubre",
+	"month_11_3char": "Nov",
+	"month_11_full": "Noviembre",
+	"month_12_3char": "Dic",
+	"month_12_full": "Diciembre",
+	"n": "No",
+	"name": "Nombre",
+	"nct": "No contiene",
+	"ne": "No es igual a",
+	"noFilter": "No hay filtro",
+	"noResults": "No se ha encontrado ningún resultado",
+	"removeRule": "Quitar regla",
+	"saveChanges": "Guardar cambios",
+	"strong": "Fuerte",
+	"sw": "Empieza por",
+	"takeAction": "Acción",
+	"today": "Hoy",
+	"upload": "Cargar",
+	"useCount": "Usar recuento",
+	"weak": "Débil",
+	"whereUsed": "Utilizado en",
+	"wk": "Sem.",
+	"y": "Sí"
 }
 /*
-	"sw": "Starts with": "Empieza por"
-	"Contains": "Contiene"
-	"Not contains": "No contiene"
-	"Ends with": "Termina por"
-	"Equals": "Igual que"
-	"Not equals": "No es igual a"
-	"No Filter": "No hay filtro"
-	"Less than": "Menor que"
-	"Less than or equal to": "Menor o igual que"
-	"Greater than": "Mayor que"
-	"Greater than or equal to": "Mayor o igual que"
-	"Is": "Es"
-	"Is not": "No es"
-	"Before": "Antes"
-	"After": "Después"
-	"Date is": "Fecha específica"
-	"Date is not": "Excluir fecha"
-	"Date is before": "Fecha anterior a"
-	"Date is after": "Fecha posterior a"
-	"Clear": "Borrar"
-	"Apply": "Aplicar"
-	"Match All": "Contener todos los valores"
-	"Match Any": "Contener cualquiera de los valores"
-	"Add Rule": "Añadir regla"
-	"Remove Rule": "Quitar regla"
-	"Yes": "Sí"
-	"No": "No"
-	"Choose": "Seleccione"
-	"Upload": "Cargar"
-	"Cancel": "Cancelar"
-	"Sunday": "Domingo"
-	"Monday": "Lunes"
-	"Tuesday": "Martes"
-	"Wednesday": "Miércoles"
-	"Thursday": "Jueves"
-	"Friday": "Viernes"
-	"Saturday": "Sábado"
-	"Sun": "Do."
-	"Mon": "Lu."
-	"Tue": "Ma."
-	"Wed": "Mi."
-	"Thu": "Ju."
-	"Fri": "Vi."
-	"Sat": "Sá."
-	"Su": "D"
-	"Mo": "L"
-	"Tu": "M"
-	"We": "X"
-	"Th": "J"
-	"Fr": "F."
-	"Sa": "S"
-	"January": "Enero"
-	"February": "Febrero"
-	"March": "Marzo"
-	"April": "Abril"
-	"May": "May"
-	"June": "Junio"
-	"July": "Julio"
-	"August": "Agosto"
-	"September": "Septiembre"
-	"October": "Octubre"
-	"November": "Noviembre"
-	"December": "Diciembre"
-	"Jan": "Ene"
-	"Feb": "Feb"
-	"Mar": "Mar"
-	"Apr": "Abr"
-	"May": "May"
-	"Jun": "Jun"
-	"Jul": "Jul"
-	"Aug": "Ago"
-	"Sep": "Sep"
-	"Oct": "Oct"
-	"Nov": "Nov"
-	"Dec": "Dic"
-	"Today": "Hoy"
-	"Wk": "Sem."
-	"Weak": "Débil"
-	"Medium": "Medio"
-	"Strong": "Fuerte"
-	"Enter a password": "Introducir una contraseña"
-	"No results found": "No se ha encontrado ningún resultado"
-	"Take Action": "Acción"
-	"Name": "Nombre"
-	"Grammatic Type Allocation": "Asignación de tipo gramatical"
-	"Admin": "Administrador"
-	"Enabled ": "Activado "
-	"Save Changes": "Guardar cambios"
-	"Create New Connector Label": "Crear nueva etiqueta de conector"
-	"Export": "Exportar"
+	
 	"<x id="INTERPOLATION" equiv-text="{{selected.length}}"/> items selected": "<x id="INTERPOLATION" equiv-text="{{selected.length}}"/> elementos seleccionados"
-	"Use count": "Usar recuento"
+	
 	"Diagram Assets": "Activos de diagrama"
 	" Please confirm that you wish to delete the connector label '<x id="INTERPOLATION" equiv-text="{{this.selected[0].Value}}"/>'. ": " Confirme que desea eliminar la etiqueta del conector '<x id="INTERPOLATION" equiv-text="{{this.selected[0].Value}}"/>'. "
 	" Please confirm that you wish to delete the following Connector Labels. ": " Confirme que desea eliminar las siguientes etiquetas de conectores. "
-	"Connector Label": "Etiqueta de conector"
-	"Where Used": "Utilizado en"
+	
+	
 	"Please select the one Connector Label you wish to keep:": "Seleccione la etiqueta de conector que desea conservar:"
 	" All occurrences of the unselected labels will be replaced by occurrences of the selected label.<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br />"/> The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone. ": " Todas las repeticiones de las etiquetas no seleccionadas serán sustituirán por repeticiones de la etiqueta seleccionada.<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br />"/> Las etiquetas de conector no seleccionadas se eliminarán. Tenga en cuenta que esta operación no se puede deshacer. "
-	"Cancel": "Cancelar"
+	
 	"Download Where Used Reports": "Descargar informes del lugar de utilización"
 	"Consolidate": "Consolide"
 	"Delete Connector Label": "Eliminar etiqueta del conector"

@@ -14,8 +14,11 @@ namespace d360.core.entities.Membership
         CommunityPage,
         WorkflowPage,
         Unknown,
-        SemanticTypePage
-    }
+        SemanticTypePage,
+		AssignmentsPage,
+		RequestsPage,
+		DataCatalogPage
+	}
 
 	public class FavoriteApiModel
 	{

@@ -8,10 +8,54 @@ span.info-icon.active {
     background: rgba(138, 70, 228, 0.4);
     border-radius: 3px;
 }
+
 .quick-links {
- margin-left: 16px;
+    margin-left: 16px;
 }
+
 .quick-links * {
     margin-right: 12px;
     margin-bottom: 4px;
 }
+
+.asset-title {
+    height: 24px;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 0.89 !important;
+    letter-spacing: normal !important;
+    color: #597897;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 8px !important;
+}
+
+.as-split-area {
+    position: relative;
+}
+
+.main-panel {
+    display: flex;
+    flex-direction: column;
+
+    .table-wrapper {
+        padding: 0 10px;
+    }
+}
+
+.secondary-side-panel {
+    &.fixed-side-panel {
+        right: 0;
+    }
+}
+
+.div-secondary {
+  margin: 0 !important;
+  position: absolute;
+  overflow: auto;
+}
+

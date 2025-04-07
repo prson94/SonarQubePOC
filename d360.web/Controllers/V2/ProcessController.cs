@@ -10,9 +10,12 @@ using d360.web.Services;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
+using SpreadsheetLight;
+using SpreadsheetLight.Drawing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -35,17 +38,20 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository AssetRepository;
 		private readonly ICatalog ProcessRepository;
 		private readonly IQueueSource QueueSource;
+		private readonly ISecurity Security;
 
 		public ProcessController(
 			ICoreComponentSet set, 
 			IAssetRepository assetRepository,
 			ICatalog processRepository,
-			IQueueSource queueSource
+			IQueueSource queueSource,
+			ISecurity security
 			) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
 			QueueSource = queueSource;
+			Security = security;
 		}
 
 		/// <summary>
@@ -280,8 +286,11 @@ namespace d360.web.Controllers.V2
 					node["key"] = newKey.ToString();
 				}
 			}
-
-			if (! (await Catalog.HasAssetPermission(targetAsset.ID, Permission.EditAsset)))
+			
+			if (!Security.PermissionInMask(
+				Permission.EditAsset, 
+				await Security.ReadCombinedPermissionByAssetId(targetAsset.ID)
+				))
 			{
 				var err = new List<ValidationError>
 				{
@@ -485,21 +494,133 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
+				return errorMessageNotFoundResponse(Error.AssetuidDoesnotExists);
 			}
 
 			string result = await Request.Content.ReadAsStringAsync();
 
 			result = result.Replace("data:image/png;base64,", "");
 			byte[] image = Convert.FromBase64String(result);
-			byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
+
+
+			var dbResponse = await Catalog.GetDiagramExport(asset.ID);
+
+			var document = new SLDocument();
+			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
+
+			int rowNumber = 1;
+			dbResponse.AssetProperties.ForEach(p =>
+			{
+				document.SetCellValue(rowNumber, 1, p.Name);
+				document.SetCellValue(rowNumber, 2, p.Value);
+				rowNumber++;
+			});
+			for (int i = 1; i <= 2; i++) { document.AutoFitColumn(i); }
+
+			string detailSheetName = "Asset Item Details";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Step No");
+			document.SetCellValue(1, 2, "Name");
+			document.SetCellValue(1, 3, "Governance Role");
+			document.SetCellValue(1, 4, "Flow Object Type");
+			document.SetCellValue(1, 5, "Diagram Asset Type");
+			document.SetCellValue(1, 6, "Next Asset Connector Label");
+			document.SetCellValue(1, 7, "Next Asset Step No");
+			document.SetCellValue(1, 8, "Next Asset Name");
+			document.SetCellValue(1, 9, "Asset UID");
+			document.SetCellValue(1, 10, "Asset ID");
+			document.SetCellValue(1, 11, "Asset URL");
+			document.SetCellValue(1, 12, "Next Asset UID");
+			document.SetCellValue(1, 13, "Next Asset ID");
+			document.SetCellValue(1, 14, "Next Asset URL");
+
+			rowNumber = 2;
+			dbResponse.Nodes.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.StepNo);
+				document.SetCellValue(rowNumber, 2, n.Name);
+				document.SetCellValue(rowNumber, 3, n.GovernanceRole);
+				document.SetCellValue(rowNumber, 4, n.FlowObjectType);
+				document.SetCellValue(rowNumber, 5, n.DiagramAssetType);
+				document.SetCellValue(rowNumber, 6, n.NextAssetConnectorLabel);
+				document.SetCellValue(rowNumber, 7, n.NextAssetStepNo);
+				document.SetCellValue(rowNumber, 8, n.NextAssetName);
+				document.SetCellValue(rowNumber, 9, n.AssetUID);
+				document.SetCellValue(rowNumber, 10, n.AssetID);
+				document.SetCellValue(rowNumber, 11, n.AssetURL);
+				document.SetCellValue(rowNumber, 12, n.NextAssetUID);
+				document.SetCellValue(rowNumber, 13, n.NextAssetID);
+				document.SetCellValue(rowNumber, 14, n.NextAssetURL);
+
+				rowNumber++;
+			});
+			for (int i = 1; i <= 14; i++) { document.AutoFitColumn(i); }
+
+			detailSheetName = "Diagram Types";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Asset Type Uid");
+			document.SetCellValue(1, 2, "Name");
+			document.SetCellValue(1, 3, "Assets Uids");
+
+			rowNumber = 2;
+			dbResponse.NodeTypes.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.AssetTypeUid);
+				document.SetCellValue(rowNumber, 2, n.AssetTypeName);
+				document.SetCellValue(rowNumber, 3, n.assets);
+
+				rowNumber++;
+			});
+			for (int i = 1; i <= 3; i++) { document.AutoFitColumn(i); }
+
+			detailSheetName = "Related Assets";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Diagram Asset Id");
+			document.SetCellValue(1, 2, "Diagram Asset Uid");
+			document.SetCellValue(1, 3, "Step No");
+			document.SetCellValue(1, 4, "Diagram Asset Name");
+			document.SetCellValue(1, 5, "Asset Uid");
+			document.SetCellValue(1, 6, "Asset Type Uid");
+			document.SetCellValue(1, 7, "Asset Type Name");
+			document.SetCellValue(1, 8, "Predicate Uid");
+
+			rowNumber = 2;
+			dbResponse.RelatedAssets.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.DiagramAssetId);
+				document.SetCellValue(rowNumber, 2, n.DiagramAssetUid);
+				document.SetCellValue(rowNumber, 3, n.StepNo);
+				document.SetCellValue(rowNumber, 4, n.DiagramAssetName);
+				document.SetCellValue(rowNumber, 5, n.AssetUid);
+				document.SetCellValue(rowNumber, 6, n.AssetTypeUid);
+				document.SetCellValue(rowNumber, 7, n.AssetTypeName);
+				document.SetCellValue(rowNumber, 8, n.PredicateUid);
+				rowNumber++;
+			});
+			for (int i = 1; i <= 8; i++) { document.AutoFitColumn(i); }
+			
+			document.AddWorksheet("Diagram");
+			document.SelectWorksheet("Diagram");
+			var picture = new SLPicture(image, DocumentFormat.OpenXml.Packaging.ImagePartType.Png);
+			document.InsertPicture(picture);
+
+			var stream = new MemoryStream();
+			document.SaveAs(stream);
+			byte[] bytes = stream.ToArray();
+
 			var detail = await Catalog.ReadAssetDetail(asset.ID);
 			var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now:MMM dd yyyy}.xlsx", bytes);
 

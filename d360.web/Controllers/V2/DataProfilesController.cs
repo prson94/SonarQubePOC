@@ -697,7 +697,6 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("batch"),
-            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),

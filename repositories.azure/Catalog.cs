@@ -3,8 +3,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
-using repositories.resources;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1166,102 +1164,6 @@ where	ID = @id;",
 			}
 		}
 
-		public async Task<bool> HasAssetPermission(long assetId, Permission permission)
-		{
-			try
-			{
-				var parameters = new
-				{
-					permissionId = (int)permission,
-				};
-				var user = await GetUser(CurrentUserId);
-				bool hasPermission = user.IsAdministrator;
-
-				if (!hasPermission)
-				{
-					using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
-					{
-						int assetTypeID = await connection.QuerySingleOrDefaultAsync<int>("select AssetTypeID from Asset where ID = @assetId", new { assetId });
-
-						hasPermission = await HasPermission(assetId, assetTypeID, permission);
-					}
-				}
-
-				return hasPermission;
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
-		private async Task<bool> HasPermission(long assetId, int assetTypeId, Permission permission)
-		{
-			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
-
-			if (isReadPermission)
-			{
-				Asset asset;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
-				{
-					asset = await connection.QueryFirstOrDefault(@"
-					SELECT * FROM dbo.Asset a
-					WHERE a.ID = @assetId", new { assetId });
-				};
-
-				if (permission == Permission.ReadAsset)
-				{
-					return await HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, CurrentUserId);
-				}
-
-				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
-			}
-			else
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
-				{
-					return connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																	begin
-																		select 1;
-																	end
-																else
-																	begin
-																		select 0;
-																end", new { assetId, t = assetTypeId, r = CurrentUserId });
-				}
-			}
-		}
-
-		public async Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId)
-		{
-			Permission permission = Permission.ReadAsset;
-
-			try
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
-				{
-					var result = await connection.QuerySingleAsync<bool>($@"	if exists(select 1
-																		 from asset a
-																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
-																		 where a.Object = @type and a.ObjectID = @id
-																		 and ua.PermissionsBitMask & {(int)permission} = 0)
-																	begin
-																		select 0;
-																		end
-																	else
-																	begin
-																		select 1;
-																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
-
-					return result;
-				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
 		public async Task<dynamic> GetAssetCopyOption(Guid uid, int assetTypeId)
 		{
 			try
@@ -1324,34 +1226,6 @@ where	ID = @id;",
 						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
-
-					return result;
-				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
-		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
-		{
-			try
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
-				{
-					var result = connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = CurrentUserId });
 
 					return result;
 				}

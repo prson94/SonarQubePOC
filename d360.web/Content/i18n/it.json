@@ -1,37 +1,37 @@
 {
-	"group": "Gruppo"
+	"addRule": "Aggiungi regola",
+	"after": "Dopo",
+	"apply": "Applica",
+	"before": "Prima",
+	"cancel": "Annulla",
+	"choose": "Scegli",
+	"clear": "Cancella",
+	"ct": "Contiene",
+	"dateAfter": "La data è successiva a",
+	"dateBefore": "La data è precedente a",
+	"dateIs": "La data è",
+	"dateNot": "La data non è",
+	"eq": "È uguale a",
+	"ew": "Finisce con",
+	"group": "Gruppo",
+	"gt": "Maggiore di",
+	"gte": "Maggiore o uguale a",
+	"is": "È",
+	"isNot": "Non è",
+	"lt": "Minore di",
+	"lte": "Minore o uguale a",
+	"matchAll": "Soddisfa tutte",
+	"matchAny": "Soddisfa qualsiasi",
+	"n": "No",
+	"nct": "Non contiene",
+	"ne": "Non è uguale a",
+	"noFilter": "Nessun filtro",
+	"removeRule": "Rimuovi regola",
+	"sw": "Inizia con",
+	"upload": "Carica",
+	"y": "Sì"
 }
 /*
-	"sw": "Starts with": "Inizia con"
-	"ct": "Contains": "Contiene"
-	"nct": "Not contains": "Non contiene"
-	"ew": "Ends with": "Finisce con"
-	"eq": "Equals": "È uguale a"
-	"ne": "Not equals": "Non è uguale a"
-	"noFilter": "No Filter": "Nessun filtro"
-	"lt": "Less than": "Minore di"
-	"lte": "Less than or equal to": "Minore o uguale a"
-	"gt": "Greater than": "Maggiore di"
-	"gte": "Greater than or equal to": "Maggiore o uguale a"
-	"is": "Is": "È"
-	"isNot": "Is not": "Non è"
-	"before": "Before": "Prima"
-	"after": "After": "Dopo"
-	"dateIs": "Date is": "La data è"
-	"dateNot": "Date is not": "La data non è"
-	"dateBefore": "Date is before": "La data è precedente a"
-	"dateAfter": "Date is after": "La data è successiva a"
-	"clear": "Clear": "Cancella"
-	"Apply": "Applica"
-	"Match All": "Soddisfa tutte"
-	"Match Any": "Soddisfa qualsiasi"
-	"Add Rule": "Aggiungi regola"
-	"Remove Rule": "Rimuovi regola"
-	"Yes": "Sì"
-	"No": "No"
-	"Choose": "Scegli"
-	"Upload": "Carica"
-	"Cancel": "Annulla"
 	"Sunday": "Domenica"
 	"Monday": "Lunedì"
 	"Tuesday": "Martedì"

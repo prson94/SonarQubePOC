@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchFullResult, SearchModel, SearchQuery, SearchResults } from '../models/search-result.model';
+import { SearchFullResult, SearchModel, SearchQuery, SearchResult, SearchResults } from '../models/search-result.model';
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { catchError, delay, map, shareReplay, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, delay, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 import { Observable, of, Subject, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
@@ -31,10 +31,8 @@ export class SearchService extends BaseObservableService  {
     public getEmptyResult(): SearchResults {
         const result = new SearchResults();
 		result.Results = [];
-		result.ResultAggregations = [];
-        result.Aggregations = { category: []};
+        result.Aggregations = [];
         result.Matches = 0;
-        result.ElapsedMS = { Query: 0, Augment: 0 };
         return result;
     }
 
@@ -50,6 +48,27 @@ export class SearchService extends BaseObservableService  {
             table.filterGlobal(refinedSearchString, FilterMatchMode.CONTAINS);
         }
     }
+
+	getTypeAheadResults(term: string, size, types?: string[]): Observable<SearchResult[]> {
+		term = term.substring(0, 255);
+
+		return of().pipe(
+			debounceTime(400),
+			distinctUntilChanged(),
+			switchMap((term) => {
+				if (term === "") {
+					return of(<SearchResult[]>[]);
+				}
+				const uri = `api/v2/search/typeahead?query=${encodeURIComponent(term)}&num=${size}&categories=${typeof types !== "undefined" ? types.join(',') : ''}`;
+				return this.http.get(
+					uri,
+					{ context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+				).pipe(
+					map((response) => <SearchResult[]>response),
+					catchError((err) => this.handleError(err))
+				);
+			}));
+	}
 
     getSearchResultsByQuery(query: SearchQuery): Observable<SearchResults> {
         if (typeof query.Term === "undefined" || query.Term === "") {

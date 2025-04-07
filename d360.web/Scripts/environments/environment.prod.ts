@@ -1,5 +1,4 @@
-﻿declare var VersionNumber: string;
-
+﻿declare let VersionNumber: string;
 
 export const environment = {
     production: true,

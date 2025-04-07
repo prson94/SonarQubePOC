@@ -97,6 +97,7 @@ namespace d360.web
 				builder.AddWebApiExceptionHandler<UnauthorizedWebApi2ExceptionHandler>();
 				builder.AddWebApiExceptionHandler<ForbiddenWebApi2ExceptionHandler>();
 				builder.RegisterType<WebApi2ExceptionHandlerMediator>().AsSelf().SingleInstance();
+				builder.RegisterType<BusinessExceptionHandler>().SingleInstance();
 
 				builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
 				builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
@@ -111,10 +112,6 @@ namespace d360.web
 
 				#region Config Setting Reader   
 
-				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
-					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.ReadOnlyConnection);
-					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
 						i.Instance.ApiKey = Config.GetValue<string>("MandrillApiKey");
@@ -240,48 +237,56 @@ namespace d360.web
 				builder.RegisterType<Catalog>().As<ICatalog>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<History>().As<IHistory>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Scoring>().As<IScoring>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Search>().As<ISearch>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Social>().As<ISocial>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Workflow>().As<IWorkflow>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.WorkspaceId = "";

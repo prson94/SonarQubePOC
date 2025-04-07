@@ -1,12 +1,7 @@
 ﻿<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
           [class.side-panel-close]="!sidePanelOpen"
           (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
-          unit="pixel"
-          direction="horizontal"
-          class="col s12 split"
-          style="display: flex">
-
-    
+          unit="pixel" direction="horizontal" class="col s12 split" style="display: flex">
     <as-split-area class="tile tile-detail main-panel">
         <d3s-tags-header (onTagTypeSelected)="loadTagsOnTagTypeSelected($event)"></d3s-tags-header>
         <div class="row">
@@ -108,9 +103,8 @@
                                     <td>
                                         <div class="RowTools">
                                             <span (click)="selectSingleItem(null,item)"
-                                            class="ig-button-icon fa fa-info-circle info-icon"
-                                            [ngClass]="{'active': item.isSelected}"
-                                            ></span>
+                                                  class="ig-button-icon fa fa-info-circle info-icon"
+                                                  [ngClass]="{'active': item.isSelected}"></span>
                                         </div>
                                     </td>
                                     <td style="padding-left:0" #assetGridTools>
@@ -187,6 +181,28 @@
                 </div>
             </div>
         </div>
+        <div>
+            <ng-container *ngIf="secondarySidePanelOpen">
+                <div class="secondary-side-panel fixed-side-panel div-secondary">
+                    <div class="panel-header">
+                        <span class="header-label" i18n>Asset Information</span>
+                        <div class="button-container">
+                            <button igButton icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                        </div>
+                    </div>
+                    <div class="details-container">
+                        <div>
+                            <ng-container *ngIf="secondarySidePanel === 'item'">
+                                <asset-preview [assetUid]="this.selectedForSecondaryPanel.AssetUid"
+                                               [assetType]="this.selectedForSecondaryPanel.Object"
+                                               [hasEditLink]="false"
+                                               [hasOpenLink]="true"></asset-preview>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
     </as-split-area>
         <as-split-area [size]="getSidePanelWidth()"
                        [minSize]="getSidePanelMinWidth()"
@@ -202,13 +218,15 @@
                 <ng-container *ngIf="sidePanelOpen">
                     <ng-container *ngIf="itemToEdit != undefined">
                         <div class="quick-links">
-                            <div class="asset-name"> {{  itemToEdit.Value }} </div>
+                            <div class="asset-title">
+                                {{itemToEdit.Value}}
+                            </div>
                             <div class="class-name"> Tag </div>
                             <a (click)="openTagDetails(itemToEdit)">Open</a>
                             <span class="grey-delimiter">|</span>
                             <a (click)="openTagDetails(itemToEdit, true)">Open in New Tab</a>
                             <span class="grey-delimiter">|</span>
-                            <a  (click)="editTag(itemToEdit)">Edit</a>
+                            <a (click)="editTag(itemToEdit)">Edit</a>
                         </div>
                         <ig-tag-detail [selectedItem]="itemToEdit"
                                        [selectedTagType]="itemToEdit"
@@ -229,5 +247,7 @@
                     </ng-container>
                 </ng-container>
             </side-panel>
+
         </as-split-area>
+        
 </as-split>

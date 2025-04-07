@@ -18,9 +18,9 @@ import { BoardTile } from "./components/board-tile";
 import { DashboardModule } from "../../components/sidebar/dashboard/dashboard.module";
 import { ShortcutDisplay } from "./components/shortcut-display";
 import { UserAssignmentsModule } from "../../components/assignments/user-assignments/user-assignments.module";
-import { SearchModule } from "../../components/search/search.module";
 import { FeatureFlagsInitService } from "../../services/feature-flags-init.service";
 import { FeatureFlags } from "../../_shared/models/feature-flags";
+import { HomeSearch } from "./components/search";
 
 @Component({
 	selector: "home",
@@ -30,7 +30,7 @@ import { FeatureFlags } from "../../_shared/models/feature-flags";
 		ActivityTile,
 		BoardTile,
 		DashboardModule,
-		SearchModule,
+		HomeSearch,
 		ShortcutDisplay,
 		UserAssignmentsModule
 	],

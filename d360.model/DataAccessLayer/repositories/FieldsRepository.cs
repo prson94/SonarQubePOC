@@ -229,6 +229,13 @@ namespace d360.model.DataAccessLayer
 					includeId = false;
 				}
 			}
+			if (parameters.Any(q => q.Key.ToLower() == "_excludetypes"))
+			{
+				var excludeTypesString = parameters.FirstOrDefault(q => q.Key.ToLower() == "_excludetypes").Value;
+				dbArgs.Add("@excludeTypes", excludeTypesString.ToLower().Split(','));
+				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Type]) not in (@excludeTypes)";
+
+			}
 
 			StringBuilder additionalApply = new StringBuilder();
 			if (parameters.Any(q => q.Key.ToLower() == "resolvevalues"))
@@ -581,6 +588,16 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Path' then FT.DisplayInColumn else null end as 'Type.Path.DisplayInColumn', 
                                         case when FT.Type = 'Path' then JSON_VALUE(FT.Definition,'$.AssetTypeUid') else null end as 'Type.Path.Definition.AssetTypeUid',
 										{(resolveUIDetails ? "case when FT.Type = 'Path' then PathType.Name else null end as 'Type.Path.Definition.AssetTypeName'," : "")}
+
+										case when FT.Type = 'ReferenceList' then FT.ColumnOrder else null end as 'Type.ReferenceList.ColumnOrder',
+										case when FT.Type = 'ReferenceList' then FT.ColumnWidth else null end as 'Type.ReferenceList.ColumnWidth',
+										case when FT.Type = 'ReferenceList' then FT.DisplayDescription else null end as 'Type.ReferenceList.Description.Display',
+										case when FT.Type = 'ReferenceList' then FT.IsDisplayable else null end as 'Type.ReferenceList.IsDisplayable',
+										case when FT.Type = 'ReferenceList' then FT.IsListable else null end as 'Type.ReferenceList.IsListable',
+										case when FT.Type = 'ReferenceList' then FT.SortOrder else null end as 'Type.ReferenceList.SortOrder',
+										case when FT.Type = 'ReferenceList' then FT.SortByAscending else null end as 'Type.ReferenceList.SortByAscending',
+										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ReferenceList.DisplayRefListDescription',
+										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListInTable'),'true') else null end as 'Type.ReferenceList.DisplayRefListInTable',
 
 										case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 										case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
@@ -1871,6 +1888,28 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortByAscending = f.Type.Path.SortByAscending;
 					newFieldType.IsPrimaryFilter = false;
 					newFieldType.DisplayInColumn = f.Type.Path.DisplayInColumn;
+
+				}
+				else if (f.Type.ReferenceList != null)
+				{
+					newFieldType.Type = DataType.ReferenceList.ToString();
+					newFieldType.ColumnOrder = f.Type.ReferenceList.ColumnOrder.HasValue ? f.Type.ReferenceList.ColumnOrder.Value : fldColunmnOrder;
+					newFieldType.ColumnWidth = f.Type.ReferenceList.ColumnWidth;
+
+					if (f.Type.ReferenceList.Description != null)
+					{
+						newFieldType.DisplayDescription = f.Type.ReferenceList.Description.Display.SanitizeHtml();
+					}
+					newFieldType.IsDisplayable = f.Type.ReferenceList.IsDisplayable;
+					newFieldType.ShowIfEmpty = f.Type.ReferenceList.ShowIfEmpty;
+					newFieldType.IsListable = f.Type.ReferenceList.IsListable;
+					newFieldType.IsPartOfKey = false;
+					newFieldType.ShowIfEmpty = true;
+					newFieldType.SortOrder = f.Type.ReferenceList.SortOrder;
+					newFieldType.SortByAscending = f.Type.ReferenceList.SortByAscending;
+					newFieldType.IsPrimaryFilter = false;
+					newFieldType.Definition = JsonConvert.SerializeObject(new { f.Type.ReferenceList.DisplayRefListDescription, f.Type.ReferenceList.DisplayRefListInTable });
+					newFieldType.IsRequired = false;
 
 				}
 				else if (f.Type.Relationship != null)

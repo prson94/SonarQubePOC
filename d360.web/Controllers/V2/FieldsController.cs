@@ -102,7 +102,13 @@ namespace d360.web.Controllers.V2
 			{
 				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
-			var results = await FieldsRepository.GetFieldTypes(queryParams);
+
+			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
+			var excludeTypes = new KeyValuePair<string, string>("_excludetypes", newReferenceList ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString());
+			var queryParamsExpanded = queryParams.ToList();
+			queryParamsExpanded.Add(excludeTypes);
+
+			var results = await FieldsRepository.GetFieldTypes(queryParamsExpanded);
 
 			if (results.Item2.StatusCode != HttpStatusCode.OK)
 			{
@@ -262,6 +268,13 @@ namespace d360.web.Controllers.V2
 						}
 					}
 				}
+			}
+
+			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
+			if ((!newReferenceList && model.Fields.Any(f => f.Type?.ReferenceList != null)) || (newReferenceList && model.Fields.Any(f => f.Type?.ComputedRelationshipReferenceList != null)))
+			{
+				var forbiddenType = newReferenceList ? "ComputedRelationshipReferenceList" : "ReferenceList";
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, $"Field type {forbiddenType} is not supported");
 			}
 
 			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);
@@ -868,12 +881,16 @@ namespace d360.web.Controllers.V2
 					.Where(x => x.value != DataType.JsonElement.ToString())
 					.Where(x => x.value != DataType.OwnershipLookup.ToString())
 					.Where(x => x.value != DataType.RefListRelationship.ToString())
+					.Where(x => x.value != DataType.ReferenceList.ToString())
 					.Where(x => x.value != DataType.ComplexRelationLookup.ToString())
 					.Where(x => x.value != DataType.Relationship.ToString())
 					.Where(x => x.value != DataType.Score.ToString())
 					.Where(x => x.value != DataType.Tag.ToString())
 					.ToList();
 			}
+
+			var unusedReferenceType = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST) ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString();
+			dataTypeOptions = dataTypeOptions.Where(x => x.value != unusedReferenceType).ToList();
 
 			var jsonFieldType = new Dictionary<string, string> {
 				{ "Boolean", "bit" },

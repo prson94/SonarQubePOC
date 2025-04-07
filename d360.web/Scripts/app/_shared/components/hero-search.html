@@ -1,0 +1,24 @@
+﻿<div class="hero-search-input">
+    <p-multiSelect id="searchMultiSelect"
+                   [options]="searchObjectTypes"
+                   [ngModel]="searchTypes"
+                   [filter]="false"
+                   [overlayOptions]="overlayOpts"
+                   [scrollHeight]="'400px'"
+                   i18n-placeholder
+                   placeholder="Search All Categories"
+                   [maxSelectedLabels]="1"
+                   (ngModelChange)="searchTypes=$event;"
+                   (onChange)="setEventTypeLabel()"
+                   (onPanelShow)="setSelectAllLabel()"
+                   [dropdownIcon]="'fa fa-chevron-down nm'">
+    </p-multiSelect>
+    <div class="field mr10">
+        <typeahead-search [additionalCssClasses]="'gov-search'"
+                          [showBigButton]="true"
+                          i18n-autocompletePlaceholder
+                          autocompletePlaceholder="What are you looking for?"
+                          [searchOptions]="searchTypes">
+        </typeahead-search>
+    </div>
+</div>  

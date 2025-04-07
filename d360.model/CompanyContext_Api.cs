@@ -43,7 +43,7 @@ namespace d360.model
 
 		#region Methods
 
-		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField");
+		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField", bool isFieldtypeDatePK = false);
 
 		void CompleteApiExecutionAndGetCounts(Guid executionId, ApiExecutionAction action);
 		void CompleteApiExecutionAndGetCounts(int executionId, ApiExecutionAction action);
@@ -503,33 +503,34 @@ from    api.ExecutionAsset T
             if (!SecurityContext.IsAdministrator)
             {
                 Connection.Execute($@"
-									declare @hasAssetTypePermission bit = 0
+declare	@assetTypePermissions int, 
+		@hasAssetTypePermission bit = 0
 
-									select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissionsByAssetID(@resourceID, @assetTypeID, 0) where PermissionsBitMask & @p = @p) then 1 else 0 end
+select	@assetTypePermissions = dbo.GetCombinedPermissionsForUserByAssetTypeId(@assetTypeID, @resourceID);
+set		@hasAssetTypePermission = @assetTypePermissions & @p
 
-									if @hasAssetTypePermission = 0
-									begin
+if @hasAssetTypePermission = 0
+begin
+	drop table if exists #tempcheckpermission;
 
-										drop table if exists #tempcheckpermission;
+	select	usrper.AssetID
+	into	#tempcheckpermission
+	from	api.Execution E
+			cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
+	where	E.ExecutionID = @executionID
+			and usrper.PermissionsBitMask & @p = @p
+	group by usrper.AssetID;
 
-										select usrper.AssetID
-										into #tempcheckpermission
-										from api.Execution E
-										cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
-										where E.ExecutionID = @executionID
-										and usrper.PermissionsBitMask & @p = @p
-										group by usrper.AssetID;
+	create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
 
-										create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
-
-										update	T
-										set		T.Success = 0,
-												T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
-										from    api.{apiTableName} T
-										where   T.ExecutionID = @executionID
-												and T.AssetID is not null
-												and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
-									end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	from    api.{apiTableName} T
+	where   T.ExecutionID = @executionID
+			and T.AssetID is not null
+			and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
+end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
             }
         }
 
@@ -1457,7 +1458,7 @@ where   ER.ExecutionID = @ExecutionID
 
 		#region Methods
 
-		public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
+		public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField", bool isFieldtypeDatePK = false)
 		{
 			string sqlstmt = string.Empty;
 			string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
@@ -1524,109 +1525,116 @@ where   ER.ExecutionID = @ExecutionID
 				if (parentIntersectTypeId.HasValue)
 				{
 					string CreateFieldTempData = $@"
-													drop table if exists #Keys;
-													CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
-																		KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
+				drop table if exists #Keys;
+				CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
+									KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
-													{shouldCheckHashStatement}
+				{shouldCheckHashStatement}
 
-													insert into #Keys WITH(TABLOCK)
-													select		A.ID, P.UID as ParentAssetUID, Null, Null
-													from		Asset A 
-															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.ObjectAssetId = A.Id
-															left join Asset P on P.Id = I.SubjectAssetId
-													where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
+				insert into #Keys WITH(TABLOCK)
+				select		A.ID, P.UID as ParentAssetUID, Null, Null
+				from		Asset A 
+						left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.ObjectAssetId = A.Id
+						left join Asset P on P.Id = I.SubjectAssetId
+				where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 
-													create clustered index idx_key_assetid on #keys(AssetID);
+				create clustered index idx_key_assetid on #keys(AssetID);
 
-													if (select count(1) from fieldtype ft 
-														inner join assettype att on att.id = ft.AssetTypeID 
-														where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
-														and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
-														and (select count(1) from fieldtype ft 
-														inner join assettype att on att.id = ft.AssetTypeID 
-														where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID) = 1
+				if (select count(1) from fieldtype ft 
+					inner join assettype att on att.id = ft.AssetTypeID 
+					where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
+					and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
+					and (select count(1) from fieldtype ft 
+					inner join assettype att on att.id = ft.AssetTypeID 
+					where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID) = 1
 
-														begin
-															-- display value is the key field and its the only key field and required...	
-															update T
-															set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
-															from 
-																#Keys T		
-																inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
-														end
-													else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) = 1
-														begin
-															--only key field and required
+					begin
+						-- display value is the key field and its the only key field and required...	
+						update T
+						set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
+						from 
+							#Keys T		
+							inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
+					end
+				else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) = 1
+					begin
+						--only key field and required
 			
-															select @fieldtypeid = id,
-																   @DefaultValue = DefaultValue,
-																   @FieldDataType = Type
-															from fieldtype
-															where assettypeid = @id and IsPartOfKey = 1;
+						select @fieldtypeid = id,
+								@DefaultValue = DefaultValue,
+								@FieldDataType = Type
+						from fieldtype
+						where assettypeid = @id and IsPartOfKey = 1;
 			
-															if (@FieldDataType = 'Counter')
-																begin
-																	update T
-																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(cast(FCV.Value as nvarchar(100)), @DefaultValue)
-																	from #Keys T
-																	left join FieldCounterValue FCV on FCV.FieldTypeID = @fieldtypeid and FCV.AssetID = T.AssetID
-																end
-															else
-																begin
-																	update T
-																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
-																	from #Keys T
-																	left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
-																end
+						if (@FieldDataType = 'Counter')
+							begin
+								update T
+								set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(cast(FCV.Value as nvarchar(100)), @DefaultValue)
+								from #Keys T
+								left join FieldCounterValue FCV on FCV.FieldTypeID = @fieldtypeid and FCV.AssetID = T.AssetID
+							end
+						else if (@FieldDataType like 'Date%')
+							begin
+							update T
+							set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + convert(varchar(25),try_Cast(coalesce(F.Value, F.FormattedValue, @DefaultValue) as datetime),120)
+							from #Keys T
+							left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+							end
+						else
+							begin
+								update T
+								set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
+								from #Keys T
+								left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+							end
 
-														end
-													else
-														begin
-															-- multiple key fields need to agg all the values
-															drop table if exists #KeysField;
-															CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
+					end
+				else
+					begin
+						-- multiple key fields need to agg all the values
+						drop table if exists #KeysField;
+						CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
 			
-															insert into #KeysField WITH(TABLOCK)
-															select A.AssetID,STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
-															from #Keys A
-															inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
-															left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
-															left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
-															group by A.AssetID;
+						insert into #KeysField WITH(TABLOCK)
+						select A.AssetID,STRING_AGG({(isFieldtypeDatePK ? "case when FT.type Like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 ) else coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
+						from #Keys A
+						inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
+						left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
+						left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
+						group by A.AssetID;
 
-															CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
+						CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
 			
-															update T
-															set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
-															from #Keys T
-															inner join #KeysField KF on T.AssetID = KF.AssetID;
+						update T
+						set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
+						from #Keys T
+						inner join #KeysField KF on T.AssetID = KF.AssetID;
 
-															drop table if exists #KeysField;
-														end
+						drop table if exists #KeysField;
+					end
 
-														update #Keys set ActiveKey = utility.GetHash(KeyValue);
+					update #Keys set ActiveKey = utility.GetHash(KeyValue);
 
-														CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+					CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
 
 
 					string keyHashCalulationScript = $@"
-										Declare @fieldtypeid int =-1;
-										declare @DefaultValue nvarchar(max);
-										declare @FieldDataType nvarchar(50);
+					Declare @fieldtypeid int =-1;
+					declare @DefaultValue nvarchar(max);
+					declare @FieldDataType nvarchar(50);
 
-										update  T
-										set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
-										from    {assetTable} T
-											inner join	(
-														select		A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-														from		{assetTable} A
-																	inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
-														where		A.ExecutionID = @ExecutionID
-														group by	A.ItemNumber, A.ParentUid
-														) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
+					update  T
+					set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+					from    {assetTable} T
+						inner join	(
+									select		A.ItemNumber,
+												COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+									from		{assetTable} A
+												inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+												inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+									where		A.ExecutionID = @ExecutionID
+									group by	A.ItemNumber, A.ParentUid
+									) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
 
 					if (at.Class == AssetTypeClass.Model)
 					{
@@ -1656,7 +1664,7 @@ where   ER.ExecutionID = @ExecutionID
 										from    {assetTable} T
 											inner join	(
 														select		A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 														from		{assetTable} A
 																	inner join #BulkExecutionFieldUnique F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
 																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
@@ -1675,9 +1683,9 @@ where   ER.ExecutionID = @ExecutionID
 				}
 				else
 				{
-					 string activeKeySql = $@"
+					string activeKeySql = $@"
 											select		A.ID,
-													utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+													utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG({(isFieldtypeDatePK ? "case when FT.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120) else coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue) end" : "coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 											from		Asset A 
 													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 													left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1693,7 +1701,7 @@ where   ER.ExecutionID = @ExecutionID
 											from    {assetTable} T
 												inner join	(
 															select	A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 															from	{assetTable} A
 																	inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
 																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1

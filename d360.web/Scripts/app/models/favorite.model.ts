@@ -4,13 +4,13 @@ export class FavoriteApiModel {
     Id: number;
     Route: string;
     Name: string;
-    Type: string;
+	Type: string;
 }
 
 export class FavoriteViewModel {
     Id: number;
-    PageType: FavoritePageType;
-    AssetTypeClass?: keyof AssetTypeClass;
+	PageType: FavoritePageType;
+	AssetTypeClass?: keyof typeof AssetTypeClass;
     Name: string;
     Route: string;
     Breadcrumbs: string[];
@@ -24,7 +24,10 @@ export enum FavoritePageType {
     WorkflowPage = 'WorkflowPage',
     HomePage = 'HomePage',
     ResourceListPage = 'ResourceListPage',
-    SemanticTypePage = 'SemanticTypePage'
+	SemanticTypePage = 'SemanticTypePage',
+	DataCatalogPage = 'DataCatalogPage',
+	AssignmentsPage = 'AssignmentsPage',
+	RequestsPage = 'RequestsPage'
 }
 
 export class HomepageAndFavoritesModel {
