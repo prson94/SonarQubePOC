@@ -2347,7 +2347,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											set		T.Object = S.Object, 
 													T.ObjectID = S.ObjectID, 
 													T.AssetID = S.ID,
-													T.[ObjectTypeId] = {at.ID},
+													T.[ObjectTypeId] = {at.ObjectID},
 													[ObjectType] = '{at.Object}'
 											from	api.ExecutionDeletedAsset T
 													inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
