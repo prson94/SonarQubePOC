@@ -921,7 +921,7 @@ export class LazyDropdown implements OnInit, AfterViewInit, AfterContentInit, Af
 			this.updateEditableLabel();
 		}
 		const containerWidth = this.containerViewChild?.nativeElement.getBoundingClientRect().width;
-		if (this.panelStyle == undefined) {
+		if (this.panelStyle === undefined) {
 			this.panelStyle = {};
 		}
 		this.panelStyle.width = containerWidth + 'px';
