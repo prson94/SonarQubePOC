@@ -775,6 +775,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	lazyMap: Map<string, lazyLookupValue[]> = new Map();
 	lazyLoadSize = 50;
 	lazyAllValuesLoaded = false;
+	lazyVirtual: boolean = true;
 
 	get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
@@ -833,6 +834,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				if (lookupValues[0].hasAssetReadAccess === undefined) {
 					lookupValues.forEach((item) => item.hasAssetReadAccess = true);
 				}
+				this.lazyVirtual = lookupValues.some((i) => i.label === null);
 				this.lazyMap.set('', lookupValues)
 				this.lazyLookupValues = [...lookupValues];
 				this.showLookupSearchField = (lookupValues.length > 10);
@@ -923,6 +925,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			if (lookupValues.length > res.count) {
 				lookupValues = lookupValues.slice(0, res.count);
 			}
+
+			this.lazyVirtual = lookupValues.some((i) => i.label === null);
 
 			this.lazyMap.set(filter, lookupValues)
 			this.lazyLookupValues = [...lookupValues];
