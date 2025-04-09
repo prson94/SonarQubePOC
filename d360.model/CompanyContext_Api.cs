@@ -64,13 +64,15 @@ namespace d360.model
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
 
-		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
+		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true, bool hasReferenceListFieldTypes = true);
 
 		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
 
 		List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
 
 		void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
+
+		void ResolveFieldReferenceList(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
 
 		void SetApiExecutionProcessingStartTime(Guid ExecutionId);
 
@@ -655,7 +657,21 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
             }
         }
 
-        private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
+		private void LogFieldReferenceListErrors(Guid executionID, string errorPrefix, int timeout = 3600)
+		{
+			Connection.Execute($@"
+									update	T
+									set		T.Success = 0,
+											T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields [' + F.FieldName + '] with invalid Reference List value: [' + F.FieldValue + ']'
+									from	api.ExecutionAsset T
+									inner join {ApiExecutionFieldTable} F on T.executionid = F.executionid 
+									inner join FieldType FT on F.FieldTypeID = ft.Id and ft.Type = 'ReferenceList'
+									left join assettype att on att.uid = try_cast(f.fieldvalue as uniqueidentifier)
+									where T.executionid = @executionid and att.id is null and coalesce(f.fieldvalue,'')!='';
+									", new { executionID }, commandTimeout: timeout);
+		}
+		
+		private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
             string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "Cast(AD.DisplayValue as nvarchar(4000)) = V.[value]";
@@ -4268,8 +4284,8 @@ where ProcessUid = @ProcessUid;
             return results;
         }
 
-        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
-        {
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true, bool hasReferenceListFieldTypes = true)
+		{
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
             if (sendWorkflowEvents)
@@ -4296,7 +4312,7 @@ where ProcessUid = @ProcessUid;
 							EA.IsNew,
 							EF.FieldValue,
 							FT.Type,
-							{(!isInsert ? "case when (EF.Ignore = 0 or EF.Ignore is null) and EF.FieldValue is null and EF.LookupValue is null then 1 else 0 end" : "0")}  IgnoreFieldValueLookupValueIsnull
+							{(!isInsert ? "case when (EF.Ignore = 0 or EF.Ignore is null) and EF.FieldValue is null and EF.LookupValue is null and EF.ReferenceListId is null then 1 else 0 end" : "0")}  IgnoreFieldValueLookupValueIsnull
 					from    {tableName} EA 
 							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
@@ -4314,7 +4330,7 @@ where ProcessUid = @ProcessUid;
 					from    #tempexecution EA 
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
 											and F.AssetID = EA.AssetID
-					where   EA.IsNew <> 1 and EA.Type != 'Lookup'
+					where   EA.IsNew <> 1 and EA.Type != 'Lookup' and EA.Type != 'ReferenceList'
 							{(!isInsert ? "and F.FormattedValue <> EA.FieldValue" : "")} 
 
 					union all
@@ -4337,9 +4353,21 @@ where ProcessUid = @ProcessUid;
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
 											and F.AssetID = EA.AssetID 
 					where   EA.IsNew <> 1 and EA.Type = 'Lookup'
-							{(!isInsert ? "and F.Value <> EA.FieldValue" : "")}";
+							{(!isInsert ? "and F.Value <> EA.FieldValue" : "")}
+					UNION ALL
+					select  
+							EA.Object, 
+							EA.ObjectID, 
+							EA.FieldTypeID AS Id 
+					from    #tempexecution EA 
+							inner join Field F on F.FieldTypeId = EA.FieldTypeID and F.AssetID = EA.AssetID 
+							{(!isInsert ? "inner join AssetType att on att.uid = cast(EA.FieldValue as uniqueidentifier)" : "")}
+					where   EA.IsNew <> 1 and EA.Type = 'ReferenceList'
+							{(!isInsert ? "and coalesce(F.ReferenceListID,0) <> att.ID" : "")}
 
-                if (!isInsert)
+					";
+
+				if (!isInsert)
                 {
                     changedFieldsSql += $@"
 					union all
@@ -4388,6 +4416,7 @@ where ProcessUid = @ProcessUid;
 										and FT.Type != 'Relationship'
 										and FT.Type != 'Counter'
 										and FT.Type != 'Lookup'
+										and FT.Type != 'ReferenceList'
 										and FieldValue is not null";
 
 			// Merge Field Filter field
@@ -4430,8 +4459,43 @@ where ProcessUid = @ProcessUid;
 										and FT.Type = 'Lookup'
 										and FieldValue is not null";
 
-            // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
-            if (isInsert)
+
+			string updReferenceListfieldValuesSql = $@"
+								update t
+								set FieldId = S.Id
+								from #tempmergeRefListfield t
+								inner join Field S on t.FieldTypeID = S.FieldTypeId and {mergefieldSQL};
+
+								create clustered index cix_tempmergeRefListfield ON #tempmergeRefListfield (FieldID)
+								";
+
+			string tempReferenceListFieldValuesSql = $@"
+								drop table if exists #tempmergeRefListfield;
+								select 
+										cast (Null as bigint) FieldID
+										,F.FieldTypeID as [FieldTypeID]
+										,F.ReferenceListID as [ReferenceListID]
+										,att.Name as [FormattedValue]
+										,getutcdate() as [UpdatedOn]
+										,@resourceId as [UpdatedBy]
+										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}
+										{(hasIntersectID ? ",A.IntersectID as IntersectID" : ",null as IntersectID")}  
+								into #tempmergeRefListfield
+								from    {tableName} A
+										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
+											and F.ItemNumber = A.ItemNumber 
+											and F.FieldTypeID is not null
+											and A.Success is null
+										inner join FieldType FT on FT.Id = F.FieldTypeID
+										inner join AssetType att on att.id = f.ReferenceListID
+								where   A.ExecutionID = @executionID
+										and A.ItemNumber between @beginItemNumber and @endItemNumber 
+										and (F.Ignore = 0 or F.Ignore is null)
+										and FT.Type = 'ReferenceList'
+										and FieldValue is not null";
+
+			// Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
+			if (isInsert)
             {
 				string inssql = $@"
 						{tempfieldValuesSql}
@@ -4457,7 +4521,19 @@ where ProcessUid = @ProcessUid;
 						// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
 					Connection.Execute(inssql,new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 				}
+				if (hasReferenceListFieldTypes)
+				{
+					inssql = $@"
+						{tempReferenceListFieldValuesSql}
+						INSERT INTO 
+						dbo.[Field] ([FieldTypeID],[ReferenceListID],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])
+						select FieldTypeID, [ReferenceListID],[FormattedValue],[UpdatedOn],[UpdatedBy],AssetID,IntersectID
+						from #tempmergeRefListfield t;
 
+						drop table if exists #tempmergeRefListfield;";
+					// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					Connection.Execute(inssql, new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
+				}
 			}
 			else
             {
@@ -4484,7 +4560,8 @@ where ProcessUid = @ProcessUid;
 					 {fieldIdSQL}
 					 and F.FieldTypeID = EF.FieldTypeID
 					 and EF.FieldValue is null 
-					 and EF.LookupValue is null;",
+					 and EF.LookupValue is null
+					 and EF.ReferenceListID is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 
@@ -4529,7 +4606,29 @@ where ProcessUid = @ProcessUid;
 					drop table if exists #tempmergefield;";
 					Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
                 }
-            }
+				if (hasReferenceListFieldTypes)
+				{
+					// update lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					mrgsql = $@"
+					{tempReferenceListFieldValuesSql}
+					{updReferenceListfieldValuesSql}
+					merge       Field as T
+					using       (
+									select * 
+									from #tempmergeRefListfield
+								) as S 
+					on          ( T.ID = S.FieldID)
+					when matched and coalesce(T.ReferenceListID,0) <> coalesce(S.ReferenceListID,0) then
+					update set T.ReferenceListID = S.ReferenceListID, T.FormattedValue = S.FormattedValue,
+					T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()
+					when		not matched by target then
+					insert		(FieldTypeID, ReferenceListID, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
+					values		(S.FieldTypeID, S.ReferenceListID, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);
+
+					drop table if exists #tempmergeRefListfield;";
+					Connection.Execute(mrgsql, new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
+				}
+			}
 
             return res;
         }
@@ -5465,6 +5564,19 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								",
                                 new { executionID }, commandTimeout: timeout, transaction: trans);
         }
+
+		public void ResolveFieldReferenceList(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
+		{
+			Connection.Execute($@"
+								update	T
+								set		T.ReferenceListID = att.ID
+								from	{fieldTable} T
+								inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'ReferenceList'
+								inner join AssetType att on att.Uid = try_cast(T.FieldValue as uniqueidentifier)
+								where T.ExecutionId = @executionid;
+								",
+								new { executionID }, commandTimeout: timeout, transaction: trans);
+		}
 
 		public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
 		{

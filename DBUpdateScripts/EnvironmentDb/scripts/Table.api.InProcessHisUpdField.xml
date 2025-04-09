@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Table.api.InProcessHisUpdField-v1">
+  <changeSet author="PuneetGupta" id="Table.api.InProcessHisUpdField-v1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,11 +27,16 @@ BEGIN
 		LookupValue nvarchar(max), 
 		FieldType  nvarchar(25),
 		MaxAuditID int null,
-		PreviousValue nvarchar(max)
+		PreviousValue nvarchar(max),
+		[ReferenceListID] int sparse,
 		CONSTRAINT [PK_InProcessHisUpdField] PRIMARY KEY CLUSTERED ([ID] ASC )
 	)
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[InProcessHisUpdField]') AND name = 'ReferenceListID')
+BEGIN
+    alter table [api].[InProcessHisUpdField] add [ReferenceListID] int sparse
+END
 		]]>
     </sql>
 	<rollback>

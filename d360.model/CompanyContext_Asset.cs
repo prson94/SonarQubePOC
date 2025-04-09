@@ -1011,6 +1011,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				int? intersectTypeID = null;
 				CurrentExecutionLocationModel currentLocation = null;
 				bool hasLookupFieldTypes = false;
+				bool hasReferenceListFieldTypes = false;
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
 				Guid processUid = new Guid();
@@ -1040,6 +1041,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
 					requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
 					hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
+					hasReferenceListFieldTypes = fieldTypes.Any(f => f.Type == DataType.ReferenceList.ToString());
 					hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
 					hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 					addMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
@@ -1291,6 +1293,20 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						addMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
 						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
 						addMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
+						sw.Restart();
+					}
+
+					if (hasReferenceListFieldTypes)
+					{
+						addMeasurement(metrics, "ResolveFieldReferenceList-Begin", 0, ++step);
+						ResolveFieldReferenceList(execution.ExecutionID, ApiExecutionFieldTable, timeout);
+						addMeasurement(metrics, "ResolveFieldReferenceList", sw.ElapsedMilliseconds, ++step);
+
+						sw.Restart();
+
+						addMeasurement(metrics, "LogFieldReferenceListErrors-Begin", 0, ++step);
+						LogFieldReferenceListErrors(execution.ExecutionID, "Asset", timeout);
+						addMeasurement(metrics, "LogFieldReferenceListErrors", sw.ElapsedMilliseconds, ++step);
 						sw.Restart();
 					}
 

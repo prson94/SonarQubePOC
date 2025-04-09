@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionField-v1">
+  <changeSet author="Core" id="Table.api.ExecutionField-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,9 +20,15 @@ BEGIN
 		[FieldValue] [nvarchar](max) NULL,
 		[FieldTypeID] [int] NULL,
 		[LookupValue] [nvarchar](max) NULL,
+		[ReferenceListID] int sparse,
 		[Ignore] [bit] NULL,
 		CONSTRAINT [PK_ApiExecutionField] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC, [FieldName] ASC )
 	)
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[ExecutionField]') AND name = 'ReferenceListID')
+BEGIN
+    alter table [api].[ExecutionField] add [ReferenceListID] int sparse
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionField_ItemNumber_Include')

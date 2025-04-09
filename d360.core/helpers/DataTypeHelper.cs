@@ -11,7 +11,6 @@ namespace d360.core.helpers
                 DataType.OwnershipLookup.ToString(),
                 DataType.Path.ToString(),
                 DataType.RefListRelationship.ToString(),
-				DataType.ReferenceList.ToString(),
                 DataType.Score.ToString(),
                 DataType.Tag.ToString()
             };
