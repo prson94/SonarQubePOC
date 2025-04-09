@@ -748,14 +748,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 				let defaultValue = type?.DefaultValue ?? null;
-				if (this.selectedFieldType === "Html") {
-					defaultValue = DOMPurify.sanitize(defaultValue);
-				}
-				else if (this.selectedFieldType === "Date") {
-					const effDate = this.dateRemoveTimeZone(new Date(defaultValue));
-					defaultValue = effDate;
-				}
 
+				if (defaultValue != null) {
+					if (this.selectedFieldType === "Html") {
+						defaultValue = DOMPurify.sanitize(defaultValue);
+					}
+					else if (this.selectedFieldType === "Date") {
+						const effDate = this.dateRemoveTimeZone(new Date(defaultValue));
+						defaultValue = effDate;
+					}
+				}
 				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue);
 				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
 				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
