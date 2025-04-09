@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogAssetUpsert-v1.3">
+  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogAssetUpsert-v1.5">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.PostAuditLogAssetUpsert
@@ -38,9 +38,9 @@ begin
 			where a.ExecutionId = @Id and a.SubTask is null;
 
 			insert into api.InProcessHisUpdField (ProcessUid, Executionid, Processdatetime, Object, ObjectID, ItemNumber, 
-						FieldTypeID, FieldName, FieldValue,LookupValue, FieldType)
+						FieldTypeID, FieldName, FieldValue,LookupValue, FieldType,ReferenceListID)
 			select  @processGuid,@Id,@Processdatetime,a.Object ,a.ObjectID, a.ItemNumber,
-						coalesce(f.FieldTypeID,0), f.FieldName, f.FieldValue, f.LookupValue, ft.type
+						coalesce(f.FieldTypeID,0), f.FieldName, f.FieldValue, f.LookupValue, ft.type,f.ReferenceListID
 			from	api.ExecutionField f
 			inner join api.InProcessHisUpdExeLog a on  a.ProcessUid = @processGuid and f.ItemNumber = a.ItemNumber 
 			left join FieldType ft on ft.ID = f.FieldTypeID 
@@ -55,6 +55,15 @@ begin
 				where t.ProcessUid = @processGuid;
 			end
 			
+			if exists(select 1 from api.InProcessHisUpdField where ProcessUid = @processGuid and FieldType = 'ReferenceList')
+			begin
+				update t
+				set FieldValue = att.Name
+				from api.InProcessHisUpdField t
+				inner join Fieldtype ft on t.FieldTypeId = ft.ID  and t.FieldType = 'ReferenceList'
+				inner join AssetType att on att.id = t.ReferenceListID
+				where t.ProcessUid = @processGuid;
+			end
 			-- create audit log data and stroe into in process audit tables
 			
 			insert into api.InProcessAudit (ProcessUid, Executionid, Processdatetime,ItemNumber, 
