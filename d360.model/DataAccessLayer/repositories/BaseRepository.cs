@@ -625,6 +625,21 @@ namespace d360.model.DataAccessLayer.repositories
 						) Names
 					) {tableAlias}", f.ID.ToString());
 				 }
+				 else if (f.Type == "ReferenceList")
+				 {
+					 var sql = $@"
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
+								outer apply(
+								select FormattedValue = 
+								(SELECT att.Name,
+								att.Uid
+								from AssetType Att 
+								where att.id = F{tableAlias}.ReferenceListID
+								FOR JSON PATH)
+							){tableAlias}(FormattedValue)";
+
+					 fieldJoins.Add(sql, f.ID.ToString());
+				 }
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"
