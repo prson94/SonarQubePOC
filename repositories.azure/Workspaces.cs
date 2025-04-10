@@ -154,7 +154,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
-						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						$@"select LOWER(string_agg(cast(r.uid as nvarchar(max)),',') )
 						   from ResourceGroup s
 						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
 						   where groupid = @groupid 
@@ -170,7 +170,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
-						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						$@"select LOWER(string_agg(cast(r.uid as nvarchar(max)),',') )
 						   from ResourceGroup s
 						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
 						   where groupid = @groupid 
