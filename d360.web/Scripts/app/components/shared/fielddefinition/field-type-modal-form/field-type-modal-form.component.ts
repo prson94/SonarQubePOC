@@ -450,6 +450,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.IntersectTypeUid = this.fieldTypeForm.get("IntersectTypeUid").value ?? null;
 		}
 
+		if (this.selectedFieldType === 'ReferenceList') {
+			fieldTypeApiObject.DisplayRefListDescription = this.fieldTypeForm.get("DisplayRefListDescription").value ?? null;
+			fieldTypeApiObject.DisplayRefListInTable = this.fieldTypeForm.get("DisplayRefListInTable").value ?? null;
+		}
 
 		if (this.selectedFieldType === 'Relationship') {
 			const relValues = (this.fieldTypeForm.get("IntersectTypeUid").value as string).split('|');
@@ -558,6 +562,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			HideHeader: [null],
 			HideFooter: [null],
 			DisplayRefListDescription: [null],
+			DisplayRefListInTable: [null],
 			UseDisplayFormat: [null],
 			ScoreType: [null],
 			ValidationPattern: [null],
@@ -679,6 +684,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
 			case 'ComputedRelationshipReferenceList':
+			case 'ReferenceList':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -818,6 +824,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (this.selectedFieldType === 'ComputedRelationshipReferenceList') {
 					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
 					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
+				}
+
+				if (this.selectedFieldType === 'ReferenceList') {
+					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
+					this.fieldTypeForm.controls["DisplayRefListInTable"].setValue(type?.DisplayRefListInTable ?? null);
 				}
 
 				if (this.selectedFieldType === 'Relationship') {
@@ -1054,7 +1065,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (val) {
 			case 'IsDisplayable':
-				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'ReferenceList', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
 				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
@@ -1359,7 +1370,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType || this.isUserType || this.actionTypeUid) {
 			return false;
 		}
-		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'Json' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'JsonElement' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ReferenceList' && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'Json' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'JsonElement' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
 	}
 
 	get isGroupType(): boolean {

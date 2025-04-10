@@ -81,6 +81,9 @@ export class FieldType {
 			case 'Path':
 				this.Path = new Path();
 				break;
+			case 'ReferenceList':
+				this.ReferenceList = new ReferenceList();
+				break;
 			case 'Relationship':
 				this.Relationship = new Boolean();
 				break;
@@ -135,6 +138,7 @@ export class FieldType {
 	Lookup: Lookup;
 	Number: Decimal;
 	Path: Path;
+	ReferenceList: ReferenceList;
 	Relationship: Boolean;
 	Text: Text;
 	Tag: Tag;
@@ -372,6 +376,26 @@ export class DefinitionField {
 	RelationIndex: number;
 }
 
+export class ReferenceList implements ICommonOptions {
+	ColumnWidth: number = null;
+	SortOrder: number = 0;
+	SortByAscending: boolean = true;
+	IsEditable: boolean = false;
+	IsListable: boolean = false;
+	IsPartOfKey: boolean = false;
+	IsPrimaryFilter: boolean = false;
+	ColumnOrder: number;
+	Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+	Definition: ReferenceListDefinition = new ReferenceListDefinition();
+	IntersectTypeUid?: string;
+	IntersectTypeName?: string;
+	IsDisplayable: boolean = true;
+	ShowIfEmpty: boolean = false;
+	Validation: BooleanValidation = new BooleanValidation();
+	Search: Search = new Search();
+}
+
+
 export class Relation {
 	IntersectTypeUid: string;
 	AssetTypeUid: string;
@@ -400,6 +424,11 @@ export class ComputedRelationshipReferenceList implements ICommonOptions {
 
 export class ComputedRelationshipReferenceListDefinition {
 	DisplayRefListDescription: boolean = true;
+}
+
+export class ReferenceListDefinition {
+	DisplayRefListDescription: boolean = true;
+	DisplayRefListInTable: boolean = true;
 }
 
 export class DateClass implements ICommonOptions {
