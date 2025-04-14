@@ -448,7 +448,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "OwnershipLookup": return $localize`Ownership Lookup`;
 			case "Path": return $localize`Asset Path`;
 			case "ComputedRelationshipReferenceList":
-			case "RefListRelationship": return $localize`Reference Item List from Relationship`;
 			case "Relationship": return $localize`Relationship`;
 			case "Score": return $localize`Score`;
 			case "Tag": return $localize`Tag`;

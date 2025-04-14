@@ -148,12 +148,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(dataTypes[ix].ReadOnly == false);
             Assert.True(dataTypes[ix].Name == "FieldFromRelationship");
 
-			ix = 16;
-			Assert.True(dataTypes[ix].ID == DataType.RefListRelationship);
-            Assert.True(dataTypes[ix].Description == "Reference Item List from Relationship");
-            Assert.True(dataTypes[ix].ReadOnly == false);
-            Assert.True(dataTypes[ix].Name == "RefListRelationship");
-
 			ix = 17;
 			Assert.True(dataTypes[ix].ID == DataType.JSON);
             Assert.True(dataTypes[ix].Description == "JSON");

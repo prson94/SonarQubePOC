@@ -422,7 +422,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			assetTypeID = assetType.ID;
 
-			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
+			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
@@ -5309,17 +5309,6 @@ drop table if exists #tempAssetsIds;
 				and LookupOT.ObjectID = tft.ft_LookupObjectID 
 				where tft.[Type] = 'Lookup';
 
-
-				update tft
-				set tft.One_to_Many_Relationship = ITName.Name,
-				Show_Reference_List_Description = coalesce(JSON_VALUE(tft.ft_Definition,'$.DisplayRefListDescription'),'true')
-				from #tempfieldtype  tft
-				outer apply (
-				select	top 1 
-				Name from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
-				) ITName
-				where tft.[Type] = 'RefListRelationship';
-
 				update tft
 				set tft.Many_to_One_Relationship = ITName.Name,
 				Field = Ft.FriendlyName
@@ -5684,13 +5673,6 @@ drop table if exists #tempAssetsIds;
 			else if (dtype.In(DataType.FieldFromRelationship))
 			{
 				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "display_in_column", "many_to_one_relationship", "field"))
-				{
-					retval = true;
-				}
-			}
-			else if (dtype.In(DataType.RefListRelationship))
-			{
-				if (fieldname.In("one_to_many_relationship", "show_reference_list_description"))
 				{
 					retval = true;
 				}

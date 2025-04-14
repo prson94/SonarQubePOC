@@ -104,7 +104,9 @@ namespace d360.web.Controllers.V2
 			}
 
 			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
-			var excludeTypes = new KeyValuePair<string, string>("_excludetypes", newReferenceList ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString());
+			//var excludeTypes = new KeyValuePair<string, string>("_excludetypes", newReferenceList ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString());
+			var excludeTypes = new KeyValuePair<string, string>("_excludetypes", DataType.ReferenceList.ToString());
+
 			var queryParamsExpanded = queryParams.ToList();
 			queryParamsExpanded.Add(excludeTypes);
 
@@ -880,7 +882,6 @@ namespace d360.web.Controllers.V2
 					.Where(x => x.value != DataType.JSON.ToString())
 					.Where(x => x.value != DataType.JsonElement.ToString())
 					.Where(x => x.value != DataType.OwnershipLookup.ToString())
-					.Where(x => x.value != DataType.RefListRelationship.ToString())
 					.Where(x => x.value != DataType.ReferenceList.ToString())
 					.Where(x => x.value != DataType.ComplexRelationLookup.ToString())
 					.Where(x => x.value != DataType.Relationship.ToString())
@@ -889,7 +890,7 @@ namespace d360.web.Controllers.V2
 					.ToList();
 			}
 
-			var unusedReferenceType = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST) ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString();
+			var unusedReferenceType = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST) ? "" : DataType.ReferenceList.ToString();
 			dataTypeOptions = dataTypeOptions.Where(x => x.value != unusedReferenceType).ToList();
 
 			var jsonFieldType = new Dictionary<string, string> {
@@ -1073,13 +1074,13 @@ namespace d360.web.Controllers.V2
 								lookup.HideHeader
 							};
 						}
-						else if (ft.Type == DataType.RefListRelationship.ToString())
-						{
-							refListFromRelSettings = new
-							{
-								definition.DisplayRefListDescription
-							};
-						}
+						//else if (ft.Type == DataType.RefListRelationship.ToString())
+						//{
+						//	refListFromRelSettings = new
+						//	{
+						//		definition.DisplayRefListDescription
+						//	};
+						//}
 					}
 				}
 
@@ -3114,8 +3115,7 @@ namespace d360.web.Controllers.V2
 					response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
 				}
 
-				if (fieldType != null && (fieldType.Type == DataType.RefListRelationship.ToString()
-					|| fieldType.Type == DataType.ComplexRelationLookup.ToString()))
+				if (fieldType != null && (fieldType.Type == DataType.ComplexRelationLookup.ToString()))
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();

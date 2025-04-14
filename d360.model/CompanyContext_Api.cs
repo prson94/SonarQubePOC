@@ -1132,7 +1132,7 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
 										from 
 												FieldType FT 
 												inner join 
-												[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship', 'FieldFromRelationship')
+												[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'FieldFromRelationship')
 												inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
 												and 
 												EDR.Success is null
@@ -2326,7 +2326,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							delete FT
 							from FieldType FT 
 									inner join 
-									[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='RefListRelationship'
+									[IntersectType] IT on FT.LookupObjectID = IT.ID  
 									inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
 									and 
 									EDR.Success is null

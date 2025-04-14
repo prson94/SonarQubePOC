@@ -32,7 +32,7 @@ namespace d360.core
         
         [Description("Intersect Type"), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
+            DataType.OwnershipLookup | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
         IntersectType = 12,
         
         [Description("Resource"), AllowOwnership(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
@@ -40,7 +40,7 @@ namespace d360.core
         
         [Description("Resource Type"), AllowOwnership(false), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
+            DataType.OwnershipLookup | DataType.ReferenceList | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         ResourceType = 14,
                
         [Description("Tag"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Counter | DataType.System)]
@@ -109,7 +109,7 @@ namespace d360.core
         [Description("Predicate"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         Predicate = 39,
         
-        [Description("Group Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.Score | DataType.Html | DataType.Link | DataType.System)]
+        [Description("Group Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.ComplexRelationLookup | DataType.ReferenceList | DataType.Score | DataType.Html | DataType.Link | DataType.System)]
         GroupType = 40,
         
         [Description("Reference Item"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
@@ -121,7 +121,7 @@ namespace d360.core
 		Monitor = 48,
 		[Description("Issue Type"), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
+            DataType.OwnershipLookup | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         IssueType = 49,
         
         [Description("Issue"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
@@ -133,18 +133,18 @@ namespace d360.core
         [Description("Export Template"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter | DataType.System)]
         ExportTemplate = 59,
         
-        [Description("Task Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
+        [Description("Task Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
         TaskType = 60,
         
-        [Description("Task"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
+        [Description("Task"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
         Task = 61,
         
-        [Description("Connector Label"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
+        [Description("Connector Label"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.ReferenceList | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter | DataType.System)]
         ConnectorLabel = 62,
         
         [Description("Issue Type Relation"), IsType(true),
         ExcludeDataType(DataType.FieldFromRelationship |
-        DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
+        DataType.OwnershipLookup | DataType.ReferenceList | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter | DataType.System)]
         IssueTypeRelation = 63,
 
 		[Description("Semantic Type"), IsType(true), ExcludeDataType(DataType.System)]
