@@ -581,36 +581,18 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				long ObjAssetID = -1;
 				int ObjAssetTypeID = 0;
 				bool IsApplyObjectFilter = false;
-				bool ObjIsReferenceList = false;
 
 				long SubjAssetID = -1;
 				int SubjAssetTypeID = 0;
 				bool SubjIsReferenceList = false;
 				bool IsApplySubjectFilter = false;
-				bool IsListReferenceListType = false;
-				string RefListName = "Reference List";
 
-				string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId, 0 IsReference
+				string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId
 									   From Asset A
-									   WHERE  [Uid]= @AssetUid
-									   union all
-									   Select 0 as AssetId,A.ID AssetTypeId, 1 IsReference
-									   From AssetType A
 									   WHERE  [Uid]= @AssetUid";
 
 				if (Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value, out predicateUID))
 				{
-					IsListReferenceListType = GetIsListReferenceListType(assetTypeID, predicateUID);
-
-					if (IsListReferenceListType)
-					{
-						var at = CompanyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).SingleOrDefault();
-						if (at != null)
-						{
-							dbArgs.Add("@RefListName", RefListName);
-						}
-					}
-
 					if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
 					{
 						Guid ObjectAssetUID;
@@ -625,7 +607,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							{
 								ObjAssetID = assetObj?.AssetId;
 								ObjAssetTypeID = assetObj?.AssetTypeId;
-								ObjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
@@ -643,116 +624,71 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							{
 								SubjAssetID = assetObj?.AssetId;
 								SubjAssetTypeID = assetObj?.AssetTypeId;
-								SubjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
 					tempincludeRelationships = $@"
 							drop table if exists #InclPredFilterIds;
 							
-							create table #InclPredFilterIds(ID int,AssetTypeID int,Class int,isRefList bit,ObjType char(1))
+							create table #InclPredFilterIds(ID int,AssetTypeID int,Class int,ObjType char(1))
 
 							insert into #InclPredFilterIds
 							select IT.ID,
 							IT.SubjectAssetTypeID AssetTypeID,
 							IT.SubjectClass Class,
-							case when IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'S' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
-							and IT.SubjectAssetTypeID = @assetTypeID         
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
+							and IT.SubjectAssetTypeID = @assetTypeID
+							{(IsApplyObjectFilter ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
+							{(IsApplySubjectFilter ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
 
 
 							insert into #InclPredFilterIds
 							select IT.ID,
 							IT.ObjectAssetTypeID AssetTypeID,
 							IT.ObjectClass Class,
-							case when IT.SubjectAssetTypeID = 0 and IT.Subjectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'O' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
 							and IT.ObjectAssetTypeID = @assetTypeID         
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
+							{(IsApplyObjectFilter ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
+							{(IsApplySubjectFilter ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
 
-							create index idx_InclPredFilterIds on #InclPredFilterIds(AssetTypeID,ObjType,isRefList) include (ID)
-
+							create index idx_InclPredFilterIds on #InclPredFilterIds(AssetTypeID,ObjType) include (ID)
 
 							drop table if exists #tempInclRela;
-							create table #tempInclRela (ID int,AssetID bigint,AssetTypeID int,BAssetID bigint,BAssetTypeID int,isRefList bit)
+							create table #tempInclRela (ID int,AssetID bigint,AssetTypeID int,BAssetID bigint,BAssetTypeID int)
 
 							insert into #tempInclRela
 							select I.ID,
 							I.[SubjectAssetID] AssetID,
 							I.[SubjectAssetTypeID] AssetTypeID,
 							I.ObjectAssetID BAssetID,
-							I.ObjectAssetTypeID BAssetTypeID,
-							0 isRefList
+							I.ObjectAssetTypeID BAssetTypeID
 							from #InclPredFilterIds ids
 							inner join [intersect] I on ids.id = I.IntersectTypeId 
 							inner join [Asset] B on B.ID = I.ObjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'S' 
-							and ids.isRefList = 0
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and I.ObjectAssetID = @ObjAssetID" : "")}
+							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
 							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 						
-							insert into #tempInclRela
-							select I.ID,
-							I.[SubjectAssetID] AssetID,
-							I.[SubjectAssetTypeID] AssetTypeID,
-							I.ObjectAssetID BAssetID,
-							I.ObjectAssetTypeID BAssetTypeID,
-							1 isRefList
-							from #InclPredFilterIds ids
-							inner join [intersect] I on ids.id = I.IntersectTypeId 
-							inner join [AssetType] B on B.ID = I.ObjectAssetTypeID and B.Class = ids.Class
-							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'S' 
-							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and I.ObjectAssetID = 0 and  I.ObjectAssetTypeId = @ObjAssetTypeID and Ids.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
-
 							insert into #tempInclRela
 							select I.ID,
 							I.[ObjectAssetID] AssetID,
 							I.[ObjectAssetTypeID] AssetTypeID,
 							I.SubjectAssetID BAssetID,
-							I.SubjectAssetTypeID BAssetTypeID,
-							0 isRefList
+							I.SubjectAssetTypeID BAssetTypeID
 							from #InclPredFilterIds ids
 							inner join [intersect] I on ids.id = I.IntersectTypeId and I.SubjectAssetId is not null
 							inner join [Asset] B on B.ID = I.SubjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O'
-							and ids.isRefList = 0 
 							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and I.SubjectAssetID = @SubjAssetID" : "")}
+							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 
-							insert into #tempInclRela
-							select I.ID,
-							I.[ObjectAssetID] AssetID,
-							I.[ObjectAssetTypeID] AssetTypeID,
-							I.SubjectAssetID BAssetID,
-							I.SubjectAssetTypeID BAssetTypeID,
-							1 isRefList
-							from #InclPredFilterIds ids
-							inner join [intersect] I on ids.id = I.IntersectTypeId 
-							inner join [AssetType] B on B.ID = I.SubjectAssetTypeID and B.Class = ids.Class
-							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O' 
-							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
-							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and I.SubjectAssetID = 0 and  I.SubjectAssetTypeId = @ObjAssetTypeID and Ids.Subjectclass = {(int)AssetTypeClass.Reference} " : "")}
-							OPTION(RECOMPILE);
-						
-							create index idx_tempInclRela on #tempInclRela(AssetID,isRefList) include (BAssetID,BAssetTypeID)";
-
-					var typeNameParameter = dbArgs.ParameterNames.Contains("RefListName") ? "@RefListName as TypeName" : "TB.[Name] as TypeName";
+							create index idx_tempInclRela on #tempInclRela(AssetID) include (BAssetID,BAssetTypeID)";
 
 					var innerSql = $@"
 							  select * from (
@@ -765,16 +701,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								inner join Asset B on B.ID = TIR.BAssetID
 								inner join AssetType TB on TB.ID = B.AssetTypeID
 								inner join AssetDisplayValue BD on B.ID = BD.AssetID
-								where TIR.AssetID =  A.ID and TIR.isRefList = 0
-								union all
-									Select
-									TB.[UID] as AssetUid 
-									,TB.[Name] DisplayValue
-									,{typeNameParameter}
-									,@predicateUid as PredicateUid
-								from #tempInclRela TIR
-								inner join AssetType TB on TIR.BAssetId = 0 and TB.ID = TIR.BAssetTypeID 
-								where TIR.AssetID =  A.ID and TIR.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
+								where TIR.AssetID =  A.ID
 								) apr";
 
 					var innerCountSql = $@"
@@ -5309,17 +5236,6 @@ drop table if exists #tempAssetsIds;
 				and LookupOT.ObjectID = tft.ft_LookupObjectID 
 				where tft.[Type] = 'Lookup';
 
-
-				update tft
-				set tft.One_to_Many_Relationship = ITName.Name,
-				Show_Reference_List_Description = coalesce(JSON_VALUE(tft.ft_Definition,'$.DisplayRefListDescription'),'true')
-				from #tempfieldtype  tft
-				outer apply (
-				select	top 1 
-				Name from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
-				) ITName
-				where tft.[Type] = 'RefListRelationship';
-
 				update tft
 				set tft.Many_to_One_Relationship = ITName.Name,
 				Field = Ft.FriendlyName
@@ -5488,15 +5404,11 @@ drop table if exists #tempAssetsIds;
 				order by fr.FieldTypeID ,fr.RelationIndex,FRF.DisplayOrder";
 
 			string relationsql = $@"
-				select top 1  @referencelistname = cast(name as nvarchar(250))
-				from assettype
-				where class = 9 and objectid = 0;
-
-				select  case when it.SubjectAssetTypeID = 0 and it.subjectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ats.Name end SubjectName,
+				select  ats.Name SubjectName,
 						it.SubjectClass,
 						it.SubjectCardinality,
 						p.Name [PredicateName],
-						case when it.ObjectAssetTypeID = 0 and it.objectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ato.Name end ObjectName,
+						ato.Name ObjectName,
 						it.ObjectClass,
 						it.ObjectCardinality,
 						it.uid,
@@ -5684,13 +5596,6 @@ drop table if exists #tempAssetsIds;
 			else if (dtype.In(DataType.FieldFromRelationship))
 			{
 				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "display_in_column", "many_to_one_relationship", "field"))
-				{
-					retval = true;
-				}
-			}
-			else if (dtype.In(DataType.RefListRelationship))
-			{
-				if (fieldname.In("one_to_many_relationship", "show_reference_list_description"))
 				{
 					retval = true;
 				}
