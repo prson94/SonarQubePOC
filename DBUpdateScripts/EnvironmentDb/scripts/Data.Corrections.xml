@@ -1294,4 +1294,20 @@ GROUP BY tt.ID, n.Name;
 	</rollback>
   </changeSet>
 
+
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-37798">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+		begin
+			exec [api].[DeleteInProcessRecords];
+		end
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

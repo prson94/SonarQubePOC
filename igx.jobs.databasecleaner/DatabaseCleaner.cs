@@ -45,11 +45,22 @@ namespace igx.jobs.databasecleaner
 							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
 							{
 								company.Open();
-								var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
-								settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
-
 								//remove any old api execution records
 								await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
+							}
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Error occured for company(Deleteing Execution Records).");
+						}
+
+						try
+						{
+							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+							{
+								company.Open();
+								var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
+								settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
 
 								//remove any old data profile records
 								await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
@@ -57,8 +68,24 @@ namespace igx.jobs.databasecleaner
 						}
 						catch (Exception ex)
 						{
-							log.LogError(ex, "Error occured for company.");
+							log.LogError(ex, "Error occured for company(Deleting Asset DataProfile Records).");
 						}
+
+
+						try
+						{
+							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+							{
+								company.Open();
+								//remove any old data inprocess tables
+								await company.ExecuteAsync("[api].[DeleteInProcessRecords]", commandTimeout: 1800);
+							}
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Error occured for company(Deleting in process records).");
+						}
+
 						finally
 						{
 							log.LogInformation("Finished run for company.");

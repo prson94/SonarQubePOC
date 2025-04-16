@@ -331,6 +331,7 @@
 	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
+	<include file="scripts/Procedure.api.DeleteInProcessRecords.xml"/>
 	<include file="scripts/Procedure.api.DeleteTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteTagTypes.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
