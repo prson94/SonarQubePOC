@@ -282,6 +282,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetTypeaheads(string query, string categories = null, int? num = null)
 		{
 			//query = cleanPhrase(query);
+			List<AssetTypeClass> limitedeCategories = null;
 			if (!string.IsNullOrWhiteSpace(categories))
 			{
 				var categoryList = categories.Split(',')
@@ -295,9 +296,10 @@ namespace d360.web.Controllers.V2
 				{
 					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.CategoryNotAvailable, string.Join(", ", invalidCategories)));
 				}
+				limitedeCategories = categoryList.ToList();
 			}
 
-			var response = await Search.ReadResultsAsync(query, false, true, false, false, null, null, 0, num ?? 7);
+			var response = await Search.ReadResultsAsync(query, false, true, false, false, limitedeCategories, null, 0, num ?? 7);
 			loadSearchResultUris(response.Data.Results);
 			return Ok(response.Data.Results);
 		}
@@ -316,7 +318,7 @@ namespace d360.web.Controllers.V2
 		public IHttpActionResult GetCategories()
 		{
 			var visibleCategories = GetVisibleCategories();
-			return Ok(visibleCategories.Select(o => o.GetName()));
+			return Ok(visibleCategories.Select(o => o.GetName().Replace(" ", "")));
 		}
 
 		/// <summary>
@@ -375,6 +377,11 @@ namespace d360.web.Controllers.V2
 		private List<AssetTypeClass> GetVisibleCategories()
 		{
 			var exclude = new List<AssetTypeClass> { AssetTypeClass.Generic };
+			if(!SecurityContext.IsAdministrator)
+			{
+				exclude.Add(AssetTypeClass.User);
+				exclude.Add(AssetTypeClass.Group);
+			}
 
 			var visibleCategories = assetTypeClasses
 				.Where(c => Company.AssetTypes.Any(at => at.Class == c && !exclude.Contains(at.Class)))

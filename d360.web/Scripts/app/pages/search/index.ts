@@ -16,6 +16,7 @@ import { SidePanelButton } from "../../models/side-panel.model";
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { SemanticType } from '../../models/semantic-type.model';
+import { SearchType } from '../../models/settings.model';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { LinkClickInterceptor } from '../../services/href-click-service';
@@ -97,6 +98,7 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
     public isExportInProgress: boolean = false;
 	public canExport: boolean = false;
 
+	private baseCategories: SearchType[];
 
     showEditor: boolean = false;
     semanticType: SemanticType;
@@ -177,10 +179,17 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
         this.secondaryNavService.showHeader(false);
 
         this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
-        this.exportLimit = Math.min(5000, <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue);
+		this.exportLimit = Math.min(5000, <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue);
+
+		this.searchService.getSearchCategories(true, false).subscribe((cat) => {
+			this.baseCategories = cat;
+		});
 
         this.sub = this.route.queryParams.subscribe((params) => {
-            this.searchText = params['query'] ? params['query'] : '';
+			this.searchText = params['query'] ? params['query'] : '';
+			if (params['types'] != null) {
+				this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
+			}
 			if (this.searchText !== '') {
 				this.loadResults(true);
 			}
@@ -201,6 +210,10 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 			this.sidePanelLoading = true;
 			this.treeLoading = true;
 			this.pageNumber = 1;
+
+			if (this.searchTypes.length > 0) {
+				searchQuery.AggregationFilters = this.searchTypes.map((typ) => { return { Class: typ } });
+			}
 		}
 		else {
 			if (this.selectedFilters.length > 0) {
@@ -227,6 +240,12 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 			if (includeAggregations) {
 				// Then we should reset the total result count.
 				this.categories = this.convertCataegoriesToCheckTreeNodes(results.Aggregations);
+
+				this.categories.forEach((c) => {
+					if (c.type === 'Class' && this.searchTypes.includes(c.key)) {
+						this.selectedFilters.push(c);
+					}
+				});
 				this.resultCount = results.Matches;
 
 				this.canExport = this.resultCount <= this.exportLimit;
@@ -277,33 +296,52 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
         }
     }
 
-	convertCataegoriesToCheckTreeNodes(aggregations: SearchAggregation[]): CheckTreeNode[] {
-		const nodes: CheckTreeNode[] = [];
+	convertSearchAggregationToCheckTreeNode(agg: SearchAggregation): CheckTreeNode {
+		const node: CheckTreeNode = {
+			label: agg.DisplayName,
+			key: agg.Class,
+			type: "Class",
+			data: agg,
+			count: agg.ResultCount,
+			leaf: !agg.Items || (agg.Items && agg.Items.length === 0)
+		};
+		if (agg.Items && agg.Items.length > 0) {
+			node.children = agg.Items.map((t) => {
+				return {
+					label: t.DisplayName,
+					key: t.Uid,
+					type: "AssetType",
+					data: t,
+					count: t.ResultCount,
+					leaf: true
+				};
+			});
+		}
+		return node;
+	}
 
-		aggregations.forEach((agg) => {
-			const node: CheckTreeNode = {
-				label: agg.DisplayName,
-				key: agg.Class,
-				type: "Class",
-				data: agg,
-				count: agg.ResultCount,
-				leaf: !agg.Items || (agg.Items && agg.Items.length === 0)
-			};
-			if (agg.Items && agg.Items.length > 0) {
-				node.children = agg.Items.map((t) => {
-					return {
-						label: t.DisplayName,
-						key: t.Uid,
-						type: "AssetType",
-						data: t,
-						count: t.ResultCount,
-						leaf: true
-					};
-				});
+	convertCataegoriesToCheckTreeNodes(aggregations: SearchAggregation[]): CheckTreeNode[] {
+		const nodes: CheckTreeNode[] = this.baseCategories.filter((c) => c.visible).map((cat) => {
+			const agg = aggregations.find((a) => a.Class === cat.value);
+			if (agg) {
+				return this.convertSearchAggregationToCheckTreeNode(agg);
+			} else {
+				return {
+					label: cat.title,
+					key: cat.value,
+					type: "Class",
+					data: null,
+					count: 0,
+					leaf: false
+				}
 			}
-			nodes.push(node);
 		});
 
+		aggregations.forEach((agg) => {
+			if (!nodes.some((n) => n.key === agg.Class)) {
+				nodes.push(this.convertSearchAggregationToCheckTreeNode(agg));
+			}
+		});
 		return nodes;
 	}
 
