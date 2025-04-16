@@ -5,6 +5,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using d360.web.Filters;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
@@ -746,7 +747,15 @@ namespace d360.web.Controllers.V2
 					Ok(response.Data) :
 					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.BadTagType));
+			var error = new ProblemDetailsResponse()
+			{
+				Title = "Bad Request",
+				Status = (int)HttpStatusCode.BadRequest,
+				Detail = Error.BadTagType,
+				Type = "Error"
+
+			};
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, error));
 
 		}
 
