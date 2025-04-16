@@ -108,7 +108,7 @@ insert into #results ([Rank], [Id])
 			from	cte2
 			) ir 
 	where	ir.RowNum = 1
-	order by [Rank] offset @offset rows fetch next @take rows only;";
+	order by [Rank] desc offset @offset rows fetch next @take rows only;";
 
 			
 			string includeFieldSql = "select '[]'";
