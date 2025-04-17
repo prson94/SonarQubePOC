@@ -10,7 +10,6 @@ namespace d360.core.helpers
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Path.ToString(),
-				DataType.ReferenceList.ToString(),
                 DataType.Score.ToString(),
                 DataType.Tag.ToString()
             };

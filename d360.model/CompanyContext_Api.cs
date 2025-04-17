@@ -2342,7 +2342,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							delete FT
 							from FieldType FT 
 									inner join 
-									[IntersectType] IT on FT.LookupObjectID = IT.ID  
+									[IntersectType] IT on FT.LookupObjectID = IT.ID  and FT.Type='RefListRelationship'  
 									inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
 									and 
 									EDR.Success is null
