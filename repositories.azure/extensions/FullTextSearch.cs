@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace repositories.azure
+namespace repositories.azure.extensions
 {
 	/// <summary>
 	/// Only intended for full-text search. Do not use for anything else as we do not want to start relying on this anywhere else.
@@ -40,7 +40,7 @@ namespace repositories.azure
 		/// <param name="html"></param>
 		public void Reset(string text)
 		{
-			_text = (text != null) ? text : String.Empty;
+			_text = text != null ? text : string.Empty;
 			_pos = 0;
 		}
 
@@ -49,7 +49,7 @@ namespace repositories.azure
 		/// </summary>
 		public bool EndOfText
 		{
-			get { return (_pos >= _text.Length); }
+			get { return _pos >= _text.Length; }
 		}
 
 		/// <summary>
@@ -71,7 +71,7 @@ namespace repositories.azure
 		/// <returns>The character at the specified position</returns>
 		public char Peek(int ahead)
 		{
-			int pos = (_pos + ahead);
+			var pos = _pos + ahead;
 			if (pos < _text.Length)
 				return _text[pos];
 			return NullChar;
@@ -172,7 +172,7 @@ namespace repositories.azure
 		/// <returns></returns>
 		protected bool IsInArray(char c, char[] chars)
 		{
-			foreach (char ch in chars)
+			foreach (var ch in chars)
 			{
 				if (c == ch)
 					return true;
@@ -185,7 +185,7 @@ namespace repositories.azure
 		/// </summary>
 		public void MoveToEndOfLine()
 		{
-			char c = Peek();
+			var c = Peek();
 			while (c != '\r' && c != '\n' && !EndOfText)
 			{
 				MoveAhead();
@@ -198,7 +198,7 @@ namespace repositories.azure
 		/// </summary>
 		public void MovePastWhitespace()
 		{
-			while (Char.IsWhiteSpace(Peek()))
+			while (char.IsWhiteSpace(Peek()))
 				MoveAhead();
 		}
 	}
@@ -261,15 +261,15 @@ namespace repositories.azure
 			// Convert node to string
 			public override string ToString()
 			{
-				string fmt = String.Empty;
+				var fmt = string.Empty;
 				if (TermForm == TermForms.Inflectional)
 					fmt = "{0}FORMSOF(INFLECTIONAL, {1})";
 				else if (TermForm == TermForms.Thesaurus)
 					fmt = "{0}FORMSOF(THESAURUS, {1})";
 				else if (TermForm == TermForms.Literal)
 					fmt = "{0}\"{1}\"";
-				return String.Format(fmt,
-					Exclude ? "NOT " : String.Empty,
+				return string.Format(fmt,
+					Exclude ? "NOT " : string.Empty,
 					Term);
 			}
 		}
@@ -291,7 +291,7 @@ namespace repositories.azure
 			// Convert node to string
 			public override string ToString()
 			{
-				return String.Format(Grouped ? "({0} {1} {2})" : "{0} {1} {2}",
+				return string.Format(Grouped ? "({0} {1} {2})" : "{0} {1} {2}",
 					Child1.ToString(),
 					Conjunction.ToString().ToUpper(),
 					Child2.ToString());
@@ -320,8 +320,8 @@ namespace repositories.azure
 		/// <returns>A valid full-text search query</returns>
 		public string ToFtsQuery(string query)
 		{
-			INode node = FixUpExpressionTree(ParseNode(query, ConjunctionTypes.And), true);
-			return (node != null) ? node.ToString() : String.Empty;
+			var node = FixUpExpressionTree(ParseNode(query, ConjunctionTypes.And), true);
+			return node != null ? node.ToString() : string.Empty;
 		}
 
 		/// <summary>
@@ -333,15 +333,15 @@ namespace repositories.azure
 		/// <returns>Root node of expression tree</returns>
 		private INode ParseNode(string query, ConjunctionTypes defaultConjunction)
 		{
-			TermForms termForm = TermForms.Inflectional;
-			bool termExclude = false;
-			ConjunctionTypes conjunction = defaultConjunction;
-			bool resetState = true;
+			var termForm = TermForms.Inflectional;
+			var termExclude = false;
+			var conjunction = defaultConjunction;
+			var resetState = true;
 			INode root = null;
 			INode node;
 			string term;
 
-			TextParser parser = new TextParser(query);
+			var parser = new TextParser(query);
 			while (!parser.EndOfText)
 			{
 				if (resetState)
@@ -358,11 +358,11 @@ namespace repositories.azure
 					!Punctuation.Contains(parser.Peek().ToString()))
 				{
 					// Extract query term
-					int start = parser.Position;
+					var start = parser.Position;
 					parser.MoveAhead();
 					while (!parser.EndOfText &&
 						!Punctuation.Contains(parser.Peek().ToString()) &&
-						!Char.IsWhiteSpace(parser.Peek()))
+						!char.IsWhiteSpace(parser.Peek()))
 						parser.MoveAhead();
 
 					// Allow trailing wildcard
@@ -374,13 +374,13 @@ namespace repositories.azure
 
 					// Interpret token
 					term = parser.Extract(start, parser.Position);
-					if (String.Compare(term, "AND", true) == 0)
+					if (string.Compare(term, "AND", true) == 0)
 						conjunction = ConjunctionTypes.And;
-					else if (String.Compare(term, "OR", true) == 0)
+					else if (string.Compare(term, "OR", true) == 0)
 						conjunction = ConjunctionTypes.Or;
-					else if (String.Compare(term, "NEAR", true) == 0)
+					else if (string.Compare(term, "NEAR", true) == 0)
 						conjunction = ConjunctionTypes.Near;
-					else if (String.Compare(term, "NOT", true) == 0)
+					else if (string.Compare(term, "NOT", true) == 0)
 						termExclude = true;
 					else
 					{
@@ -506,7 +506,7 @@ namespace repositories.azure
 				else
 				{
 					// Determine if entire expression is an exclude expression
-					internalNode.Exclude = (internalNode.Child1.Exclude && internalNode.Child2.Exclude);
+					internalNode.Exclude = internalNode.Child1.Exclude && internalNode.Child2.Exclude;
 					// If only first child expression is an exclude expression,
 					// then simply swap child expressions
 					if (!internalNode.Exclude && internalNode.Child1.Exclude)
@@ -518,7 +518,7 @@ namespace repositories.azure
 				}
 			}
 			// Eliminate expression group if it contains only exclude expressions
-			return ((node.Grouped || isRoot) && node.Exclude) ? null : node;
+			return (node.Grouped || isRoot) && node.Exclude ? null : node;
 		}
 
 		/// <summary>
@@ -606,11 +606,11 @@ namespace repositories.azure
 		private string ExtractBlock(TextParser parser, char openChar, char closeChar)
 		{
 			// Track delimiter depth
-			int depth = 1;
+			var depth = 1;
 
 			// Extract characters between delimiters
 			parser.MoveAhead();
-			int start = parser.Position;
+			var start = parser.Position;
 			while (!parser.EndOfText)
 			{
 				if (parser.Peek() == openChar)
@@ -650,7 +650,7 @@ namespace repositories.azure
 		{
 			// Extract contents of quote
 			parser.MoveAhead();
-			int start = parser.Position;
+			var start = parser.Position;
 			while (!parser.EndOfText && parser.Peek() != '"')
 				parser.MoveAhead();
 			return parser.Extract(start, parser.Position);
@@ -667,7 +667,7 @@ namespace repositories.azure
 		}
 	}
 
-	internal static class FullTextSearchExtensions
+	internal static class FullTextSearch
 	{
 		/// <summary>
 		/// Support converting a raw phrase to one used for full-text search against SQL Server.

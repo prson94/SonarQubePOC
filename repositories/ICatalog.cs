@@ -49,7 +49,7 @@ namespace repositories
 
 		Task ReadRelationTypeDefinition();
 
-		Task ReadSemanticTypes();
+		Task<RepositoryResponse<PagedApiBaseViewModel<GetSemantic>>> ReadSemanticTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid);
 
