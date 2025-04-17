@@ -30,8 +30,6 @@
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
 
-	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
-
 	<include file="scripts/Function.dbo.GetCombinedPermissions.xml"/>
 	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetId.xml"/>
 	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetLegacy.xml"/>
