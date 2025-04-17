@@ -349,16 +349,16 @@ where  coalesce(U.Success,1) = 1;
 
 if exists(select 1 
 		 from [Resource] r 
-		 inner join CompanyResource cr on r.ID = cr.ResourceID and cr.CompanyID = @companyId 
 		 inner join #Users S on s.ResourceID = r.ID
-		 where coalesce(cr.state,1) = 3 and S.State = 1 and coalesce(s.Password,'') != '')
+		 left join CompanyResource cr on r.ID = cr.ResourceID and cr.CompanyID = @companyId 
+		 where coalesce(cr.state,3) = 3 and S.State = 1 and coalesce(s.Password,'') != '')
 begin
 		update r
 		set r.Password = s.Password
 		from [Resource] r 
-		inner join CompanyResource cr on r.ID = cr.ResourceID and cr.CompanyID = @companyId 
 		inner join #Users S on s.ResourceID = r.ID
-		where coalesce(cr.state,1) = 3 and S.State = 1 and coalesce(s.Password,'') != '';
+		left join CompanyResource cr on r.ID = cr.ResourceID and cr.CompanyID = @companyId 
+		where coalesce(cr.state,3) = 3 and S.State = 1 and coalesce(s.Password,'') != '';
 end
 
 if exists(select 1 from #Users T group by T.ResourceID having count(1)>1)

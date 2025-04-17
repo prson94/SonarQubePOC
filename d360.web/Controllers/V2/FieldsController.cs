@@ -2683,7 +2683,7 @@ namespace d360.web.Controllers.V2
 					{
 						query = $@"
 								drop table if exists #tempResults
-								select {AssetDisplayTextColumn} text, a.SourceID value
+								select {AssetDisplayTextColumn} text, {(fieldType.LookupObjectType == "Resource" ? "r.ResourceID" : "a.SourceID")} value
 								into #tempResults
 								from AssetType Att 
 								inner join Asset a on a.assettypeid = att.id

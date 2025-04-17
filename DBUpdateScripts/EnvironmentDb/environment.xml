@@ -327,6 +327,7 @@
 	<include file="scripts/Procedure.api.UpsertAssets.xml"/>
 	<include file="scripts/Procedure.api.UpsertGroups.xml"/>
 	<include file="scripts/Procedure.api.UpsertUsers.xml"/>
+	<include file="scripts/Procedure.api.UpsertSingleUsers.xml"/>
 	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>

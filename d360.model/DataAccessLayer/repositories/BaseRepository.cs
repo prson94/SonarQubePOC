@@ -614,6 +614,33 @@ namespace d360.model.DataAccessLayer.repositories
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());
 					 }
 				 }
+				 else if (f.Type == "RefListRelationship")
+				 {
+					 fieldJoins.Add($@"outer apply (
+						select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
+						from (
+						select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
+						union all
+						select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
+						) Names
+					) {tableAlias}", f.ID.ToString());
+				 }
+				 else if (f.Type == "ReferenceList")
+				 {
+					 var sql = $@"
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
+								outer apply(
+								select FormattedValue = 
+								(SELECT att.Name,
+								att.Uid
+								from AssetType Att 
+								where att.id = F{tableAlias}.ReferenceListID
+								FOR JSON PATH)
+							){tableAlias}(FormattedValue)";
+
+					 fieldJoins.Add(sql, f.ID.ToString());
+				 }
+
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"

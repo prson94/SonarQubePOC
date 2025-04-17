@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissions-v1.1">
+ <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissions-v1.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissions] 
@@ -17,7 +17,10 @@ as
 begin
 	declare @combinedPermissionMask int = 0;
 
+	if not exists(select 1 from @permissions where (get_bit(Id, 0) = 0))
+	begin
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 0, 1) from @permissions where (get_bit(Id, 0) = 1)	-- Read		(1)
+	end
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 1, 1) from @permissions where (get_bit(Id, 1) = 1)	-- Add		(2)
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 2, 1) from @permissions where (get_bit(Id, 2) = 1)	-- Delete	(4)
 	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 3, 1) from @permissions where (get_bit(Id, 3) = 1)	-- Edit		(8)
