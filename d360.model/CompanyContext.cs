@@ -1191,6 +1191,7 @@ from	Field F
 				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
 				 where it.SubjectAssetTypeID = T.ID)");
 			}
+			whereStatements.Add($"T.UID NOT IN ('{Refertypelistuid.ToString().CleanForSql()}')");
 
 			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
 
