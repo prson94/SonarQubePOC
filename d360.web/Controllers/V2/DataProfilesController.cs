@@ -1355,13 +1355,12 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
-            var apiModels = await SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
+			var apiModels = await Catalog.ReadSemanticTypesAsync(queryParams); //SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
             HttpResponseMessage response;
 
             if (isStreamResponse)
             {
-                bool includeDisabled=false;
-
+                bool includeDisabled = false;
                 if (queryParams.Any(q => q.Key == "_includeDisabled"))
                 {
                     var _includeDisabled = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeDisabled").Value;                       
@@ -1371,21 +1370,14 @@ namespace d360.web.Controllers.V2
                         includeDisabled = false;
                     }
                 }
-
-                SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels, includeDisabled);
-                document.SelectWorksheet(Label.Common_ItemsSheetName);
-                var stream = new MemoryStream();
-                document.SaveAs(stream);
-                byte[] bytes = stream.ToArray();
-
-                response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+				
+                SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels.Data, includeDisabled);
+				return Excel(document, string.Format(Label.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")));
             }
             else
             {
-                response = Request.CreateResponse(HttpStatusCode.OK, apiModels);
+                return Ok(apiModels.Data);
             }
-
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1652,7 +1644,7 @@ namespace d360.web.Controllers.V2
 		/// Create the Excel document for export
 		/// </summary>
 		/// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-		private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
+		private SLDocument CreateResponseDocumentForSemanticTypesExport(PagedApiBaseViewModel<GetSemantic> semantics, bool includeDisabled = false)
         {
             ExcelRow HeaderRow = new ExcelRow
                         {
@@ -1820,6 +1812,7 @@ namespace d360.web.Controllers.V2
 
             return document.ToSLDocument();
         }
-        #endregion
-    }
+
+		#endregion
+	}
 }

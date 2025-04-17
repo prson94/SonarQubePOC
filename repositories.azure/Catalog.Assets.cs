@@ -3,6 +3,7 @@ using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using Newtonsoft.Json.Linq;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;

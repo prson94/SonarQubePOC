@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,10 +41,9 @@ namespace repositories.azure
 				}
 			}
 
-			Action<int, bool> appendCte = (int id, bool useFilter) =>
+			Action<int> appendCte = (int id) =>
 			{
 				string permissionJoin = "";
-				string appliedFilter = useFilter ? cteFilterSql : "";
 				if (!CurrentUserIsAdmin)
 				{
 					permissionJoin = 
@@ -75,20 +75,20 @@ namespace repositories.azure
 				a.AssetId as Id
 	from		AssetDisplayValue a
 				inner join {ftTableFunction}(AssetDisplayValue, DisplayValue, @phrase) s on s.[Key] = a.AssetID 
-				{appliedFilter} {permissionJoin}
+				{cteFilterSql} {permissionJoin}
 	union
 	select		s.[Rank]*3 as [Rank],
 				a.AssetId as Id
 	from		Field a 
 				inner join {ftTableFunction}(Field, FormattedValue, @phrase) s on s.[Key] = a.ID and a.AssetID is not null 
-				{appliedFilter} {permissionJoin}
+				{cteFilterSql} {permissionJoin}
 	union
 	select		s.[Rank],
 				a.AssetID as Id
 	from		AssetTag a
 				inner join Tag t on t.ID = a.TagID
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
-				{appliedFilter} {permissionJoin}
+				{cteFilterSql} {permissionJoin}
 	union
 	select	s.[Rank]*2 as [Rank],
 			a.AssetId as Id
@@ -96,7 +96,7 @@ namespace repositories.azure
 			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id)
 			inner join Semantic st on st.Qualifier = a.TypeQualifier and st.EffectiveDate <= a.ProfileSetDate
 			inner join CONTAINSTABLE(Semantic, Qualifier, @phrase) s on s.[Key] = st.ID
-			{appliedFilter} {permissionJoin}
+			{cteFilterSql} {permissionJoin}
 )
 ";				
 				}
@@ -104,7 +104,7 @@ namespace repositories.azure
 
 			if (includeAggregations)
 			{
-				appendCte(1, false);
+				appendCte(1);
 
 				sql += $@"
 insert into #aggregations
@@ -115,7 +115,7 @@ insert into #aggregations
 	group by t.Uid, t.Class, t.Name;";
 			}
 			
-			appendCte(2, true);
+			appendCte(2);
 			sql += $@"
 insert into #results ([Rank], [Id])
 	select	ir.[Rank], ir.Id
@@ -124,7 +124,7 @@ insert into #results ([Rank], [Id])
 			from	cte2
 			) ir 
 	where	ir.RowNum = 1
-	order by [Rank] desc offset @offset rows fetch next @take rows only;";
+	order by [Rank] offset @offset rows fetch next @take rows only;";
 
 			
 			string includeFieldSql = "select '[]'";
