@@ -991,7 +991,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             valid = false;
         }
 
-        if (this.currentType === 'Score' && !this.model.FieldType.Type[this.currentType].ScoreType) {
+        if (this.currentType === 'Score' && !this.model.FieldType.Type[this.currentType]?.ScoreType) {
             valid = false;
         }
 
