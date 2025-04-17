@@ -77,6 +77,10 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
 				});
             });
         }
+        this.isLoading = false;
+        this.cdRef.markForCheck();
+        return;
+
     }
 
 	selectAsset(asset: SemanticTypeAsset) {

@@ -941,7 +941,7 @@ select	r.uid as ResourceUid,
 						value.Sidebar,
 						value.Tab
 					});
-				return Request.CreateResponse(HttpStatusCode.OK);
+				return Request.CreateResponse(HttpStatusCode.OK, new { });
 			}
 			else
 			{

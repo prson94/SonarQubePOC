@@ -9,7 +9,7 @@ import { FeatureFlags } from '../../_shared/models/feature-flags';
 import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
 
 export class SemanticBaseComponent extends AssetGridBaseComponent {
-    semanticTypesEnabled: boolean;
+    semanticTypesEnabled: boolean = true;
 
     constructor(
         protected headerBreadcrumbService: HeaderBreadcrumbService,
