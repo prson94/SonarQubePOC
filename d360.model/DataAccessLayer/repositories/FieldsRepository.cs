@@ -596,6 +596,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'ReferenceList' then FT.IsListable else null end as 'Type.ReferenceList.IsListable',
 										case when FT.Type = 'ReferenceList' then FT.SortOrder else null end as 'Type.ReferenceList.SortOrder',
 										case when FT.Type = 'ReferenceList' then FT.SortByAscending else null end as 'Type.ReferenceList.SortByAscending',
+										case when FT.Type = 'ReferenceList' then FT.ShowIfEmpty else null end as 'Type.ReferenceList.ShowIfEmpty',
 										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ReferenceList.DisplayRefListDescription',
 										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListInTable'),'true') else null end as 'Type.ReferenceList.DisplayRefListInTable',
 
@@ -1904,7 +1905,6 @@ namespace d360.model.DataAccessLayer
 					newFieldType.ShowIfEmpty = f.Type.ReferenceList.ShowIfEmpty;
 					newFieldType.IsListable = f.Type.ReferenceList.IsListable;
 					newFieldType.IsPartOfKey = false;
-					newFieldType.ShowIfEmpty = true;
 					newFieldType.SortOrder = f.Type.ReferenceList.SortOrder;
 					newFieldType.SortByAscending = f.Type.ReferenceList.SortByAscending;
 					newFieldType.IsPrimaryFilter = false;
