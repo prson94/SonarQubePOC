@@ -1,4 +1,13 @@
-﻿using d360.core;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -6,16 +15,6 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace d360.model
 {
