@@ -74,7 +74,7 @@
 				<div class="d3s-type-dropdown">
 					<p-dropdown [options]="scoreTypes"
 								[ngModel]="model.Event?.ScoreType"
-								(ngModelChange)="model.Event?.ScoreType = $event; validate();"
+								(ngModelChange)="$event = model.Event?.ScoreType; validate();"
 								[style]="{'width': '95%'}"
 								filterPlaceholder="Choose a value"
 								i18n-filterPlaceholder

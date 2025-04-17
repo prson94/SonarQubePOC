@@ -1391,6 +1391,26 @@ select	r.uid as ResourceUid,
 
 		#endregion
 
+		/// <summary>
+		/// Provides the version number and revision of Govern for this environment.
+		/// </summary>
+		[
+		   HttpGet,
+		   MapToApiVersion("2.0"),
+		   Route("product-version"),
+		   SwaggerProduces("application/json")
+		]
+		public IHttpActionResult GetProductVersion()
+		{
+			var version = typeof(HomeController).Assembly.GetName().Version;
+
+			return Ok(new
+			{
+				version = $"{version.Major}.{version.Minor}.{version.Build}",
+				revision = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+			});
+		}
+
 		#region Theme Endpoints
 
 		const string THEME_UID_FILTER_PARAMETER = "An optional unique identifier of the theme, to limit this list to a specific theme.";
