@@ -1,0 +1,163 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas,Puneet, TKlok" id="Procedure.api.DeleteInProcessRecords-v1.0">
+    <comment></comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure [api].[DeleteInProcessRecords] 
+ @numberOfDaysOlderThan int = 2
+as
+begin
+	BEGIN TRANSACTION;
+	SAVE TRANSACTION ApiDeleteSavePoint;
+
+	BEGIN TRY
+		-- delete records from child tables
+		drop table if exists #ex;
+
+		create table #ex (ProcessUid uniqueidentifier)
+		create clustered index cx_temp_ex_Id on #ex (ProcessUid);
+
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessAudit t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+		
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessAuditField t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessLookUpField t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessHisUpdExeLog t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessHisUpdField t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessLookUpFieldType t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+		
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessLookUpTempField t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessLookUpTempFieldMulti t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		insert into #ex 
+		select t.ProcessUid 
+		from api.InProcessAssetIDFieldTypeID t 
+		left join #ex ex on t.ProcessUid = ex.ProcessUid
+		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		group by t.ProcessUid;
+
+		if exists(select 1 from #ex)
+		begin
+			delete t from api.InProcessPostAssetPath t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessAudit t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessAuditField t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessLookUpField t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessHisUpdExeLog t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessHisUpdField t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessLookUpFieldType t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessLookUpTempField t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessLookUpTempFieldMulti t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+			delete t from api.InProcessAssetIDFieldTypeID t inner join #ex ex on t.ProcessUid = ex.ProcessUid;
+		end
+		COMMIT TRANSACTION 
+		
+		-- truncate table if no record exists
+		if not exists(select 1 from api.InProcessPostAssetPath)
+		begin
+			truncate table api.InProcessPostAssetPath
+		end
+
+		-- truncate table if no record exists
+		if not exists(select 1 from api.InProcessAudit)
+		begin
+			truncate table api.InProcessAudit
+		end
+		
+		if not exists(select 1 from api.InProcessAuditField)
+		begin
+			truncate table api.InProcessAuditField
+		end
+
+		if not exists(select 1 from api.InProcessLookUpField)
+		begin
+			truncate table api.InProcessLookUpField
+		end
+
+		if not exists(select 1 from api.InProcessHisUpdExeLog)
+		begin
+			truncate table api.InProcessHisUpdExeLog
+		end
+
+		if not exists(select 1 from api.InProcessHisUpdField)
+		begin
+			truncate table api.InProcessHisUpdField
+		end	
+
+		if not exists(select 1 from api.InProcessLookUpTempField)
+		begin
+			truncate table api.InProcessLookUpTempField
+		end	
+
+		if not exists(select 1 from api.InProcessLookUpTempFieldMulti)
+		begin
+			truncate table api.InProcessLookUpTempFieldMulti
+		end	
+
+		if not exists(select 1 from api.InProcessAssetIDFieldTypeID)
+		begin
+			truncate table api.InProcessAssetIDFieldTypeID
+		end	
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+		BEGIN
+			ROLLBACK TRANSACTION ApiDeleteSavePoint; -- rollback to MySavePoint
+		END
+	END CATCH
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

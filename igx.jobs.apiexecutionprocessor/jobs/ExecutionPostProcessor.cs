@@ -748,35 +748,31 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_Genera
 
 		async Task clearInProcessTables(SqlConnection companyConnection, Guid processGuid, ApiExecution execution, ILogger log)
 		{
-			string str = $@"
-
-delete t from api.InProcessPostAssetPath t where ProcessUid = @processGuid ;
-
-delete t from api.InProcessAudit t where ProcessUid = @processGuid;
-delete t from api.InProcessAuditField t where ProcessUid = @processGuid;
-
-delete t from api.InProcessLookUpField t where ProcessUid = @processGuid;
-
-delete t from api.InProcessHisUpdExeLog t where ProcessUid = @processGuid;
-delete t from api.InProcessHisUpdField t where ProcessUid = @processGuid;
-delete t from api.InProcessLookUpFieldType t where ProcessUid = @processGuid;
-delete t from api.InProcessLookUpTempField t where ProcessUid = @processGuid;
-
-delete t from api.InProcessLookUpTempFieldMulti t where ProcessUid = @processGuid;
-delete t from api.InProcessAssetIDFieldTypeID t where ProcessUid = @processGuid;
-";
-
-			try
+			List<string> listSqlstmt = new List<string> {
+"delete t from api.InProcessPostAssetPath t where ProcessUid = @processGuid",
+"delete t from api.InProcessAudit t where ProcessUid = @processGuid",
+"delete t from api.InProcessAuditField t where ProcessUid = @processGuid",
+"delete t from api.InProcessLookUpField t where ProcessUid = @processGuid",
+"delete t from api.InProcessHisUpdExeLog t where ProcessUid = @processGuid",
+"delete t from api.InProcessHisUpdField t where ProcessUid = @processGuid",
+"delete t from api.InProcessLookUpFieldType t where ProcessUid = @processGuid",
+"delete t from api.InProcessLookUpTempField t where ProcessUid = @processGuid",
+"delete t from api.InProcessLookUpTempFieldMulti t where ProcessUid = @processGuid",
+"delete t from api.InProcessAssetIDFieldTypeID t where ProcessUid = @processGuid"
+};
+			foreach (var sql in listSqlstmt)
 			{
-				await companyConnection.ExecuteAsync(str,
-
-				new { processGuid }, commandTimeout: 120);
-			}
-			catch (Exception ex)
-			{
-				log.LogCritical(ex, $"Error when clear in process data:{execution.Id}-Process Uid: {processGuid.ToString()}].");
+				try
+				{
+					await companyConnection.ExecuteAsync(sql, new { processGuid }, commandTimeout: 600);
+				}
+				catch (Exception ex)
+				{
+					log.LogCritical(ex, $"Error when clear in process data:{execution.Id}-Process Uid: {processGuid.ToString()}]. {sql}");
+				}
 			}
 		}
+
 		void UpdateAssetPaths(SqlConnection companyConnection, ApiExecution execution, ILogger log)
 		{
 			try
