@@ -1347,7 +1347,7 @@ WHERE  Type = 'Lookup' AND LookupObjectType = 'ReferenceItemType';
 	</rollback>
   </changeSet>
 
-<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship">
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship.v1.1">
   <comment>Convert RefListRelationship fields to new ReferenceList Type</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1393,7 +1393,7 @@ DELETE rel
 FROM dbo.[Intersect] rel
 INNER JOIN dbo.[IntersectType] it on it.id = rel.IntersectTypeID and ((it.ObjectClass = 9 and it.SubjectClass <> 9 and it.ObjectAssetTypeID = 0) or (it.SubjectClass = 9 and it.ObjectClass <> 9 and it.SubjectAssetTypeID = 0))
 INNER JOIN dbo.[FieldType] ft on ft.LookupObjectID = it.id and ft.type = 'RefListRelationship' and ft.LookupObjectType = 'IntersectType'
-INNER JOIN dbo.field_migrate f on f.FieldTypeID = ft.id and (
+INNER JOIN dbo.field f on f.FieldTypeID = ft.id and (
 	(f.AssetID = rel.SubjectAssetID and it.ObjectClass = 9 and f.referencelistid = rel.ObjectAssetTypeID)
 	or (f.AssetID = rel.ObjectAssetID and it.SubjectClass = 9 and f.referencelistid = rel.SubjectAssetTypeID)
 );
