@@ -1310,4 +1310,119 @@ GROUP BY tt.ID, n.Name;
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.Lookups">
+  <comment>Convert Lookup fields where lookup is "ReferenceItemType" to new ReferenceList Type</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+-- Delete fields where the lookup object is a Ref list, but value is empty
+DELETE dbo.[Field]
+WHERE  FieldTypeID in (
+          SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
+       )
+AND (value is null OR value = '');
+
+-- Copy Value to ReferenceListID for impacted Fields
+UPDATE dbo.[Field] 
+SET    ReferenceListID = [Value] 
+WHERE  FieldTypeID in (
+          SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
+       );
+
+-- Convert the fieldtypes
+UPDATE dbo.[FieldType]
+SET    Type = 'ReferenceList',
+       LookupObjectType = null,
+       LookupObjectID = null,
+	   Definition = '{"DisplayRefListDescription":true,"DisplayRefListInTable":true}'
+WHERE  Type = 'Lookup' AND LookupObjectType = 'ReferenceItemType';
+
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship">
+  <comment>Convert RefListRelationship fields to new ReferenceList Type</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+-- Insert field value for selected reference lists
+
+WITH field_cte AS (
+	SELECT i.SubjectAssetID as AssetID, ft.id as FieldTypeID, i.UpdatedBy as UpdatedBy, i.UpdatedOn as UpdatedOn, i.ObjectAssetTypeID as ReferenceListID
+	FROM dbo.[FieldType] ft
+	INNER JOIN dbo.[IntersectType] it on ft.LookupObjectID = it.id
+	INNER JOIN dbo.[Intersect] i on i.intersecttypeid = it.id
+	WHERE ft.type = 'RefListRelationship'
+	AND ft.LookupObjectType = 'IntersectType'
+	AND it.ObjectClass = 9
+	AND i.SubjectAssetTypeID = ft.AssetTypeID
+	UNION ALL
+	SELECT i.ObjectAssetID as AssetID, ft.id as FieldTypeID, i.UpdatedBy as UpdatedBy, i.UpdatedOn as UpdatedOn, i.SubjectAssetTypeID as ReferenceListID
+	FROM dbo.[FieldType] ft
+	INNER JOIN dbo.[IntersectType] it on ft.LookupObjectID = it.id
+	INNER JOIN dbo.[Intersect] i on i.intersecttypeid = it.id
+	WHERE ft.type = 'RefListRelationship'
+	AND ft.LookupObjectType = 'IntersectType'
+	AND it.SubjectClass = 9
+	AND i.ObjectAssetTypeID = ft.AssetTypeID
+)
+INSERT INTO dbo.[Field] (AssetID, FieldTypeID, UpdatedBy, UpdatedOn, ReferenceListID)
+SELECT AssetID, FieldTypeID, UpdatedBy, UpdatedOn, ReferenceListID
+from field_cte cteone
+where not exists (
+select 1
+from field_cte ctegroup
+where cteone.AssetID = ctegroup.AssetID and cteone.FieldTypeID = ctegroup.FieldTypeID
+group by AssetID, FieldTypeID
+having count(*) > 1
+)
+and not exists (select 1 from field f where f.AssetID = cteone.AssetID and f.FieldTypeID = cteone.FieldTypeID);
+
+--Remove old relationships now replaced by field value
+
+DELETE rel
+FROM dbo.[Intersect] rel
+INNER JOIN dbo.[IntersectType] it on it.id = rel.IntersectTypeID and ((it.ObjectClass = 9 and it.SubjectClass <> 9 and it.ObjectAssetTypeID = 0) or (it.SubjectClass = 9 and it.ObjectClass <> 9 and it.SubjectAssetTypeID = 0))
+INNER JOIN dbo.[FieldType] ft on ft.LookupObjectID = it.id and ft.type = 'RefListRelationship' and ft.LookupObjectType = 'IntersectType'
+INNER JOIN dbo.field_migrate f on f.FieldTypeID = ft.id and (
+	(f.AssetID = rel.SubjectAssetID and it.ObjectClass = 9 and f.referencelistid = rel.ObjectAssetTypeID)
+	or (f.AssetID = rel.ObjectAssetID and it.SubjectClass = 9 and f.referencelistid = rel.SubjectAssetTypeID)
+);
+
+-- Remove the Relationship Types for the removed relationships
+
+DELETE	it
+FROM	dbo.[IntersectType] it
+WHERE	(it.ObjectClass = 9 and it.SubjectClass <> 9 and it.ObjectAssetTypeID = 0)
+OR		(it.SubjectClass = 9 and it.ObjectClass <> 9 and it.SubjectAssetTypeID = 0)
+AND NOT EXISTS (
+	SELECT 1
+	FROM dbo.[Intersect] i
+	WHERE i.IntersectTypeID = it.id
+)
+
+-- convert field type
+UPDATE dbo.[FieldType]
+SET	Type = 'ReferenceList',
+	LookupObjectType = null,
+	LookupObjectID = null,
+	Definition = JSON_MODIFY([Definition], '$.DisplayRefListInTable', 'true')
+WHERE  Type = 'Lookup' and LookupObjectType = 'ReferenceItemType';
+
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
