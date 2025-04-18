@@ -856,7 +856,8 @@ select * from [Resource] where ID = @userId";
 			var sql =
 				"update CompanyResource " +
 				"set	IsAdministrator = @isAdministrator, " +
-				"		LastLoggedInOn = @loggedInOn " +
+				"		LastLoggedInOn = @loggedInOn," +
+				"		State = 1 " +
 				"where	CompanyID = @companyId and ResourceID = @resourceId; " +
 				"insert into CompanyResourceLog (CompanyID, ResourceID, AuthenticationMethod, [Date]) " +
 				"values (@companyId, @resourceId, @authMethod, @loggedInOn)";

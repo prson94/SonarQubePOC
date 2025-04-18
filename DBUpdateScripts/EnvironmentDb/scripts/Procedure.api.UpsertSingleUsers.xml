@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertSingleUsers-v1.0">
+  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertSingleUsers-v2">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[UpsertSingleUsers]
@@ -14,23 +14,26 @@ create or alter procedure [api].[UpsertSingleUsers]
 	@LastName  [nvarchar](250),
 	@Email [nvarchar](500),
 	@UpdatedOn datetime,
-	@uid [uniqueidentifier]
+	@uid [uniqueidentifier]	
 as
 begin
-	declare @usercreated bit = 0;
+	declare @usercreated bit = 0,
+			@state int = 1;
+	
 	if exists (select 1 from reporting.Global_Resource where ResourceID = @ID)
 	begin
 		update	reporting.Global_Resource
 		set		FirstName = @FirstName,
 				LastName = @LastName,
 				UpdatedOn = @UpdatedOn,
-				LastLoggedInOn = getutcdate()
+				LastLoggedInOn = getutcdate(),
+				State = @state
 		where	ResourceID = @ID
 	end
 	else
 	begin
 		insert into reporting.Global_Resource (ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, [State], LastLoggedInOn, [uid], UpdatedOn)
-		values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, 1, getutcdate(), @Uid, @UpdatedOn)
+		values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, @state, getutcdate(), @Uid, @UpdatedOn)
 
 		set @usercreated = 1;
 	end
@@ -46,7 +49,7 @@ begin
 	else
 	begin
 		insert into dbo.Asset (AssetTypeID, [State], Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, uid)
-		values (@assetTypeId, 1, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
+		values (@assetTypeId, @state, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
 		set @assetId = SCOPE_IDENTITY();
 	end
 
