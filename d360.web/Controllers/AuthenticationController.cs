@@ -284,9 +284,13 @@ namespace d360.web.Controllers
 						}
                         else
                         {
-                            // The company resource account is not active, so ensure that user is NOT able to log in.
-                            resource = null;
-                        }
+							// Because this is SSO, we are re-activating the disabled user.
+							var isAdmin = false;
+							var loggedInOn = DateTime.UtcNow;
+							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, false, loggedInOn, AuthenticationMethod.UI);
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
+						}
                     }
 
                     // Check b/c the company may not allow for new users to be added automatically.  If user was not already 

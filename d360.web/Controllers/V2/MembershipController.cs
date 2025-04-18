@@ -1649,7 +1649,7 @@ namespace d360.web.Controllers.V2
 		{
 			var user = await Community.ReadUserByUidAsync(uid);
 
-			if (!user.IsSuccess || user.Data != null)
+			if (!user.IsSuccess || user.Data == null)
 			{
 				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ResourceUidNotValid);
 			}
