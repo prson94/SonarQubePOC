@@ -13,7 +13,7 @@ namespace repositories.azure
 		public Search(DapperConnectionProvider provider) : base(provider) { }
 
 		private string buildFullTextSql(
-			bool includeAggregations, bool isFreeText, 
+			bool searchByUid, bool includeAggregations, bool isFreeText, 
 			bool includeFields, bool includePath, bool includeScores, 
 			List<int> classes = null, List<int> assetTypeIds = null)
 		{
@@ -55,7 +55,21 @@ namespace repositories.azure
 						")";
 				}
 
-				sql += $@"
+				if (searchByUid)
+				{
+					sql += $@"
+;with cte{id} as (
+	select	100 as [Rank],
+			a.Id
+	from	dbo.Asset a
+			{permissionJoin}
+	where	Uid = @uid
+)
+";
+				}
+				else 
+				{
+					sql += $@"
 ;with cte{id} as (
 	select		s.[Rank]*4 as [Rank],
 				a.AssetId as Id
@@ -84,7 +98,8 @@ namespace repositories.azure
 			inner join CONTAINSTABLE(Semantic, Qualifier, @phrase) s on s.[Key] = st.ID
 			{appliedFilter} {permissionJoin}
 )
-";
+";				
+				}
 			};
 
 			if (includeAggregations)
@@ -227,21 +242,20 @@ order by r.[Rank] desc;";
 				}
 			}
 
-			bool isFreeText = true;
+			// If user passed in a Uid, pass it into the sql to NOT bother performing a full-text search and instead, return the asset directly. In same format as search.
+			bool searchByUid = false;
+			if (Guid.TryParse(phrase, out Guid uid))
+			{
+				parameters.Add("@uid", uid);
+				searchByUid = true;
+			}
 
-			//var words = phrase.ToLower().Split(' ');
-			//bool containsConjunction = words.Contains("and") || words.Contains("near") || words.Contains("or");
-			//bool containsDoubleQuote = phrase.Contains("\"");
-			isFreeText = false;//!containsConjunction && !containsDoubleQuote;
-
+			bool isFreeText = false;
 			phrase = phrase.ConvertPhraseToFullTextSearch();
-			//if (isFreeText && words.Length > 1)
-			//{
-			//	phrase = $"\"{phrase}\"";
-			//}
+
 
 			// Generate the SQL to run.
-			var sql = buildFullTextSql(includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
+			var sql = buildFullTextSql(searchByUid, includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
 
 			parameters.Add("@phrase", phrase);
 
