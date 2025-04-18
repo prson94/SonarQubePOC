@@ -218,8 +218,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         "File",
         "JsonElement",
         "ComputedOwnershipLookup",
-        "Path",
-        "RefListRelationship"
+        "Path"
     ];
 
     //#endregion

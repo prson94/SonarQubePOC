@@ -629,6 +629,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 					 fieldJoins.Add(sql, f.ID.ToString());
 				 }
+
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"

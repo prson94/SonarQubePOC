@@ -39,9 +39,6 @@ export class FieldType {
 			case 'ComputedRelationshipLookup':
 				this.ComputedRelationshipLookup = new ComputedRelationshipLookup();
 				break;
-			case 'RefListRelationship':
-				this.RefListRelationship = new ComputedRelationshipReferenceList();
-				break;
 			case 'ComputedRelationshipReferenceList':
 				this.ComputedRelationshipReferenceList = new ComputedRelationshipReferenceList();
 				break;

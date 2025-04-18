@@ -10,7 +10,6 @@ namespace d360.core.helpers
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Path.ToString(),
-                DataType.RefListRelationship.ToString(),
                 DataType.Score.ToString(),
                 DataType.Tag.ToString()
             };
@@ -23,7 +22,6 @@ namespace d360.core.helpers
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString()
             };
 
@@ -35,7 +33,6 @@ namespace d360.core.helpers
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString(),
                 DataType.Path.ToString(),
                 DataType.Score.ToString(),
@@ -51,7 +48,6 @@ namespace d360.core.helpers
                 DataType.JSON.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Relationship.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString(),
 				DataType.Tag.ToString(),
                 DataType.Score.ToString(),
@@ -69,7 +65,6 @@ namespace d360.core.helpers
                 DataType.JSON.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.Relationship.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString(),
 				DataType.Tag.ToString(),
                 DataType.FieldFromRelationship.ToString()
@@ -84,7 +79,6 @@ namespace d360.core.helpers
                 DataType.Path.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString(),
 				DataType.JsonElement.ToString(),
                 DataType.Score.ToString(),
@@ -99,7 +93,6 @@ namespace d360.core.helpers
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.JSON.ToString(),
-                DataType.RefListRelationship.ToString(),
 				DataType.ReferenceList.ToString()
 			};
 

@@ -422,7 +422,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			assetTypeID = assetType.ID;
 
-			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup"};
+			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 

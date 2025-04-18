@@ -386,14 +386,6 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
 										case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
 
-										case when FT.Type = 'RefListRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipReferenceList.ColumnOrder',
-										case when FT.Type = 'RefListRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipReferenceList.Description.Display',
-										case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
-										{(resolveUIDetails ? "case when FT.Type = 'RefListRelationship' then ITName.Name else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeName'," : "")}
-										case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
-										case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
-										case when FT.Type = 'RefListRelationship' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ComputedRelationshipReferenceList.DisplayRefListDescription',
-
 										case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 										case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
 										case when FT.Type = 'Date' then FT.SortOrder else null end as 'Type.Date.SortOrder',
@@ -726,7 +718,7 @@ namespace d360.model.DataAccessLayer
 										left join IntersectType O_R on O_R.ID = FT.IntersectTypeID
 				
 										left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
-										left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'RefListRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
+										left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
 										left join FieldType LFT on FT.[Type] = 'FieldFromRelationship' and LFT.ID = FT.LookupObjectFieldTypeID
 
 										left join FieldType FilterFT on FT.[Type] = 'Lookup' and FilterFT.ID = FT.FilterFieldTypeID
@@ -1313,7 +1305,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseReferenceListItemList, f.Name));
 					}
 
-					newFieldType.Type = DataType.RefListRelationship.ToString();
+					//newFieldType.Type = DataType.RefListRelationship.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder.HasValue ? f.Type.ComputedRelationshipReferenceList.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
@@ -2516,52 +2508,6 @@ namespace d360.model.DataAccessLayer
 						Name = x,
 						Type = DataType.Text.ToString()
 					}).ToList();
-			}
-			else if (fieldType.Type == "RefListRelationship")
-			{
-				var fields = new List<FieldType>();
-				var sql = $@"
-					declare @objectAssetId int
-					declare @referenceId int
-					declare @isSubject bit
-
-					select  @objectAssetId = Id  from asset where uid = @assetUid
-
-
-					select	@isSubject = iif(I.ObjectClass = {(int)AssetTypeClass.Reference} and I.ObjectAssetTypeId = 0, 1, 0) 
-						from	IntersectType I 
-								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
-		
-						if @isSubject = 1
-						begin
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
-						end
-						else
-						begin 
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
-						end
-
-				   select * from fieldtype
-						where assettypeid = @referenceid and IsListable = 1
-						order by ColumnOrder asc, FriendlyName asc;";
-
-				fields.AddRange(CompanyContext.Query<FieldType>(sql, new { fieldTypeId = fieldType.ID, assetUid }).ToList());
-
-				if (fields.Count > 0)
-				{
-					fields.Insert(fields.IndexOf(fields.First(f => f.Name == "Code")) + 1, new FieldType
-					{
-						Name = "Color",
-						Type = DataType.Color.ToString()
-					});
-				}
-				return fields;
 			}
 			else
 			{
