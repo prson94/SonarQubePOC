@@ -1,14 +1,9 @@
 ﻿using Dapper;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace repositories.azure
+namespace repositories.azure.extensions
 {
 	internal class SortColumnOption
 	{
@@ -18,11 +13,11 @@ namespace repositories.azure
 			DatabaseColumn = db;
 		}
 
-		public string QueryStringPropertyName { get; set; }
-		public string DatabaseColumn { get; set; }
+		public string QueryStringPropertyName { get; private set; }
+		public string DatabaseColumn { get; private set; }
 	}
 
-	internal static class Extensions
+	internal static class QueryParameters
 	{
 		public static bool CheckForIncludeTotal(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_includetotal", bool defaultValue = true)
 		{
@@ -46,7 +41,7 @@ namespace repositories.azure
 			string filterPropertyName, string sqlColumn, string sqlParameterName,
 			ref DynamicParameters dbArgs, ref List<string> queryFilters, T defaultValue = default)
 		{
-			bool isValidParameter = true;
+			var isValidParameter = true;
 
 			var sqlparameternameArgs = sqlParameterName.Replace("@", "");
 			if (queryParams.IsQueryParameterPresent(filterPropertyName))
@@ -114,7 +109,7 @@ namespace repositories.azure
 
 		public static int CheckForPageSize(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagesize", int defaultPageSize = 250)
 		{
-			int value = defaultPageSize;
+			var value = defaultPageSize;
 
 			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
@@ -136,9 +131,25 @@ namespace repositories.azure
 			return value;
 		}
 
+		/// <summary>
+		/// Stores an @offset parameter into the database arguments object.
+		/// </summary>
+		public static void LoadOffsetDatabaseParameter(this DynamicParameters dbArgs, int pageNumber, int pageSize)
+		{
+			dbArgs.Add("@offset", (pageNumber - 1) * pageSize);
+		}
+
+		/// <summary>
+		/// Stores an @size parameter into the database arguments object.
+		/// </summary>
+		public static void LoadPageSizeDatabaseParameter(this DynamicParameters dbArgs, int pageSize)
+		{
+			dbArgs.Add("@size", pageSize);
+		}
+
 		public static int CheckForPageNumber(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagenum", int defaultPageNum = 1)
 		{
-			int value = defaultPageNum;
+			var value = defaultPageNum;
 
 			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
@@ -192,28 +203,6 @@ namespace repositories.azure
 			return defaultValue;
 		}
 
-		public static SqlBulkCopy CreateBulkCopy(this SqlConnection connection, string tableName, int batchSize = 5000, int timeout = 3600, SqlTransaction trans = null)
-		{
-			if (trans == null)
-			{
-				return new SqlBulkCopy(connection)
-				{
-					BatchSize = batchSize,
-					DestinationTableName = tableName,
-					BulkCopyTimeout = timeout
-				};
-			}
-			else
-			{
-				return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, trans)
-				{
-					BatchSize = batchSize,
-					DestinationTableName = tableName,
-					BulkCopyTimeout = timeout
-				};
-			}
-		}
-
 		public static bool IsQueryParameterPresent(this IEnumerable<KeyValuePair<string, string>> queryParams, string name)
 		{
 			return queryParams.ToList().Any(x => x.Key.ToLower() == name.ToLower());
@@ -221,12 +210,17 @@ namespace repositories.azure
 
 		public static string ReadQueryParameterValue(this IEnumerable<KeyValuePair<string, string>> queryParams, string name)
 		{
-			return queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == name.ToLower()).Value;
+			var value = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == name.ToLower()).Value;
+			if (!string.IsNullOrEmpty(value))
+			{
+				value = value.Trim();
+			}
+			return value;
 		}
 
 		public static bool ValidateForQueryParameter<T>(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, ref string parameterValue)
 		{
-			bool isValid = true;
+			var isValid = true;
 			parameterValue = "";
 			if (queryParams.IsQueryParameterPresent(filterPropertyName))
 			{
@@ -269,7 +263,7 @@ namespace repositories.azure
 
 		public static bool ValidateForQueryParameterFromList(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, List<string> ValidFieldList, ref string parameterValue)
 		{
-			bool isValid = true;
+			var isValid = true;
 			if (queryParams.IsQueryParameterPresent(filterPropertyName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();

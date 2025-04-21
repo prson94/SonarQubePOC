@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -539,11 +540,6 @@ order by    P.[Path];";
 		}
 
 		public Task ReadRelationTypeDefinition()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task ReadSemanticTypes()
 		{
 			throw new NotImplementedException();
 		}

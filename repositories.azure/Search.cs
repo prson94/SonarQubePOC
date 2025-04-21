@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +63,7 @@ namespace repositories.azure
 	select	100 as [Rank],
 			a.Id
 	from	dbo.Asset a
-			{permissionJoin}
+			{appliedFilter} {permissionJoin}
 	where	Uid = @uid
 )
 ";
