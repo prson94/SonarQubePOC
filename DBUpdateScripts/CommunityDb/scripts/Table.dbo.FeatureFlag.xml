@@ -28,7 +28,7 @@ alter table dbo.FeatureFlag alter column TrueLabel varchar(250) null;
   </sql>
  </changeSet>
 
- <changeSet author="Pappas,Tklok" id="Table.dbo.FeatureFlag.Data-v1.2">
+ <changeSet author="Pappas,Tklok" id="Table.dbo.FeatureFlag.Data-v1.3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[FeatureFlag]') and type in (N'U'))
@@ -93,13 +93,26 @@ begin
 	begin
 		insert into FeatureFlag values (15, 'intersect-field-table', 'Use The Intersect Field Table Logic', 'Use IntersectField', 'Use Field', 0, 0);	
 	end
-	if not exists (select 1 from FeatureFlag where ID = 16)
-	begin
-		insert into FeatureFlag values (16, 'fieldtype-referencelist-conversion', 'Use ReferenceList', 'Use RefListRelationship', 'Which fieldtype for Reference List', 0, 0);	
-	end
 end
 ]]>
   </sql>
  </changeSet>
 
+ <changeSet author="Tklok" id="Table.dbo.FeatureFlag.Removal-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+
+	if exists (select 1 from FeatureFlag where ID = 16 and Slug = 'fieldtype-referencelist-conversion')
+	begin
+		delete from CompanyFeatureFlag where FeatureFlagId = 16;
+	
+		delete FeatureFlag where Slug = 'fieldtype-referencelist-conversion';
+	end
+]]>
+  </sql>
+ </changeSet>
+
+
 </databaseChangeLog>
+
+

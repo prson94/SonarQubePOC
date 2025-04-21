@@ -13,6 +13,5 @@ export enum FeatureFlags {
 	TagsAdminUIV2Flag = "tagging-value-limitation",
 	RelationshipCardinality = "relationship-cardinality",
 	NewSecurityModel = "security-policy-conversion",
-	UseElasticSearch = "search-use-elastic",
-	NewReferenceListField = "fieldtype-referencelist-conversion"
+	UseElasticSearch = "search-use-elastic"
 }
