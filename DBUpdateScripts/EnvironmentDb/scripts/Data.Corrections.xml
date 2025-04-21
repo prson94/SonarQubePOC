@@ -1347,7 +1347,7 @@ WHERE  Type = 'Lookup' AND LookupObjectType = 'ReferenceItemType';
 	</rollback>
   </changeSet>
 
-<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship.v1.1">
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship.v1.2">
   <comment>Convert RefListRelationship fields to new ReferenceList Type</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1416,7 +1416,8 @@ SET	Type = 'ReferenceList',
 	LookupObjectType = null,
 	LookupObjectID = null,
 	Definition = JSON_MODIFY([Definition], '$.DisplayRefListInTable', 'true')
-WHERE  Type = 'Lookup' and LookupObjectType = 'ReferenceItemType';
+WHERE Type = 'RefListRelationship' and LookupObjectType = 'IntersectType'
+AND	NOT EXISTS (SELECT 1 FROM dbo.[IntersectType] it WHERE it.ID = LookupObjectID);
 
 ]]>
     </sql>
