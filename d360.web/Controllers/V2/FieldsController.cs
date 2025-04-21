@@ -103,14 +103,7 @@ namespace d360.web.Controllers.V2
 				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
 
-			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
-			//var excludeTypes = new KeyValuePair<string, string>("_excludetypes", newReferenceList ? DataType.RefListRelationship.ToString() : DataType.ReferenceList.ToString());
-			var excludeTypes = new KeyValuePair<string, string>("_excludetypes", DataType.ReferenceList.ToString());
-
-			var queryParamsExpanded = queryParams.ToList();
-			queryParamsExpanded.Add(excludeTypes);
-
-			var results = await FieldsRepository.GetFieldTypes(queryParamsExpanded);
+			var results = await FieldsRepository.GetFieldTypes(queryParams);
 
 			if (results.Item2.StatusCode != HttpStatusCode.OK)
 			{
@@ -272,10 +265,9 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var newReferenceList = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST);
-			if ((!newReferenceList && model.Fields.Any(f => f.Type?.ReferenceList != null)) || (newReferenceList && model.Fields.Any(f => f.Type?.ComputedRelationshipReferenceList != null)))
+			if (model.Fields.Any(f => f.Type?.ComputedRelationshipReferenceList != null))
 			{
-				var forbiddenType = newReferenceList ? "ComputedRelationshipReferenceList" : "ReferenceList";
+				var forbiddenType = "ComputedRelationshipReferenceList";
 				throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, $"Field type {forbiddenType} is not supported");
 			}
 
@@ -889,9 +881,6 @@ namespace d360.web.Controllers.V2
 					.Where(x => x.value != DataType.Tag.ToString())
 					.ToList();
 			}
-
-			var unusedReferenceType = await GetFeatureFlagValue(FlagList.FIELDTYPE_REFERENCE_LIST) ? "" : DataType.ReferenceList.ToString();
-			dataTypeOptions = dataTypeOptions.Where(x => x.value != unusedReferenceType).ToList();
 
 			var jsonFieldType = new Dictionary<string, string> {
 				{ "Boolean", "bit" },
