@@ -665,7 +665,7 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
 									from	api.ExecutionAsset T
 									inner join {ApiExecutionFieldTable} F on T.executionid = F.executionid 
 									inner join FieldType FT on F.FieldTypeID = ft.Id and ft.Type = 'ReferenceList'
-									left join assettype att on att.uid = try_cast(f.fieldvalue as uniqueidentifier)
+									left join assettype att on att.uid = try_cast(f.fieldvalue as uniqueidentifier)  and att.class = 9 and att.objectid > 0
 									where T.executionid = @executionid and att.id is null and coalesce(f.fieldvalue,'')!='';
 									", new { executionID }, commandTimeout: timeout);
 		}
@@ -3289,36 +3289,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1)
 										option (recompile);
 
-										if @sc = 9 and @stid = 0
-										begin
-										update	T
-										set		T.SubjectAssetID = 0,
-												T.SubjectAssetTypeID = S.ID
-										from	api.ExecutionRelationship T
-												inner join AssetType S on S.[uid] = T.SubjectUid and S.[Class] = @sc and T.SubjectAssetTypeID = 0 
-												where T.ExecutionID = @ExecutionID;
-										end
-
-										if @oc = 9 and @otid = 0 
-										begin
-											update	T
-											set		T.ObjectAssetID = 0,
-													T.ObjectAssetTypeID = O.ID
-											from	api.ExecutionRelationship T
-													inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
-													where T.ExecutionID = @ExecutionID;
-										end
-
-										if ((@sc = 9 and @stid = 0) or (@oc = 9 and @otid = 0))
-										begin
-											update	T
-											set		T.IsNew = 0
-											from	api.ExecutionRelationship T
-													inner join [Intersect] I on  I.IntersectTypeId = @it 
-													and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
-													and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
-											where T.ExecutionID = @ExecutionID and T.IsNew = 1;
-										end
 										drop table if exists #tempassetS;
 										drop table if exists #tempassetO;
 											",
@@ -4352,7 +4322,7 @@ where ProcessUid = @ProcessUid;
 							EA.FieldTypeID AS Id 
 					from    #tempexecution EA 
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID and F.AssetID = EA.AssetID 
-							{(!isInsert ? "inner join AssetType att on att.uid = cast(EA.FieldValue as uniqueidentifier)" : "")}
+							{(!isInsert ? "inner join AssetType att on att.uid = cast(EA.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0" : "")}
 					where   EA.IsNew <> 1 and EA.Type = 'ReferenceList'
 							{(!isInsert ? "and coalesce(F.ReferenceListID,0) <> att.ID" : "")}
 
@@ -5563,7 +5533,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								set		T.ReferenceListID = att.ID
 								from	{fieldTable} T
 								inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'ReferenceList'
-								inner join AssetType att on att.Uid = try_cast(T.FieldValue as uniqueidentifier)
+								inner join AssetType att on att.Uid = try_cast(T.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0
 								where T.ExecutionId = @executionid;
 								",
 								new { executionID }, commandTimeout: timeout, transaction: trans);
