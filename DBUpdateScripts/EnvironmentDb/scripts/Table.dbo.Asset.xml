@@ -90,14 +90,58 @@ end
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v8">
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v9">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF EXISTS (select * from sys.indexes where name = 'CIX_Asset')
 BEGIN
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetPath]  DROP  CONSTRAINT [FK_AssetPath_Asset];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile]  DROP  CONSTRAINT [FK_AssetDataProfile_Asset];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
+	BEGIN
+	ALTER TABLE [dbo].[AssetProcessDiagram]  DROP  CONSTRAINT [FK_AssetProcessDiagram_AssetID];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_ASSETTAG_ASSET')
+	BEGIN
+	ALTER TABLE [dbo].[AssetTag]  DROP  CONSTRAINT [FK_ASSETTAG_ASSET];
+	END
+
 	ALTER TABLE [dbo].[Asset] DROP CONSTRAINT [PK_Asset]
 	DROP INDEX [CIX_Asset] ON [dbo].[Asset]
 	ALTER TABLE [dbo].[Asset] ADD CONSTRAINT [PK_Asset] PRIMARY KEY CLUSTERED ( [ID] ASC )
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetPath]  WITH CHECK ADD  CONSTRAINT [FK_AssetPath_Asset] FOREIGN KEY([ID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetPath] CHECK CONSTRAINT [FK_AssetPath_Asset]
+	END
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetDataProfile] CHECK CONSTRAINT [FK_AssetDataProfile_Asset]
+	END
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
+	BEGIN
+	ALTER TABLE [dbo].[AssetProcessDiagram]  WITH CHECK ADD  CONSTRAINT [FK_AssetProcessDiagram_AssetID] FOREIGN KEY([AssetID])
+	REFERENCES [dbo].[Asset] ([ID])
+	ON DELETE CASCADE
+
+	ALTER TABLE [dbo].[AssetProcessDiagram] CHECK CONSTRAINT [FK_AssetProcessDiagram_AssetID]
+	END
+
+	IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ASSETTAG_ASSET')
+	BEGIN
+	ALTER TABLE [dbo].[AssetTag]  WITH CHECK ADD  CONSTRAINT [FK_ASSETTAG_ASSET] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetTag] CHECK CONSTRAINT [FK_ASSETTAG_ASSET]
+	END
 END
 
 IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_Include')
