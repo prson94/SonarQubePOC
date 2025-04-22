@@ -90,7 +90,7 @@ end
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v9">
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v10">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF EXISTS (select * from sys.indexes where name = 'CIX_Asset')
@@ -214,15 +214,6 @@ BEGIN
 	create nonclustered index [IX_Asset_KeyPath] ON [dbo].[Asset] ( [KeyPath] ASC ) include([AssetTypeID],[Uid],[State])
 END
 
-IF NOT EXISTS (
-	select	1
-	from	[sys].[fulltext_indexes] i 
-				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Asset'
-		)
-BEGIN
-	CREATE FULLTEXT INDEX ON dbo.Asset(DisplayValue) KEY INDEX PK_Asset ON fullTextCatalog
-END
-
 -- clean dupe SourceID before applying unique index below.
 update	T
 set		T.SourceID = null
@@ -244,5 +235,20 @@ END
 ]]>
     </sql>
   </changeSet>
+
+ <changeSet author="PuneetGupta" id="Table.dbo.Asset-FTI-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Asset'
+		)
+BEGIN
+	CREATE FULLTEXT INDEX ON dbo.Asset(DisplayValue) KEY INDEX PK_Asset ON fullTextCatalog
+END
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
