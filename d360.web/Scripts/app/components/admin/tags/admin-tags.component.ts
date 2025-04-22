@@ -1,5 +1,4 @@
-﻿/* eslint-disable no-debugger */
-import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -20,7 +19,7 @@ import {
     LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of} from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';

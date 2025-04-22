@@ -1,8 +1,7 @@
-/* eslint-disable no-debugger */
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagApiModel, TagPermissionItem, TagType } from '../models/tag.model';
-import { Observable, throwError } from 'rxjs';
+import { Observable} from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
