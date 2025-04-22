@@ -1,7 +1,7 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagApiModel, TagPermissionItem, TagType } from '../models/tag.model';
-import { Observable } from 'rxjs';
+import { Observable} from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
@@ -50,9 +50,16 @@ export class TagService extends BaseObservableService {
         return this.http.delete(url)
             .pipe(map((response) => <any>response),
 				catchError((err) => {
+					if (err.status === 404) {
+						this.messages.showError('Error', err.error.message);
+						return of({
+							isError: true,
+							statusCode: 404,
+							errorMessage: err.error.message,
+							status: 'error'
+						});
+					}
 					this.handleError(err, true);
-					this.messages.showError('Error', err.error.message);
-					return of({ error: true, message: "" }); 
 				}));
     }
 

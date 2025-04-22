@@ -19,7 +19,7 @@ import {
     LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of} from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
@@ -466,8 +466,23 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     deleteTags() {
-        this.tagsService.deleteTags(this.selected).
-            subscribe((result) => {
+		const subscription = this.tagsService.deleteTags(this.selected).
+			subscribe((result) => {
+				if (result.statusCode === 404) {
+					subscription.unsubscribe();
+					this.selected = [];
+					this.triggerRerenderOfSelection();
+					this.itemToEdit = null;
+					this.lastSelectedElement = null;
+					this.cdRef.markForCheck();
+					this.showDelete = false;
+					if (this.selectedTagTypeUid.trim() === "") {
+						this.getTags(); 
+					} else {
+						this.getTags(this.selectedTagTypeUid); 
+					}
+					return;
+				}
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
 				if (result.type !== 'error') {
