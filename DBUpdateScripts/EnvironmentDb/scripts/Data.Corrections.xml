@@ -1340,7 +1340,7 @@ UPDATE f
 SET    f.ReferenceListID = at.ID 
 FROM dbo.[Field] f
 --SET    ReferenceListID = [Value] 
-INNER JOIN AssetType at on f.Value = at.ObjectID and at.[Object] = 'ReferenceItemType'
+INNER JOIN AssetType at on at.ObjectID = try_cast(f.[Value] as int) and at.[Object] = 'ReferenceItemType'
 WHERE  f.FieldTypeID in (
           SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
        );
