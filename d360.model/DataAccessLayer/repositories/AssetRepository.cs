@@ -2267,7 +2267,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						else
 						{
 							var val = rowValues[field.Name];
-							setCellValueFromField(document, rowNumber, index, field, val);
+
+							//check for reference list
+							if (field.Type == DataType.ReferenceList.ToString() && !string.IsNullOrWhiteSpace(val?.ToString()))
+							{
+								object cellValue = string.Empty;
+								JArray jsonArray = JArray.Parse(val.ToString());
+								cellValue = jsonArray[0]["Name"]?.ToString() ?? string.Empty;
+								setCellValueFromField(document, rowNumber, index, field, cellValue);
+							}
+							else
+							{
+								setCellValueFromField(document, rowNumber, index, field, val);
+							}
 						}
 
 					}
