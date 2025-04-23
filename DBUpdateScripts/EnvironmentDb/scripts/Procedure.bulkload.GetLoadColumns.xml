@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric,Puneet" id="Procedure.bulkload.GetLoadColumns-v25">
-    <comment>GOV-34122</comment>
+  <changeSet author="tduric,Puneet,AmitYadav" id="Procedure.bulkload.GetLoadColumns-v26">
+    <comment>GOV-29084</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,10 +27,13 @@ begin
 	declare @TagActionLookupIDIdentifier int = 1006;
 	
 	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, 
-	                       PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int,LookUpID int default 0,
+	                       PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int,LookUpID int default 0,IsReferenceList int default 0,
 						   index ix1_tmp_fields (fieldtypeid,lookupid))
 	declare @lookups table ([Value] uniqueidentifier, FieldTypeID int, [Label] nvarchar(max),LookUpID int default 0,
 	                        index ix1_tmp_lookups (fieldtypeid,lookupid))
+
+	declare @refList table ([Value] uniqueidentifier, [Label] nvarchar(max))
+
 	declare @current int = 1,
 			@max int,
 			@isLookup bit = 0,
@@ -44,7 +47,7 @@ begin
 			insert into @fieldType 
 			select id from fieldtype where intersecttypeid = @id;
 		end
-	else if @type = 'IntersectType' 
+	else if @type = 'IssueType' 
 		begin
 			insert into @fieldType 
 			select id from fieldtype where issuetypeid = @id;
@@ -129,7 +132,7 @@ begin
 			end
 			else
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID, IsReferenceList)
 					select	ID, 
 							'Subject ' + Name, 
 							IsRequired, 
@@ -143,7 +146,11 @@ begin
 							case [Type]
 								when 'Lookup' then ID
 								else 0
-							end as LookUpID
+							end as LookUpID,
+							case [Type]
+								when 'ReferenceList' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsReferenceList 
 					from	FieldType
 					where	IsPartOfKey = 1 and AssetTypeID = @sid
 			end
@@ -154,7 +161,7 @@ begin
 			end
 			else
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID, IsReferenceList)
 					select	ID, 
 							'Object ' + Name, 
 							IsRequired, 
@@ -168,7 +175,11 @@ begin
 							case [Type]
 								when 'Lookup' then ID
 								else 0
-							end as LookUpID							
+							end as LookUpID	,
+							case [Type]
+								when 'ReferenceList' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsReferenceList 						
 					from	FieldType 
 					where	IsPartOfKey = 1 and AssetTypeID = @oid
 			end
@@ -224,7 +235,7 @@ begin
 				set @initialDepth = @initialDepth + 1
 			end
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) 
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID, IsReferenceList) 
 				select	FT.ID, 
 						case
 							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
@@ -241,7 +252,11 @@ begin
 						case FT.Type
 							when 'Lookup' then FT.ID
 							else 0
-						end as LookUpID				
+						end as LookUpID,
+						case FT.Type
+							when 'ReferenceList' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsReferenceList 		
 				from	@levels L 
 						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.AssetTypeID = @assettypeid
 						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
@@ -270,20 +285,12 @@ begin
 		where	ID = @id
 		
 
-		if @objectClass = 9 and @objectTypeID = 0
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
-		end		
-		else
+		if not (@objectClass = 9 and @objectTypeID = 0)
 		begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
 		end
 
-		if @subjectClass = 9 and @subjectTypeID = 0
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
-		end		
-		else
+		if not (@subjectClass = 9 and @subjectTypeID = 0)
 		begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
 		end
@@ -291,7 +298,7 @@ begin
 	
 	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
 	begin
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
+		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID, IsReferenceList)
 			select		ft.ID,
 						ft.Name, 
 						case when ft.Type = 'Counter' and ft.IsPartOfKey = 1 and ft.IsRequired = 0 then 1 else ft.IsRequired end IsRequired,
@@ -305,12 +312,16 @@ begin
 						case ft.Type
 							when 'Lookup' then ft.ID
 							else 0
-						end as LookUpID
+						end as LookUpID,
+						case ft.Type
+							when 'ReferenceList' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsReferenceList 
 			from		FieldType ft
 			inner join @fieldType f on ft.id = f.id
 			where		ft.Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
 						and ( (@type = 'IntersectType' and ft.IsPartOfKey = 0) OR (@type = 'TaxonomyType' and ft.IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
-						and (ft.IsEditable = 1 or (@action = 'P' and ft.[Type] = 'JSON') or (ft.IsEditable = 0 and ft.IsRequired = 1) or (ft.Type = 'Counter'))						
+						and (ft.IsEditable = 1 or (@action = 'P' and ft.[Type] in ('JSON','ReferenceList')) or (ft.IsEditable = 0 and ft.IsRequired = 1) or (ft.Type = 'Counter'))						
 			order by	ft.ColumnOrder;
 
 			--add Tag and Tag Action columns if applicable
@@ -353,26 +364,43 @@ begin
 				insert into @lookups (FieldTypeID, [Label], [LookUpID])
 					exec('select FieldTypeID, [Text], [FieldTypeID] [LookUpID] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
 			end
+			
+			if exists(select 1 from @fields where IsReferenceList = 1)
+			begin
+				insert into @refList ([Label], [Value])
+				Select Name,Uid
+				from AssetType 
+				Where Class = 9 and objectid > 0;
+			end
+			
 	end
 	
 	select	Name,
 			[Required],
 			PartOfKey,
 			AllowMultipleValues,
-			IsLookup,
+			case when IsReferenceList = 1 then 1 else IsLookup end IsLookup,
 			F.[FieldTypeId],
 			F.[Level],
 			(
+			select * from (
 			select	L.Value,
 					L.Label
 			from	@lookups L
-			where	L.FieldTypeID = F.FieldTypeID and L.lookupid = F.lookupid
+			where	L.FieldTypeID = F.FieldTypeID and L.lookupid = F.lookupid and F.IsReferenceList = 0
+			union all
+			select	L.Value,
+					L.Label
+			from	@refList L
+			where	F.IsReferenceList = 1
+			)k
 			order by Label
 			for json path
 			) as Lookups
 	from	@fields F
 	for json path
 end
+
 		]]>
     </sql>
 	<rollback>

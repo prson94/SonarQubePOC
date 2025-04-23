@@ -314,6 +314,7 @@
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
 	<include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
+	<include file="scripts/Function.utility.GetStringWithinBrackets.xml"/>
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.api.CompleteExecution.xml"/>
