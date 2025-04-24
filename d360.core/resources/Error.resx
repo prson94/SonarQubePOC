@@ -2764,7 +2764,7 @@
     <value>Field Type '{0}' not found for asset.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>Field Type '{0}' is not supported. Allowed field types are ComplexRelationLookup, RefListRelationship and OwnershipLookup</value>
+    <value>Field Type '{0}' is not supported. Allowed field types are ComplexRelationLookup, ReferenceList and OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>Filtering using [_relationFilter] cannot be used with [_predicateUid] parameter</value>

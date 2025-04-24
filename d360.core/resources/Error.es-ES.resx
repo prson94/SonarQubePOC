@@ -2193,9 +2193,6 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>La ruta {Route} se desconoce o está obsoleta</value>
   </data>
-  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
-    <value>No se ha encontrado ningún tipo de activo con el [{0}] proporcionado.</value>
-  </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>No se ha encontrado ningún tipo de intersección con el intersectTypeUid proporcionado.</value>
   </data>
@@ -2731,7 +2728,7 @@
     <value>No se ha encontrado el tipo de campo '{0}' para el activo.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>El tipo de campo '{0}' no es compatible. Los tipos de campo permitidos son ComplexRelationLookup, RefListRelationship y OwnershipLookup</value>
+    <value>El tipo de campo '{0}' no es compatible. Los tipos de campo permitidos son ComplexRelationLookup, ReferenceList y OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>El filtrado mediante [_relationFilter] no puede utilizarse con el parámetro [_predicateUid]</value>
@@ -3212,6 +3209,9 @@
   </data>
   <data name="TagUidNotFound" xml:space="preserve">
     <value>No se ha encontrado la etiqueta con el UID {0}.</value>
+  </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>No se ha encontrado ningún tipo de activo con el [{0}] proporcionado.</value>
   </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>[_resourceUid] proporcionado no válido</value>

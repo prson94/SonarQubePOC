@@ -2959,7 +2959,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field Type &apos;{0}&apos; is not supported. Allowed field types are ComplexRelationLookup, RefListRelationship and OwnershipLookup.
+        ///   Looks up a localized string similar to Field Type &apos;{0}&apos; is not supported. Allowed field types are ComplexRelationLookup, ReferenceList and OwnershipLookup.
         /// </summary>
         public static string FieldTypeNotSupport {
             get {

@@ -189,7 +189,7 @@ namespace d360.web.Controllers
 					Category = ft.Category
 				});
 			}
-			else if (!string.IsNullOrEmpty(formattedValue))
+			else if (!string.IsNullOrEmpty(formattedValue) && ft.Type != DataType.ReferenceList.ToString())
 			{
 				var ro = new ReadOnlyField
 				{
@@ -346,7 +346,7 @@ namespace d360.web.Controllers
 			{
 				list.AddRange(RenderTagField(ft, type, id));
 			}
-			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString())
+			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString() || ft.Type == DataType.ReferenceList.ToString())
 			{
 				//look at ownershiplookup / relationship lookup / reference list lookup field and figure out what to show
 				list.AddRange(await RenderComplexLookupField(type.ToString(), id, ft, complexRelationFieldHasAnyModel).ConfigureAwait(false));
@@ -1852,11 +1852,11 @@ namespace d360.web.Controllers
 
 				}
 
-				//if (fieldType.Type == "RefListRelationship")
-				//{
-				//	(Columns, Fields, Values, count) =
-				//	   await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
-				//}
+				if (fieldType.Type == DataType.ReferenceList.ToString())
+				{
+					(Columns, Fields, Values, count) =
+					   await fieldsRepository.GetReferenceListGrid(fields, dbArgs, "", "", "", "", countOnly: true);
+				}
 
 				if (fieldType.Type == "OwnershipLookup")
 				{

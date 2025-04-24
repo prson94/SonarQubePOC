@@ -1561,7 +1561,15 @@ namespace d360.web.Controllers
 						{
 							if (f != null)
 							{
-								if (!string.IsNullOrEmpty(f.Value))
+								if (ft.Type == DataType.ReferenceList.ToString())
+								{
+									var refAssetType = Company.AssetTypes.Where(at => at.ID == f.ReferenceListID).FirstOrDefault();
+									if (refAssetType != null)
+									{
+										fld.Value = refAssetType.uid.ToString().ToLowerInvariant();
+									}
+
+								} else if (!string.IsNullOrEmpty(f.Value))
 								{
 									fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
 								}
