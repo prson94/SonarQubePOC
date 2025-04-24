@@ -106,11 +106,11 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
 		if (this.fieldType === 'referencelist') {
 			try {
-				var fv = JSON.parse(this.fieldValue);
+				const fv = JSON.parse(this.fieldValue);
 				if (fv && typeof fv === "object") {
 					this.fieldValue = fv[0].Name;
 				}
-			} catch (e) { }
+			} catch (e) { /* empty */ }
 		}
     }
 
