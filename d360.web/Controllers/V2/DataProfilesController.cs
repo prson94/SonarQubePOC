@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -472,7 +473,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()))).ConfigureAwait(false);
             }
 
             var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
@@ -537,14 +538,14 @@ namespace d360.web.Controllers.V2
 				}
 				if(assetUid == Guid.Empty)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()));
 				}
 
 				Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
 				if (asset == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetNotFoundError, assetUid.ToString()))).ConfigureAwait(false);
 				}
 
 				if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
@@ -696,7 +697,6 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("batch"),
-            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
@@ -924,19 +924,19 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+				}
 
-                if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
+				if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
                 {
                     string[] allowedValues = new[] { "asc", "desc" };
                     var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
-                    if (!allowedValues.Contains(directionFilter))
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
-                    }
-                }
+					if (!allowedValues.Contains(directionFilter))
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
+					}
+				}
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
                 {
@@ -945,27 +945,26 @@ namespace d360.web.Controllers.V2
 
                     if (!allowedValues.Contains(directionFilter))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid)).ConfigureAwait(false);
-                    }
-                }
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid)).ConfigureAwait(false);
+					}
+				}
 
                 if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid)).ConfigureAwait(false);
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid)).ConfigureAwait(false);
+				}
 
 				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
-                }
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
+				}
 
-                if (minConfidence <= 0 || minConfidence > 1)
+				if (minConfidence <= 0 || minConfidence > 1)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid)).ConfigureAwait(false);
                 }
 
-                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
-                HttpResponseMessage response;
+				var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
 
                 if (isStreamResponse)
                 {
@@ -974,16 +973,23 @@ namespace d360.web.Controllers.V2
                     document.SelectWorksheet(Label.Common_ItemsSheetName);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
 
-                    response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeAssetExportFilename, semantic.Name, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+					var result = new HttpResponseMessage(HttpStatusCode.OK)
+					{
+						Content = new ByteArrayContent(stream.GetBuffer())
+					};
+					result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+					{
+						FileName = string.Format(Label.SemanticTypeAssetExportFilename, semantic.Name, DateTime.Now.ToString("ddd MMM dd yyyy"))
+					};
+					result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+					return ResponseMessage(result);
                 }
                 else
                 {
-                    response = Request.CreateResponse(HttpStatusCode.OK, results);
+					return Ok(results);
                 }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
             catch (FilterExpressionParserException ex)
             {
@@ -1113,7 +1119,7 @@ namespace d360.web.Controllers.V2
 
             if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetUid, assetUid));
+                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, assetUid));
             }
 
             if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
@@ -1349,13 +1355,12 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
-            var apiModels = await SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
+			var apiModels = await Catalog.ReadSemanticTypesAsync(queryParams); //SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
             HttpResponseMessage response;
 
             if (isStreamResponse)
             {
-                bool includeDisabled=false;
-
+                bool includeDisabled = false;
                 if (queryParams.Any(q => q.Key == "_includeDisabled"))
                 {
                     var _includeDisabled = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeDisabled").Value;                       
@@ -1365,21 +1370,14 @@ namespace d360.web.Controllers.V2
                         includeDisabled = false;
                     }
                 }
-
-                SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels, includeDisabled);
-                document.SelectWorksheet(Label.Common_ItemsSheetName);
-                var stream = new MemoryStream();
-                document.SaveAs(stream);
-                byte[] bytes = stream.ToArray();
-
-                response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+				
+                SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels.Data, includeDisabled);
+				return Excel(document, string.Format(Label.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")));
             }
             else
             {
-                response = Request.CreateResponse(HttpStatusCode.OK, apiModels);
+                return Ok(apiModels.Data);
             }
-
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1447,7 +1445,7 @@ namespace d360.web.Controllers.V2
             SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type statuses.", typeof(List<SemanticStatusInfo>)),
         ]
-        public async Task<IHttpActionResult> GetSemanticTypeStatuses()
+        public async Task<HttpResponseMessage> GetSemanticTypeStatuses()
         {
             var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
             List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
@@ -1482,13 +1480,14 @@ namespace d360.web.Controllers.V2
                 byte[] bytes = stream.ToArray();
 
                 response = createFileResponseMessage(HttpStatusCode.OK, string.Format(Label.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+
             }
             else
             {
                 response = Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList());
             }
 
-            return Ok(response);
+            return response;
         }
 
         /// <summary>
@@ -1645,7 +1644,7 @@ namespace d360.web.Controllers.V2
 		/// Create the Excel document for export
 		/// </summary>
 		/// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-		private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
+		private SLDocument CreateResponseDocumentForSemanticTypesExport(PagedApiBaseViewModel<GetSemantic> semantics, bool includeDisabled = false)
         {
             ExcelRow HeaderRow = new ExcelRow
                         {
@@ -1813,6 +1812,7 @@ namespace d360.web.Controllers.V2
 
             return document.ToSLDocument();
         }
-        #endregion
-    }
+
+		#endregion
+	}
 }

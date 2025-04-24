@@ -5,26 +5,44 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.2">
+  <changeSet author="Pappas,PuneetGupta" id="Procedure.api.UpsertChangeLog-v1.5">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertChangeLog
 	@executionId int,
-	@object varchar(50)
+	@object varchar(50),
+	@Assetid bigint = 0
 as
 begin
 	set nocount on;
 	declare @userId int,
 			@date datetime;
 		
+	drop table if exists #Assets;
+	create table #Assets ([Uid] uniqueidentifier, ObjectID int, AssetID bigint);
+
+	if ( @executionId is null and coalesce(@Assetid,0) > 0)
+	begin
+		select	@userId = CreatedBy,
+				@date = CreatedOn
+		from	Asset 
+		where	ID = @Assetid;
+
+		-- Get data from JSON columns in api.ExecutionItem
+		insert into #Assets (Uid, ObjectID, AssetID)
+		select	Uid,
+				ObjectID,
+				ID
+		from	Asset
+		where	ID = @Assetid;
+	end
+	else
+	begin
 	select	@userId = ResourceID,
 			@date = StartedOn
 	from	api.Execution 
 	where	ID = @executionId;
 
-	drop table if exists #Assets;
-	create table #Assets ([Uid] uniqueidentifier, ObjectID int, AssetID bigint);
-	
 	-- Get data from JSON columns in api.ExecutionItem
 	insert into #Assets (Uid, ObjectID, AssetID)
 		select	Uid,
@@ -32,13 +50,15 @@ begin
 				AssetID
 		from	#Items
 		where	IsValid is null;
+	end
+	
 
 	declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
 	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 	output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 		select	a.Object, 
 				a.ObjectId,
-				d.DisplayValue, 
+				substring(d.DisplayValue,1,250), 
 				@userId, 
 				@date, 
 				mv.[Version],
@@ -46,7 +66,7 @@ begin
 				a.Object, 
 				a.ObjectId,
 				t.Name, 
-				d.DisplayValue, 
+				substring(d.DisplayValue,1,250),  
 				'This has been ' + iif(mv.[Version] = 1, 'created', 'updated') + '.' 
 		from	#Assets l
 				inner join Asset a on a.Id = l.AssetID
@@ -79,12 +99,12 @@ begin
 					order by RowNum asc
 				) pv
 		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FormattedValue,'') != '') 
-					or (coalesce(f.Value,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
+					or (coalesce(f.FormattedValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
 					
+	drop table if exists #fieldata;
+	create table #fieldata (ObjectID int,SeqId int,FieldTypeID int,FieldName nvarchar(250),FieldValue NVARCHAR(4000),LookupValue NVARCHAR(4000))
 	if (@object = 'Group')
 	begin
-		drop table if exists #fieldata;
-		create table #fieldata (ObjectID int,SeqId int,FieldTypeID int,FieldName nvarchar(250),FieldValue NVARCHAR(4000),LookupValue NVARCHAR(4000))
 		insert into #fieldata
 		select A.ObjectID,1 SeqId,0 as FieldTypeID, 'Name' as FieldName, G.Name as FieldValue, cast(null as nvarchar(max)) as LookupValue
 		from #Assets A
@@ -133,6 +153,54 @@ begin
 			order by tt.ID,F.SeqId;
 
 	end
+
+	if (@object = 'Resource')
+	begin
+		insert into #fieldata
+		select A.ObjectID,1 SeqId,0 as FieldTypeID, 'FirstName' as FieldName, R.FirstName as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join reporting.Global_Resource R on A.ObjectID = R.ResourceID 
+		union all
+		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'LastName' as FieldName, R.LastName as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join reporting.Global_Resource R on A.ObjectID = R.ResourceID 
+		union all
+		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'Username' as FieldName, R.email as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join reporting.Global_Resource R on A.ObjectID = R.ResourceID 
+		union all
+		select A.ObjectID,2 SeqId,0 as FieldTypeID, 'IsAdministrator' as FieldName, iif(R.IsAdministrator = 1, 'true', 'false') as FieldValue, cast(null as nvarchar(max)) as LookupValue
+		from #Assets A
+		inner join reporting.Global_Resource R on A.ObjectID = R.ResourceID 
+		;
+		
+		insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+			select	tt.ID as AuditID,
+					coalesce(f.FieldTypeID, 0),
+					f.FieldName,
+					f.[FieldValue],
+					pv.[Value] as PreviousValue
+			from	#Assets l
+					inner join @tbl tt on tt.Object = @object and tt.ObjectID = l.ObjectID
+					inner join #fieldata f on f.ObjectID = l.ObjectID
+					outer apply (
+						select	top 1
+								ROW_NUMBER() OVER (PARTITION BY 
+									i_a.Object, 
+									i_a.ObjectID, 
+									i_p.FieldName 
+									ORDER BY i_p.[AuditId] DESC) as RowNum,
+								[Value]
+						from	reporting.Global_FieldAudit i_p
+								inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = @object and i_a.ObjectID = l.ObjectID and i_p.fieldName = f.fieldName and i_p.FieldTypeId = 0
+						order by RowNum asc
+					) pv
+			where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+						or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS))
+			order by tt.ID,F.SeqId;
+	end
+	drop table if exists #fieldata;
+
 end
 ]]>
     </sql>

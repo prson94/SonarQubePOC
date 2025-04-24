@@ -86,7 +86,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
 
     getResults(pageNum: number, pageSize: number, sortField: string = null, sortOrder: string = null) {
         if (this.scoreItem) {
-            if (this.scoreItem.ScoreType === ScoreType.DataQuality) {
+            if (this.scoreItem?.ScoreType === ScoreType.DataQuality) {
                 this.isLoading = true;
                 if (this.currentSearchPhrase) {
                     this.currentSearchPhrase = this.currentSearchPhrase.replace("&", "");

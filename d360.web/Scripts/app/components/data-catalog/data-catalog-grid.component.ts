@@ -3,14 +3,12 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { Table } from 'primeng/table';
-import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
+import { debounceTime, Observable, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { Predicate, PredicateType } from '../../models/predicate.model';
 import { DataCatalogService } from '../../services/dataCatalog.service';
-import { FeatureFlags } from '../../services/feature-flags.enum';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { PredicatesService } from '../../services/predicates.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -21,8 +19,8 @@ import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/ad
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
-
-/*global $localize*/
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-data-catalog-grid',
@@ -59,7 +57,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		private predicateService: PredicatesService,
 		public sidePanelService: SidePanelService,
 		settingsService: CompanySettingsService,
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
 		private cdRef: ChangeDetectorRef,
 		private titleService: Title,
 		public headerBreadcrumbService: HeaderBreadcrumbService,
@@ -68,7 +66,10 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService);
 
-		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
+		featureFlagService.getFlagValue(FeatureFlags.ContainsSearchDefaultUi).then((flag) => {
+			this.isContainsSearchDefault = flag;
+		});
+
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
 		this.gridSortData = new GridSortData("DataCatalog");
 

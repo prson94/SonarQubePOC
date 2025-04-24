@@ -1,22 +1,20 @@
 ﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
-
 import * as Highcharts from 'highcharts';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SemanticType } from '../../../models/semantic-type.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { AuthenticationService } from '../../../services/authentication.service';
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'data-profile',
     templateUrl: './dataprofile.component.html',
     styleUrls: ['dataprofile.less']
 })
-
 export class DataProfileComponent extends BaseComponent implements OnChanges {
     @Input() dataProfile: any;
     @Input() isModal: boolean = false;
@@ -30,16 +28,22 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
     semanticTypeChecked: boolean = false;
     isAdmin: boolean = false;
 
+	showSemanticTypeUi: boolean;
+
     constructor(
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
         protected settingsService: CompanySettingsService,
         private dataProfileService: DataProfileService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: LaunchDarklyService,
+        featureFlagService: FeatureFlagsInitService,
         private authenticationService: AuthenticationService
     ) {
-        super(settingsService);
+		super(settingsService);
+
+		featureFlagService.getFlagValue(FeatureFlags.SemanticTypesUiFlag).then((flag) => {
+			this.showSemanticTypeUi = flag;
+		});
 	}
 
     private sampleCountPercentage: number;
@@ -119,7 +123,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
 		this.hasDefinedType = false;
         const startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
-        if (this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
+		if (this.showSemanticTypeUi) {
             this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 1) {
@@ -135,7 +139,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
                 this.isAdmin = res;
             });
 
-            if (this.dataProfile.typeQualifier && this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
+			if (this.dataProfile.typeQualifier && this.showSemanticTypeUi) {
                 this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
                     this.semanticType = s.items[0];
                     if (this.semanticType) {

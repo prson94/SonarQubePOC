@@ -2,9 +2,7 @@
 using d360.extensions.caching;
 using d360.extensions.events;
 using d360.extensions.mail;
-using d360.extensions.search;
 using d360.extensions.storage;
-using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -47,16 +45,6 @@ namespace igx.jobs.apiexecutionprocessor
 							ApiKey = context.Configuration[constants.Setting.MailKey],
 							SubAccount = context.Configuration[constants.Setting.MailAccount]
 						};
-					});
-					services.AddScoped(o =>
-					{
-						return new ElasticSearchSource
-						{
-							CommunityConnectionString = context.Configuration[constants.Setting.ReadOnlyConnection]
-						};
-					});
-					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 				});
 

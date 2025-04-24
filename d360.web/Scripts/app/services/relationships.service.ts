@@ -18,8 +18,8 @@ import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 import { clone } from "lodash-es";
 import { Predicate } from '../models/predicate.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "./feature-flags.enum";
+import { FeatureFlagsInitService } from './feature-flags-init.service';
+import { FeatureFlags } from '../_shared/models/feature-flags';
 
 @Injectable({
 	providedIn: 'root'
@@ -28,7 +28,15 @@ export class RelationshipsService extends BaseObservableService {
 
 	private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;
 
-	constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: LaunchDarklyService) { super(messagesService); }
+	relationshipCardinality: boolean;
+
+	constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsInitService) {
+		super(messagesService);
+
+		featureFlagService.getFlagValue(FeatureFlags.RelationshipCardinality).then((flag) => {
+			this.relationshipCardinality = flag;
+		});
+	}
 
 	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false, includeDisplayFormat: boolean = false): Observable<RelationshipType[]> {
         let url = 'api/v2/relationships/types?state=1';
@@ -39,7 +47,7 @@ export class RelationshipsService extends BaseObservableService {
 
 		if (includeHasRelationships) {
 			url += `&includeHasRelationships=true`;
-			if (this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)) {
+			if (this.relationshipCardinality) {
 				url += `&includeHasFieldFromRelationship=true`;
 				url += `&includeHasListableRelationship=true`;
 			}
@@ -108,7 +116,7 @@ export class RelationshipsService extends BaseObservableService {
 	saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
 		if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
 			const models: any[] = [];
-			for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
+			for (let i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
 				models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
 			const obsArr: Observable<ApiResult[]>[] = [];

@@ -223,9 +223,6 @@ export module SettingsHelper {
             new SearchType($localize`Models`, "Model"),
             new SearchType($localize`Policies`, "Policy"),
             new SearchType($localize`Rules`, "Rule"),
-            new SearchType($localize`Reference Lists`, "Reference"),
-            new SearchType($localize`Grammatic Types`, "Synonym"),
-            new SearchType($localize`Semantic Types`, "SemanticType"),
             new SearchType($localize`Groups`, "Group"),
             new SearchType($localize`Users`, "User"),
         ];

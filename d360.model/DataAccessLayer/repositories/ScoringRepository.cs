@@ -1,11 +1,9 @@
-﻿using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -21,8 +19,8 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 
-		public ScoringRepository(ICompanyContext companyContext, ISecurityContextProvider securityContext, IQueueSource queue, IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+		public ScoringRepository(ICompanyContext companyContext, ISecurityContextProvider securityContext, IQueueSource queue)
+			: base(companyContext, securityContext)
 		{
 			Queue = queue;
 		}

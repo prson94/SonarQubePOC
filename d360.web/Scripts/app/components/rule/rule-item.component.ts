@@ -17,7 +17,6 @@ import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
@@ -25,7 +24,6 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 	providers: [RulesService, PermissionsService, WebAnalyticsService],
 	templateUrl: 'rule-item.component.html'
 })
-
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() assetUid: string;
 
@@ -51,7 +49,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		launchDarklyService: LaunchDarklyService,
 		private messagesService: MessagesObservableService
 	) {
 		super(settingsService);
@@ -59,7 +56,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 		this.webAnalyticsService = webAnalyticsService;
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
-		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {
@@ -112,7 +108,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 					this.rule = result;
 
 					this.setBrowserTitle(this.titleService, this.rule.Name);
-					console.log(this.rule);
 					this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
 					this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 

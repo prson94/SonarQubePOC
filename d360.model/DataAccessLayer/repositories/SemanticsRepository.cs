@@ -4,7 +4,6 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -31,9 +30,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
-			IStorageProvider storageProvider, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storageProvider)
+			: base(companyContext, securityContext)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;

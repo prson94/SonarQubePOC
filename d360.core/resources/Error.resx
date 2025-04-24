@@ -628,9 +628,6 @@
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
     <value>This asset type may not have a [Type.Score] value</value>
   </data>
-  <data name="AssetTypeUidNotFound" xml:space="preserve">
-    <value>Asset Type not found based on Uid provided [{0}].</value>
-  </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
     <value>You may not provide an [AssetTypeUid] since you have already provided an [ActionTypeUid].</value>
   </data>
@@ -745,9 +742,6 @@
   </data>
   <data name="GroupInvalidFieldType" xml:space="preserve">
     <value>Groups cannot have {0} field type!</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>You have not provided a valid Asset type uid for this request.</value>
   </data>
   <data name="InvalidField" xml:space="preserve">
     <value>Invalid Field {0}</value>
@@ -1136,9 +1130,6 @@
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter '{0}' has invalid GUID value</value>
-  </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>No Asset Type found for given Guid</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
     <value>[Class] value invalid. Allowed classes are {0}</value>
@@ -1698,9 +1689,6 @@
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
     <value>Either [AssetTypeUid] or [AssetUid] must be provided.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} is not a valid Asset Type Uid.</value>
-  </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Uid.</value>
   </data>
@@ -1790,9 +1778,6 @@
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>The current user is not an administrator.</value>
-  </data>
-  <data name="InvalidAssetUidAttached" xml:space="preserve">
-    <value>AssetUid {0} is invalid</value>
   </data>
   <data name="InvalidDirectionSimple" xml:space="preserve">
     <value>Invalid value for parameter [_direction]. Allowed values are 'desc' and 'asc'.</value>
@@ -1967,9 +1952,6 @@
   </data>
   <data name="FileUploadMessage" xml:space="preserve">
     <value>File Successfully uploaded</value>
-  </data>
-  <data name="InvalidAssetTypeID" xml:space="preserve">
-    <value>Invalid Asset Type ID.Provide Valid Asset Type ID.</value>
   </data>
   <data name="InvalidBoolean" xml:space="preserve">
     <value>Provided value is not a valid boolean</value>
@@ -2166,9 +2148,6 @@
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>Invalid intersect type id</value>
   </data>
-  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Asset cross reference model does not contain required fields.</value>
-  </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Invalid [_includeChildAssets] provided</value>
   </data>
@@ -2237,9 +2216,6 @@
   </data>
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Route {Route} is unknown or deprecated</value>
-  </data>
-  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>No asset type found with [assetTypeUid] provided.</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>No intersect type found with intersectTypeUid provided.</value>
@@ -3299,5 +3275,35 @@
   </data>
   <data name="ErrorAddingComment" xml:space="preserve">
     <value>Error adding comment</value>
+  </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Invalid Asset Type Uid provided [{0}].</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Asset Type not found based on Uid provided [{0}].</value>
+  </data>
+  <data name="DisabledByEnvironmentSetting" xml:space="preserve">
+    <value>Not allowed due to feature being disable via setting: {0}.</value>
+  </data>
+  <data name="AssetTypeEditAssetPermissionsDenied" xml:space="preserve">
+    <value>You are not allowed to update assets of this type.</value>
+  </data>
+  <data name="Invalid_ResourceUID" xml:space="preserve">
+    <value>Invalid [_resourceuid] provided!</value>
+  </data>
+  <data name="DashboardingErrorOnUpdate" xml:space="preserve">
+    <value>Error updating dashboard</value>
+  </data>
+  <data name="ErrorUpsertTheme" xml:space="preserve">
+    <value>Error during Upsert Theme.</value>
+  </data>
+  <data name="ErrorRemoveTheme" xml:space="preserve">
+    <value>Error during remove theme.</value>
+  </data>
+  <data name="BadTagType" xml:space="preserve">
+    <value>Allowed max length for TagType is 50</value>
+  </data>
+  <data name="MaxValueViolationError" xml:space="preserve">
+    <value>{0} must not be greater than {1}</value>
   </data>
 </root>

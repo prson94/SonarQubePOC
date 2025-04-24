@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
-
 using Dapper;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -29,7 +23,7 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 
-		public TagRepository(ICompanyContext company, ISecurityContextProvider securityContext, IFeatureFlagService ff, IQueueSource queue) : base(company, securityContext, ff)
+		public TagRepository(ICompanyContext company, ISecurityContextProvider securityContext, IQueueSource queue) : base(company, securityContext)
 		{
 			Queue = queue;
 		}
@@ -549,6 +543,8 @@ where t.uid in @uids
 						END + AST.Name AS AssetType, 
 						A.Object,
 						A.ObjectID,
+						A.CreatedOn as AssetCreatedDate,
+						grc.FirstName + ' ' + grc.LastName as AssetCreatedBy,
 						AssetTags.Tags as Tags
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
@@ -581,7 +577,14 @@ where t.uid in @uids
 
 			if (assetUid.HasValue)
 			{
-				sql = @"select	T.Value, T.TagTypeId,TT.uid as TagTypeUID,
+				sql = @"
+							declare @AssetID bigint;
+
+							select @AssetID = id 
+							from asset 
+							where uid = @assetUid;
+
+							select	T.Value, T.TagTypeId,TT.uid as TagTypeUID,
 									TA.CreatedOn, 
 									ADV.DisplayValue as CreatedBy,
 									T.Uid as TagUid
@@ -592,7 +595,7 @@ where t.uid in @uids
 									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
 									inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 							where	T.[Uid] = @tagUid 
-									and A.[Uid] = @assetUid";
+									and A.[id] = @AssetID";
 			}
 			else
 			{

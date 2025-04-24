@@ -1,20 +1,14 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-
 import { RouterModule } from '@angular/router';
-
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TreeModule } from 'primeng/tree';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DialogModule } from 'primeng/dialog';
 import { SharedModule } from 'primeng/api';
-
 import { PipesModule } from '../../../pipes/pipes.module';
-
 import { TooltipModule } from 'primeng/tooltip';
-
 import { HeaderActionsComponent } from './header-actions.component';
 import { HeaderBreadcrumbItemComponent } from './header-breadcrumb-item.component';
 import { HeaderBreadcrumbComponent } from './header-breadcrumb.component';
@@ -25,7 +19,6 @@ import { HeaderComponent } from './header.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
 import { HeaderMiniMenuComponent } from './header-mini-menu-component';
-import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
@@ -37,7 +30,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 import { RaiseIssueModule } from '../../admin/actions/raise-action/raise-issue.module';
 import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.module";
-
+import { TypeaheadSearch } from '../../../_shared/components/typeahead-search';
 
 @NgModule({
     imports: [
@@ -49,7 +42,7 @@ import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.modul
         //d3s
         CoreModule,
         PipesModule,
-        TypeaheadSearchModule,
+        TypeaheadSearch,
         ThirdPartyLicensesModule,
 
         //primeng        
@@ -85,9 +78,6 @@ import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.modul
     exports: [
         HeaderComponent,
         UseBreadcrumbsComponent
-    ],
-    providers: [
-
     ]
 })
 export class HeaderModule { }

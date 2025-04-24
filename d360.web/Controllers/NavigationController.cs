@@ -4,10 +4,10 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,12 +79,12 @@ namespace d360.web.Controllers
 				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, await GetFeatureFlagUser(), true))
+			if (!await Set.CommunityFlags.GetFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Dashboards").ToList();
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser(), false))
+			if (!await Set.CommunityFlags.GetFlagValue(FlagList.SEMANTIC_TYPES_UI))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
@@ -221,10 +221,9 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("GetSiteNavItems")]
-		public JsonNetResult GetSiteNavItems()
+		public async Task<JsonNetResult> GetSiteNavItems()
 		{
-			var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, ffUser);			
+			var allowSemantics = await Set.CommunityFlags.GetFlagValue(FlagList.SEMANTIC_TYPES_UI);
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
@@ -1410,7 +1409,7 @@ namespace d360.web.Controllers
 				responseModel.Uid = model.AssetUid.Value;
 			}
 
-			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, await GetFeatureFlagUser()))
+			if (model.ObjectType == SystemObjects.SemanticType.ToString() && await GetFeatureFlagValue(FlagList.SEMANTIC_TYPES_UI))
 			{
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();

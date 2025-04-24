@@ -447,9 +447,9 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "assets/class/Reference",
+                RoutePattern = "reference",
                 PageType = FavoritePageType.ResourceListPage,
-                GetName = FixedName(() => Label.ReferenceTypesPage),
+                GetName = FixedName(() => Label.ReferenceListsPage),
                 ForcedAssetClass = AssetTypeClass.Reference
             },
 
@@ -465,19 +465,38 @@ namespace d360.web.Services.Favorites
                 RoutePattern = "community",
                 PageType = FavoritePageType.CommunityPage,
                 GetName = FixedName(() => Label.CommunityPage),
-            },
+			},
             new FavoriteRouteMatcher
             {
                 RoutePattern = "home",
                 PageType = FavoritePageType.HomePage,
                 GetName = FixedName(() => Label.HomePage),
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "monitor",
-                PageType = FavoritePageType.WorkflowPage,
-                GetName = FixedName(() => Label.WorkflowPage),
-            },
+			},
+			new FavoriteRouteMatcher
+			{
+				RoutePattern = "monitor",
+				PageType = FavoritePageType.WorkflowPage,
+				GetName = FixedName(() => Label.WorkflowPage),
+			},
+		   new FavoriteRouteMatcher
+			{
+				RoutePattern = "assignments",
+				PageType = FavoritePageType.AssignmentsPage,
+				GetName = FixedName(() => Label.AssignmentsPage),
+			},
+		   new FavoriteRouteMatcher
+			{
+				RoutePattern = "requests",
+				PageType = FavoritePageType.RequestsPage,
+				GetName = FixedName(() => Label.RequestsPage),
+			},
+		   new FavoriteRouteMatcher
+			{
+				RoutePattern = "dataCatalog",
+				PageType = FavoritePageType.DataCatalogPage,
+				GetName = FixedName(() => Label.DataCatalogPage),
+			},
+		   
 
             // search results page
             new FavoriteRouteMatcher

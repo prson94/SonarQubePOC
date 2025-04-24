@@ -4,26 +4,18 @@
     EventEmitter,
     Input,
     OnChanges,
-    OnDestroy,
     Output,
-    QueryList,
-    SimpleChange,
-    ViewChildren
+    SimpleChange
 } from '@angular/core';
-
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { GroupService } from '../../../../services/group.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { StringConstants } from '../../../../static/string-constants';
 import { AuthenticationService } from '../../../../services/authentication.service';
-import { mergeMap } from "rxjs/operators";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../../../services/feature-flags.enum';
 import { Tag, TagType } from '../../../../models/tag.model';
-import { PropertyGroupComponent } from '../../../shared/controls/property-group/property-group.component';
+import { FeatureFlagsInitService } from '../../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'ig-tag-detail',
@@ -34,7 +26,7 @@ import { PropertyGroupComponent } from '../../../shared/controls/property-group/
     },
 })
 
-export class TagDetailComponent implements OnChanges, OnDestroy {
+export class TagDetailComponent implements OnChanges {
     @Input() useAccordion: boolean = false;
     @Input() shouldBePadded: boolean = true;
     @Input() tooltipAlign: string;
@@ -82,17 +74,17 @@ export class TagDetailComponent implements OnChanges, OnDestroy {
 		protected settingsService: CompanySettingsService,
         private linkClickInterceptor: LinkClickInterceptor,
 		private authService: AuthenticationService,
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
 		private cdRef: ChangeDetectorRef) {
 		this.authService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
-		this.newSecurityEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.NewSecurityModel);
+
+		featureFlagService.getFlagValue(FeatureFlags.NewSecurityModel).then((flag) => {
+			this.newSecurityEnabledFeatureFlag = flag;
+		});
 	}
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
 		this.tab = 'detail';
-    }
-
-    ngOnDestroy() {
     }
 
 	private loadUrl() {
@@ -104,7 +96,7 @@ export class TagDetailComponent implements OnChanges, OnDestroy {
     }
 
 	open(newTab: boolean = false) {
-		let openUrl = this.tagUrl;
+		const openUrl = this.tagUrl;
 		if (openUrl) {
             if (newTab) {
 				window.open(openUrl, '_blank');

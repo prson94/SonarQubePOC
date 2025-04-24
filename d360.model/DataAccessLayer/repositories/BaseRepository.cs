@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
-using d360.featureflags;
 using System.Configuration;
 using Dapper;
 using Newtonsoft.Json;
@@ -19,17 +18,15 @@ namespace d360.model.DataAccessLayer.repositories
 {
 	public abstract class BaseRepository
 	{
-		internal IFeatureFlagService FeatureFlags;
 		internal readonly ICompanyContext CompanyContext;
 		internal ISecurityContextProvider SecurityContext;
 		private const string RELATIONSHIP_DELIMITER = "|";
 		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occurred while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-		protected BaseRepository(ICompanyContext ctx, ISecurityContextProvider securityContext, IFeatureFlagService featureFlags)
+		protected BaseRepository(ICompanyContext ctx, ISecurityContextProvider securityContext)
 		{
 			CompanyContext = ctx;
 			SecurityContext = securityContext;
-			FeatureFlags = featureFlags;
 		}
 
 		public int ApiTimeout
@@ -107,34 +104,27 @@ namespace d360.model.DataAccessLayer.repositories
 			}
 		}
 
-		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID, AssetTypeClass assettypeClass)
+		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID)
 		{
 			if (assetTypeID != null)
 			{
-				if (assettypeClass == AssetTypeClass.BusinessAsset || assettypeClass == AssetTypeClass.TechnicalAsset)
-				{
-					return $@" left outer join AssetPathSegmentDtl F{fieldType.ID} on F{fieldType.ID}.AssetID = a.id and F{fieldType.ID}.AssetTypeId = {assetTypeID} ";
-				}
-				else
-				{
-					return $@"
-					outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
-							 FROM (
-							 SELECT *
-							   FROM (
-							   SELECT X.p.value('./@level', 'int') as L,
-									  X.p.value('./@position', 'int') as P,
-									  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
-									  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
-								 FROM AssetPath atp
-								 cross apply atp.Segments.nodes('/path/segment') X(p)
-								 where atp.id = a.id 
-							   ) s
-							 where AssetTypeId = {assetTypeID}
-							 ) segmentPath
-						  )F{fieldType.ID}(FormattedValue)
-				";
-				}
+				return $@"
+				outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
+							FROM (
+							SELECT *
+							FROM (
+							SELECT X.p.value('./@level', 'int') as L,
+									X.p.value('./@position', 'int') as P,
+									X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+									(select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+								FROM AssetPath atp
+								cross apply atp.Segments.nodes('/path/segment') X(p)
+								where atp.id = a.id 
+							) s
+							where AssetTypeId = {assetTypeID}
+							) segmentPath
+						)F{fieldType.ID}(FormattedValue)
+			";
 			}
 			return "";
 		}
@@ -624,17 +614,22 @@ namespace d360.model.DataAccessLayer.repositories
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());
 					 }
 				 }
-				 else if (f.Type == "RefListRelationship")
+				 else if (f.Type == "ReferenceList")
 				 {
-					 fieldJoins.Add($@"outer apply (
-						select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
-						from (
-						select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
-						union all
-						select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
-						) Names
-					) {tableAlias}", f.ID.ToString());
+					 var sql = $@"
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
+								outer apply(
+								select FormattedValue = 
+								(SELECT att.Name,
+								att.Uid
+								from AssetType Att 
+								where att.id = F{tableAlias}.ReferenceListID
+								FOR JSON PATH)
+							){tableAlias}(FormattedValue)";
+
+					 fieldJoins.Add(sql, f.ID.ToString());
 				 }
+
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"
@@ -677,7 +672,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 else if (f.Type == "Tag")
 				 {
 					 var filter = new AssetFieldFilter();
-					 filter.SimpleFilterStatement = @"
+					 filter.SimpleFilterStatement = $@"
 									select AT.AssetId
 										from [Tag] T
 										inner join [AssetTag] [AT] ON [AT].TagID = T.ID
@@ -864,14 +859,11 @@ namespace d360.model.DataAccessLayer.repositories
 					 var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
 					 if (pathDefinition?.AssetTypeUid != null)
 					 {
-						 var assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault();
-						 if (assetTypeID != null)
+						 int? assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault()?.ID;
+						 string pathJoinStatement = GetPathJoinSql(f, assetTypeID);
+						 if (!string.IsNullOrEmpty(pathJoinStatement))
 						 {
-							 string pathJoinStatement = GetPathJoinSql(f, assetTypeID.ID, assetTypeID.Class);
-							 if (!string.IsNullOrEmpty(pathJoinStatement))
-							 {
-								 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
-							 }
+							 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
 						 }
 					 }
 				 }

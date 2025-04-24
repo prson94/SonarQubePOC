@@ -8,6 +8,7 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
+import { isString } from 'lodash-es';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -15,6 +16,7 @@ import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.
 import { ConnectorLabelService } from '../../../../services/connectorLabel.service';
 import { Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
+
 
 @Component({
     selector: 'd3s-process-diagram-label-editor',
@@ -54,7 +56,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.cdRef.detectChanges();
     }
     search(event) {
-        var q = this.linkLabel ? this.linkLabel : '';
+		var q = event.query  ? event.query : '';
         this.connectorLabelService.getAvailableLabels(q)
             .subscribe((res) => {
                 this.labels = [];
@@ -101,10 +103,12 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         if (this.createLabelSub)
             {this.createLabelSub.unsubscribe();}
         var currentLinkData = this.linkData;
-        this.createLabelSub = this.connectorLabelService.createOrGetLabel(this.linkLabel)
+        if(isString(this.linkLabel.value) && this.linkLabel.value?.length > 0){
+            this.createLabelSub = this.connectorLabelService.createOrGetLabel(this.linkLabel.value)
             .subscribe((res) => {
                 this.linkLabel = res.Value;
                 this.linkDataChange.emit({ label: { uid: res.uid, Value: res.Value }, data: currentLinkData });
             });
+        }
     }
 }

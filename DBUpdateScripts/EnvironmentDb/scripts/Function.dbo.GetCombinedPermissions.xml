@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissions-v1.2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function [dbo].[GetCombinedPermissions] 
+(
+	@permissions dbo.Ids readonly
+)
+returns int
+as
+begin
+	declare @combinedPermissionMask int = 0;
+
+	if not exists(select 1 from @permissions where (get_bit(Id, 0) = 0))
+	begin
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 0, 1) from @permissions where (get_bit(Id, 0) = 1)	-- Read		(1)
+	end
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 1, 1) from @permissions where (get_bit(Id, 1) = 1)	-- Add		(2)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 2, 1) from @permissions where (get_bit(Id, 2) = 1)	-- Delete	(4)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 3, 1) from @permissions where (get_bit(Id, 3) = 1)	-- Edit		(8)
+
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 5, 1) from @permissions where (get_bit(Id, 5) = 1)	-- Read		(32)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 6, 1) from @permissions where (get_bit(Id, 6) = 1)	-- Add		(64)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 7, 1) from @permissions where (get_bit(Id, 7) = 1)	-- Delete	(128)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 8, 1) from @permissions where (get_bit(Id, 8) = 1)	-- Edit		(256)
+
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 10, 1) from @permissions where (get_bit(Id, 10) = 1)	-- Read		(1024)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 11, 1) from @permissions where (get_bit(Id, 11) = 1)	-- Add		(2048)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 12, 1) from @permissions where (get_bit(Id, 12) = 1)	-- Delete	(4096)
+	select @combinedPermissionMask = set_bit(@combinedPermissionMask, 13, 1) from @permissions where (get_bit(Id, 13) = 1)	-- Edit		(8192)
+
+	return @combinedPermissionMask
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

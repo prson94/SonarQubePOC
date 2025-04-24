@@ -711,14 +711,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 				finalize(() => this.isLoadingDefaultFieldTypeName = false));
     }
 
-    private cardinalReferenceItemListFromRelationshipSelected(value: string) {
-        if (value == null) {
-            console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
-        }
-        //update the model to have correct lookuptype object and id
-        this.model.FieldType.Type[this.currentType].IntersectTypeUid = value.toLocaleLowerCase();
-    }
-
     private cardinalFieldFromRelationship_FieldSelected(value: string) {
         this.model.FieldType.Type[this.currentType].FieldTypeName = value;
     }
@@ -991,7 +983,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             valid = false;
         }
 
-        if (this.currentType === 'Score' && !this.model.FieldType.Type[this.currentType].ScoreType) {
+        if (this.currentType === 'Score' && !this.model.FieldType.Type[this.currentType]?.ScoreType) {
             valid = false;
         }
 

@@ -1,11 +1,9 @@
-﻿using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.queue;
 using d360.extensions;
 using d360.extensions.info;
-using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
@@ -35,12 +33,10 @@ namespace igx.jobs.apiexecutionprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 		readonly IStorageProvider Storage;
-		readonly IFeatureFlagService FeatureFlags;
 
-		public ExecutionProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(community, config)
+		public ExecutionProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage) : base(community, config)
 		{
 			Cache = cache;
-			FeatureFlags = ff;
 			Mail = mail;
 			Queue = queue;
 			Storage = storage;
@@ -78,9 +74,9 @@ namespace igx.jobs.apiexecutionprocessor
 						context.IsAdministrator = resource.IsAdministrator;
 					}
 
-					var fieldsRepository = new FieldsRepository(company, context, Queue, Storage, FeatureFlags);
-					var assetRepository = new AssetRepository(company, context, Queue, Storage, FeatureFlags);
-					var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage, FeatureFlags);
+					var fieldsRepository = new FieldsRepository(company, context, Queue, Storage);
+					var assetRepository = new AssetRepository(company, context, Queue, Storage);
+					var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage);
 						
 					var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
 					List<DatabaseBulkAssetResult> resultdata = new List<DatabaseBulkAssetResult>();
@@ -120,7 +116,7 @@ namespace igx.jobs.apiexecutionprocessor
 										if (assetType != null)
 										{
 											log.LogTrace($"Get PostAssets payload: {DateTime.UtcNow:hh:mm:ss}");
-											var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
+											var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetApiModel>>(info.StorageFolder, info.RequestFileName);
 
 											log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
 											resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
@@ -142,7 +138,7 @@ namespace igx.jobs.apiexecutionprocessor
 										if (assetType != null)
 										{
 											log.LogTrace($"Get PutAssets payload: {DateTime.UtcNow:hh:mm:ss}");
-											var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
+											var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetApiModel>>(info.StorageFolder, info.RequestFileName);
 
 											log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
 											resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
@@ -241,14 +237,8 @@ namespace igx.jobs.apiexecutionprocessor
 										company.CreateRollupPathChangedExecution();
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 										break;
-									case ApiExecutionAction.PostCrossReferences:
-										ICatalog catalog = new Catalog(dapperProvider);
-										var postCrossReferences = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
-										await catalog.CreateCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
-										resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
-										break;
 									case ApiExecutionAction.PostDataQualityResults:
-										var metricsRepository = new MetricsRepository(company, context, Queue, Storage, FeatureFlags);
+										var metricsRepository = new MetricsRepository(company, context, Queue, Storage);
 										var postDataQualityResultsRequest = await Storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
 										metricsRepository.InsertDataQualityResult(postDataQualityResultsRequest, dbExecutionItem, true);
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
@@ -299,7 +289,7 @@ namespace igx.jobs.apiexecutionprocessor
 										resultsSql = "";// @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
 										break;
 									case ApiExecutionAction.PatchCatalog:
-										var execRepo = new ExecutionsRepository(company, context, Queue, Storage, FeatureFlags);
+										var execRepo = new ExecutionsRepository(company, context, Queue, Storage);
 										log.LogTrace($"Get PatchCatalog payload: {DateTime.UtcNow:hh:mm:ss}");
 										var patchCatalogPayload = await Storage.DeserializeJsonObjectFromBlobAsync<PatchBulkCatalogRequestModel>(info.StorageFolder, info.RequestFileName);
 
@@ -430,7 +420,7 @@ namespace igx.jobs.apiexecutionprocessor
 						var bulkTags = await c.GetBulkTagAssetsAsync(load.ID, dbExecutionItem.ExecutionID);
 						if (bulkTags.Any())
 						{
-							var repo = new TagRepository(c, context, FeatureFlags, Queue);
+							var repo = new TagRepository(c, context, Queue);
 							await repo.BulkTagAssets(bulkTags, load.UpdatedBy ?? 0);
 						}
 					}

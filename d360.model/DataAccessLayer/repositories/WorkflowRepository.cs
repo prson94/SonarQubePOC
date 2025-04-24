@@ -13,7 +13,6 @@ using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -26,8 +25,8 @@ namespace d360.model.DataAccessLayer
 {
 	public class WorkflowRepository : BaseRepository, IWorkflowRepository
 	{
-		public WorkflowRepository(ICompanyContext CompanyContext, ISecurityContextProvider securityContext, IFeatureFlagService ff)
-			: base(CompanyContext, securityContext, ff)
+		public WorkflowRepository(ICompanyContext CompanyContext, ISecurityContextProvider securityContext)
+			: base(CompanyContext, securityContext)
 		{
 		}
 
@@ -327,7 +326,10 @@ namespace d360.model.DataAccessLayer
 					model.pageSize = pageSize;
 					model.pageNum = pageNum;
 
-					offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+					long offset = (long)pageSize * ((long)pageNum - 1);
+					offset = offset < 0 ? 0 : offset;
+
+					offsetSql = $"offset {offset} rows fetch next {pageSize} rows only";
 					pagingSql.Add(offsetSql);
 				}
 			}

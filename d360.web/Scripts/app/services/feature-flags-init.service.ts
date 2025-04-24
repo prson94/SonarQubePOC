@@ -1,38 +1,35 @@
-﻿import { HttpClient, HttpContext } from "@angular/common/http";
+﻿import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { catchError, mergeMap, take } from "rxjs/operators";
-import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
-import { LaunchDarklyConfig, LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
-import { LDUser } from "launchdarkly-js-client-sdk";
 
 @Injectable({
     providedIn: 'root'
 })
 export class FeatureFlagsInitService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService, private launchDarkly: LaunchDarklyService) {
+	FeatureFlags: Record<string, boolean> = null;
+
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) {
         super(messagesService);
     }
 
-    initialize(): Observable<void> {
-        return this.http
-            .get(
-                'api/v2/environment/featureflaginfo',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
-            .pipe(
-                mergeMap((response: { clientId: string, user: LDUser }) => {
-                    response.user.anonymous = false;
-                    const config: LaunchDarklyConfig = {
-                        envKey: response.clientId,
-                        options: { fetchGoals: false, streaming: true }
-                    };
-                    return this.launchDarkly.init(config, response.user).pipe(take(1));
-                }),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	async getFlags(): Promise<boolean>  {
+		const response = await fetch('api/v2/environment/feature-flags');		
+		if (response.ok) {
+			this.FeatureFlags = await response.json();
+		}
+		return true;
+	}
+
+	async getFlagValue(flag: string): Promise<boolean> {
+		if (!this.FeatureFlags) {
+			await this.getFlags();
+		}
+		let value: boolean = false;
+		if (this.FeatureFlags) {
+			value = this.FeatureFlags[flag];
+		}
+		return value;
+	}
 }

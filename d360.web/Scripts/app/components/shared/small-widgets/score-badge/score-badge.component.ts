@@ -7,12 +7,11 @@
     OnInit,
     SimpleChange
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { AssetScore } from '../../../../models/search-result.model';
 import { ScoreDisplayPipe } from '../../../../pipes/score-display.pipe';
 
 @Component({
-    selector: 'd3s-score-badge',
+	selector: 'd3s-score-badge',
     templateUrl: './score-badge.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -24,7 +23,6 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     @Input() lowerThreshold: number = 50; //50%
     @Input() upperThreshold: number = 90; //90%
 
-    @Input() igBadgeStyle: boolean = false;
     @Input() useMiniBadge: boolean = false;
     @Input() precision: number = 0;
 
@@ -33,22 +31,32 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     private changeWait: any;
     constructor(
         private ref: ChangeDetectorRef,
-        private router: Router,
         private scoreDislpayPipe: ScoreDisplayPipe
-    ) {
+	) { }
+
+	public ngOnInit() {
+		this.setType();
     }
 
-    public ngOnInit() {
-        this._type = this.score.ScoreType.split(/(?=[A-Z])/).join(' ');
-    }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+		let check: boolean = false;
         if (this.score.UpperThreshold && this.score.LowerThreshold) {
             this.upperThreshold = this.score.UpperThreshold;
-            this.lowerThreshold = this.score.LowerThreshold;
-            this.ref.markForCheck();
-        }
-    }
+			this.lowerThreshold = this.score.LowerThreshold;
+			check = true;
+		}
+		if (changes.score.currentValue?.ScoreType !== changes.score.previousValue?.ScoreType) {
+			this.setType();
+			check = true;
+		}
+		if (check) {
+			this.ref.markForCheck();
+		}
+	}
+
+	setType() {
+		this._type = this.score.ScoreType.split(/(?=[A-Z])/).join(' ');
+	}
 
     getType(): string {
 		if (this._type !== null) {

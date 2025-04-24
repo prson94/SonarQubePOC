@@ -151,13 +151,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         });
 
-        this.dynEditorService.lookupFieldUpdated.subscribe((res) => {
+		this.dynEditorService.lookupFieldUpdated.subscribe((res) => {
             if (this.field && this.field.ParentFieldTypeName && res.fieldName === this.field.ParentFieldTypeName) {
-                this.form.controls[this.field.FieldName].setValue(null);
+				this.form.controls[this.field.FieldName].setValue(null);
                 this.field.Items = [];
                 this.lookupSelectedValue = [];
 				this.lookupValues = [];
 				if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+					this.checkAndSetDisabledForLookup();
+					this.lazyMap.clear();
 					this.initLazyList();
 				}
             }
@@ -244,7 +246,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.DelayedLoadType === 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
-                (res) => {
+				(res) => {
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();
@@ -327,12 +329,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Lookup') {
             this.field.Items.forEach((item) => {
-                if (this.isJson(item.Text)) {
-                    var obj = JSON.parse(item.Text);
-                    item.Text = obj.name;
-                    item.color = obj.color;
-                    item.label = obj.name;
-                }
+				if (this.isJson(item.Text)) {
+					var obj = JSON.parse(item.Text);
+					item.Text = obj.name;
+					item.color = obj.color;
+					item.label = obj.name;
+				} else {
+					item.label = item.Text
+				}
 				item.value = item.Value;
             });
 
@@ -346,7 +350,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				}
             }
 
-            if (value) {
+			if (value) {
                 this.lookupSelectedValue = [];
                 this.field.Items.forEach((item) => {
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
@@ -357,8 +361,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 } else {
                     this.field.Items = this.field.Items.filter((item) => item.value === value);
                 }
-            } else {
-				this.field.Items = [];
             }
 			this.form.controls[this.field.FieldName].setValue(value);
 
@@ -394,11 +396,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.ed = null;
     }
 
-    onFieldChanges(data: any) {
+	onFieldChanges(data: any) {
         this.isDirty = true;
         if (this.field.FieldType === 'Lookup') {
             this.field.Value = data;
-            this.listItemChange.emit({ field: this.field, value: data });
+			this.listItemChange.emit({ field: this.field, value: data });
+
+			if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+				this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
+			}
+
         }
         else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
@@ -766,12 +773,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	lazyLookupSub: Subscription;
 	lazyLoading: boolean = false;
 	lazyMap: Map<string, lazyLookupValue[]> = new Map();
+	lazyLoadSize = 50;
+	lazyAllValuesLoaded = false;
+	lazyVirtual: boolean = true;
 
 	get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
             return $localize`Select a ${this.field.ParentFieldTypeName}`;
-        }
-        return this.field.Required ? $localize`Value Required` : $localize`Optional`;
+		}
+		return this.getPlaceholder();
     }
 
     get isLookupFieldDisabled(): boolean {
@@ -779,7 +789,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             return !this.lookupParentValue;
         }
         return false;
-    }
+	}
+
+	checkAndSetDisabledForLookup() {
+		if (this.isLookupFieldDisabled) {
+			this.form.controls[this.field.FieldName].disable()
+		} else {
+			this.form.controls[this.field.FieldName].enable()
+		}
+	}
 
 	lookupFieldClicked($event: PointerEvent) {
         if (this.isLookupFieldDisabled) {
@@ -793,7 +811,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     get lookupParentValue(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
-            var pField = this.form.controls[this.field.ParentFieldTypeName];
+			var pField = this.form.controls[this.field.ParentFieldTypeName];
             if (pField && pField.value) {
                 if (Array.isArray(pField.value)) {
                     return (pField.value as string[]).join(",");
@@ -808,12 +826,31 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 	ngAfterViewInit() {
 		if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
-			this.initLazyList();
+			if (this.field.Items.length > 0 && this.field.Items.some((x) => x.Selected === false)) {
+				const lookupValues = this.field.Items;
+				if (lookupValues[0].value === '') {
+					lookupValues.shift();
+				}
+				if (lookupValues[0].hasAssetReadAccess === undefined) {
+					lookupValues.forEach((item) => item.hasAssetReadAccess = true);
+				}
+				this.lazyVirtual = lookupValues.some((i) => i.label === null);
+				this.lazyMap.set('', lookupValues)
+				this.lazyLookupValues = [...lookupValues];
+				this.showLookupSearchField = (lookupValues.length > 10);
+				this.lazyAllValuesLoaded = true;
+				this.hadInitialLazyLoad = true;
+				this.ref.detectChanges();
+			} else {
+				this.initLazyList();
+			}
 		}
+		this.checkAndSetDisabledForLookup();
 	}
 
 	initLazyList() {
 		const loadParams = this.getLoadParams({ first: 0, rows: 0 });
+		this.lazyLoading = true;
 		this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
 			if (!this.lazyMap.has('') || this.lazyMap.get('').length === 0) {
 				const lookupValues = this.createEmptyLookupValues(res.count);
@@ -822,7 +859,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			}
 			this.showLookupSearchField = (res.count > 10);
 			this.hadInitialLazyLoad = true;
-			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, 20), filter: '' });
+			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, this.lazyLoadSize), filter: '' });
 		});
 	}
 
@@ -831,6 +868,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	}
 
 	lazyLoadValues(event: DropdownLazyLoadEvent | MultiSelectLazyLoadEvent) {
+		this.lazyLoading = true;
+		this.ref.detectChanges();
+
 		const take = event.last - event.first + 1;
 		const filter = event.filter ?? '';
 		const filterChanged = this.lazyFilterValue !== filter;
@@ -841,13 +881,22 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			this.lazyLookupSub.unsubscribe();
 		}
 
+		if (filterChanged && this.lazyAllValuesLoaded) {
+			if (!this.lazyMap.has(filter)) {
+				const lowerFilter = filter.toLowerCase();
+				const filteredValues = this.lazyMap.get('').filter((x) => x.label.toLowerCase().includes(lowerFilter));
+				this.lazyMap.set(filter, filteredValues);
+			}
+		}
+
 		const callBackend = !this.lazyMap.has(filter) || this.lazyLookupValues.slice(event.first, event.last).some((i) => i.label == null);
 
 		if (!callBackend) {
 			if (filterChanged) {
 				this.lazyLookupValues = this.lazyMap.get(filter);
-				this.ref.detectChanges();
 			}
+			this.lazyLoading = false;
+			this.ref.detectChanges();
 			return;
 		}
 
@@ -877,8 +926,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				lookupValues = lookupValues.slice(0, res.count);
 			}
 
+			this.lazyVirtual = lookupValues.some((i) => i.label === null);
+
 			this.lazyMap.set(filter, lookupValues)
 			this.lazyLookupValues = [...lookupValues];
+			this.lazyLoading = false;
 
 			this.ref.detectChanges();
 		});

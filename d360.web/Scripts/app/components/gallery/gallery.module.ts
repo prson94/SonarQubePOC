@@ -47,6 +47,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
+import { ScoreBadgeModule } from '../shared/small-widgets/score-badge/score-badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
 import { GalleryPopupMenuComponent } from './gallery.popup-menu.component';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
@@ -113,7 +114,8 @@ import { GalleryFeatureflagComponent } from './gallery.featureflag.component';
         SharedGridPagingInfoModule,
         IgNumberFieldModule,
         IgMessageBoxModule,
-        IgBadgeModule,
+		IgBadgeModule,
+		ScoreBadgeModule,
 
         TableModule,
         TooltipModule,

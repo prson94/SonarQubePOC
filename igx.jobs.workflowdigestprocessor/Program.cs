@@ -2,13 +2,10 @@
 using d360.extensions.caching;
 using d360.extensions.mail;
 using d360.extensions.queue;
-using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using repositories;
-using repositories.azure;
 
 namespace igx.jobs.workflowdigestprocessor
 {
@@ -37,9 +34,6 @@ namespace igx.jobs.workflowdigestprocessor
 							ApiKey = context.Configuration[constants.Setting.MailKey],
 							SubAccount = context.Configuration[constants.Setting.MailAccount]
 						};
-					});
-					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 				});
 

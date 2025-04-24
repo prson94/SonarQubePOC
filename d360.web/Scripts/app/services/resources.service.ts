@@ -15,7 +15,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { Observable, throwError } from "rxjs";
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { ApiResult } from '../models/apiresult.model';
+import { ApiResult, ConfirmResponse } from '../models/apiresult.model';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 
@@ -247,7 +247,10 @@ export class ResourcesService extends BaseObservableService {
         return this.http.post('/api/v2/membership/users/me/apikey', model, httpOptions)
             .pipe(
                 map((response) => <ResourceAPICredentials>response),
-                catchError((err) => this.handleError(err))
+				catchError((err) => {
+					const handler = this.handleError(err);
+					return throwError(err);
+				})
             );
     }
 
@@ -284,5 +287,33 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get(`/api/v2/membership/legacyData/resource/${uid}`)
             .pipe(map((res) => <any>res),
                 catchError((err) => this.handleError(err)));
+    }
+
+    public ResourceChangePassword(
+        resource: ResourceApiModel
+	): Observable<ApiResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+		};
+
+		const result: ApiResult = new ApiResult;
+
+        if (resource.uid) {
+
+            return this
+                .http
+				.put(`api/v2/membership/users/me/password-reset`, resource, httpOptions)
+				.pipe(
+					map((res: ConfirmResponse) => {
+						if (res.message === "Password successfully reset.") {
+							result.Message = "";
+							result.Success = true;
+						}
+						return result;
+                    }),
+                    catchError((err) => this.handleError(err))
+                );
+        }
     }
 }

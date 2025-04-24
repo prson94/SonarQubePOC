@@ -155,7 +155,7 @@ namespace repositories.azure
 
 				results.pageNum = pageNum;
 				results.pageSize = pageSize;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					int labelsCount = await connection.ExecuteScalarAsync<int>(countSql);
 					results.total = labelsCount;
@@ -278,7 +278,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new { Uid = uid };
 					var count = await connection.ExecuteScalarAsync<int>(
@@ -296,7 +296,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -318,7 +318,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -337,9 +337,118 @@ namespace repositories.azure
 			}
 		}
 
-		public Task<dynamic> GetConnectorLabelsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<dynamic> GetConnectorLabelsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var dbArgs = new DynamicParameters();
+				List<string> whereClauses = new List<string>();
+				string sortClause = "";
+				string sortField = "";
+				string sortOrder = "";
+				string whereOperater = " and ";
+				int useCount = 0;
+
+				foreach (var qitem in queryParams.Where(x => !string.IsNullOrEmpty(x.Value)))
+				{
+					switch (qitem.Key.ToLower())
+					{
+						case "globalsearch":
+							dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
+							whereClauses.Add("LOWER(t.Value) like @value");
+							whereClauses.Add("STR(Labels.count) like @value");
+
+							whereOperater = " or ";
+
+							break;
+						case "value":
+							dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
+							whereClauses.Add("LOWER(t.Value) like @value");
+
+							break;
+						case "usecount":
+							if (int.TryParse(qitem.Value, out useCount))
+							{
+								dbArgs.Add("useCount", $"%{qitem.Value.ToLower()}%");
+								whereClauses.Add("STR(Labels.count) like @useCount");
+							}
+							break;
+						case "sortby":
+							if (string.Equals(qitem.Value, "usecount", StringComparison.OrdinalIgnoreCase))
+							{
+								sortField = "usecount";
+							}
+
+							if (string.Equals(qitem.Value, "value", StringComparison.OrdinalIgnoreCase))
+							{
+								sortField = "t.value";
+							}
+							break;
+						case "sortorder":
+							int val = int.Parse(qitem.Value);
+							if (val >= 0)
+							{
+								sortOrder = "ASC";
+							}
+							else
+							{
+								sortOrder = "DESC";
+							}
+							break;
+					}
+				}
+
+				if (!string.IsNullOrWhiteSpace(sortField) && !string.IsNullOrWhiteSpace(sortOrder))
+				{
+					sortClause = $"ORDER BY {sortField} {sortOrder}";
+				}
+
+				string whereClause = $"WHERE t.State = 1";
+				if (whereClauses.Count > 0)
+				{
+					whereClause += $" and ({string.Join(whereOperater, whereClauses)})";
+				}
+
+				var sql = $@"drop table if exists #labelUidMap
+						create table #labelUidMap(
+							uid uniqueidentifier
+						)
+
+						insert into #labelUidMap
+						select LabelUid from ProcessExpandedData
+						where LabelUid is not null
+
+						select 
+						Labels.count as UseCount,
+						t.uid,
+						t.Value,
+						t.CreatedOn,
+						created.uid as CreatedByUid, 
+						adv_created.DisplayValue as CreatedByName, 
+						t.CreatedOn,
+						updated.uid as UpdatedByUid, 
+						adv_updated.DisplayValue as UpdatedByName, 
+						t.UpdatedOn  
+						from ConnectorLabel t
+						  left join asset created on created.Object = 'Resource' and created.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+						  left join asset updated on updated.Object = 'Resource' and updated.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
+						  cross apply (select count(*) from #labelUidMap where uid = t.uid)Labels (count)
+						{whereClause}
+						{sortClause}";
+
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					var resut = await connection.QueryAsync<dynamic>(sql, dbArgs, commandTimeout: CommandTimeout);
+					return resut;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
 		}
 
 		public async Task<(byte[], string)> GetExcelFromConnectorLabelUsage(ConnectorLabel label, IEnumerable<dynamic> response)
@@ -402,7 +511,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -549,7 +658,7 @@ namespace repositories.azure
 								{whereClause}
 								{sortClause}";
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var response = await connection.QueryAsync<dynamic>(labelsSql, dbArgs, commandTimeout: CommandTimeout);
 					return response;
@@ -598,7 +707,7 @@ namespace repositories.azure
 					q
 				};
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>(labelsSql, parameters, commandTimeout: CommandTimeout);
 					return result;
@@ -614,7 +723,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -627,6 +736,27 @@ namespace repositories.azure
 			}
 			catch (Exception)
 			{
+				throw;
+			}
+		}
+
+		public async Task<ConnectorLabel> GetLabel(string labelName)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					var result = await connection.QueryFirstOrDefaultAsync<ConnectorLabel>(@"
+					 SELECT * FROM dbo.ConnectorLabel
+					 WHERE Value = @labelName
+					", new { labelName });
+
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+
 				throw;
 			}
 		}

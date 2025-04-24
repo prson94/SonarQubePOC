@@ -15,19 +15,21 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model);
-
-		Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600);
-
 		Task CreateSemanticType();
 
 		Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid);
 
 		Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value);
 
-		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
+		Task<Asset> GetAsset(Guid? assetUid);
 
-		Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+
+		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
+
+		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
+
+		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
 		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
 
@@ -37,19 +39,17 @@ namespace repositories
 
 		Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
 
+		Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadAssetsAsync(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+
 		Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000);
 
 		Task ReadAssetTypeDefinition();
-
-		Task<IEnumerable<AssetCrossReferenceResult>> ReadCrossReferenceResultsAsync(Guid executionId);
-
-		Task<IEnumerable<AssetCrossReference>> ReadCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task ReadProfiles();
 
 		Task ReadRelationTypeDefinition();
 
-		Task ReadSemanticTypes();
+		Task<RepositoryResponse<PagedApiBaseViewModel<GetSemantic>>> ReadSemanticTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid);
 
@@ -63,15 +63,13 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
-
 		Task<RepositoryResponse<string>> RemoveSemanticType();
 
 		Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags);
 
 		Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes);
-
-		Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model);
+		
+		Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<Semantic>> UpdateSemanticType();
 
@@ -79,16 +77,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 
-		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
-
-		Task<Asset> GetAsset(Guid? assetUid);
-
-		Task<bool> HasAssetPermission(long assetId, Permission permissionId);
-
-		Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
-
-		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
-
-		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
+		Task<RepositoryResponse<List<AssetApiResultModel>>> UpsertAssetsAsync(int executionId, List<AssetApiModel> models, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 	}
 }

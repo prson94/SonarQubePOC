@@ -4,7 +4,6 @@ import { BaseComponent } from "../../shared/base.component";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: "d3s-comments",
@@ -13,13 +12,14 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-social-board *ngIf="showBoard" [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></d3s-social-board>
+						@if (showBoard) {
+							<social-board [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></social-board>
+						}
                     </div>
                 </div>
             </div>
         `
 })
-
 export class CommentsComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUid: string="";
     @Input() localStorage: boolean = false;
@@ -28,20 +28,16 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
     daysToLookBack: number = -1;
     hasCloseButton: boolean = false;
     showBoard: boolean = false;
-
     constructor(private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService,
-				launchDarklyService: LaunchDarklyService) {
+        protected settingsService: CompanySettingsService) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {
-
         this.isLoading = true;
         this.showBoard = false;
 

@@ -1,10 +1,8 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 import { Tab } from '../../../shared/tabs/tabs.models';
 import { TagTypesViewModel } from '../tag-types/tag-types.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../../../services/feature-flags.enum';
-
-/*global $localize*/
+import { FeatureFlagsInitService } from '../../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-tags-header',
@@ -25,16 +23,19 @@ export class TagsHeaderComponent implements OnInit, AfterViewInit {
 	preventBodyClick = false;
 	tabs: Tab[] = [];
 	btnTagsText = 'Tag Types';
-	get isTagTypesFeatureEnabled(): boolean {
-        return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
-    }
+
+	isTagTypesFeatureEnabled: boolean;
 
 	constructor(
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
 		private changeDetectorRef: ChangeDetectorRef,
 		private renderer: Renderer2
 
-	) {	}
+	) {
+		featureFlagService.getFlagValue(FeatureFlags.TagTypesEnabled).then((flag) => {
+			this.isTagTypesFeatureEnabled = flag;
+		});
+	}
 
 	ngOnInit(): void {
 		this.header = $localize`Tags`;

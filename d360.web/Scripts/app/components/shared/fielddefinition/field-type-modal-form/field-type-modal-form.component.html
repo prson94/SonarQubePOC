@@ -841,6 +841,45 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'ReferenceList'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Reference Item List" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayRefListDescription" class="ig-label" i18n>
+												Show Reference List Description
+											</label>
+											<ig-switch [attr.name]="'DisplayRefListDescription'"
+													   [formControlName]="'DisplayRefListDescription'"
+													   [formControl]="fieldTypeForm.controls['DisplayRefListDescription']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="310"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayRefListInTable" class="ig-label" i18n>
+												Show Reference List Items in table
+											</label>
+											<ig-switch [attr.name]="'DisplayRefListInTable'"
+													   [formControlName]="'DisplayRefListInTable'"
+													   [formControl]="fieldTypeForm.controls['DisplayRefListInTable']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="310"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
+
 						<ig-property-group *ngIf="selectedFieldType === 'Relationship'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relationship" i18n-title>
 							<div inputs>
 								<div class="form-group">

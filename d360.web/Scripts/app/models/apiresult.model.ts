@@ -12,3 +12,9 @@ export class ErrorResponse {
     Type: string;
     Message: string;
 }
+
+export class ConfirmResponse {
+	title: string;
+	type: string;
+	message: string;
+}

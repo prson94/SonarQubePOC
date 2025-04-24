@@ -570,7 +570,7 @@ namespace d360.extensions.search
             if (client.IndexExists(indexName).Exists)
             {
                 var response = client.DeleteIndex(indexName);
-                if (!response.IsValid)
+                if (!(response.IsValid || response.ServerError.Status == 404))
                 {
                     throw new ArgumentException(response.OriginalException.Message);
                 }

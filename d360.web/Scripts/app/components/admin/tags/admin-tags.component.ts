@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { SidePanelButton } from '../../../models/side-panel.model';
+import { AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
 import {
     AdvancedFilterFieldType,
     Filters,
@@ -17,7 +19,7 @@ import {
     LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of} from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
@@ -26,13 +28,13 @@ import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
 import { PopupMenu } from "../../shared/controls/popup-menu/popup-menu.component";
 import { SidePanelService } from "../../../services/side-panel.service";
 import { IOutputData } from "angular-split";
-import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
-import { TagDetailComponent } from './tag-details/tag-detail.component';
+import { TagTypesViewModel } from './tag-types/tag-types.model';
 
 @Component({
     selector: 'd3s-admin-tags',
-    templateUrl: 'admin-tags.component.html',
+	templateUrl: './admin-tags.component.html',
+	styleUrls: ['./admin-tags.component.less'],
     providers: [TagService]
 })
 
@@ -54,11 +56,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
     editPopupTitle: string = $localize`Edit Tag`;
 	private generalTagTypeUId = '00000001-0000-0000-0000-b00000000011';
 
+	protected sidePanelButtons: SidePanelButton[] = [
+		new SidePanelButton({
+			label: $localize`Information`,
+			tooltip: $localize`Information`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Select one of the links on the left to display its information`,
+			notApplicableMessage: $localize`Information is not available for the selected option`,
+			multipleSelectedMessage: $localize`Select a single link to display it’s information`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: true
+		})];
+
 	sidePanelStorageKey: string = '';
 	selectedItem: Record<string, object>;
 
-	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
+	sidePanelOpen: boolean = false;
+	secondarySidePanelOpen: boolean = false;
+	secondarySidePanel: string = "item";
+	selectedForSecondaryPanel: unknown;
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
@@ -68,7 +88,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 	menuItems: any = [];
 	menuItemsForDelete: any = [];
 	itemToEdit: TagType;
-	@ViewChild('tagDetail', { static: false }) tagDetails: TagDetailComponent;
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
@@ -126,6 +145,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
 				this.sidePanelService.setSidePanelState({ expanded: true });
 				this.sidePanelOpen = true;
 				this.cdRef.markForCheck();
+			}
+			if (res.type === 'Asset') {
+				this.selectedForSecondaryPanel = res.data;
+				this.sidePanelService.setSidePanelState({ expanded: true });
+				this.secondarySidePanel = "item";
+				this.secondarySidePanelOpen = true;
+			} else {
+				this.selected = null;
+				this.selectedForInfoPanel = { AssetUid: res.data.AssetUid, Object: res.data.Object };
 			}
 		});
 	}
@@ -216,6 +244,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.tags = tags;
                 this.readOnlyFullListOfTags = [...this.tags];
             }
+            else {
+                this.tags = [];
+                this.readOnlyFullListOfTags = [];
+            }
             this.isLoading = false;
         }, (err) => this.error = err);
     }
@@ -240,8 +272,27 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
-        this.editPopupTitle = $localize`Edit Tag`;
+		const target = event.target as HTMLElement;
+		const selectedRow = target.closest('tr');
+		if (selectedRow) {
+			if (target.classList.contains('p-checkbox-box')) {
+				selectedRow.classList.add('p-highlight');
+			}
+			else {
+				selectedRow.classList.remove('p-highlight');
+			}
+		}
 
+		this.editPopupTitle = $localize`Edit Tag`;
+		if (this.selected.length === 1) {
+			this.itemToEdit = this.selected[0];
+			return;
+		}
+		if (this.selected.length === 0) {
+			this.itemToEdit = undefined;
+			return;
+		}
+		
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
 		if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
@@ -280,11 +331,16 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+        //set isSelected to true to current click tag row
+        this.tags.map((tag) => tag.isSelected = tag.uid == item.uid);
+
 		if (event === null) {
 			this.itemToEdit = item;
-			//this.selected[0] = item;
 			return;
 		}
+        
+        
+        
 
         this.editPopupTitle = $localize`Edit Tag`;
 
@@ -334,7 +390,27 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.selected.push(item);
 		this.triggerRerenderOfSelection();
 		this.lastSelectedElement = item;
-    }
+	}
+
+	selectAllCheckboxes(event: MouseEvent) {
+		const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+		const target = (event.target as HTMLInputElement);
+		if (target.classList.contains('p-checkbox-box')) {
+			for (let i = 0; i < tableRows.length; i++) {
+				tableRows[i].classList.add('p-highlight');
+			}
+		}
+		else {
+			for (let i = 0; i < tableRows.length; i++) {
+				tableRows[i].classList.remove('p-highlight');
+			}
+		}
+
+		if (this.selected.length === 0) {
+			this.itemToEdit = undefined;
+			return;
+		}
+	}
 
     closeEditor() {
         this.showEditor = false;
@@ -384,21 +460,41 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 this.selected = [];
                 event.item.UseCount = 0;
-                this.selected.push(event.item);
+                //this.selected.push(event.item);
                 this.showEditor = false;
             });
     }
 
     deleteTags() {
-        this.tagsService.deleteTags(this.selected).
-            subscribe((result) => {
+		const subscription = this.tagsService.deleteTags(this.selected).
+			subscribe((result) => {
+				if (result.statusCode === 404) {
+					subscription.unsubscribe();
+					this.selected = [];
+					this.triggerRerenderOfSelection();
+					this.itemToEdit = null;
+					this.lastSelectedElement = null;
+					this.cdRef.markForCheck();
+					this.showDelete = false;
+					if (this.selectedTagTypeUid.trim() === "") {
+						this.getTags(); 
+					} else {
+						this.getTags(this.selectedTagTypeUid); 
+					}
+					return;
+				}
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
-                if (result.type !== 'error') {
-                    this.selected.forEach((t) => {
-                        this.mutateTags((tags) => tags.splice(this.findTagIndex(t.uid), 1));
+				if (result.type !== 'error') {
+					this.selected.forEach((t) => {
+						const tagIndex = this.findTagIndex(t.uid);
+						this.mutateTags((tags) => tags.splice(tagIndex, 1));
                     });
-                    this.selected = [];
+					this.selected = [];
+					this.triggerRerenderOfSelection();
+					this.itemToEdit = null;
+					this.lastSelectedElement = null;
+					this.cdRef.markForCheck();
                 }
                 this.showDelete = false;
             }, (err) => this.showMessageForResult(this.messagesService, err));
@@ -470,9 +566,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tags = draft;
     }
 
-	loadTagsOnTagTypeSelected(val: string) {
-		this.selectedTagTypeUid = val;
-        this.getTags(val);
+	loadTagsOnTagTypeSelected(tagTypeUid: string) {
+		this.selectedTagTypeUid = tagTypeUid;
+        this.getTags(this.selectedTagTypeUid);
 	}
 
 	loadMenuItems() {
@@ -495,5 +591,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
 	expandPanel() {
 		this.sidePanelService.setSidePanelState({ expanded: true });
+	}
+
+    editTag(toEditTag: TagType){
+        this.selected[0] = toEditTag;
+        this.showEditor = true;
+	}
+
+	protected updatePanelHeader(headerLabel: string): void {
+		this.sidePanelButtons[0].label = headerLabel;
 	}
 }

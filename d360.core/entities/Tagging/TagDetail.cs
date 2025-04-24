@@ -9,7 +9,11 @@ namespace d360.core.entities
 
         public string DisplayPath { get; set; }
 
-        public int AssetID { get; set; }
+		public string AssetCreatedDate { get; set; }
+
+		public string AssetCreatedBy { get; set; }
+
+		public int AssetID { get; set; }
 
         public Guid AssetUid { get; set; }
 

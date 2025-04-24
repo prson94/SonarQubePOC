@@ -4,11 +4,9 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
-using Newtonsoft.Json;
 using repositories;
 using System;
 using System.Collections.Generic;
@@ -26,9 +24,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext, 
 			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
-			IStorageProvider storage, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storage)
+			: base(companyContext, securityContext)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -101,7 +98,7 @@ namespace d360.model.DataAccessLayer
 				commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid, a => a.AssetType).FirstOrDefault();
 				if (commentAsset == null)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound,string.Format(Error.AssetUidNotFound, comment.AssetUid.ToString()));
 				}
 
 				if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
@@ -531,7 +528,7 @@ namespace d360.model.DataAccessLayer
 				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid, a => a.AssetType).FirstOrDefault();
 				if (asset == null)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidNotFound, assetUid.ToString()));
 				}
 
 				if (

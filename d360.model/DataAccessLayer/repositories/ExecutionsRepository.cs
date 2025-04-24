@@ -4,7 +4,6 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
@@ -29,9 +28,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queue,
-			IStorageProvider storage, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storage)
+			: base(companyContext, securityContext)
 		{
 			Queue = queue;
 			Storage = storage;

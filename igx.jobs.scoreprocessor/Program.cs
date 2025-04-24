@@ -2,7 +2,6 @@
 using d360.extensions.caching;
 using d360.extensions.events;
 using d360.extensions.mail;
-using LaunchDarkly.Sdk.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -31,9 +30,6 @@ namespace igx.jobs.scoreprocessor
 						{
 							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
-					});
-					services.AddSingleton(s => {
-						return new LdClient(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, DummyMailProvider>();

@@ -273,6 +273,7 @@ export class LazyMultiSelectItem {
                                 [autoSize]="true"
                                 [tabindex]="-1"
                                 [lazy]="lazy"
+								[loading]="loading"
                                 (onLazyLoad)="onScrollerLazyLoadEvent($event)"
                                 [options]="virtualScrollOptions"
                             >
@@ -490,6 +491,16 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	 */
 	@Input() dropdownIcon: string | undefined;
 	/**
+	* Whether the dropdown is in loading state.
+	* @group Props
+	*/
+	@Input() loading: boolean | undefined = false;
+	/**
+	* Number of items to request in onLazyLoad emitter.
+	* @group Props
+	*/
+	@Input() lazyLoadSize: number | undefined = 20;
+	/**
 	 * Name of the label field of an option.
 	 * @group Props
 	 */
@@ -702,7 +713,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	set filterValue(val: string | undefined | null) {
 		this._filterValue = val;
 		if (this.lazy) {
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		} else {
 			this.activateFilter();
 		}
@@ -1236,7 +1247,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 		this._filterValue = null;
 		this._filteredOptions = null;
 		if (this.lazy) {
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		}
 	}
 
@@ -1523,7 +1534,7 @@ export class LazyMultiSelect implements OnInit, AfterViewInit, AfterContentInit,
 	onFilterInputChange(event: KeyboardEvent) {
 		this._filterValue = (<HTMLInputElement>event.target).value;
 		if (this.lazy) {
-			this.onLazyLoad.emit({ first: 0, last: 20, filter: this._filterValue });
+			this.onLazyLoad.emit({ first: 0, last: this.lazyLoadSize, filter: this._filterValue });
 		} else {
 			this.activateFilter();
 		}

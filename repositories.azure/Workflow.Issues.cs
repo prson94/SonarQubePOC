@@ -193,7 +193,7 @@ namespace repositories.azure
 				{
 					if (assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) && (!Guid.TryParse(assetTypeUidParam.Value, out assetTypeUid) || assetTypeUid == Guid.Empty))
 					{
-						throw new ArgumentException(Error.InvalidAssetTypeUid);
+						throw new ArgumentException(Error.Invalid);
 					}
 				}
 

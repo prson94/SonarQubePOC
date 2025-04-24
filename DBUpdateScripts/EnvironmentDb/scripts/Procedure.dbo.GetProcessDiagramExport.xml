@@ -1,0 +1,165 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.dbo.GetProcessDiagramExport-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure [dbo].[GetProcessDiagramExport]
+@ID bigint
+as
+begin
+	set nocount on;
+	with assetHeader as (
+		select	0 as SortOrder, Name, Value
+		from	(
+				select	cast(a.Uid as nvarchar(850)) as [Uid], 
+						p.DisplayPath, 
+						cast(a.Color as nvarchar(850)) as Color,
+						cast('asset/'+cast(a.Uid as nvarchar(40)) as nvarchar(850)) as Url
+				from	dbo.Asset a 
+						inner join dbo.AssetPath p on p.ID = a.ID and a.ID = @ID
+				) t
+				unpivot (
+				[Value] for [Name] in ([Uid], DisplayPath, Color)--, Url)
+				) upt
+		union
+		select	ft.ColumnORder as SortORder,
+				ft.Name, 
+				f.FormattedValue as [Value] 
+		from	Field f 
+				inner join FieldType ft on ft.ID = f.FieldTypeID and f.AssetID = @ID 
+					and ft.[Type] not in ('ComplexRelationLookup', 'OwnershipLookup', 'Relationship', 'FieldFromRelationship')
+	)
+
+	select Name, [Value] from assetHeader order by SortOrder, Name;
+
+	declare @diagram nvarchar(max); 
+
+	-- Sheet 2
+	set @diagram =	(
+					select	apd.Diagram as json 
+					from	Asset a
+							inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+					where	a.ID = @ID
+					);
+
+	drop table if exists #nodes
+	create table #nodes(
+		AssetUid uniqueidentifier
+	)
+
+	drop table if exists #links
+	create table #links(
+		FromUid uniqueidentifier,
+		ToUid uniqueidentifier,
+		LabelUid uniqueidentifier
+	)
+
+	insert into #nodes
+		SELECT	JSON_VALUE(nda.value, '$.key') AS [FromUid]
+		FROM	OPENJSON(@diagram, '$.nodeDataArray') nda
+
+	insert into #links
+		SELECT	JSON_VALUE(nda.value, '$.from') AS [FromUid],
+				JSON_VALUE(nda.value, '$.to') AS [ToUid],
+				JSON_VALUE(nda.value, '$.labelUid') as [LabelUid]
+		FROM	OPENJSON(@diagram, '$.linkDataArray') as nda
+
+	;with cte_links as (
+		select	n.AssetUid as FromUid,
+				l.ToUid,
+				l.LabelUid
+		from	#nodes n
+				left join #links l on l.FromUid = n.AssetUid
+	)
+	select		try_cast(f1_step.FormattedValue as decimal(15,3)) as 'StepNo',
+				f1_name.FormattedValue as 'Name',
+				f1_gov.FormattedValue as 'GovernanceRole',
+				case at1.FlowObjectType
+					when 1 then 'Event'
+					when 2 then 'Activity'
+					when 3 then 'Gateway'
+				end as 'FlowObjectType',
+				at1.Name as 'DiagramAssetType',
+				CL.Value as 'NextAssetConnectorLabel',
+				try_cast(f2_step.FormattedValue as decimal(15,3)) as 'NextAssetStepNo',
+				f2_name.FormattedValue as 'NextAssetName',
+				lower(a1.uid) as 'AssetUID',
+				a1.id as 'AssetID',
+				'asset/'+ cast(lower(a1.uid) as nvarchar(36)) as 'AssetURL',
+				lower(a2.uid) as 'NextAssetUID',
+				a2.id as 'NextAssetID',
+				'asset/'+ cast(lower(a2.uid) as nvarchar(36)) as 'NextAssetURL'
+	from		cte_links l
+				left join Asset a1 on a1.uid = l.fromuid
+				left join AssetType at1 on at1.ID = a1.AssetTypeID
+				left join FieldDetail f1_name on f1_name.Name = 'Name' and f1_name.AssetId = a1.id
+				left join FieldDetail f1_step on f1_step.Name = 'StepNo' and f1_step.AssetId = a1.id
+				left join FieldDetail f1_gov on f1_gov.Name = 'GovernanceRole' and f1_gov.AssetId = a1.id
+				left join Asset a2 on a2.uid = l.ToUid
+				left join FieldDetail f2_name on f2_name.Name = 'Name' and f2_name.AssetId = a2.id
+				left join FieldDetail f2_step on f2_step.Name = 'StepNo' and f2_step.AssetId = a2.id
+				left join ConnectorLabel CL on CL.uid = l.labeluid
+	order by	try_cast (f1_step.FormattedValue as decimal(15,3)) asc, 
+				f1_name.FormattedValue
+
+	-- Sheet 3
+	set @diagram =	(
+					select	apd.Diagram  as json 
+					from	asset a
+							inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+					where a.ID = @ID
+					)
+
+	;with links as (
+		SELECT	JSON_VALUE(nda.value, '$.key') AS [AssetUid]
+		FROM	OPENJSON(@diagram, '$.nodeDataArray') as nda
+		)
+	select		cast(at.uid as nvarchar(50)) as AssetTypeUid, 
+				at.Name as AssetTypeName, 
+				string_agg(cast(a.uid as nvarchar(max)),',') as assets 
+	from		links
+				inner join Asset A on a.uid = links.AssetUid
+				inner join AssetType at on at.id = a.AssetTypeID
+	group by	at.uid, at.name
+
+	-- Sheet 4
+	set @diagram =	(
+					select	apd.Diagram as json 
+					from	asset a
+							inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+					where a.ID = @ID
+					)
+
+	;with links as	(
+					SELECT	JSON_VALUE(nda.value, '$.key') AS [AssetUid]
+					FROM	OPENJSON(@diagram, '$.nodeDataArray') as nda
+					)
+	select		a.id as DiagramAssetId, 
+				cast(a.uid as nvarchar(50)) as DiagramAssetUid, 
+				FD.FormattedValue AS 'StepNo', 
+				FD2.FormattedValue AS 'DiagramAssetName', 
+				cast(o.uid as nvarchar(50)) as AssetUid,
+				cast(AT.uid as nvarchar(50)) AS AssetTypeUid, 
+				AT.Name as AssetTypeName, 
+				cast(p.UID as nvarchar(50)) as PredicateUid  
+	from		links
+				inner join Asset A on a.uid = links.AssetUid
+				left join FieldDetail FD ON FD.AssetId = A.Id and FD.Name = 'StepNo'
+				left join FieldDetail FD2 ON FD2.AssetId = A.Id and FD2.Name = 'Name'
+				inner join [Intersect] I on I.SubjectAssetID = A.ID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
+				inner join Asset O on O.ID = I.ObjectAssetID
+				inner join AssetType AT on AT.Id = O.AssetTypeID
+	order by	FD.FormattedValue,
+				FD2.FormattedValue
+end
+]]>
+  </sql>
+ </changeSet>
+</databaseChangeLog>

@@ -1,6 +1,6 @@
 <div class="fav-icon">
     <span class="d3s-icon asset-icon">
-        <i [class]="'fa fa-' + iconName"></i>
+        <i [class]="'fa ' + iconName"></i>
     </span>
 </div>
 <div class="fav-description">
@@ -19,6 +19,9 @@
                 <ng-container *ngSwitchCase="FavoritePageType.WorkflowPage"></ng-container>
                 <ng-container *ngSwitchCase="FavoritePageType.ResourceListPage"></ng-container>
                 <ng-container *ngSwitchCase="FavoritePageType.SemanticTypePage"></ng-container>
+                <ng-container *ngSwitchCase="FavoritePageType.AssignmentsPage"></ng-container>
+                <ng-container *ngSwitchCase="FavoritePageType.RequestsPage"></ng-container>
+                <ng-container *ngSwitchCase="FavoritePageType.DataCatalogPage"></ng-container>
                 <ng-container *ngSwitchCase="FavoritePageType.Artifact">
                     <ng-container [ngSwitch]="AssetTypeClass[favorite.AssetTypeClass]">
                         <ng-container *ngSwitchCase="AssetTypeClass.BusinessAsset" i18n>Business Assets</ng-container>

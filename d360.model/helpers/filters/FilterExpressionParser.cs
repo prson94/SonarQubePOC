@@ -22,7 +22,7 @@ namespace d360.model.helpers
         public List<string> filteredCustomFields = new List<string>();
         private readonly FilterExpressionParseType parseType;
         private readonly List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
-        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup"};
 
         private readonly bool registerTokensAsFields;
         private readonly bool allowTempTableFiltering;

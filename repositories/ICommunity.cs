@@ -44,6 +44,12 @@ namespace repositories
 
 		Task<RepositoryResponse<IEnumerable<CompanyDomainSetting>>> ReadDomainSettingsByTenantAsync(int companyId);
 
+		Task<bool> ReadFeatureFlagByTenantAsync(int companyId, string slug);
+
+		Task<Dictionary<string, bool>> ReadFeatureFlagsByTenantAsync(int companyId);
+
+		Task<RepositoryResponse<IEnumerable<dynamic>>> ReadLoginsByTenantAsync(int companyId, long startId = 0);
+
 		Task<IEnumerable<CompanyDigestExecution>> ReadMostRecentWorkflowDigestStatusBySlotAsync(EnvironmentLevel slot, string region = null);
 		
 		Task<Dictionary<string, string>> ReadSettingsAsDictionaryAsync(int companyId);
@@ -58,19 +64,23 @@ namespace repositories
 
 		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsByCurrentSlotAsync(EnvironmentLevel slot, string region = null);
 
+		Task<IEnumerable<CompanyWithDatabaseServerSettings>> ReadTenantConnectionSettingsBySearchServerAsync(string searchServer = null);
+
 		Task<CompanyWithDatabaseServerSettings> ReadTenantConnectionSettingsByIdAsync(int companyId);
 
 		Task<CompanyResource> ReadTenantUserAsync(int companyId, int resourceId);
 
-		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email);
+		Task<RepositoryResponse<Resource>> ReadUserByEmailAsync(string email,bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId);
+		Task<RepositoryResponse<Resource>> ReadUserByIdAsync(int userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId);
+		Task<RepositoryResponse<Resource>> ReadUserByUidAsync(Guid userId, bool fromSecondary = true);
 
-		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username);
+		Task<RepositoryResponse<Resource>> ReadUserByUsernameAsync(string username, bool fromSecondary = true);
 
 		Task<RepositoryResponse<IEnumerable<Resource>>> ReadUsersByTenantAsync(int companyId, List<int> userIds = null);
+
+		Task<Resource> ReadUsersByTenantFromIDAsync(int companyId, int userid);
 
 		Task<ClientUserModel> ReadUserFeatureFlagContext(int companyId, int userId);
 
@@ -92,6 +102,8 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpdateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
 
+		Task<Dictionary<string, bool>> UpsertFeatureFlagsForTenantAsync(int companyId, string slug, bool value);
+
 		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
@@ -102,5 +114,20 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value);
 
+		Task<Theme> ReadThemeAsync(int companyId, string name);
+
+		Task<Theme> ReadThemeUidAsync(int companyId, Guid uid);
+
+		Task<List<ThemewithResource>> ReadThemesAsync(int companyId, Guid themeUid);
+
+		Task<ThemewithResource> ReadCurrentThemesByUsersAsync(int companyId, int CurrentUser);
+
+		Task<string> ReadCurrentThemeCustomCssByUsersAsync(int companyId, int CurrentUser);
+
+		Task<RepositoryResponse<bool>> UpsertThemeAsync(int companyId, Theme theme, int CurrentUser, bool isresetCurrent = false, bool IsNew = false);
+
+		Task<RepositoryResponse<bool>> RemoveThemeAsync(int companyId, Guid uid);
+
+		Task<RepositoryResponse<bool>> MarkThemeCurrentAsync(int companyId, Guid uid);
 	}
 }

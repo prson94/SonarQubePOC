@@ -45,6 +45,11 @@ export class ResourceApiComponent extends BaseComponent {
                 this.resource = res;
                 this.isSaving = false;
                 this.cdRef.markForCheck();
-            });
+			},
+			(err) => {
+				this.isSaving = false;
+				this.cdRef.markForCheck();
+			}
+		);
     }
 }

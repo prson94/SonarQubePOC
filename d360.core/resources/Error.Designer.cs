@@ -448,15 +448,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset cross reference model does not contain required fields..
-        /// </summary>
-        public static string AssetCrossReferenceNotHaveRequiredField {
-            get {
-                return ResourceManager.GetString("AssetCrossReferenceNotHaveRequiredField", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
         public static string AssetIdentifierDoesnotValidAsset {
@@ -565,6 +556,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to update assets of this type..
+        /// </summary>
+        public static string AssetTypeEditAssetPermissionsDenied {
+            get {
+                return ResourceManager.GetString("AssetTypeEditAssetPermissionsDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset type error.
         /// </summary>
         public static string AssetTypeError {
@@ -610,7 +610,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Asset Type found for given Guid.
+        ///   Looks up a localized string similar to Asset Type not found based on Uid provided [{0}]..
         /// </summary>
         public static string AssetTypeNotFound {
             get {
@@ -669,24 +669,6 @@ namespace d360.core.resources {
         public static string AssetTypeOrAssetRequired {
             get {
                 return ResourceManager.GetString("AssetTypeOrAssetRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid Asset Type Uid..
-        /// </summary>
-        public static string AssetTypeUidIsNotValid {
-            get {
-                return ResourceManager.GetString("AssetTypeUidIsNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Asset Type not found based on Uid provided [{0}]..
-        /// </summary>
-        public static string AssetTypeUidNotFound {
-            get {
-                return ResourceManager.GetString("AssetTypeUidNotFound", resourceCulture);
             }
         }
         
@@ -849,6 +831,15 @@ namespace d360.core.resources {
         public static string BadRequestSubmitted {
             get {
                 return ResourceManager.GetString("BadRequestSubmitted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allowed max length for TagType is 50.
+        /// </summary>
+        public static string BadTagType {
+            get {
+                return ResourceManager.GetString("BadTagType", resourceCulture);
             }
         }
         
@@ -1474,6 +1465,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error updating dashboard.
+        /// </summary>
+        public static string DashboardingErrorOnUpdate {
+            get {
+                return ResourceManager.GetString("DashboardingErrorOnUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
         /// </summary>
         public static string DataProfileDeleteMaxLimit {
@@ -1632,6 +1632,15 @@ namespace d360.core.resources {
         public static string DirectionAllowedForRelation {
             get {
                 return ResourceManager.GetString("DirectionAllowedForRelation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not allowed due to feature being disable via setting: {0}..
+        /// </summary>
+        public static string DisabledByEnvironmentSetting {
+            get {
+                return ResourceManager.GetString("DisabledByEnvironmentSetting", resourceCulture);
             }
         }
         
@@ -2392,6 +2401,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error during remove theme..
+        /// </summary>
+        public static string ErrorRemoveTheme {
+            get {
+                return ResourceManager.GetString("ErrorRemoveTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error removing rule results.
         /// </summary>
         public static string ErrorRuleResult {
@@ -2496,6 +2514,15 @@ namespace d360.core.resources {
         public static string Errorupdatingmetric {
             get {
                 return ResourceManager.GetString("Errorupdatingmetric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error during Upsert Theme..
+        /// </summary>
+        public static string ErrorUpsertTheme {
+            get {
+                return ResourceManager.GetString("ErrorUpsertTheme", resourceCulture);
             }
         }
         
@@ -3481,6 +3508,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [_resourceuid] provided!.
+        /// </summary>
+        public static string Invalid_ResourceUID {
+            get {
+                return ResourceManager.GetString("Invalid_ResourceUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A valid [ActionTypeUid] is required..
         /// </summary>
         public static string InvalidActionTypeUid {
@@ -3544,29 +3580,11 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Asset Type ID.Provide Valid Asset Type ID..
+        ///   Looks up a localized string similar to Invalid Asset Type Uid provided [{0}]..
         /// </summary>
-        public static string InvalidAssetTypeID {
+        public static string InvalidAssetTypeUidParameter {
             get {
-                return ResourceManager.GetString("InvalidAssetTypeID", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You have not provided a valid Asset type uid for this request..
-        /// </summary>
-        public static string InvalidAssetTypeUid {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No asset type found with [assetTypeUid] provided..
-        /// </summary>
-        public static string InvalidAssetTypeUidProvided {
-            get {
-                return ResourceManager.GetString("InvalidAssetTypeUidProvided", resourceCulture);
+                return ResourceManager.GetString("InvalidAssetTypeUidParameter", resourceCulture);
             }
         }
         
@@ -3576,15 +3594,6 @@ namespace d360.core.resources {
         public static string InvalidAssetUid {
             get {
                 return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AssetUid {0} is invalid.
-        /// </summary>
-        public static string InvalidAssetUidAttached {
-            get {
-                return ResourceManager.GetString("InvalidAssetUidAttached", resourceCulture);
             }
         }
         
@@ -5673,6 +5682,15 @@ namespace d360.core.resources {
         public static string MaxRelationShipLimit {
             get {
                 return ResourceManager.GetString("MaxRelationShipLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must not be greater than {1}.
+        /// </summary>
+        public static string MaxValueViolationError {
+            get {
+                return ResourceManager.GetString("MaxValueViolationError", resourceCulture);
             }
         }
         

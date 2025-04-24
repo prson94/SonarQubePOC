@@ -14,6 +14,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
 
 @Component({
     selector: 'd3s-semantic-asset-list',
@@ -47,7 +48,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: LaunchDarklyService,) {
+        private featureFlagService: FeatureFlagsInitService) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }    
 
@@ -76,6 +77,10 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
 				});
             });
         }
+        this.isLoading = false;
+        this.cdRef.markForCheck();
+        return;
+
     }
 
 	selectAsset(asset: SemanticTypeAsset) {
@@ -144,7 +149,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
 
 			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), this.semanticType.name);
 
-			var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
+			const breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
 				this.secondaryNavService.clearItems();
 				this.secondaryNavService.clearCurrentObject();
 				const disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";

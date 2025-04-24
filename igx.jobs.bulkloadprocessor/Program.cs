@@ -5,7 +5,6 @@ using d360.extensions.caching;
 using d360.extensions.events;
 using d360.extensions.mail;
 using d360.extensions.storage;
-using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -38,9 +37,6 @@ namespace igx.jobs.bulkloadprocessor
 					});
 					services.AddScoped<IStorageProvider, AzureStorageProvider>(s => {
 						return new AzureStorageProvider { StorageConnectionString = context.Configuration[constants.Setting.Storage] };
-					});
-					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, DummyMailProvider>();

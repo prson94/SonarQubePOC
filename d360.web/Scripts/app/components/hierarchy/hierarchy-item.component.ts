@@ -1,6 +1,5 @@
 ﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { ActivatedRoute, Router } from '@angular/router';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -22,7 +21,6 @@ import { IOutputData } from 'angular-split';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
 import { UsageAction } from '../../models/web-analytics-activity.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	selector: 'd3s-hierarchy-item',
@@ -34,7 +32,6 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 	],
 	templateUrl: 'hierarchy-item.component.html'
 })
-
 export class HierarchyItemComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() assetUid: string;
@@ -44,7 +41,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 	currentAreaNameSub: any;
 	currentAreaName: string;
 	showSocialScoreBar: boolean;
-
 
 	selected: any;
 	assetType: any;
@@ -61,7 +57,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 	sidePanelStorageKey = 'side_panel_width_detail_';
 
 	synonymPermission: SynonymPermission;
-
 	constructor(
 		private sidePanelService: SidePanelService,
 		secondaryNavService: SecondaryNavService,
@@ -74,15 +69,13 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		protected permissionsService: PermissionsService,
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
-		private linkClickInterceptor: LinkClickInterceptor,
-		launchDarklyService: LaunchDarklyService
+		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
 
 		this.webAnalyticsService = webAnalyticsService;
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
-		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {

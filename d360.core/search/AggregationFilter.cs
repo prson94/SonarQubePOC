@@ -1,9 +1,12 @@
-﻿namespace d360.core.search
+﻿using d360.core.enums;
+using System;
+
+namespace d360.core.search
 {
 	public class AggregationFilter
     {
-        public string Field { get; set; }
+        public Guid? Uid { get; set; }
         
-        public string[] Values { get; set; }
+        public AssetTypeClass? Class { get; set; }
     }
 }

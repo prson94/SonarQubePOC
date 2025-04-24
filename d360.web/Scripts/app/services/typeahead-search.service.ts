@@ -16,7 +16,7 @@ export class TypeaheadSearchService extends BaseObservableService {
 
     getResults(term: Observable<string>, size, types?: string[]): Observable<SearchResult[]> {
         return term.pipe(
-            debounceTime(400),
+            debounceTime(1000),
             distinctUntilChanged(),
             switchMap((term) => {
                 if (term === "") {

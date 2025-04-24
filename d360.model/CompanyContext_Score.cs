@@ -1588,23 +1588,46 @@ select distinct AssetUid from #Items", transaction: trans, commandTimeout: timeo
 		{
 			DateTime today = DateTime.UtcNow.Date;
 			var impactedAssets = Query<Guid>(@"
-select	distinct 
-		A.Uid
-from    ResponsibilityDetailByAssetTypeID (@ID) O 
-		inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
-		inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
-		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+declare @IsAssetTypeExists bit = 0
+
+select top 1 @IsAssetTypeExists = cast(1  as bit)
+from Responsibilitysummary O 
+inner join metrics.Allocation Al on Al.AssetTypeUid = @AssetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0     
+inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0    
+inner join metrics.AssetVersion V on V.AssetUid = M.Uid and ((@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or (@today >= V.EffectiveDate and V.EffectiveEndDate is null))
+ and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'   
+ and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid 
+ and V.Definition <> '{}' 
+ where O.AssetID = 0 and O.AssetTypeID = @ID and O.ResponsibilityTypeID = @ResponsibilityTypeID  
+ option (recompile);
+
+ if (@IsAssetTypeExists = 1)
+	 begin
+		select A.UID
+		from Asset A
+		where A.AssetTypeID = @id;
+	 end
+else
+	begin
+		select	distinct 
+				A.Uid
+		from    Asset A
+		inner join Responsibilitysummary O on O.AssetID = A.ID and O.ResponsibilityTypeID = @ResponsibilityTypeID 
+		inner join metrics.Allocation Al on Al.AssetTypeUid = @AssetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
 		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
 		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-			and ( 
-				(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-				(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-				) 
-			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
-			and V.Definition <> '{}' 
-group by A.Uid, M.AllocationUid, M.Uid, V.Uid", 
-new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
+					and ( 
+						(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+						(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+						) 
+					and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+					and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
+					and V.Definition <> '{}' 
+		 where A.AssetTypeID = @ID
+		 group by A.Uid, M.AllocationUid, M.Uid, V.Uid
+	end
+", 
+new { assetType.ID, AssetTypeUid = assetType.uid, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
 
 			return impactedAssets.ToList();
 		}		
@@ -1867,11 +1890,11 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 
 							if (model.PassCount.HasValue && model.FailCount.HasValue)
 							{
-								ulong total = (ulong)model.PassCount.Value + (ulong)model.FailCount.Value;
+								var total = model.PassCount.Value + model.FailCount.Value;
 
-								if (total > 9223372036854775807)
+								if (total > long.MaxValue)
 								{
-									row["Message"] = string.Format(Error.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
+									row["Message"] = string.Format(Error.MaxValueViolationError, "PassCount + FailCount", long.MaxValue.ToString(), 0);
 									row["Success"] = 0;
 								}
 

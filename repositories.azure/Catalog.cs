@@ -3,8 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
-using repositories.resources;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -144,222 +143,6 @@ drop table if exists #tbl;
 			}
 
 			return response;
-		}
-
-		public async Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model)
-		{
-			var userErrorMessages = new List<string>();
-
-			if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
-			{
-				userErrorMessages.Add(Xref.ModelNotContainFields);
-			}
-
-			if (model?.DataSource.Length > 250)
-			{
-				userErrorMessages.Add(Xref.DataSourceLengthMax);
-			}
-
-			if (model?.Type.Length > 50)
-			{
-				userErrorMessages.Add(Xref.TypeLengthMax);
-			}
-
-			if (model?.ExternalID.Length > 250)
-			{
-				userErrorMessages.Add(Xref.ExternalIDLengthMax);
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(model, 0, false, "");
-
-			if (userErrorMessages.Count > 0)
-			{
-				response.Message = string.Join("; ", userErrorMessages);
-				response.StatusCode = 406; // Not Acceptable.
-
-				return response;
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				var exists = await connection.QuerySingleAsync<bool>(
-					"select iif(exists(select 1 from AssetCrossReference where uid = @uid and [type] = @Type and datasource = @DataSource and externalid = @ExternalID), 1, 0)",
-					model
-				);
-
-				if (exists)
-				{
-					response.Message = Xref.AlreadyExists;
-					response.StatusCode = 409; // Conflict.
-
-					return response;
-				}
-
-				// Insert into cross reference table.
-				await connection.InsertAsync(model);
-				response.IsSuccess = true;
-				response.StatusCode = 201;
-				response.Data = model;
-			}
-
-			return response;
-		}
-
-		public async Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600)
-		{
-			DataTable table = new DataTable();
-
-			table.Columns.Add("ExecutionID", typeof(Guid));
-			table.Columns.Add("ItemNumber", typeof(int));
-			table.Columns.Add("Uid", typeof(Guid));
-			table.Columns.Add("DataSource", typeof(string));
-			table.Columns.Add("Type", typeof(string));
-			table.Columns.Add("ExternalID", typeof(string));
-			table.Columns.Add("FieldHash", typeof(string));
-			table.Columns.Add("Message", typeof(string));
-			table.Columns.Add("Success", typeof(bool));
-
-			int i = 0;
-			foreach (AssetCrossReference item in import)
-			{
-				DataRow row = table.NewRow();
-
-				row["ExecutionID"] = execution.ExecutionID;
-				row["ItemNumber"] = i++;
-				row["uid"] = item.uid;
-				row["DataSource"] = item.DataSource != null ? item.DataSource.Trim() : item.DataSource;
-				row["Type"] = item.Type != null ? item.Type.Trim() : item.Type;
-				row["ExternalID"] = item.ExternalID != null ? item.ExternalID.Trim() : item.ExternalID;
-				row["FieldHash"] = item.FieldHash;
-
-				table.Rows.Add(row);
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(
-					"update api.Execution set ProcessingStartedOn = getutcdate() where ExecutionId = @ExecutionID",
-					new { execution.ExecutionID }
-				);
-
-				using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection)
-				{
-					BatchSize = 5000,
-					DestinationTableName = "api.ExecutionAssetCrossReference",
-					BulkCopyTimeout = 0
-				})
-				{
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("uid", "uid");
-					bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
-					bulkCopy.ColumnMappings.Add("Type", "Type");
-					bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
-					bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
-
-					await connection.OpenAsync();
-					bulkCopy.WriteToServer(table);
-				}
-
-				string validationSql = @"
-update	api.ExecutionAssetCrossReference
-		set	Success = 0,
-		Message = 'Does not contain valid Uid.'
-where	ExecutionID = @executionID
-		and Success is null
-		and (Uid is null or UID ='00000000-0000-0000-0000-000000000000');
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message='DataSource is required.'
-where	ExecutionID = @executionID
-		and Success is null
-		and ( DataSource is null or Trim(DataSource) ='') ;
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message='Type is required.'
-where	ExecutionID = @executionID
-		and Success is null
-		and ([Type] is null  or TRIM([Type]) = '' );
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message = 'ExternalID is required.'
-where	ExecutionID = @executionID
-		and Success is null
-		and ( ExternalID is null or TRIM(ExternalID) ='');
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message = 'Does not contain required fields.'
-where	ExecutionID = @executionID
-		and Success is null
-		and (Uid is null
-			or DataSource is null
-			or [Type] is null
-			or ExternalID is null
-			or UID ='00000000-0000-0000-0000-000000000000'
-			or Trim(DataSource) =''
-			or TRIM([Type]) = ''
-			or TRIM(ExternalID) =''
-		);
-
-update	ECR
-set		Success = 0,
-		Message = 'Asset cross reference already exists'
-from	api.ExecutionAssetCrossReference ECR
-where	ECR.ExecutionID = @executionID
-		and Success is null
-		and exists (
-			select	1
-			from	AssetCrossReference
-			where	UID = ECR.UID
-					and DataSource = ECR.DataSource
-					and [Type] = ECR.[Type]
-					and ExternalID = ECR.ExternalID
-		);
-
-update	ECR
-set		Success = 0,
-		Message = 'Duplicate asset cross reference;'
-from	api.ExecutionAssetCrossReference ECR
-		inner join (
-			select	Uid, DataSource, Type, ExternalID
-			from	api.ExecutionAssetCrossReference
-			where	Success is null
-					and ExecutionID = @executionID
-			group by Uid, DataSource, Type, ExternalID
-			having(count(*)>1)
-		) T on ECR.[Uid] = T.[UID]
-			and ECR.DataSource = T.DataSource
-			and ECR.[Type] = T.[Type]
-			and ECR.ExternalID = T.ExternalID
-where	ECR.Success is null
-		and ExecutionID=@executionID";
-
-				await connection.ExecuteAsync(
-					validationSql,
-					new { executionID = execution.ExecutionID },
-					commandTimeout: timeout
-				);
-
-				// Insert into cross reference table.
-				await connection.ExecuteAsync(@"
-insert into AssetCrossReference (Uid, DataSource, Type, ExternalID, FieldHash)
-	select	Uid, DataSource, Type, ExternalID, FieldHash
-	from	api.ExecutionAssetCrossReference
-	where	ExecutionID=@executionID
-			and Success is null;
-
-update	api.ExecutionAssetCrossReference
-set		Success = 1,
-		Message = 'Added Successfully'
-where	ExecutionID = @executionID
-		and Success is null;",
-					new { executionID = execution.ExecutionID }, commandTimeout: timeout
-				);
-			}
 		}
 
 		public Task CreateSemanticType()
@@ -519,7 +302,7 @@ from		cte
 order by	lvl";
 
 			IEnumerable<AssetType> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				results = await connection.QueryAsync<AssetType>(sql, new { assetUid });
 			}
@@ -586,9 +369,11 @@ order by	lvl";
 				}
 			}
 
-			string query = string.Empty;
-			query = $@"
-				SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+			string query = $@"SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+			if (tagTypeUID == Guid.Empty)
+			{
+				query = $@"SELECT top 1 ID FROM TagType order by CreatedOn asc";
+			}
 
 			dynamic tagTypeId;
 			using (var connection = ConnectionProvider.Connect())
@@ -626,7 +411,7 @@ order by	lvl";
 						order by name";
 			}
 			IEnumerable<dynamic> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid, tagTypeId });
 			}
@@ -650,7 +435,7 @@ from	Tag T
 		inner join AssetDisplayValue D on D.AssetID = A.ID
 where	t.uid = @uid";
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				var result = await connection.QueryAsync<dynamic>(sql, new { uid = tagUid });
 
@@ -736,7 +521,7 @@ order by    P.[Path];";
 
 			IEnumerable<AssetTypeApiViewModel> model;
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				model = await connection.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
 			}
@@ -749,49 +534,6 @@ order by    P.[Path];";
 			throw new NotImplementedException();
 		}
 
-		public async Task<IEnumerable<AssetCrossReferenceResult>> ReadCrossReferenceResultsAsync(Guid executionId)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("executionId", executionId);
-
-			string sql = "select ItemNumber, Uid, Message, Success from [api].[ExecutionAssetCrossReference] where ExecutionID = @executionId";
-
-			IEnumerable<AssetCrossReferenceResult> models = null;
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				models = await connection.QueryAsync<AssetCrossReferenceResult>(sql, dbArgs);
-			}
-
-			return models;
-		}
-
-		public async Task<IEnumerable<AssetCrossReference>> ReadCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-			var sql = "select uid, DataSource, Type, ExternalID, FieldHash from AssetCrossReference";
-			var queryFilters = new List<string>();
-
-			queryParams.CheckForQueryParameter<Guid>("_assetuid", "[UID]", "@assetUid", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_externalid", "[ExternalID]", "@externalid", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_datasource", "[DataSource]", "@datasource", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_type", "[type]", "@type", ref dbArgs, ref queryFilters);
-
-			if (queryFilters.Count > 0)
-			{
-				sql += " where " + string.Join(" and ", queryFilters);
-			}
-
-			IEnumerable<AssetCrossReference> models = null;
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				models = await connection.QueryAsync<AssetCrossReference>(sql, dbArgs);
-			}
-
-			return models;
-		}
-
 		public Task ReadProfiles()
 		{
 			throw new NotImplementedException();
@@ -802,16 +544,11 @@ order by    P.[Path];";
 			throw new NotImplementedException();
 		}
 
-		public Task ReadSemanticTypes()
-		{
-			throw new NotImplementedException();
-		}
-
 		public async Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid)
 		{
 			var response = new RepositoryResponse<TagApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagApiModel>($@"{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.Uid = @uid", new { uid });
 				if (response.Data != null)
@@ -884,6 +621,7 @@ select	t.uid,
 		t.UpdatedOn,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
+		u.FirstName + ' ' + u.LastName as UpdatedBy,
 		tt.Uid as TagTypeUID,
 		tt.Value as TagTypeValue
 from	Tag t
@@ -933,7 +671,7 @@ from	Tag t
 				sql += $" offset {response.Data.pageSize * (response.Data.pageNum - 1)} rows fetch next {response.Data.pageSize} rows only";
 			}
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				if (includeTotal)
 				{
@@ -954,7 +692,7 @@ from	Tag t
 		{
 			var response = new RepositoryResponse<TagTypeApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagTypeApiModel>(
 					@"
@@ -989,7 +727,7 @@ where	t.Uid = @uid
 		{
 			IEnumerable<TagTypeApiModel> models = null;
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				models = await connection.QueryAsync<TagTypeApiModel>(
 
@@ -1004,7 +742,7 @@ select	t.uid,
 from	TagType t
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
-where	t.State = {(int)State.Active}
+where	t.State = {(int)State.Active} AND Lower(t.Value) != 'general'
 order by	t.[value]");
 			}
 
@@ -1014,7 +752,7 @@ order by	t.[value]");
 		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
 		{
 			IEnumerable<TagTypeApiModel> models = null;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				string sql = $@"
 DECLARE @assetTypeId INT;
@@ -1128,69 +866,6 @@ drop table if exists #tbl;
 			return response;
 		}
 
-		public async Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-			var sql = "delete AssetCrossReference";
-			List<string> queryFilters = new List<string>();
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
-			{
-				Guid assetUid = new Guid();
-
-				var assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
-				if (Guid.TryParse(assetUidString, out assetUid))
-				{
-					dbArgs.Add("@assetuid", assetUid);
-					queryFilters.Add($"[UID] = @assetuid");
-				}
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_externalid"))
-			{
-				var externalId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_externalid").Value;
-				dbArgs.Add("@externalid", externalId);
-				queryFilters.Add($"[ExternalID] = @externalid");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_datasource"))
-			{
-				var ds = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_datasource").Value;
-				dbArgs.Add("@datasource", ds);
-				queryFilters.Add($"[DataSource] = @datasource");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_type"))
-			{
-				var ty = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_type").Value;
-				dbArgs.Add("@type", ty);
-				queryFilters.Add($"[type] = @type");
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(null, 0, false, "");
-
-			if (queryFilters.Count > 0)
-			{
-				sql += " where " + string.Join(" and ", queryFilters);
-			}
-			else
-			{
-				response.StatusCode = 400;
-				response.IsSuccess = false;
-				response.Message = Xref.SpecifyDeleteCriteria;
-			}
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(sql, dbArgs);
-				response.IsSuccess = true;
-				response.StatusCode = 200;
-				response.Data = null;
-			}
-
-			return response;
-		}
-
 		public async Task<RepositoryResponse<string>> RemoveSemanticType()
 		{
 			throw new NotImplementedException();
@@ -1251,53 +926,6 @@ drop table if exists #tbl;
 				response.StatusCode = success ? 200 : 409;
 				response.Message = success ? "" : "Unable to remove tag types.";
 				response.Data = success;
-			}
-
-			return response;
-		}
-
-		public async Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model)
-		{
-			var userErrorMessages = new List<string>();
-
-			if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
-			{
-				userErrorMessages.Add(Xref.ModelNotContainFields);
-			}
-
-			if (model?.DataSource.Length > 250)
-			{
-				userErrorMessages.Add(Xref.DataSourceLengthMax);
-			}
-
-			if (model?.Type.Length > 50)
-			{
-				userErrorMessages.Add(Xref.TypeLengthMax);
-			}
-
-			if (model?.ExternalID.Length > 250)
-			{
-				userErrorMessages.Add(Xref.ExternalIDLengthMax);
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(model, 0, false, "");
-
-			if (userErrorMessages.Count > 0)
-			{
-				response.Message = string.Join("; ", userErrorMessages);
-				response.StatusCode = 406; // Not Acceptable.
-
-				return response;
-			}
-
-			var sql = "update AssetCrossReference set ExternalID = @ExternalID, Fieldhash = @FieldHash where [uid] = @uid and [DataSource] = @DataSource and [Type] = @Type";
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(sql, model);
-				response.IsSuccess = true;
-				response.StatusCode = 200;
-				response.Data = model;
 			}
 
 			return response;
@@ -1489,7 +1117,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var parameters = new
 					{
@@ -1514,7 +1142,7 @@ where	ID = @id;",
 			{
 				if (assetUid.HasValue)
 				{
-					using (var connection = (SqlConnection)ConnectionProvider.Connect())
+					using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 					{
 						var asset = await connection.QueryFirstOrDefaultAsync<Asset>(@"
 					 SELECT * FROM dbo.Asset a
@@ -1532,107 +1160,11 @@ where	ID = @id;",
 			}
 		}
 
-		public async Task<bool> HasAssetPermission(long assetId, Permission permission)
-		{
-			try
-			{
-				var parameters = new
-				{
-					permissionId = (int)permission,
-				};
-				var user = await GetUser(CurrentUserId);
-				bool hasPermission = user.IsAdministrator;
-
-				if (!hasPermission)
-				{
-					using (var connection = (SqlConnection)ConnectionProvider.Connect())
-					{
-						int assetTypeID = await connection.QuerySingleOrDefaultAsync<int>("select AssetTypeID from Asset where ID = @assetId", new { assetId });
-
-						hasPermission = await HasPermission(assetId, assetTypeID, permission);
-					}
-				}
-
-				return hasPermission;
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
-		private async Task<bool> HasPermission(long assetId, int assetTypeId, Permission permission)
-		{
-			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
-
-			if (isReadPermission)
-			{
-				Asset asset;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
-				{
-					asset = await connection.QueryFirstOrDefault(@"
-					SELECT * FROM dbo.Asset a
-					WHERE a.ID = @assetId", new { assetId });
-				};
-
-				if (permission == Permission.ReadAsset)
-				{
-					return await HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, CurrentUserId);
-				}
-
-				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
-			}
-			else
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
-				{
-					return connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																	begin
-																		select 1;
-																	end
-																else
-																	begin
-																		select 0;
-																end", new { assetId, t = assetTypeId, r = CurrentUserId });
-				}
-			}
-		}
-
-		public async Task<bool> HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId)
-		{
-			Permission permission = Permission.ReadAsset;
-
-			try
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
-				{
-					var result = await connection.QuerySingleAsync<bool>($@"	if exists(select 1
-																		 from asset a
-																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
-																		 where a.Object = @type and a.ObjectID = @id
-																		 and ua.PermissionsBitMask & {(int)permission} = 0)
-																	begin
-																		select 0;
-																		end
-																	else
-																	begin
-																		select 1;
-																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
-
-					return result;
-				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
 		public async Task<dynamic> GetAssetCopyOption(Guid uid, int assetTypeId)
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>($@"
 						select a.uid,
@@ -1644,7 +1176,7 @@ where	ID = @id;",
 						cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
 						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
 						order by an.DisplayPath",
-						new { currentAssetUid = uid, assetTypeId = assetTypeId });
+						new { currentAssetUid = uid, assetTypeId });
 
 					return result;
 				}
@@ -1659,7 +1191,7 @@ where	ID = @id;",
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QueryAsync<dynamic>($@";with assets as (
 					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
@@ -1690,34 +1222,6 @@ where	ID = @id;",
 						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
-
-					return result;
-				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
-
-		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
-		{
-			try
-			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
-				{
-					var result = connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = CurrentUserId });
 
 					return result;
 				}

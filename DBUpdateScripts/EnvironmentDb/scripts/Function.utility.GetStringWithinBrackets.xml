@@ -1,0 +1,40 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.utility.GetStringWithinBrackets-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [utility].[GetStringWithinBrackets](
+	@value nvarchar(1000),
+	@startchar char(1),
+	@endchar char(1)
+)
+RETURNS varchar(1000)
+AS
+BEGIN
+    DECLARE @retstring varchar(1000) = @value;
+
+	if (CHARINDEX(@startchar,@value )>0 AND CHARINDEX(@endchar,@value )>0)
+	begin
+		set @retstring = SUBSTRING(@value,CHARINDEX(@startchar,@value)+1,CHARINDEX(@endchar,@value) - CHARINDEX(@startchar,@value) - 1);
+	end
+	
+    RETURN @retstring
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

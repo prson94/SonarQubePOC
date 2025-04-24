@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using repositories;
@@ -21,8 +20,6 @@ namespace d360.model.DataAccessLayer
     {
         #region DI
 
-        private readonly Guid defaultThemeUID = new Guid("AAAAAAAA-0000-0000-0000-000000000001");
-
         internal IQueueSource Queue;
         internal IStorageProvider Storage;
 
@@ -30,9 +27,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
-			IStorageProvider storage, 
-			IFeatureFlagService ff)
-            : base(companyContext, securityContext, ff)
+			IStorageProvider storage)
+            : base(companyContext, securityContext)
         {
             Queue = queue;
             Storage = storage;
@@ -128,215 +124,60 @@ namespace d360.model.DataAccessLayer
 
         #endregion
 
-        public HttpStatusCode Delete(Guid uid)
+        public async Task<HttpStatusCode> Delete(Guid uid, Theme theme)
         {
-            var theme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
-
-            if (theme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
-            }
-
-            if (theme.Locked)
-            {
-                throw new GenericException(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
-            }
-
-            if (theme.IsCurrent)
-            {
-                throw new GenericException(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
-            }
-
             var iconExt = theme.BrowserIconExtension;
             var headerExt = theme.HeaderLogoExtension;
             var backExt = theme.HomePageBackgroundExtension;
-            CompanyContext.Delete(theme);
 
-            if (!string.IsNullOrEmpty(iconExt))
-            {
-                deleteStorageFile(uid, "icon", iconExt);
-            }
+			await Task.Run(() =>
+			{
+				if (!string.IsNullOrEmpty(iconExt))
+				{
+					deleteStorageFile(uid, "icon", iconExt);
+				}
 
-            if (!string.IsNullOrEmpty(headerExt))
-            {
-                deleteStorageFile(uid, "logo", headerExt);
-            }
+				if (!string.IsNullOrEmpty(headerExt))
+				{
+					deleteStorageFile(uid, "logo", headerExt);
+				}
 
-            if (!string.IsNullOrEmpty(backExt))
-            {
-                deleteStorageFile(uid, "background", backExt);
-            }
+				if (!string.IsNullOrEmpty(backExt))
+				{
+					deleteStorageFile(uid, "background", backExt);
+				}
 
-            addChangeLog(theme, "D");
+				addChangeLog(theme, "D");
+
+			}).ConfigureAwait(false);
 
             return HttpStatusCode.OK;
         }
 
-        public async Task<List<GetTheme>> GetThemesAsync(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
+        public async Task<GetTheme> GetCurrentThemeByUserAsync(ThemewithResource dbTheme)
         {
-            Guid themeUid = Guid.Empty;
+			var baseUri = await GetBaseUriTheme();
 
-            if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
-            {
-                if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
-                {
-                    themeUid = Guid.Empty;
-                    throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorOnGet, Error.InvalidUidParameter);
-                }
-            }
-
-            List<GetTheme> apiModels = null;
-
-            await Task.Run(() =>
-            {
-                var dbModels = (from t in CompanyContext.Table<Theme>()
-                                join c in CompanyContext.GlobalReportingResources on t.CreatedBy equals c.ResourceID
-                                join u in CompanyContext.GlobalReportingResources on t.UpdatedBy equals u.ResourceID
-                                select new { t, c, u }
-                               );
-
-                if (themeUid != Guid.Empty)
-                {
-                    dbModels = dbModels.Where(m => m.t.Uid == themeUid);
-                }
-
-                var baseUri = Storage.GetBaseUri("themes");
-
-                apiModels = dbModels
-                    .ToList()
-                    .Select(m => m.t.ToGetModel(baseUri, m.c, m.u, SecurityContext.CompanyID))
-                    .OrderBy(t => t.Name)
-                    .ToList();
-            }).ConfigureAwait(false);
-
-            return apiModels;
+            return dbTheme.ToGetModel(baseUri,SecurityContext.CompanyID);
         }
 
-        public string GetCurrentThemeCustomCssByUser()
+        public async Task<bool> MarkThemeAsCurrentAsync(Theme theme,Guid uid)
         {
-            var themeSql = @"
-							set nocount on;
-							declare @userThemeId int;
-							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @ResourceID
-
-							if @userThemeId is not null
-							begin
-								select * from Theme where ID = @userThemeId
-							end
-							else
-							begin
-								select top 1 * from Theme where IsCurrent = 1
-							end";
-            var theme = CompanyContext.Query<Theme>(themeSql, new { SecurityContext.ResourceID }).SingleOrDefault();
-
-            return (theme != null) ? theme.CustomCss + "" : "";
-        }
-
-        public async Task<GetTheme> GetCurrentThemeByUserAsync()
-        {
-            var themeSql = @"
-							set nocount on;
-							declare @userThemeId int,
-									@createdBy int,
-									@updatedBy int;
-							select @userThemeId = ThemeID from ResourceTheme where ResourceID = @ResourceID
-
-							if @userThemeId is not null
-							begin
-								select @createdBy = CreatedBy, @updatedBy = UpdatedBy from Theme where ID = @userThemeId
-								select * from Theme where ID = @userThemeId
-							end
-							else
-							begin
-								select @createdBy = CreatedBy, @updatedBy = UpdatedBy from Theme where IsCurrent = 1
-								select top 1 * from Theme where IsCurrent = 1
-							end
-							select * from reporting.Global_Resource where ResourceID = @createdBy;
-							select * from reporting.Global_Resource where ResourceID = @updatedBy;";
-
-            var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
-                new CommandDefinition(
-                    themeSql,
-                    new { SecurityContext.ResourceID },
-                    commandTimeout: ApiTimeout
-                    )
-                );
-
-            var dbTheme = gridReader.Read<Theme>().FirstOrDefault();
-            var dbCreatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
-            var dbUpdatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
-            var baseUri = Storage.GetBaseUri("themes");
-
-            if (dbTheme == null)
-            {
-                //load default Precisely theme if for any reason dbTheme is null
-                dbTheme = CompanyContext.Themes.FirstOrDefault(x => x.Uid == this.defaultThemeUID);
-                dbCreatedBy = new GlobalReportingResource();
-                dbUpdatedBy = new GlobalReportingResource();
-            }
-
-            if (dbTheme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
-            }
-
-            return dbTheme.ToGetModel(baseUri, dbCreatedBy, dbUpdatedBy, SecurityContext.CompanyID);
-        }
-
-        public Theme GetThemeByUid(Guid uid)
-        {
-            var theme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
-
-            if (theme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ThemeWithUidNotFound);
-            }
-
-            return theme;
-        }
-
-        public async Task<bool> MarkThemeAsCurrentAsync(Guid uid)
-        {
-            var theme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
-            if (theme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
-            }
             var nowPreviousTheme = theme.CloneThis();
             theme.IsCurrent = true;
 
             await Task.Run(() =>
             {
-                CompanyContext.Update(theme);
-                CompanyContext.Connection.Execute("update Theme set IsCurrent = 0 where Uid <> @Uid", new { theme.Uid });
                 addChangeLog(theme, "U", nowPreviousTheme);
             }).ConfigureAwait(false);
 
             return true;
         }
 
-        public async Task<GetTheme> PostThemeAsync(PostTheme theme, bool validationOnly = false)
+        public async Task<HttpStatusCode> PostThemeAsync(Theme repoTheme, bool validationOnly = false)
         {
-            var repoTheme = theme.ToRepositoryModel( SecurityContext.ResourceID);
-            repoTheme.Validate();
-
-            if (CompanyContext.Any<Theme>(t => t.Name.ToLower() == repoTheme.Name.ToLower()))
+			await Task.Run(() =>
             {
-                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ThemeNameMustBeUnique);
-            }
-
-            if (validationOnly)
-            {
-                return new GetTheme();
-            }
-
-            await Task.Run(() =>
-            {
-                CompanyContext.Add(repoTheme);
-                if (repoTheme.IsCurrent)
-                {
-                    CompanyContext.Connection.Execute("update Theme set IsCurrent = 0 where Uid <> @Uid", new { repoTheme.Uid });
-                }
                 addChangeLog(repoTheme, "C");
 
                 addStorageFile(repoTheme.Uid, "icon", repoTheme.BrowserIcon, repoTheme.BrowserIconExtension);
@@ -345,49 +186,14 @@ namespace d360.model.DataAccessLayer
 
             }).ConfigureAwait(false);
 
-            var baseUri = Storage.GetBaseUri("themes");
-            var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID ==  SecurityContext.ResourceID).SingleOrDefault();
-
-            return repoTheme.ToGetModel(baseUri, resource, resource, SecurityContext.CompanyID);
+			return HttpStatusCode.OK;
         }
 
-        public async Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme)
+        public async Task<HttpStatusCode> PutThemeAsync(Theme existingTheme, Theme nowPreviousTheme)
         {
-            var existingTheme = CompanyContext.Filter<Theme>(t => t.Uid == uid).SingleOrDefault();
-
-            if (existingTheme == null)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeWithUidNotFound);
-            }
-
-            if (theme.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
-            {
-                throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnUpdate, Error.ThemeInUseForIsCurrentEdit);
-            }
-
-            var nowPreviousTheme = existingTheme.CloneThis();
-
-            if (existingTheme.Locked)
-            {
-                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeIsLocked);
-            }
-
-            existingTheme = theme.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
-            existingTheme.Validate();
-
-            if (CompanyContext.Any<Theme>(t => t.Uid != existingTheme.Uid && t.Name.ToLower() == existingTheme.Name.ToLower()))
-            {
-                throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.ThemeNameMustBeUnique);
-            }
 
             await Task.Run(() =>
             {
-                CompanyContext.Update(existingTheme);
-                if (existingTheme.IsCurrent)
-                {
-                    CompanyContext.Connection.Execute("update Theme set IsCurrent = 0 where Uid <> @Uid", new { existingTheme.Uid });
-                }
-
                 addChangeLog(existingTheme, "U", nowPreviousTheme);
 
                 if (nowPreviousTheme.BrowserIconExtension != existingTheme.BrowserIconExtension)
@@ -410,11 +216,18 @@ namespace d360.model.DataAccessLayer
                 addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
             }).ConfigureAwait(false);
 
-            var createdBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.CreatedBy).SingleOrDefault();
-            var updatedBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.UpdatedBy).SingleOrDefault();
-            var baseUri = Storage.GetBaseUri("themes");
+			return HttpStatusCode.OK;
+		}
 
-            return existingTheme.ToGetModel(baseUri, createdBy, updatedBy, SecurityContext.CompanyID);
-        }
-    }
+		public async Task<Uri> GetBaseUriTheme()
+		{
+			Uri baseUri = null;
+			await Task.Run(() =>
+			{
+				baseUri = Storage.GetBaseUri("themes");
+
+			}).ConfigureAwait(false);
+			return baseUri;
+		}
+	}
 }

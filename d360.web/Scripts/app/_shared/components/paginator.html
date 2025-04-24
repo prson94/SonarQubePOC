@@ -1,0 +1,34 @@
+﻿<div class="paging-bar">
+	<span class="items">Showing {{fromDisplayValue}} to {{toDisplayValue}} of {{totalRecords}} items</span>
+	<span class="grow"></span>
+	@if (totalRecords > rows) {
+	<div class="pages">
+		<span [class]="previousCss" (click)="changePageToFirst($event)" [innerHTML]="labelFirst"></span>
+		<span [class]="previousCss" (click)="changePageToPrev($event)" [innerHTML]="labelPrevious"></span>
+		@for (cpage of pageOptions; track cpage) {
+		<span [class]="pageSelectedCss(cpage)" (click)="onPageLinkClick(cpage)">{{cpage}}</span>
+		}
+		<span [class]="nextCss" (click)="changePageToNext($event)" [innerHTML]="labelNext"></span>
+		@if (!hideLastButton) { <span [class]="nextCss" (click)="changePageToLast($event)" [innerHTML]="labelLast"></span> }
+		@if (!hideSettings) {
+		<span class="popup-container">
+			<i class="fa fa-cog"></i>
+			<div class="popup-menu popup">
+				<ul>
+					<li class="label"><span class="col1"></span><span>Items Per Page</span></li>
+					@for (item of itemsPerPageOptions; track item) {
+					<li (click)="changePageNumber(item)">
+						<span class="col1">
+							@if (item == rows) { <i class="fa fa-check"></i> }
+						</span>
+						<span>{{item}}</span>
+						<span class="col3"></span>
+					</li>
+					}
+				</ul>
+			</div>
+		</span>
+		}
+	</div>
+	}
+</div>

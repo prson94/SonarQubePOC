@@ -1,0 +1,11 @@
+﻿@switch(datatype) {
+	@case("text") {
+		<input type="text" pInputText value="{{value}}" (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="p-column-filter p-inputtext">
+	}
+	@case("number") {
+		<input type="number" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="p-column-filter p-inputtext">
+	}
+	@case ("date") {
+		<input type="text" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode)" class="p-column-filter p-inputtext">
+	}
+}

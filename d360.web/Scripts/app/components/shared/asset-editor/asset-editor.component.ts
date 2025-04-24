@@ -470,6 +470,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					f.Value = this.domPurifyService.sanitize(f.Value);
 				}
 
+				if (f.FieldType === 'Lookup' && f.FieldName && f.FieldName.toLowerCase() === 'parentuid' && f.Items.length === 1) {
+					f.Items.forEach((i) => i.Selected = true);
+				}
+
 				if (f.Category == null) {
 					currentCategory = "";
 					if (f.FieldName && (f.FieldName.toLowerCase() === 'parentuid' || this.isReferenceItem())) {

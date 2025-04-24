@@ -149,36 +149,30 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(dataTypes[ix].Name == "FieldFromRelationship");
 
 			ix = 16;
-			Assert.True(dataTypes[ix].ID == DataType.RefListRelationship);
-            Assert.True(dataTypes[ix].Description == "Reference Item List from Relationship");
-            Assert.True(dataTypes[ix].ReadOnly == false);
-            Assert.True(dataTypes[ix].Name == "RefListRelationship");
-
-			ix = 17;
 			Assert.True(dataTypes[ix].ID == DataType.JSON);
             Assert.True(dataTypes[ix].Description == "JSON");
             Assert.True(dataTypes[ix].ReadOnly == false);
             Assert.True(dataTypes[ix].Name == "JSON");
 
-			ix = 18;
+			ix = 17;
 			Assert.True(dataTypes[ix].ID == DataType.JsonElement);
             Assert.True(dataTypes[ix].Description == "JSON Attribute");
             Assert.True(dataTypes[ix].ReadOnly == false);
             Assert.True(dataTypes[ix].Name == "JsonElement");
 
-			ix = 19;
+			ix = 18;
 			Assert.True(dataTypes[ix].ID == DataType.Tag);
             Assert.True(dataTypes[ix].Description == "Tag");
             Assert.True(dataTypes[ix].ReadOnly == false);
             Assert.True(dataTypes[ix].Name == "Tag");
 
-			ix = 20;
+			ix = 19;
 			Assert.True(dataTypes[ix].ID == DataType.Score);
             Assert.True(dataTypes[ix].Description == "Score");
             Assert.True(dataTypes[ix].ReadOnly == false);
             Assert.True(dataTypes[ix].Name == "Score");
 
-			ix = 21;
+			ix = 20;
 			Assert.True(dataTypes[ix].ID == DataType.Counter);
             Assert.True(dataTypes[ix].Description == "Counter");
             Assert.True(dataTypes[ix].ReadOnly == false);

@@ -110,6 +110,11 @@ export class WorkflowHelpers {
 					title: $localize`Failed: no valid recipient found`,
 					body: $localize`<p>Assignment Failed and cannot be completed because no valid recipient was found after the last completed step</p><p><b>Workflow configuration needs to be reviewed.</b> After the issues are fixed, a new instance will need to be initiated.</p>`
 				};
+			case 'NoValidAsset':
+				return {
+					title: $localize`Failed: no valid asset found`,
+					body: $localize`<p>Assignment Failed and cannot be completed because no valid asset was found.</p><p>Confirm that assignment is started for an Asset and not an Asset Type.</p><p><b>Workflow configuration needs to be reviewed.</b> After the issues are fixed, a new instance will need to be initiated.</p>`
+				};
 			default: 
 				return {
 					title: $localize`Failed: failed for an unknown reason`,

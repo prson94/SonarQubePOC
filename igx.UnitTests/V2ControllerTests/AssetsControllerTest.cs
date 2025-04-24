@@ -134,10 +134,10 @@ namespace igx.UnitTests
             var assetUID = Guid.Parse(uid);
             bool isGoodUID = uid == DataConstants.ValidGUID;
 
-            var assetInsertList = new List<AssetInsert>();
+            var assetInsertList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetInsertList.Add(new AssetInsert() { });
+                assetInsertList.Add(new AssetApiModel() { });
             }
             IHttpActionResult actionResult;
             Task<HttpResponseMessage> responseMessageResult;
@@ -193,10 +193,10 @@ namespace igx.UnitTests
             var assetUID = Guid.Parse(uid);
             bool isGoodUID = !uid.StartsWith("000");
 
-            var assetUpdateList = new List<AssetUpdate>();
+            var assetUpdateList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetUpdateList.Add(new AssetUpdate() { });
+                assetUpdateList.Add(new AssetApiModel() { });
             }
             IHttpActionResult actionResult;
             Task<HttpResponseMessage> responseMessageResult;
@@ -281,7 +281,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)
@@ -331,10 +331,10 @@ namespace igx.UnitTests
                 RequestUri = testURI
             };
 
-            var assetInsertList = new List<AssetInsert>();
+            var assetInsertList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetInsertList.Add(new AssetInsert() { });
+                assetInsertList.Add(new AssetApiModel() { });
             }
 
             IHttpActionResult actionResult;
@@ -352,7 +352,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -412,10 +412,10 @@ namespace igx.UnitTests
                 RequestUri = testURI
             };
 
-            var assetUpdateList = new List<AssetUpdate>();
+            var assetUpdateList = new List<AssetApiModel>();
             for (int i = 0; i < numberOfassetInsertList; i++)
             {
-                assetUpdateList.Add(new AssetUpdate() { });
+                assetUpdateList.Add(new AssetApiModel() { });
             }
 
             IHttpActionResult actionResult;
@@ -433,7 +433,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -515,7 +515,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)

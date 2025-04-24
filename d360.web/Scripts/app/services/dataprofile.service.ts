@@ -16,7 +16,9 @@ import {
 } from '../models/semantic-type.model';
 import { SortOrder } from '../models/enums.model';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class DataProfileService extends BaseObservableService {
 
     constructor(

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace repositories
 {
-	public interface ISecurity
+	public interface ISecurity: IPermission
 	{
 		Platform Platform { get; }
 

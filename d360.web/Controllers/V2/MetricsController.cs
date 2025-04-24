@@ -152,21 +152,14 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetAssetById(Guid uid)
 		{
-			try
-			{
-				var model = MetricsRepository.GetMetricViewModelByUid(uid, null);
+			var model = MetricsRepository.GetMetricViewModelByUid(uid, null);
 
-				if (model == null)
-				{
-					return errorMessageResponse(HttpStatusCode.NotFound, Error.Errorlocatingmetric, string.Format(Error.MetricUidNotFound, uid.ToString()));
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
-			}
-			catch
+			if (model == null)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.Errorlocatingmetric, string.Format(Error.MetricUidNotFound, uid.ToString()));
 			}
+
+			return Ok(model);
 		}
 
 		/*
@@ -454,28 +447,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
 		{
-			var prefix = "Metrics.GetMetricHierarchyByAssetTypeAsync => ";
+			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-			try
+			if (assetType == null)
 			{
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var result = MetricsRepository.GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var result = MetricsRepository.GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -497,28 +478,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetMetricPathOptionsBy(Guid assetTypeUid, ScoreType scoreType)
 		{
-			var prefix = "Metrics.GetMetricPathOptionsBy => ";
+			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-			try
+			if (assetType == null)
 			{
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-			}
+			var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -539,21 +508,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
 		{
-			var prefix = "Metrics.GetFieldsByRuleResultPath => ";
-
-			try
-			{
-				var results = await MetricsRepository.GetFieldsByRuleResultPath(ruleResultPathUid);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-			}
+			var results = await MetricsRepository.GetFieldsByRuleResultPath(ruleResultPathUid);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -574,68 +530,51 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndScoreTypeAsync(ScoreType scoreType, Guid assetUid)
 		{
-			var prefix = "Metrics.GetMetricHierarchyByAssetAndScoreTypeAsync => ";
 			bool convertToUniversalTime = true;
 
-			try
+			DateTime effectiveDate = DateTime.MinValue;
+			var param = Request.GetQueryNameValuePairs();
+
+			if (param.Any(x => x.Key.ToLower() == "effectivedate"))
 			{
-				DateTime effectiveDate = DateTime.MinValue;
-				var param = Request.GetQueryNameValuePairs();
+				var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
 
-				if (param.Any(x => x.Key.ToLower() == "effectivedate"))
+				if (!DateTime.TryParse(value, out effectiveDate))
 				{
-					var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
-
-					if (!DateTime.TryParse(value, out effectiveDate))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate)).ConfigureAwait(false);
-					}
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate)).ConfigureAwait(false);
 				}
-				else
-				{
-					var maxEffectiveDate = Company.Query<DateTime?>(
-						"select max(EffectiveDate) from metrics.Score s inner join metrics.Allocation a on a.Uid = s.AllocationUid and a.ScoreType = @scoreType and s.AssetUid = @assetUid",
-						new { assetUid, scoreType = (int)scoreType }
-					).FirstOrDefault();
-					if (maxEffectiveDate.HasValue)
-					{
-						effectiveDate = maxEffectiveDate.Value;
-					}
-					else
-					{
-						effectiveDate = DateTime.UtcNow;
-					}
-					convertToUniversalTime = false;
-				}
-
-				var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
-				if (assetDetail == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.AssetIdentifierNotFound)).ConfigureAwait(false);
-				}
-
-				var allocation = Company.Filter<MetricAllocation>(al =>
-					al.AssetTypeUid == assetDetail.AssetTypeUid &&
-					al.ScoreType == scoreType &&
-					string.IsNullOrEmpty(al.OverrideName)
-					).FirstOrDefault();
-
-				if (allocation == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.ScoreAllocationCorrespondingAssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 			}
-			catch (Exception ex)
+			else
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+				var maxEffectiveDate = Company.Query<DateTime?>(
+					"select max(EffectiveDate) from metrics.Score s inner join metrics.Allocation a on a.Uid = s.AllocationUid and a.ScoreType = @scoreType and s.AssetUid = @assetUid",
+					new { assetUid, scoreType = (int)scoreType }
+				).FirstOrDefault();
+				
+				effectiveDate = maxEffectiveDate ?? DateTime.UtcNow;
+				convertToUniversalTime = false;
 			}
+
+			var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+			if (assetDetail == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.AssetIdentifierNotFound);
+			}
+
+			var allocation = Company.Filter<MetricAllocation>(al =>
+				al.AssetTypeUid == assetDetail.AssetTypeUid &&
+				al.ScoreType == scoreType &&
+				string.IsNullOrEmpty(al.OverrideName)
+				).FirstOrDefault();
+
+			if (allocation == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.ScoreAllocationCorrespondingAssetNotFound, assetUid.ToString()));
+			}
+
+			var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -655,55 +594,43 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
 		{
-			var prefix = "Metrics.GetMetricHierarchyByAssetAndAllocationAsync => ";
 			bool convertToUniversalTime = true;
 
-			try
+			var allocationStatus = validateScoreAllocation(allocationUid, out Guid _allocationUid);
+
+			if (allocationStatus.StatusCode != HttpStatusCode.OK)
 			{
-
-				var allocationStatus = validateScoreAllocation(allocationUid, out Guid _allocationUid);
-
-				if (allocationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, Error.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
-				}
-
-				var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out Guid _assetUid);
-
-				if (assetStatus.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message)).ConfigureAwait(false);
-				}
-
-				DateTime effectiveDate = DateTime.MinValue;
-				var param = Request.GetQueryNameValuePairs();
-
-				if (param.Any(x => x.Key.ToLower() == "effectivedate"))
-				{
-					var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
-
-					if (!DateTime.TryParse(value, out effectiveDate))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate)).ConfigureAwait(false);
-					}
-				}
-				else
-				{
-					effectiveDate = DateTime.UtcNow;
-					convertToUniversalTime = false;
-				}
-
-				var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, Error.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
 			}
-			catch (Exception ex)
+
+			var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out Guid _assetUid);
+
+			if (assetStatus.StatusCode != HttpStatusCode.OK)
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+				return errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message);
 			}
+
+			DateTime effectiveDate = DateTime.MinValue;
+			var param = Request.GetQueryNameValuePairs();
+
+			if (param.Any(x => x.Key.ToLower() == "effectivedate"))
+			{
+				var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
+
+				if (!DateTime.TryParse(value, out effectiveDate))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEffectiveDate);
+				}
+			}
+			else
+			{
+				effectiveDate = DateTime.UtcNow;
+				convertToUniversalTime = false;
+			}
+
+			var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -719,26 +646,15 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
 		{
-			try
+			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
 			{
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
-				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, Error.FieldNotAllowedForAssetType));
-				}
-
-				var models = MetricsRepository.GetMetricConditionsFields(assetTypeUid);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models ?? new List<MetricFieldTypeViewModel>()));
+				return errorMessageForbiddenResponse(Error.FieldNotAllowedForAssetType);
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError($"Metrics.GetMetricFieldsByAssetType => {errorMessage}");
 
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
-			}
+			var models = MetricsRepository.GetMetricConditionsFields(assetTypeUid);
+			return Ok(models ?? new List<MetricFieldTypeViewModel>());
 		}
 
 		/// <summary>
@@ -794,41 +710,29 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
 		{
-			var prefix = "Metrics.GetMetricScores => ";
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-			try
+			if (assetType == null)
 			{
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
-				}
-
-				var queryParams = Request.GetQueryNameValuePairs();
-				string isValid = isPageSizeAndNumValid(queryParams);
-
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
-				}
-
-				(var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
-
-				if (!string.IsNullOrEmpty(errorMessage))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage);
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
-			catch (Exception ex)
+
+			var queryParams = Request.GetQueryNameValuePairs();
+			string isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
+
+			(var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
+
+			if (!string.IsNullOrEmpty(errorMessage))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage);
+			}
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -893,8 +797,7 @@ namespace d360.web.Controllers.V2
 		{
 			int type = (int)scoreType;
 			var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type }, ApiTimeout);
-
-			return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
+			return Ok(model);
 		}
 
 		/// <summary>
@@ -1046,7 +949,7 @@ namespace d360.web.Controllers.V2
 
 				if (!_direction.Equals("asc", StringComparison.InvariantCultureIgnoreCase) && !_direction.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirection);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, Error.InvalidDirectionSimple);
 				}
 			}
 
@@ -1085,17 +988,17 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_includeduplicateflag"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_includeduplicateflag", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeduplicateflag").Value, out includeDuplicate))
+				if (!bool.TryParse(queryParams.FirstOrDefault(x => string.Equals(x.Key, "_includeduplicateflag", StringComparison.OrdinalIgnoreCase)).Value, out includeDuplicate))
 				{
 					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidParameter, string.Format(Error.CustomNotValid, "_includeDuplicateFlag"));
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_filter"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_filter", StringComparison.OrdinalIgnoreCase)))
 			{
-				_filter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+				_filter = queryParams.FirstOrDefault(x => string.Equals(x.Key, "_filter", StringComparison.OrdinalIgnoreCase)).Value;
 
 				if (string.IsNullOrEmpty(_filter))
 				{
@@ -1103,9 +1006,9 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (queryParams.Any(q => q.Key.ToLower() == "_simplefilter"))
+			if (queryParams.Any(q => string.Equals(q.Key, "_simplefilter", StringComparison.OrdinalIgnoreCase)))
 			{
-				_simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+				_simpleFilter = queryParams.FirstOrDefault(x => string.Equals(x.Key, "_simplefilter", StringComparison.OrdinalIgnoreCase)).Value;
 
 				if (string.IsNullOrEmpty(_simpleFilter))
 				{
@@ -1229,9 +1132,9 @@ namespace d360.web.Controllers.V2
 		{
 			List<DataQualityResponseModel> responseList;
 			var execution = getApiExecution(request.Count, action: ApiExecutionAction.PostDataQualityResults);
-			responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution)).ConfigureAwait(false);
+			responseList = MetricsRepository.InsertDataQualityResult(request, execution);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
+			return Ok(responseList);
 		}
 
 		/// <summary>
@@ -1453,7 +1356,7 @@ namespace d360.web.Controllers.V2
 				}
 				else if (effectiveDateStart > effectiveDateEnd)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "EffectiveDateEnd", "EffectiveDateStart"));
 				}
 
 			}
@@ -1479,7 +1382,7 @@ namespace d360.web.Controllers.V2
 				}
 				else if (runDateStart > runDateEnd)
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "RunDateStart", "RunDateEnd"));
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.GreaterThanError, "RunDateEnd", "RunDateStart"));
 				}
 			}
 
@@ -1539,11 +1442,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
 		{
-			List<DataQualityResponseModel> responseList;
 			var execution = getApiExecution(request.Count, action: ApiExecutionAction.PutDataQualityResults);
-			responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution)).ConfigureAwait(false);
-
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
+			var responseList = MetricsRepository.UpdateDataQualityResult(request, execution);
+			return Ok(responseList);
 		}
 
 		/// <summary>
@@ -1580,46 +1481,27 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostBulkDataQualityResultAsync(List<DataQualityInsertModel> request, bool triggersWorkflow = true)
 		{
-			var prefix = "Metrics.PostBulkDataQualityResultAsync => ";
-			string errorMessage;
-
-			try
+			if (request == null)
 			{
-				if (request == null)
-				{
-					request = readRequestJsonContent<List<DataQualityInsertModel>>(Request).Result;
-				}
-
-				if (request == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(request.Count, action: ApiExecutionAction.PostDataQualityResults);
-
-				ApiExecutionInfo executionInfo = await MetricsRepository.PostBulkDataQualityResults(request, execution, triggersWorkflow);
-
-				var result = Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = "Now processing request. Please check back with this ExecutionID for status.",
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
-							});
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+				request = readRequestJsonContent<List<DataQualityInsertModel>>(Request).Result;
 			}
-			catch (Exception ex)
+
+			if (request == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix },
-					{ "requestCount", $"{((request != null) ? request.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ErrorInvalidDatasetMessage);
 			}
+
+			var execution = getApiExecution(request.Count, action: ApiExecutionAction.PostDataQualityResults);
+
+			ApiExecutionInfo executionInfo = await MetricsRepository.PostBulkDataQualityResults(request, execution, triggersWorkflow);
+
+			var response = new ApiExecutionRecievedResponse {
+				ExecutionID = executionInfo.ExecutionID,
+				Message = "Now processing request. Please check back with this ExecutionID for status.",
+				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+			};
+			
+			return Ok(response);
 		}
 
 		/// <summary>
@@ -1637,97 +1519,93 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetGraphDataPoints(ScoreType scoreType, Guid assetUid)
 		{
-			try
+			bool convertToUniversalTime = true;
+			var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+
+			if (assetDetail == null)
 			{
-				bool convertToUniversalTime = true;
-				var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetNotFound, assetUid.ToString()));
+			}
 
-				if (assetDetail == null)
+			var allocation = Company.Filter<MetricAllocation>(al =>
+				al.AssetTypeUid == assetDetail.AssetTypeUid &&
+				al.ScoreType == scoreType &&
+				string.IsNullOrEmpty(al.OverrideName)
+				).FirstOrDefault();
+
+			List<GraphPoints> results;
+
+			if (allocation == null)
+			{
+				results = new List<GraphPoints>();
+			}
+			else
+			{
+				results = (
+					await Company.QueryAsync<GraphPoints>(
+						"select		[EffectiveDate], [Value] " +
+						"from		[metrics].[Score] " +
+						"where		assetuid = @assetUid and AllocationUid = @allocationUid " +
+						"order by	effectivedate desc",
+						new { allocationUid = allocation.Uid, assetUid })
+					).ToList();
+				
+				convertToUniversalTime = false;
+			}
+
+			List<GraphPoints> allPoints = new List<GraphPoints>();
+			foreach(var pt in results)
+			{
+				pt.key = "score";
+			}
+			List<RootMetricAssetHierarchyModel> dataPoints = new List<RootMetricAssetHierarchyModel>();
+
+			if (results.Count > 0 && allocation != null)
+			{
+				dataPoints = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, null, results.Min(x => x.EffectiveDate), ConvertToUniversalTime: convertToUniversalTime);
+			}
+
+			foreach (var measure in dataPoints)
+			{
+				if (!measure.IsGroup)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var allocation = Company.Filter<MetricAllocation>(al =>
-				  al.AssetTypeUid == assetDetail.AssetTypeUid &&
-				  al.ScoreType == scoreType &&
-				  string.IsNullOrEmpty(al.OverrideName)
-				  ).FirstOrDefault();
-
-				List<GraphPoints> results;
-
-				if (allocation == null)
-				{
-					results = new List<GraphPoints>();
+					var point = new GraphPoints
+					{
+						key = measure.Uid.ToString(),
+						EffectiveDate = measure.EffectiveDate.Value,
+						Value = measure.AdjustedWeight
+					};
+					allPoints.Add(point);
 				}
 				else
 				{
-					results = Company.Query<GraphPoints>(@"select [EffectiveDate]
-                                                              ,[Value]
-                                                          from [metrics].[Score]
-                                                          where assetuid = @assetUid and AllocationUid = @allocationUid
-                                                          order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
-					convertToUniversalTime = false;
-				}
-
-				List<GraphPoints> allPoints = new List<GraphPoints>();
-				foreach(var pt in results)
-				{
-					pt.key = "score";
-				}
-				List<RootMetricAssetHierarchyModel> dataPoints = new List<RootMetricAssetHierarchyModel>();
-
-				if (results.Count > 0 && allocation != null)
-				{
-					dataPoints = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, null, results.Min(x => x.EffectiveDate), ConvertToUniversalTime: convertToUniversalTime);
-				}
-
-				foreach (var measure in dataPoints)
-				{
-					if (!measure.IsGroup)
+					if (measure.Measures != null)
 					{
-						var point = new GraphPoints
+						foreach (var m in measure.Measures)
 						{
-							key = measure.Uid.ToString(),
-							EffectiveDate = measure.EffectiveDate.Value,
-							Value = measure.AdjustedWeight
-						};
-						allPoints.Add(point);
-					}
-					else
-					{
-						if (measure.Measures != null)
-						{
-							foreach (var m in measure.Measures)
+							var point = new GraphPoints
 							{
-								var point = new GraphPoints
-								{
-									key = m.Uid.ToString(),
-									EffectiveDate = m.EffectiveDate.Value,
-									Value = m.AdjustedWeight
-								};
-								allPoints.Add(point);
-							}
+								key = m.Uid.ToString(),
+								EffectiveDate = m.EffectiveDate.Value,
+								Value = m.AdjustedWeight
+							};
+							allPoints.Add(point);
 						}
-
-						var measurePoint = new GraphPoints
-						{
-							key = measure.Uid.ToString(),
-							EffectiveDate = measure.EffectiveDate.Value,
-							Value = measure.AdjustedWeight
-						};
-						allPoints.Add(measurePoint);
 					}
+
+					var measurePoint = new GraphPoints
+					{
+						key = measure.Uid.ToString(),
+						EffectiveDate = measure.EffectiveDate.Value,
+						Value = measure.AdjustedWeight
+					};
+					allPoints.Add(measurePoint);
 				}
-
-				allPoints.AddRange(results);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
 			}
-			catch (Exception ex)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, ex.Message)).ConfigureAwait(false);
 
-			}
+			allPoints.AddRange(results);
+
+			return Ok(allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() }));
 		}
 
 		public class GraphPoints

@@ -138,33 +138,40 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-            if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
+			var labelValue = label?.Value?.Trim();
+			if (label == null || string.IsNullOrWhiteSpace(labelValue) || labelValue.Length > 40)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
             }
-
-            var labelValue = label.Value.Trim();
-            var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => string.Equals(x.Value, labelValue, StringComparison.OrdinalIgnoreCase));
+            var dbRecord = await _connectorLabelRepository.GetLabel(labelValue);
             if (dbRecord != null)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
-            }
+				var getResult = new
+				{
+					uid = dbRecord.uid,
+					Value = dbRecord.Value,
+					State = dbRecord.State,
+					CreatedOn = dbRecord.CreatedOn,
+					UpdatedOn = dbRecord.UpdatedOn,
 
-            if (labelValue.Length > 40)
-            {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelMax40Char))).ConfigureAwait(false);
+				};
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, getResult))).ConfigureAwait(false);
             }
-
-            dbRecord = new ConnectorLabel
-            {
-                Value = labelValue
+			var labelRecord = new ConnectorLabelPostModel
+			{
+                Value = labelValue,
             };
-            dbRecord.UpdatedBy = dbRecord.CreatedBy = SecurityContext.ResourceID;
-            dbRecord.UpdatedOn = dbRecord.CreatedOn = DateTime.UtcNow;
+			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
+			var createResult = new
+			{
+				uid = result.uid,
+				Value = result.Value,
+				State = State.Active,
+				CreatedOn = result.CreatedOn,
+				UpdatedOn = result.UpdatedOn,
 
-            Company.Add(dbRecord);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
+			};
+			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, createResult)));
         }
 
         /// <summary>
@@ -429,103 +436,102 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> ConsolidateLabels(string parentUid, List<string> childrenUids)
         {
-            try
+            if (Guid.Parse(parentUid) == Guid.Empty)
             {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, "parentUid", parentUid));
+            }
 
-                if (Guid.Parse(parentUid) == Guid.Empty)
+			bool childrenValid = true;
+			List<string> invalidList = new List<string>();
+            foreach (var item in childrenUids)
+            {
+                if (Guid.Parse(item) == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, parentUid));
-                }
+					childrenValid = false;
+					invalidList.Add(item);
+				}
+            }
+			if (!childrenValid)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, "Uids", string.Join(", ", invalidList)));
+			}
 
-                foreach (var item in childrenUids)
+            if (childrenUids.Contains(parentUid))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, Error.UnableIncludeParentinChildLabels);
+            }
+            var parentGuid = Guid.Parse(parentUid);
+
+            var parentLabel = await _connectorLabelRepository.GetLabel(parentGuid);
+            if (parentLabel == null)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.UidNotFound, parentUid));
+            }
+
+            //Get diagram usage
+            List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
+            IEnumerable<long> assetUids = await _connectorLabelRepository.GetAssetUids(children);
+
+            var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
+
+            if (Company.Database.Connection.State != ConnectionState.Open)
+            {
+                Company.Connection.Open();
+            }
+
+            using (var trans = Company.Connection.BeginTransaction())
+            {
+                var conn = trans.Connection;
+                try
                 {
-                    if (Guid.Parse(item) == Guid.Empty)
+                    foreach (var process in processes)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, item));
+                        if (process.Diagram != null)
+                        {
+                            var model = JsonConvert.DeserializeObject<ProcessDiagramModel>(process.Diagram);
+                            foreach (var link in model.linkDataArray.Where(x => x.labelUid.HasValue))
+                            {
+                                if (children.Contains(link.labelUid.Value))
+                                {
+                                    link.labelUid = parentGuid;
+                                }
+                            }
+
+                            conn.Execute($@"
+                            update AssetProcessDiagram
+                                set Diagram = @updatedDiagram
+                            where ID = @diagramId",
+                                new
+                                {
+                                    diagramId = process.ID,
+                                    updatedDiagram = JsonConvert.SerializeObject(model),
+                                    resourceId = SecurityContext.ResourceID
+                                }, transaction: trans);
+                        }
                     }
+                    conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
+                    trans.Commit();
                 }
-
-                if (childrenUids.Contains(parentUid))
+                catch (Exception ex)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, Error.UnableIncludeParentinChildLabels);
-                }
-                var parentGuid = Guid.Parse(parentUid);
-
-                var parentLabel = await _connectorLabelRepository.GetLabel(parentGuid);
-                if (parentLabel == null)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.UidNotFound, parentUid));
-                }
-
-                //Get diagram usage
-                List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
-                IEnumerable<long> assetUids = await _connectorLabelRepository.GetAssetUids(children);
-
-                var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
-
-                if (Company.Database.Connection.State != ConnectionState.Open)
-                {
-                    Company.Connection.Open();
-                }
-
-                using (var trans = Company.Connection.BeginTransaction())
-                {
-                    var conn = trans.Connection;
                     try
                     {
-                        foreach (var process in processes)
+                        if (trans != null)
                         {
-                            if (process.Diagram != null)
-                            {
-                                var model = JsonConvert.DeserializeObject<ProcessDiagramModel>(process.Diagram);
-                                foreach (var link in model.linkDataArray.Where(x => x.labelUid.HasValue))
-                                {
-                                    if (children.Contains(link.labelUid.Value))
-                                    {
-                                        link.labelUid = parentGuid;
-                                    }
-                                }
-
-                                conn.Execute($@"
-                                update AssetProcessDiagram
-                                    set Diagram = @updatedDiagram
-                                where ID = @diagramId",
-                                    new
-                                    {
-                                        diagramId = process.ID,
-                                        updatedDiagram = JsonConvert.SerializeObject(model),
-                                        resourceId = SecurityContext.ResourceID
-                                    }, transaction: trans);
-                            }
+                            trans.Rollback();
                         }
-                        conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
-                        trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        try
-                        {
-                            if (trans != null)
-                            {
-                                trans.Rollback();
-                            }
-                        }
-                        catch
-                        {
-                            //swallow exception here.
-                        }
-
-                        throw;
+                        //swallow exception here.
                     }
-                }
-                var result = Information.ConsolidateSucessfully;
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+                    throw;
+                }
             }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorConsolidateLabel, ex.Message);
-            }
+            
+			var result = Information.ConsolidateSucessfully;
+            return Ok(result);
         }
     }
 }

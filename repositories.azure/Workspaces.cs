@@ -7,6 +7,7 @@ using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
 using Newtonsoft.Json.Linq;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -23,7 +24,7 @@ namespace repositories.azure
 		
 		public string WorkspaceId { get; set; }
 
-		private readonly string GROUP_RESULTS_SQL = @"select ItemNumber, ExecutionItemUid, cast(JSON_VALUE(Properties, '$.Uid') as uniqueidentifier) as uid, Message, Success from api.ExecutionItem where ExecutionID = @executionId;";
+		private readonly string GROUP_RESULTS_SQL = @"select ItemNumber, ExecutionItemUid, cast(JSON_VALUE(Properties, '$.Uid') as uniqueidentifier) as uid, Message, Success from api.ExecutionItem where ExecutionID = @executionId order by ItemNumber;";
 		private readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 
 		public Workspaces(DapperConnectionProvider provider): base(provider) { }
@@ -91,7 +92,18 @@ namespace repositories.azure
 				var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
 				if (ft != null)
 				{
-					var validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					FieldValidationResult validationResult = new FieldValidationResult();
+					DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+					if (type == DataType.Boolean || type == DataType.Date || 
+						type == DataType.DateTime || type == DataType.Decimal || type == DataType.Number)
+					{
+						validationResult = isFieldValid(ft, fields[key]);
+					}
+					else
+					{
+						validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					}
 					if (validationResult.IsValid)
 					{
 						var jsonObject = JObject.Parse("{}");
@@ -143,7 +155,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
-						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						$@"select LOWER(string_agg(cast(r.uid as nvarchar(max)),',') )
 						   from ResourceGroup s
 						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
 						   where groupid = @groupid 
@@ -159,7 +171,7 @@ namespace repositories.azure
 				if (response == null)
 				{
 					var useruIdsstring = await connection.QueryFirstOrDefaultAsync<string>(
-						$@"select string_agg(cast(r.uid as nvarchar(max)),',') 
+						$@"select LOWER(string_agg(cast(r.uid as nvarchar(max)),',') )
 						   from ResourceGroup s
 						   inner join reporting.Global_Resource r on s.ResourceID = r.ResourceID
 						   where groupid = @groupid 
@@ -253,7 +265,16 @@ where	g.id = @groupId;
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
 					simpleQueryFilters.Add(@"g.Name like @simpleFilter");
-					dbArgs.Add("@simpleFilter", "%" + simpleFilter + "%");
+					if (simpleFilter.Contains("*"))
+					{
+						simpleFilter = GetEscapedFilterString(simpleFilter);
+						dbArgs.Add("@simpleFilter", simpleFilter);
+					}
+					else
+					{
+						simpleFilter = GetEscapedFilterString(simpleFilter);
+						dbArgs.Add("@simpleFilter", "%" + simpleFilter + "%");
+					}
 				}
 			}
 
@@ -272,7 +293,22 @@ where	g.id = @groupId;
 				fieldTypes.ForEach(ft =>
 				{
 					var prefix = $"f_{ft.ID}";
+					var counterPrefix = "";
+					if (ft.Type == DataType.Counter.ToString())
+					{
+						counterPrefix = $"fcv_{ft.ID}";
+					}
+
 					DataType dt = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+					bool isdefvalue = false;
+
+					if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
+					{
+						isdefvalue = true;
+						dbArgs.Add($"defformatvalue{ft.ID}", ft.DefaultFormattedValue);
+					}
+
 					if (dt == DataType.Lookup)
 					{
 						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
@@ -282,13 +318,58 @@ where	g.id = @groupId;
 					else
 					{
 						string sqlDataType = dt.AsSqlDataType();
-						validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
-						fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
-						fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+						if (isdefvalue)
+						{
+							validOrderFields.Add(new SortColumnOption(ft.Name, $"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID})"));
+							fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then @defformatvalue{ft.ID} else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
+							fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+						}
+						else
+						{
+							if (dt == DataType.Counter)
+							{
+								validOrderFields.Add(new SortColumnOption(ft.Name, $"{counterPrefix}.Value"));
+								fieldColumns.Add($"try_cast(case when LEN(ISNULL({counterPrefix}.Value, '')) < 1 then null else {counterPrefix}.Value end as {sqlDataType}) as [{ft.Name}]");
+								fieldJoins.Add($"left join FieldCounterValue {counterPrefix} on ({counterPrefix}.FieldTypeID = {ft.ID} and {counterPrefix}.AssetID = ag.ID)");
+							}
+							else 
+							{ 
+							validOrderFields.Add(new SortColumnOption(ft.Name, $"{prefix}.FormattedValue"));
+							fieldColumns.Add($"try_cast(case when LEN(ISNULL({prefix}.FormattedValue, '')) < 1 then null else {prefix}.FormattedValue end as {sqlDataType}) as [{ft.Name}]");
+							fieldJoins.Add($"left join Field {prefix} on ({prefix}.FieldTypeID = {ft.ID} and {prefix}.AssetID = ag.ID)");
+							}
+						}
 					}
 					if (!string.IsNullOrEmpty(simpleFilter) && ft.IsListable)
 					{
-						simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+						if (isdefvalue)
+						{
+							if (dt == DataType.Counter)
+							{
+								simpleQueryFilters.Add($"coalesce({counterPrefix}.Value,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
+
+							else if (dt == DataType.Lookup)
+							{
+								simpleQueryFilters.Add($"coalesce({prefix}.FormattedValue,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
+
+							else
+							{ 
+							simpleQueryFilters.Add($"coalesce({prefix}.Value,@defformatvalue{ft.ID}) like @simpleFilter");
+							}
+						}
+						else
+						{
+							if(dt == DataType.Counter)
+							{
+								simpleQueryFilters.Add($"{counterPrefix}.Value like @simpleFilter");
+							}
+							else
+							{ 
+							simpleQueryFilters.Add($"{prefix}.FormattedValue like @simpleFilter");
+							}
+						}
 					}
 				});
 			}
@@ -301,8 +382,6 @@ where	g.id = @groupId;
 				queryFilters.Add(string.Join(" or ", simpleQueryFilters));
 				countSql += $" {string.Join("\n", fieldJoins)}";
 			}
-
-			
 
 			var sql = $@"
 select	{string.Join(", ", fieldColumns)}
@@ -551,6 +630,7 @@ end";
 			items.ForEach(u => {
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
+				string message = string.Empty;
 
 				itemNumber++;
 				row["ExecutionId"] = executionId;
@@ -564,23 +644,36 @@ end";
 				jsonObject.Add("Description", u.Description);
 				jsonObject.Add("IsActiveDirectoryGroup", u.IsActiveDirectoryGroup);
 
-				if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid != Guid.Empty) 
+				if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid != Guid.Empty)
 				{
 					jsonObject.Add("PrimaryOwnerUid", u.PrimaryOwnerUid);
+				}
+				else if (u.PrimaryOwnerUid.HasValue && u.PrimaryOwnerUid == Guid.Empty)
+				{
+					message = "Primary Owner Uid provided is not a resource uid.";
 				}
 				if (u.SecondaryOwnerUid.HasValue && u.SecondaryOwnerUid != Guid.Empty)
 				{
 					jsonObject.Add("SecondaryOwnerUid", u.SecondaryOwnerUid);
 				}
+				else if (u.SecondaryOwnerUid.HasValue && u.SecondaryOwnerUid == Guid.Empty)
+				{
+					message = "Secondary Owner Uid provided is not a resource uid.";
+				}
+
 				row["Properties"] = jsonObject.ToString();
 				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.Fields);
 				
-				if (fieldProcessingResult.Item1)
+				if (fieldProcessingResult.Item1 && string.IsNullOrEmpty(message))
 				{
 					table.Rows.Add(row);
 				}
 				else
-				{	// Add error to outgoing.
+				{   // Add error to outgoing.
+					if (!string.IsNullOrEmpty(message))
+					{
+						fieldProcessingResult.Item2.Add(message);
+					}
 					response.Data.Add(new GroupResponseResult { ItemNumber = itemNumber, Message = string.Join("; ", fieldProcessingResult.Item2), Success = false });
 				}
 			});
@@ -664,71 +757,7 @@ end";
 		{
 			RepositoryResponse<long?> response = new(null, 200, true);
 
-			string sql = @"
-if exists (select 1 from reporting.Global_Resource where ResourceID = @ID)
-begin
-	update	reporting.Global_Resource
-	set		FirstName = @FirstName,
-			LastName = @LastName,
-			UpdatedOn = @UpdatedOn,
-			LastLoggedInOn = getutcdate()
-	where	ResourceID = @ID
-end
-else
-begin
-	insert into reporting.Global_Resource (ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, [State], LastLoggedInOn, [uid], UpdatedOn)
-	values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, 1, getutcdate(), @Uid, @UpdatedOn)
-end
-
-declare @assetTypeId int,
-		@assetId bigint,
-		@FullName nvarchar(500) = @FirstName + ' ' + @LastName;
-select @assetTypeId = ID from AssetType where Object = 'ResourceType';
-if exists (select 1 from Asset where Uid = @Uid)
-begin
-	select @assetId = ID from dbo.Asset where Uid = @Uid;
-end
-else
-begin
-	insert into dbo.Asset (AssetTypeID, [State], Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, uid)
-	values (@assetTypeId, 1, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
-	set @assetId = SCOPE_IDENTITY();
-end
-
-declare @pathXml xml;
-set @pathXml =	(
-				select	1 as '@level',
-						1 as '@position',
-						@assetTypeId as '@assetTypeId',
-						@assetId as '@assetId',
-						@FullName as 'data()'
-				for xml path('segments'),root('path')
-				)
-if exists (select 1 from AssetPath where ID = @assetId)
-begin
-	update	AssetPath 
-	set		Segments = @pathXml
-	where	ID = @assetId;
-end
-else
-begin
-	insert into AssetPath (ID, Segments) values (@assetId, @pathXml);
-end
-
-if exists (select 1 from AssetDisplayValue where AssetID = @assetId)
-begin
-	update	AssetDisplayValue 
-	set		DisplayValue = @FullName,
-			DisplayValuePrefix = @FullName
-	where	AssetID = @assetId;
-end
-else
-begin
-	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValuePrefix) values (@assetId, @FullName, @FullName);
-end
-
-select @assetId;
-";
+			string sql = @"exec [api].[UpsertSingleUsers] @ID,@FirstName,@LastName,@Email,@UpdatedOn,@uid";
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
@@ -769,6 +798,7 @@ select @assetId;
 			// Load user and field data into data tables.
 			int itemNumber = 0;
 			users.ForEach(u => {
+
 				var row = table.NewRow();
 				var jsonObject = JObject.Parse("{}");
 				Guid? executionItemUid = null;
@@ -796,17 +826,26 @@ select @assetId;
 				jsonObject.Add("IsAdministrator", u.users.IsAdministrator);
 
 				row["Properties"] = jsonObject.ToString();
-				var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.users.Fields);
 
 				var message = "";
-				if (u.Success != null)
+
+				if (u.Success == null)
 				{
-					message = u.Message;
+					var fieldProcessingResult = parseFieldAndAddToRow(row, fieldTypes, u.users.Fields);
+
+					if (u.Success != null)
+					{
+						message = u.Message;
+					}
+					if (!fieldProcessingResult.Item1)
+					{
+						u.Success = false;
+						message += string.Join("; ", fieldProcessingResult.Item2);
+					}
 				}
-				if (!fieldProcessingResult.Item1)
+				else 
 				{
-					u.Success = false;
-					message += string.Join("; ", fieldProcessingResult.Item2);
+					message = u.Message + "";
 				}
 
 				if (u.Success == null || u.Success == true)
@@ -819,6 +858,7 @@ select @assetId;
 				{   // Add error to outgoing.
 					response.Data.Add(new UserApiUpsertResult { ItemNumber = itemNumber, Message = message, Success = false, ExecutionItemUid = executionItemUid });
 				}
+
 			});
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect()) 
@@ -843,6 +883,7 @@ select @assetId;
 					await connection.ExecuteAsync(@"exec api.UpsertUsers @executionId, @lookupFieldsPassedByValue", new { executionId, lookupFieldsPassedByValue });
 
 					response.Data.AddRange(await connection.QueryAsync<UserApiUpsertResult>(GROUP_RESULTS_SQL, new { executionId }));
+					response.Data = response.Data.OrderBy(x => x.ItemNumber).ToList();
 				}
 				else
 				{
@@ -971,7 +1012,7 @@ select @assetId;
 					success = false;
 					messages.Add(Error.InvalidEmail);
 				}
-				else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
+				else if (users.Count(u => u.Username != null && u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
 				{
 					success = false;
 					messages.Add(Error.UsernameDuplicate);
@@ -982,7 +1023,7 @@ select @assetId;
 					success = false;
 					messages.Add(Error.InvalidEmail);
 				}
-				else if (user.Username != user.Email && (users.Count(u => u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
+				else if (user.Username != user.Email && (users.Count(u => u.Email != null && u.Email.Trim().Equals(user.Email.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1))
 				{
 					success = false;
 					messages.Add(Error.UsernameDuplicate);
@@ -1003,7 +1044,18 @@ select @assetId;
 							}
 							else
 							{
-								var validationResult = isFieldValid(fieldType, (user.Fields[field] ?? "").Trim());
+								FieldValidationResult validationResult = new FieldValidationResult();
+								DataType type = (DataType)Enum.Parse(typeof(DataType), fieldType.Type);
+								if (type == DataType.Boolean || type == DataType.Date ||
+												type == DataType.DateTime || type == DataType.Decimal || type == DataType.Number)
+								{
+									validationResult = isFieldValid(fieldType, user.Fields[field]);
+								}
+								else
+								{
+									validationResult = isFieldValid(fieldType, (user.Fields[field] ?? "").Trim());
+								}
+
 								if (!validationResult.IsValid)
 								{
 									success = false;
@@ -1220,5 +1272,40 @@ select @assetId;
 			}
 			return usersvalidate;
 		}
+
+		#region "SimpleFilter"
+		private string GetEscapedFilterString(string filter, bool isContains = false)
+		{
+			return wildcardValue(escapeForSQLLike(filter), isContains);
+		}
+
+		private string escapeForSQLLike(string value, bool isContains = true)
+		{
+			char[] escapeChars = new char[] { '%', '_', '^', '[' };
+			string escapedValue = "";
+
+			foreach (char c in value)
+			{
+				if (escapeChars.Contains(c))
+				{
+					escapedValue += $"[{c}]";
+				}
+				else
+				{
+					escapedValue += c;
+				}
+			}
+
+			return escapedValue;
+		}
+
+		private string wildcardValue(string value, bool isContains = true)
+		{
+			value = value.Replace("*", "%").Replace("?", "_");
+			value = isContains ? $"%{value}%" : $"{value}%";
+
+			return value;
+		}
+		#endregion
 	}
 }

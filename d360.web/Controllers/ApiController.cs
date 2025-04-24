@@ -6,7 +6,6 @@ using d360.core.helpers;
 using d360.core.Models;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.helpers;
 using d360.web.Extensions;
@@ -347,7 +346,7 @@ namespace d360.web.Controllers
 			{
 				list.AddRange(RenderTagField(ft, type, id));
 			}
-			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString() || ft.Type == DataType.RefListRelationship.ToString())
+			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString())
 			{
 				//look at ownershiplookup / relationship lookup / reference list lookup field and figure out what to show
 				list.AddRange(await RenderComplexLookupField(type.ToString(), id, ft, complexRelationFieldHasAnyModel).ConfigureAwait(false));
@@ -1076,7 +1075,7 @@ namespace d360.web.Controllers
 		{
 			if (!Guid.TryParse(uid, out var guid))
 			{
-				return Request.CreateResponse(HttpStatusCode.BadRequest, Error.CustomUidNotValid);
+				return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(Error.CustomUidNotValid, "uid", uid));
 			}
 
 			int objectId = Company.GetObjectId(guid, type);
@@ -1853,11 +1852,11 @@ namespace d360.web.Controllers
 
 				}
 
-				if (fieldType.Type == "RefListRelationship")
-				{
-					(Columns, Fields, Values, count) =
-					   await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
-				}
+				//if (fieldType.Type == "RefListRelationship")
+				//{
+				//	(Columns, Fields, Values, count) =
+				//	   await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
+				//}
 
 				if (fieldType.Type == "OwnershipLookup")
 				{
@@ -5201,8 +5200,8 @@ where v.id = {0}", id)).FirstOrDefault();
 				days *= -1;
 				dbArgs.Add("@d", days);
 				innerQuery = @"select  at.Name,
-						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
-						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) < @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) < @d then 0 else 1 end as Total,
 						at.id as Id								
 				from    Asset a
 						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";

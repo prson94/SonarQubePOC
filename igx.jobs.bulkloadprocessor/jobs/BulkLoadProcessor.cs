@@ -3,7 +3,6 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.extensions.info;
-using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.company;
@@ -34,12 +33,10 @@ namespace igx.jobs.bulkloadprocessor
 		readonly IMailProvider Mail;
 		readonly IQueueSource Queue;
 		readonly IStorageProvider Storage;
-		readonly IFeatureFlagService FeatureFlags;
 
-		public BulkLoadProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(community, config)
+		public BulkLoadProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage) : base(community, config)
 		{
 			Cache = cache;
-			FeatureFlags = ff;
 			Mail = mail;
 			Queue = queue;
 			Storage = storage;
@@ -72,9 +69,9 @@ namespace igx.jobs.bulkloadprocessor
 					};
 					using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo {  ConnectionString = _c.GetConnectionString() }))
 					{
-						var assetRepository = new AssetRepository(company, context,  Queue, Storage, FeatureFlags);
-						var tagRepository = new TagRepository(company, context, FeatureFlags, Queue);
-						var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage, FeatureFlags);
+						var assetRepository = new AssetRepository(company, context,  Queue, Storage);
+						var tagRepository = new TagRepository(company, context, Queue);
+						var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage);
 
 						try
 						{
@@ -120,7 +117,8 @@ namespace igx.jobs.bulkloadprocessor
 
 													select @AssetTypeId = ATT.ID
 													from [Load] L
-													inner join AssetType ATT on ATT.uid = L.AssetTypeUid and Action = 'P';
+													inner join AssetType ATT on ATT.uid = L.AssetTypeUid and Action = 'P'
+													where L.ID = @LoadID;
 
 													select L.ColumnIndex , FT.IsPartOfKey , FT.Type
 													from LoadColumn L
@@ -286,6 +284,38 @@ namespace igx.jobs.bulkloadprocessor
 									}
 
 									#endregion
+
+									#region "ReferenceListUid"
+									using (var trans = companyConnection.BeginTransaction())
+									{
+
+										companyConnection.Execute(@"
+													declare @AssetTypeId int;
+													Declare @LoadID int = @id;
+ 
+													select @AssetTypeId = ATT.ID
+													from [Load] L
+													inner join AssetType ATT on ATT.uid = L.AssetTypeUid and Action = 'P'
+													where L.ID = @LoadID;
+ 
+													if (@AssetTypeId is not null and exists (select 1 
+															  from LoadColumn lc 
+															  inner join FieldType ft on ft.AssetTypeId = @AssetTypeId and lc.Name = ft.Name and ft.type = 'ReferenceList'
+															  where lc.loadid = @LoadID))
+													begin
+														update LIC
+														set LIC.[Value] =[utility].[GetStringWithinBrackets] (LIC.[Value],'[',']')
+														from LoadItemColumn LIC
+														inner join LoadColumn LC on LIC.LoadID = LC.LoadID and LIC.ColumnIndex = LC.ColumnIndex
+														inner join FieldType ft on ft.AssetTypeId = @AssetTypeId and LC.Name = ft.Name and ft.type = 'ReferenceList'
+														Where LIC.LoadID = @LoadID
+													end
+													", new { id = load.ID }, transaction: trans, commandTimeout: 3600);
+
+										trans.Commit();
+									}
+									#endregion
+
 
 									#region Update Lookup Values
 

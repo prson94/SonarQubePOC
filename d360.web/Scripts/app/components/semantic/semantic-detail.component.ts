@@ -12,15 +12,14 @@ import { Router } from '@angular/router';
 import { SemanticType } from '../../models/semantic-type.model';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AuthenticationService } from '../../services/authentication.service';
-
 import { DataProfileService } from '../../services/dataprofile.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../services/feature-flags.enum";
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { HelpService } from '../../services/help.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
     selector: 'semantic-detail',
@@ -31,8 +30,6 @@ import { BaseComponent } from '../shared/base.component';
         "(document:click)": "clickedOutside($event)",
     }, 
 })
-
-
 export class SemanticDetailComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() qualifier: string="";
     @Input() isSidePanel: boolean = false;
@@ -72,14 +69,16 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
 		private helpService: HelpService
     ) {
         super(settingsService);   
 
-        if (!featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
-            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-        } 
+		featureFlagService.getFlagValue(FeatureFlags.SemanticTypesUiFlag).then((flag) => {
+			if (!flag) {
+				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+			} 
+		});
     }
 
     ngOnInit() {

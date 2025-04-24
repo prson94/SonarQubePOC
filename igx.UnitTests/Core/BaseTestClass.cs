@@ -23,15 +23,13 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using AutoFixture;
 using d360.model.helpers.filters;
-using MediatR;
 using d360.web.Controllers;
 using d360.web.Utilities;
 using FluentAssertions;
-using LaunchDarkly.Sdk.Server;
 using Moq.Language;
 using repositories;
 using d360.core.validators;
-using d360.featureflags;
+using d360.web.Services;
 
 namespace igx.UnitTests
 {
@@ -88,6 +86,12 @@ namespace igx.UnitTests
 				.ReturnsAsync(Setting.ActionMessage.GetAsList());
 
 			mock.Setup(x => x.ReadSettingValueAsync<int>(It.IsAny<int>(), It.IsAny<Setting>()));
+
+			mock.Setup(x => x.ReadThemeUidAsync(It.IsAny<int>(), It.IsAny<Guid>()))
+							.ReturnsAsync(new Theme());
+
+			mock.Setup(x => x.ReadThemeAsync(It.IsAny<int>(), It.IsAny<string>()))
+							.ReturnsAsync(new Theme());
 
 			return mock.Object;
 		}
@@ -204,6 +208,12 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+		public CommunityFeatureFlagService GetCommunityFlags()
+		{
+			var flagservice = new CommunityFeatureFlagService(GetCache(), GetCommunity(), GetSecurity());
+			return flagservice;
+		}
+
         public static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
         {
             var elementsAsQueryable = elements.AsQueryable();
@@ -224,9 +234,9 @@ namespace igx.UnitTests
 			mock.Setup(s => s.Catalogs).Returns(GetCatalogs());
             mock.Setup(s => s.Community).Returns(GetCommunity());
             mock.Setup(s => s.Company).Returns(GetCompany());
+			mock.Setup(s => s.CommunityFlags).Returns(GetCommunityFlags());
             mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
-			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
 			mock.Setup(s => s.SecurityContext).Returns(GetSecurity());
 			return mock.Object;
         }
@@ -235,14 +245,6 @@ namespace igx.UnitTests
 		{
 			var mock = new Mock<IRuntimeInfo>();
 
-			return mock.Object;
-		}
-
-		public IFeatureFlagService GetFeatureFlagService()
-		{
-			var mock = new Mock<IFeatureFlagService>();
-			mock.Setup(x => x.IsThisTrue(It.IsAny<string>(), It.IsAny<ClientUserModel>(), It.IsAny<bool>())).Returns(true);
-			//mock.Setup(x => x.IsThisTrue).Returns(true);
 			return mock.Object;
 		}
 
@@ -279,7 +281,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage(), GetFeatureFlagService());
+            var realRepo = new AssetRepository(GetCompany(), GetSecurity(), GetQueue(), GetStorage());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
@@ -306,16 +308,16 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetPredicateByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
-            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5, object o6) =>
+            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetApiModel>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
+                .Returns((List<AssetApiModel> assetInsertList, object o2, object o3, object o4, object o5, object o6) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
                  }
                 );
 
-            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5, object o6) =>
+            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetApiModel>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, false,false))
+                .Returns((List<AssetApiModel> assetUpdateList, object o2, object o3, object o4, object o5, object o6) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -330,10 +332,10 @@ namespace igx.UnitTests
                 }
                 );
 
-            mockRepo.Setup(x => x.PostBulkAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
+            mockRepo.Setup(x => x.PostBulkAssets(It.IsAny<List<AssetApiModel>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
-            mockRepo.Setup(x => x.PutBulkAssets(It.IsAny<Guid>(), It.IsAny<List<AssetUpdate>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
+            mockRepo.Setup(x => x.PutBulkAssets(It.IsAny<Guid>(), It.IsAny<List<AssetApiModel>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
             mockRepo.Setup(x => x.DeleteBulkAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), false, true))
@@ -436,14 +438,6 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
-				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference { DataSource = "", ExternalID= "", FieldHash= "", Type = "", uid = Guid.NewGuid() }, 200, true, "")));
-
-			mock.Setup(x =>
-				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 201, true, "")));
-
-			mock.Setup(x =>
 				x.CreateTagAsync(It.IsAny<string>(), It.IsAny<Guid?>())
 			).Returns(Task.FromResult(new RepositoryResponse<TagApiModel>(new TagApiModel(), 200, true, "")));
 
@@ -458,10 +452,6 @@ namespace igx.UnitTests
 			mock.Setup(x =>
 				x.ReadAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
 			).Returns(Task.FromResult(new List<AssetType> { new AssetType { Name = "test" } }));
-
-			mock.Setup(x => 
-				x.ReadCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
-			).Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference> { new AssetCrossReference() }));
 
 			mock.Setup(x =>
 				x.ReadTagAsync(It.IsAny<Guid>())
@@ -493,20 +483,12 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
-				x.RemoveCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
-
-			mock.Setup(x =>
 				x.RemoveTagsAsync(It.IsAny<List<Guid>>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x =>
 				x.RemoveTagTypesAsync(It.IsAny<List<Guid>>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
-
-			mock.Setup(x => 
-				x.UpdateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
 
 			mock.Setup(x =>
 				x.UpdateTagAsync(It.IsAny<Guid>(), It.IsAny<string>())
@@ -686,10 +668,6 @@ namespace igx.UnitTests
         public IThemeRepository GetThemeRepository()
         {
             var mockRepo = new Mock<IThemeRepository>();
- 
-            mockRepo.Setup(x => x.GetThemeByUid(It.IsAny<Guid>()))
-                            .Returns(new Theme());
-
             return mockRepo.Object;
         }
 
