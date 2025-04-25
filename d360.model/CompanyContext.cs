@@ -2104,11 +2104,6 @@ from	IntersectType I
 			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = SecurityContext.CompanyID, RebuildAll = true });
 		}
 
-		public void RebuildIndexRequest()
-		{
-			Enqueue(constants.Queue.Search, new ReindexModel { CompanyID = SecurityContext.CompanyID });
-		}
-
 		public string RenderTooltip(string action, SystemObjects type, int id)
 		{
 			return renderTemplate("Tooltip", action, type, id);

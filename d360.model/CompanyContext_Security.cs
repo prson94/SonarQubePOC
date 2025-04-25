@@ -370,18 +370,6 @@ where C.IsAssetForIndex = 1 and C.ActionType in ('DELETE', 'INSERT')";
 						//drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
-
-						//First time a rule runs, queue the asset type for search re-indexing
-						if (rule.LastRunOn == null)
-						{
-							Enqueue(constants.Queue.Search, new ReindexModel
-							{
-								CompanyID = SecurityContext.CompanyID,
-								AssetTypeUid = assetTypeUid,
-								Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
-							});
-						}
-
 						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 						transaction.Commit();
@@ -557,26 +545,10 @@ where R.ID = @ID
 						// Drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
-
-						//First time a rule runs, queue the asset type for search re-indexing
-						if (rule.LastRunOn == null)
-						{
-							Enqueue(constants.Queue.Search, new ReindexModel
-							{
-								CompanyID = SecurityContext.CompanyID,
-								AssetTypeUid = assetTypeUid,
-								Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
-							});
-						}
-
 						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 						transaction.Commit();
 
-						if (assets != null && assets.Count() > 0)
-						{
-							CreateRescoreRequests(assets, ScoreType.Governance); // Trigger a rescore only when you commit the transaction.
-						}
 						runCompleted = true;
 					}
 					catch (Exception ex)
@@ -2282,8 +2254,6 @@ where id = @IntersectTypeID";
 			{
 				throw new ApplicationException(ruleExceptionMessages);
 			}
-
-			ProcessAssetReindexForResponsibilityChanges();
 		}
 
 		public async Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber)
@@ -2453,8 +2423,6 @@ where id = @IntersectTypeID";
 
 			if (impactedAssets.Any())
 			{
-				CreateAssetReindexRequest(impactedAssets.ToList(), ReindexBatchOperation.Update);
-
 				Execute(@"delete queue.ResponsibilityIndex
 					where BatchID = @batchID", new { batchID });
 			}

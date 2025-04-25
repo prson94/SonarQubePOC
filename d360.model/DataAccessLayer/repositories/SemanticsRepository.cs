@@ -315,14 +315,6 @@ namespace d360.model.DataAccessLayer
 					"You may not remove this semantic since one or more asset data profiles match this semantic.");
 			}
 
-			//Queue semantic for deletion in search index
-			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-			{
-				CompanyID = SecurityContext.CompanyID,
-				BatchUids = new List<Guid> { deletes.FirstOrDefault().Uid },
-				BatchOperation = ReindexBatchOperation.Delete
-			});
-
 			CompanyContext.Connection.Execute("delete Semantic where Qualifier = @qualifier", new { qualifier });
 
 			return HttpStatusCode.OK;
@@ -696,7 +688,6 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 				await CompanyContext.SaveChangesAsync();
 			}
 
-			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "U");
 
 			var globalresource = await GetSemanticCreatorUpdator(transactionId);
@@ -733,7 +724,6 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			CompanyContext.Semantics.AddRange(repoModels);
 			await CompanyContext.SaveChangesAsync();
 
-			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "C");
 
 
@@ -794,7 +784,6 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			CompanyContext.Semantics.AddRange(repoModels);
 			await CompanyContext.SaveChangesAsync();
 
-			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "U");
 
 			var globalresource = await GetSemanticCreatorUpdator(transactionId);
@@ -824,34 +813,6 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			statusSQL.Append(" ELSE '' END as statusString");
 
 			return statusSQL.ToString();
-		}
-
-		private void queueForSearchIndex(string transactionId)
-		{
-			var sql = @"SELECT uid
-						FROM Semantic
-						WHERE TransactionId = @transactionId
-						UNION ALL
-						SELECT DISTINCT a.uid
-						FROM [dbo].[AssetDataProfile] adp
-						INNER JOIN [dbo].[Asset] a on a.id = adp.AssetID
-						INNER JOIN [dbo].[Semantic] s on s.Qualifier = adp.TypeQualifier
-						OUTER APPLY (
-							SELECT MAX(ProfileSetDate) profileSetDate 
-							FROM AssetDataProfile 
-							WHERE AssetID = adp.AssetID
-						) maxProfileDate
-						where ADP.ProfileSetDate = maxProfileDate.profileSetDate
-						and s.TransactionId = @transactionId";
-
-			var uids = CompanyContext.Query<Guid>(sql, new { transactionId });
-
-			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-			{
-				CompanyID = SecurityContext.CompanyID,
-				BatchUids = uids.ToList(),
-				BatchOperation = ReindexBatchOperation.Update
-			});
 		}
 
 		private async Task<List<GlobalReportingResource>> GetSemanticCreatorUpdator(string transactionId)

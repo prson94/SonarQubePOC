@@ -1547,8 +1547,6 @@ namespace d360.model
 						 op = "Updated"
 					 });
 
-			CreateAssetReindexRequest(new List<Guid> { asset.uid }, ReindexBatchOperation.Update);
-
 			return true;
 		}
 

@@ -748,7 +748,6 @@ namespace d360.model.DataAccessLayer
 
 						// If you made it this far, then send to scoring engine.
 						CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
-						CompanyContext.CreateAssetReindexRequest(reindexAssets, ReindexBatchOperation.Update);
 
 						return new ResponsibilityTypeAllocationResponseModel()
 						{
@@ -774,7 +773,6 @@ namespace d360.model.DataAccessLayer
 
 					// If you made it this far, then send to scoring engine.
 					CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
-					CompanyContext.CreateAssetReindexRequest(reindexAssets, ReindexBatchOperation.Update);
 
 					return new ResponsibilityTypeAllocationResponseModel()
 					{
@@ -949,7 +947,6 @@ from    Asset A
 			new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today }).ToList();
 
 			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-			CompanyContext.CreateAssetReindexRequest(new List<Guid> { asset.uid }, ReindexBatchOperation.Update);
 		}
 
 		public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
@@ -1205,7 +1202,6 @@ from    Asset A
 				trans.Commit();
 
 				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-				CompanyContext.CreateAssetReindexRequest(assetsForIndex, ReindexBatchOperation.Update);
 
 			}
 			catch (Exception)
@@ -1410,7 +1406,6 @@ from    Asset A
 		public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
 		{
 			CompanyContext.CreateRescoreRequests(new List<Guid> { uid }, ScoreType.Governance);
-			CompanyContext.CreateAssetReindexRequest(new List<Guid> { uid }, ReindexBatchOperation.Update);
 
 			return CompanyContext.Connection.ExecuteAsync(@"
                 DELETE FROM source
