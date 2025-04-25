@@ -3306,4 +3306,7 @@
   <data name="MaxValueViolationError" xml:space="preserve">
     <value>{0} must not be greater than {1}</value>
   </data>
+  <data name="ReferenceListNotSupported" xml:space="preserve">
+    <value>[ReferenceList] fields are not allowed for current Asset Type!</value>
+  </data>
 </root>

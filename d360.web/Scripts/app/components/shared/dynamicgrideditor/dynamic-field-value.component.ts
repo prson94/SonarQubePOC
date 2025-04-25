@@ -35,7 +35,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     ngOnInit() {
-        this.fieldType = this.columnDataType(this.column);
+		this.fieldType = this.columnDataType(this.column);
         
         if (this.fieldType === 'date' && this.column.cellsformat && this.column.cellsformat === 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
@@ -102,7 +102,16 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
                 this.hasColor = false;
                 this.colorText = 'None';
             }
-        }
+		}
+
+		if (this.fieldType === 'referencelist') {
+			try {
+				const fv = JSON.parse(this.fieldValue);
+				if (fv && typeof fv === "object") {
+					this.fieldValue = fv[0].Name;
+				}
+			} catch (e) { /* empty */ }
+		}
     }
 
     private formatAsNumber(): string {

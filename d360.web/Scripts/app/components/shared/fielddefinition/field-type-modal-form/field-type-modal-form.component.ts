@@ -1307,7 +1307,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return true;
 		}
 
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'JsonElement'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'ReferenceList', 'JsonElement'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

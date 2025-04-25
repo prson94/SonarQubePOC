@@ -3216,4 +3216,7 @@
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>Ungültige [_resourceUid] angegeben</value>
   </data>
+  <data name="ReferenceListNotSupported" xml:space="preserve">
+    <value>[ReferenceList]-Felder sind für den aktuellen Asset-Typ nicht zulässig.</value>
+  </data>
 </root>

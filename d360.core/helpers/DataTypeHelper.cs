@@ -92,8 +92,7 @@ namespace d360.core.helpers
         {
             List<string> types = new List<string>() {
                 DataType.ComplexRelationLookup.ToString(),
-                DataType.JSON.ToString(),
-				DataType.ReferenceList.ToString()
+                DataType.JSON.ToString()
 			};
 
             return types;

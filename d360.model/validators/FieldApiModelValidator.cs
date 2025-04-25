@@ -564,6 +564,11 @@ namespace d360.model.validators
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ComputedRelationshipReferenceListNotSupported);
 					}
 
+					if (field.Type.ReferenceList != null)
+					{
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.ReferenceListNotSupported);
+					}
+
 					if (field.Type.Json != null)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldPropertyError, Error.JsonNotSupported);

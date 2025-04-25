@@ -2193,7 +2193,10 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Il percorso {Route} è sconosciuto o obsoleto</value>
   </data>
-  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+	<data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Nessun tipo di risorsa trovato con [{0}] fornito.</value>
+  </data>
+	<data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Nessun tipo di intersezione trovato con l'intersectTypeUid fornito.</value>
   </data>
   <data name="InvalidProfileIdentifier" xml:space="preserve">
@@ -3218,5 +3221,8 @@
   </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>[_resourceUid] fornito non valido</value>
+  </data>
+  <data name="ReferenceListNotSupported" xml:space="preserve">
+    <value>I campi [ReferenceList] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
 </root>

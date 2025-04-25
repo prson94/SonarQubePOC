@@ -3216,4 +3216,7 @@
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>[_resourceUid] proporcionado no válido</value>
   </data>
+  <data name="ReferenceListNotSupported" xml:space="preserve">
+    <value>Los campos [ReferenceList] no están permitidos para el tipo de activo actual.</value>
+  </data>
 </root>

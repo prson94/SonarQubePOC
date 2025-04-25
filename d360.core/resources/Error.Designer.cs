@@ -7342,6 +7342,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [ReferenceList] fields are not allowed for current Asset Type!.
+        /// </summary>
+        public static string ReferenceListNotSupported {
+            get {
+                return ResourceManager.GetString("ReferenceListNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [Type.Json] not support for reference item type!.
         /// </summary>
         public static string ReferenceListNotSupportJson {

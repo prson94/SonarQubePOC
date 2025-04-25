@@ -907,6 +907,10 @@ namespace d360.web.Controllers
 					columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
 					filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
 					break;
+				case "ReferenceList":
+					columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
+					filterType = GridColumn.FILTER_TYPE_LIST;
+					break;
 				case "Date":
 					cellsFormat = "MM/dd/yyyy";
 					columnType = GridColumn.COLUMN_TYPE_DATE;
@@ -1022,6 +1026,9 @@ namespace d360.web.Controllers
 							fieldType = "ListColor";
 						}
 
+						break;
+					case "ReferenceList":
+						fieldType = "referencelist";
 						break;
 					case "OwnershipLookup":
 						fieldType = "ownershiplookup";

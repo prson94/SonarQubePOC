@@ -3222,4 +3222,7 @@
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>Ongeldige [_resourceUid] opgegeven</value>
   </data>
+  <data name="ReferenceListNotSupported" xml:space="preserve">
+    <value>[ReferenceList]-velden zijn niet toegestaan voor het huidige assettype!</value>
+  </data>
 </root>
