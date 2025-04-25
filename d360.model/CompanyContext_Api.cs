@@ -1203,9 +1203,25 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
 												and  ER.ExecutionID = @ExecutionID 
 												and ER.Success is null;
 
+									update  ER
+									SET     Success = 0,
+										Message = 'Relationship types not allowed because SubjectUid is Reference List of Reference List Type`s' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join AssetType AST on AST.UID = ER.SubjectUID and AST.Class = 9 and AST.ObjectID = 0
+									where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
+									update  ER
+									SET     Success = 0,
+										Message = 'Relationship types not allowed because ObjectUID is Reference List of Reference List Type`s' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9 and AST.ObjectID = 0
+									where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
 									Update  T
 									set     SubjectClass = SA.[Class], 
-											SubjectAssetTypeID = CASE WHEN SA.Class = 9 and SA.ObjectID = 0 then 0 else SA.ID end
+											SubjectAssetTypeID = SA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType SA on SA.Uid = T.SubjectUid
@@ -1213,7 +1229,7 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
 
 									Update  T
 									set     ObjectClass = OA.[Class], 
-											ObjectAssetTypeID = CASE WHEN OA.Class = 9 and OA.ObjectID = 0 then 0 else OA.ID end
+											ObjectAssetTypeID = OA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType OA on OA.Uid = T.ObjectUid
@@ -1353,15 +1369,31 @@ end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityC
 									and Success is null 
 									and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
+								update  ER
+								SET     Success = 0,
+									Message = 'Relationship types not allowed because SubjectUid is Reference List of Reference List Type`s' 
+								from    [api].[ExecutionRelationshipType] ER 
+										inner join AssetType AST on AST.UID = ER.SubjectUID and AST.Class = 9 and AST.ObjectID = 0
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
+								update  ER
+								SET     Success = 0,
+									Message = 'Relationship types not allowed because ObjectUID is Reference List of Reference List Type`s' 
+								from    [api].[ExecutionRelationshipType] ER 
+										inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9 and AST.ObjectID = 0
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
 								Update  ER 
-								set     ER.SubjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
+								set     ER.SubjectAssetTypeID = AST.ID,
 										ER.SubjectClass = AST.Class
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.SubjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								Update  ER 
-								set     ER.ObjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
+								set     ER.ObjectAssetTypeID = AST.ID,
 										ER.ObjectClass = AST.Class 
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID 
