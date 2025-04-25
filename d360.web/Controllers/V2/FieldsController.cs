@@ -2740,6 +2740,32 @@ namespace d360.web.Controllers.V2
 
 					}
 				}
+
+				if (fieldType.Type == DataType.ReferenceList.ToString())
+				{
+					countQuery = $@"
+					select count(1)
+					from AssetType att
+					where att.Class = {(int)AssetTypeClass.Reference}
+					{whereQuery};";
+
+					if(!onlyCount)
+					{
+						query = $@"
+							drop table if exists #tempResults
+							select LOWER(CAST(uid AS VARCHAR(36))) as Value, name as Text, ROW_NUMBER() over (order by name) as ORDERBYCOLUMN
+							into #tempResults
+							from AssetType Att 
+							where att.Class = {(int)AssetTypeClass.Reference}
+							{whereQuery}
+							order by text asc
+							{pagingQuery};
+
+							select {selectStatement} from #tempResults V
+						";
+					}
+				}
+
 				query = $@"
 						{query} 
 

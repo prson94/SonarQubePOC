@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="View.dbo.FieldWithRelation-v5">
+  <changeSet author="TDuric, TKlok" id="View.dbo.FieldWithRelation-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -44,6 +44,7 @@ create or alter view [dbo].[FieldWithRelation]
 				F.IntersectID,
 				T.IssueTypeID,
 				F.IssueID,
+				F.ReferenceListID,
 				F.Value,
 				F.FormattedValue,
 				case  
@@ -58,7 +59,7 @@ create or alter view [dbo].[FieldWithRelation]
 		FROM	FieldType T
 				left join Field F on F.FieldTypeID = T.ID
 				left join Asset A on A.ID = F.AssetID
-		WHERE	(F.FormattedValue is not null OR T.DefaultValue is not null OR (T.AllowAllValue = 1 and F.Value = '0'))
+		WHERE	(F.FormattedValue is not null OR T.DefaultValue is not null OR (T.AllowAllValue = 1 and F.Value = '0') OR F.ReferenceListID is not null)
 		]]>
     </sql>
 	<rollback>

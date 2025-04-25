@@ -2731,7 +2731,7 @@
     <value>Tipo di campo '{0}' non trovato per la risorsa.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>Tipo di campo '{0}' non supportato. I tipi di campo consentiti sono ComplexRelationLookup, RefListRelationship e OwnershipLookup</value>
+    <value>Tipo di campo '{0}' non supportato. I tipi di campo consentiti sono ComplexRelationLookup, ReferenceList e OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>Il filtro che utilizza [_relationFilter] non può essere utilizzato con il parametro [_predicateUid]</value>
@@ -3215,6 +3215,9 @@
   </data>
   <data name="ResponsibilityTypeRule" xml:space="preserve">
     <value>Regola del tipo di responsabilità</value>
+  </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Nessun tipo di risorsa trovato con [{0}] fornito.</value>
   </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>[_resourceUid] fornito non valido</value>

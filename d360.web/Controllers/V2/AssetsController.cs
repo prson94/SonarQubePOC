@@ -1983,7 +1983,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.FieldTypeAssetNotFound, fieldApiName)));
 				}
 
-				if (!new string[] { "ComplexRelationLookup", "OwnershipLookup" }.Contains(fieldType.Type))
+				if (!new string[] { "ComplexRelationLookup", "OwnershipLookup", "ReferenceList"}.Contains(fieldType.Type))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.FieldTypeNotSupport, fieldType.Type)));
 				}
@@ -2144,11 +2144,11 @@ namespace d360.web.Controllers.V2
 
 				}
 
-				//if (fieldType.Type == "RefListRelationship")
-				//{
-				//	(Columns, Fields, Values, count) =
-				//	   await FieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
-				//}
+				if (fieldType.Type == DataType.ReferenceList.ToString())
+				{
+					(Columns, Fields, Values, count) =
+					   await FieldsRepository.GetReferenceListGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
+				}
 
 				if (fieldType.Type == "OwnershipLookup")
 				{
@@ -2203,27 +2203,23 @@ namespace d360.web.Controllers.V2
 						fileName += " List";
 					}
 
-					//if (fieldType.Type == "RefListRelationship")
-					//{
-					//	var refassetid = asset.ID;
-					//	var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
+					if (fieldType.Type == DataType.ReferenceList.ToString())
+					{
+						var refassetid = asset.ID;
+						var referenceItemTypeID = Company.Filter<core.entities.Field>(f => f.FieldTypeID == fieldType.ID && f.AssetID == refassetid).FirstOrDefault().ReferenceListID;
 
-					//	if (intersect != null)
-					//	{
-					//		var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
-					//		var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
+						var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
 
-					//		if (assetType != null)
-					//		{
-					//			fileName = assetType.Name.GetSafeFilename();
-					//			fileName += " List";
-					//		}
-					//	}
+						if (assetType != null)
+						{
+							fileName = assetType.Name.GetSafeFilename();
+							fileName += " List";
+						}
 
-					//	//remove Color column from export
-					//	Columns = Columns.Where(c => c.columntype != "color" && c.datafield != "Color").ToList();
-					//	Fields = Fields.Where(f => f.type != "color" && f.name != "Color").ToList();
-					//}
+						//remove Color column from export
+						Columns = Columns.Where(c => c.columntype != "color" && c.datafield != "Color").ToList();
+						Fields = Fields.Where(f => f.type != "color" && f.name != "Color").ToList();
+					}
 
 					var document = new SLDocument();
 					document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
@@ -2276,38 +2272,34 @@ namespace d360.web.Controllers.V2
 					result.Add("pageNum", pageNum);
 					result.Add("total", count);
 
-					//if (fieldType.Type == "RefListRelationship")
-					//{
-					//	var refassetid = asset.ID;
-					//	var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
+					if (fieldType.Type == DataType.ReferenceList.ToString())
+					{
+						var refassetid = asset.ID;
+						var referenceItemTypeID = Company.Filter<core.entities.Field>(f => f.FieldTypeID == fieldType.ID && f.AssetID == refassetid).FirstOrDefault().ReferenceListID;
 
-					//	if (intersect != null)
-					//	{
-					//		var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
-					//		var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
+						var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
 
-					//		if (assetType != null)
-					//		{
-					//			result.Add("name", assetType.Name);
-					//			result.Add("description", assetType.Description);
+							if (assetType != null)
+							{
+								result.Add("name", assetType.Name);
+								result.Add("description", assetType.Description);
 
-					//			if (returnForUI)
-					//			{
-					//				var definition = JsonConvert.DeserializeObject<dynamic>(string.IsNullOrEmpty(fieldType.Definition) ? "{}" : fieldType.Definition);
-					//				var showDescription = definition == null ? true : definition?.DisplayRefListDescription?.Value ?? true;
+								if (returnForUI)
+								{
+									var definition = JsonConvert.DeserializeObject<dynamic>(string.IsNullOrEmpty(fieldType.Definition) ? "{}" : fieldType.Definition);
+									var showDescription = definition == null ? true : definition?.DisplayRefListDescription?.Value ?? true;
 
-					//				result.Add("isReferenceListFromRelationship", true);
-					//				result.Add("referenceListTypeUid", assetType.uid);
-					//				result.Add("objectId", referenceItemTypeID);
-					//				result.Add("fieldTypeId", fieldType.ID);
-					//				result.Add("showDescription", showDescription);
-					//				result.Add("url", $"/reference;referenceListId={assetType.uid.ToString().ToLower()}");
-					//			}
-					//		}
-					//	}
-					//}
+									result.Add("isReferenceListFromRelationship", true);
+									result.Add("referenceListTypeUid", assetType.uid);
+									result.Add("objectId", referenceItemTypeID);
+									result.Add("fieldTypeId", fieldType.ID);
+									result.Add("showDescription", showDescription);
+									result.Add("url", $"/reference;referenceListId={assetType.uid.ToString().ToLower()}");
+								}
+							}
+						}
 
-					result.Add("items", Values);
+						result.Add("items", Values);
 
 					if (returnForUI)
 					{

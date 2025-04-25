@@ -549,6 +549,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool IsListable { get; set; }
+
+		[DataMember]
+		public bool IsEditable { get; set; }
 	}
 
 	public class FieldTypeDataTypeComputedScoreApiViewModel

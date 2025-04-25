@@ -2193,9 +2193,6 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>L’itinéraire {Route} est inconnu ou obsolète</value>
   </data>
-  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
-    <value>Aucun type d’asset n’a été trouvé avec la valeur [{0}] fournie.</value>
-  </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Aucun type d’intersection n’a été trouvé avec la valeur intersectTypeUid fournie.</value>
   </data>
@@ -2731,7 +2728,7 @@
     <value>Type de champ '{0}' introuvable pour l’asset.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>Le type de champ '{0}' n’est pas pris en charge. Les types de champs autorisés sont ComplexRelationLookup, RefListRelationship et OwnershipLookup</value>
+    <value>Le type de champ '{0}' n’est pas pris en charge. Les types de champs autorisés sont ComplexRelationLookup, ReferenceList et OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>Le filtrage à l’aide de [_relationFilter] ne peut pas être utilisé avec le paramètre [_predicateUid]</value>
@@ -3212,6 +3209,9 @@
   </data>
   <data name="TagUidNotFound" xml:space="preserve">
     <value>Le tag dont l’UID est {0} est introuvable.</value>
+  </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Aucun type d’asset n’a été trouvé avec la valeur [{0}] fournie.</value>
   </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>Valeur [_resourceUid] fournie non valide</value>

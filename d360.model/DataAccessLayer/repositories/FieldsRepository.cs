@@ -1896,6 +1896,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsDisplayable = f.Type.ReferenceList.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.ReferenceList.ShowIfEmpty;
 					newFieldType.IsListable = f.Type.ReferenceList.IsListable;
+					newFieldType.IsEditable = f.Type.ReferenceList.IsEditable;
 					newFieldType.IsPartOfKey = false;
 					newFieldType.SortOrder = f.Type.ReferenceList.SortOrder;
 					newFieldType.SortByAscending = f.Type.ReferenceList.SortByAscending;
@@ -2509,6 +2510,36 @@ namespace d360.model.DataAccessLayer
 						Type = DataType.Text.ToString()
 					}).ToList();
 			}
+			else if (fieldType.Type == DataType.ReferenceList.ToString())
+			{
+				var fields = new List<FieldType>();
+				var sql = $@"
+					declare @assetId int
+					declare @referenceId int
+
+					select  @assetId = Id  from asset where uid = @assetUid
+
+					select @referenceId = ReferenceListID
+					from dbo.[Field]
+					where FieldTypeID = @fieldTypeId
+					and AssetID = @assetId;
+
+				   select * from fieldtype
+						where assettypeid = @referenceid and IsListable = 1
+						order by ColumnOrder asc, FriendlyName asc;";
+
+				fields.AddRange(CompanyContext.Query<FieldType>(sql, new { fieldTypeId = fieldType.ID, assetUid }).ToList());
+
+				if (fields.Count > 0)
+				{
+					fields.Insert(fields.IndexOf(fields.First(f => f.Name == "Code")) + 1, new FieldType
+					{
+						Name = "Color",
+						Type = DataType.Color.ToString()
+					});
+				}
+				return fields;
+			}
 			else
 			{
 
@@ -2917,7 +2948,7 @@ namespace d360.model.DataAccessLayer
 			return (Columns, Fields, Values, count, scoringInfo);
 		}
 
-		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetReferenceListGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
 		{
 			string orderByClause = "order by A.Code";
 			var Columns = new List<GridColumn>();
@@ -3175,33 +3206,10 @@ namespace d360.model.DataAccessLayer
 
 		private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
 		{
-			return (await CompanyContext.QueryAsync<int?>($@"declare @objectAssetId int
-					declare @referenceId int
-					declare @isSubject bit
-
-					select  @objectAssetId = Id  from asset where uid = @assetUid
-
-
-					select	@isSubject = iif(I.ObjectClass = 9 and I.ObjectAssetTypeId = 0, 1, 0) 
-						from	IntersectType I 
-								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
-		
-						if @isSubject = 1
-						begin
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
-						end
-						else
-						begin 
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
-						end
-
-						select @referenceId", dbArgs)).FirstOrDefault();
+			return (await CompanyContext.QueryAsync<int?>($@"select ReferenceListID
+					from field
+					where FieldTypeID = @fieldTypeId
+					and AssetID = @assetId", dbArgs)).FirstOrDefault();
 		}
 
 		private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)

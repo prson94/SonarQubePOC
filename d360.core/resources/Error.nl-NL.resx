@@ -2193,9 +2193,6 @@
   <data name="FavoriteUnknownRoute" xml:space="preserve">
     <value>Route {Route} is onbekend of afgeschaft</value>
   </data>
-  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
-    <value>Geen assettype gevonden met de opgegeven [{0}].</value>
-  </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Geen snijpunttype gevonden met de opgeven intersectTypeUid.</value>
   </data>
@@ -2731,7 +2728,7 @@
     <value>Veldtype '{0}' niet gevonden voor asset.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>Veldtype '{0}' wordt niet ondersteund. Toegestande veldtypen zijn ComplexRelationLookup, RefListRelationship en OwnershipLookup</value>
+    <value>Veldtype '{0}' wordt niet ondersteund. Toegestande veldtypen zijn ComplexRelationLookup, ReferenceList en OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
     <value>Filteren met [_relationFilter] kan niet worden gebruikt met de parameter [_predicateUid]</value>
@@ -3218,6 +3215,9 @@
   </data>
   <data name="UidConstant" xml:space="preserve">
     <value>UID</value>
+  </data>
+  <data name="InvalidAssetTypeUidParameter" xml:space="preserve">
+    <value>Geen assettype gevonden met de opgegeven [{0}].</value>
   </data>
   <data name="Invalid_ResourceUID" xml:space="preserve">
     <value>Ongeldige [_resourceUid] opgegeven</value>

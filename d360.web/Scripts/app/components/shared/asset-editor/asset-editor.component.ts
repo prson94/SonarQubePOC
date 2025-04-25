@@ -1144,6 +1144,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 				if (objectType !== 'Artifact') {
 					return fieldDetails?.Type.Lookup.List.Uid ? objectType : `${objectType}Type`;
 				}
+			} else if (fieldDetails?.Type.ReferenceList) {
+				return 'ReferenceList';
 			}
 		}
 		return 'Artifact';
@@ -1166,32 +1168,18 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		return 'Artifact';
 	}
 
-	selectionChangeSub: Subscription;
 	onSidePanelSelectionChange(selection: { objectID: string, fieldName: string }): void {
 		if (!isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			const objectType = this.getObjectTypeByFieldName(selection.fieldName);
-			if (objectType.startsWith('ReferenceItem')) {
+			if (objectType.startsWith('ReferenceList')) {
 				this.sidePanelLoading = true;
 				this.selectedAsset = this.selectedTag = null;
-				this.selectedReferenceItem = this.selectedReferenceItem || { uid: null, url: null };
-
-				if (this.selectionChangeSub) {
-					this.selectionChangeSub.unsubscribe();
-				}
-
-				this.selectionChangeSub = this.objectDetailService.getObject(
-					+selection.objectID,
-					objectType
-				).subscribe((details) => {
-					this.selectedReferenceItem = {
-						uid: details.AssetTypeUid,
-						assetUid: details.UID,
-						url: details.UID ? `${details.Url},${details.UID}` : null
-					};
-					this.sidePanelLoading = false;
-					this.ref.markForCheck();
-				});
+				this.selectedReferenceItem = {
+					uid: selection.objectID,
+					assetUid: selection.objectID,
+					url: `assets/${selection.objectID}},${selection.objectID}`
+				};
 			} else {
 				this.selectedReferenceItem = this.selectedTag = null;
 				this.selectedAsset = { type: objectType };

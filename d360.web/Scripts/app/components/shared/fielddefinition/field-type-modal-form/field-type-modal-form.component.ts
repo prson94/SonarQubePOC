@@ -685,6 +685,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				break;
 			case 'ComputedRelationshipReferenceList':
 			case 'ReferenceList':
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -1340,7 +1341,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'ReferenceList', 'Text', 'Boolean'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

@@ -1015,7 +1015,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     getFieldTypeForSwitch(type: string) {
-        if (type === 'Relationship' || type === 'Lookup') {
+        if (type === 'Relationship' || type === 'Lookup' || type === 'ReferenceList') {
             return 'LazyLookup';
         }
         return type;
