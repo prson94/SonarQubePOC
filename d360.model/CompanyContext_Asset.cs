@@ -2985,15 +2985,6 @@ where	T.ExecutionID = @ExecutionID
 			}
 		}
 
-		public void CreateAssetReindexRequest(List<Guid> assets, ReindexBatchOperation operation)
-		{
-			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-			{
-				CompanyID = SecurityContext.CompanyID,
-				BatchUids = assets,
-				BatchOperation = operation
-			});
-		}
 		#endregion
 	}
 }

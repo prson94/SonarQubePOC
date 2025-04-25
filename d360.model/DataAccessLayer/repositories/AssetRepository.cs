@@ -3435,15 +3435,6 @@ drop table if exists #tempAssetsIds;
 			{
 				CompanyContext.Update(assetType);
 				UpdateAssetTypeSynonymAllocations(model, assetType);
-				if (defaultPermissionChanged)
-				{
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						AssetTypeUid = assetType.uid,
-						Origin = "AssetType change permissions: " + assetType.Name
-					});
-				}
 			}
 			catch (Exception ex)
 			{
@@ -3544,17 +3535,6 @@ drop table if exists #tempAssetsIds;
 				}
 
 				#endregion DQ Scoring
-
-				// Queue successfully deleted asset types for reindexing
-				results.Where(r => r.Success).ToList().ForEach(r =>
-				{
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						AssetTypeUid = r.uid,
-						Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
-					});
-				});
 			}
 			catch (Exception ex)
 			{

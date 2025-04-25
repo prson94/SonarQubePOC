@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.11">
+  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertUsers-v1.12">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[UpsertUsers]
@@ -191,10 +191,11 @@ begin
 		when	matched then
 		update  set
 				T.UpdatedOn = @date,
-				T.UpdatedBy = @userId
+				T.UpdatedBy = @userId,
+				T.[State] = S.[State]
 		when	not matched by target then
 		insert	([uid], [AssetTypeID], [State], [Object], [ObjectID], [SourceID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-		values	(S.Uid, @assetTypeId, 1, @object, S.ObjectID, S.ObjectID, @date, @userId, @date, @userId);
+		values	(S.Uid, @assetTypeId, S.[State], @object, S.ObjectID, S.ObjectID, @date, @userId, @date, @userId);
 
 		update	T
 		set		T.AssetID = A.ID

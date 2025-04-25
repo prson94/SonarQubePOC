@@ -231,13 +231,6 @@ namespace d360.web.Controllers.V2
 
 			if (response.IsSuccess)
 			{
-				await Queue.CreateMessageAsync(constants.Queue.Search, new ReindexModel
-				{
-					To = QueueAction.UpdateInIndex,
-					BatchOperation = ReindexBatchOperation.Update,
-					BatchUids = new List<Guid> { tagId }
-				});
-
 				var result = await Catalog.ReadTagAsync(tagId);
 				return Ok(result.Data);
 			}

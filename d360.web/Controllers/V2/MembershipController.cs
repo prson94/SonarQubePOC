@@ -854,18 +854,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				isSuccess = (tenantResponse.IsSuccess && communityResponse.IsSuccess);
-				if (isSuccess)
-				{
-					Queue.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						Category = "Resource",
-						To = QueueAction.RemoveFromIndex,
-						BatchOperation = ReindexBatchOperation.Delete,
-						BatchUids = uids
-					});
-				}
-				else
+				if (!isSuccess)
 				{
 					errormessage = tenantResponse.Message;
 				}

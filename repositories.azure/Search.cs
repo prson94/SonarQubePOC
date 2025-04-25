@@ -65,6 +65,7 @@ namespace repositories.azure
 	from	dbo.Asset a
 			{appliedFilter} {permissionJoin}
 	where	Uid = @uid
+			and State = 1
 )
 ";
 				}
@@ -75,18 +76,21 @@ namespace repositories.azure
 	select		s.[Rank]*4 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
+				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1
 				inner join {ftTableFunction}(AssetDisplayValue, DisplayValue, @phrase) s on s.[Key] = a.AssetID 
 				{appliedFilter} {permissionJoin}
 	union
 	select		s.[Rank]*3 as [Rank],
 				a.AssetId as Id
 	from		Field a 
+				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1
 				inner join {ftTableFunction}(Field, FormattedValue, @phrase) s on s.[Key] = a.ID and a.AssetID is not null 
 				{appliedFilter} {permissionJoin}
 	union
 	select		s.[Rank],
 				a.AssetID as Id
 	from		AssetTag a
+				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1
 				inner join Tag t on t.ID = a.TagID
 				inner join {ftTableFunction}(Tag, [Value], @phrase) s on s.[Key] = t.ID 
 				{appliedFilter} {permissionJoin}
@@ -94,7 +98,7 @@ namespace repositories.azure
 	select	s.[Rank]*2 as [Rank],
 			a.AssetId as Id
 	from	dbo.Asset o
-			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id)
+			inner join AssetDataProfile a on a.AssetId = o.Id and a.ProfileSetDate = (select top 1 max(ProfileSetDate) from AssetDataProfile where AssetId = o.Id) and o.State = 1
 			inner join Semantic st on st.Qualifier = a.TypeQualifier and st.EffectiveDate <= a.ProfileSetDate
 			inner join CONTAINSTABLE(Semantic, Qualifier, @phrase) s on s.[Key] = st.ID
 			{appliedFilter} {permissionJoin}

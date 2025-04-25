@@ -1683,37 +1683,6 @@ namespace d360.model
 				}
 			}
 
-			var profileUidsQuery = await Connection.QueryAsync<Guid>("select distinct AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
-			var profileUids = profileUidsQuery.ToList();
-
-			if (profileUids != null)
-			{
-				const int batchSize = 200;
-				if (profileUids.Count <= batchSize)
-				{
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						BatchUids = profileUids,
-						BatchOperation = ReindexBatchOperation.Update
-					});
-				}
-				else
-				{
-					int indexOfLastItemTaken = 0;
-					while (indexOfLastItemTaken < profileUids.Count)
-					{
-						var profileUidsTaken = profileUids.Skip(indexOfLastItemTaken).Take(batchSize).ToList();
-						QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-						{
-							CompanyID = SecurityContext.CompanyID,
-							BatchUids = profileUidsTaken,
-							BatchOperation = ReindexBatchOperation.Update
-						});
-						indexOfLastItemTaken += profileUidsTaken.Count();
-					}
-				}
-			}
 			Connection.CloseIfOpened();
 		}
 
