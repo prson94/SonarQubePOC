@@ -1311,13 +1311,23 @@ GROUP BY tt.ID, n.Name;
 	</rollback>
   </changeSet>
 
-<changeSet author="TKlok" id="Data.Corrections.GOV-29079.Lookups">
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.Lookups.v1.1">
   <comment>Convert Lookup fields where lookup is "ReferenceItemType" to new ReferenceList Type</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 <![CDATA[
+-- Correct converted values in last migration
+UPDATE f
+SET f.ReferenceListID = at.id
+from field f
+inner join fieldtype ft on f.FieldTypeID = ft.id
+inner join assettype at on at.objectid = f.ReferenceListID and at.[Object] = 'ReferenceItemType'
+where ft.type = 'ReferenceList'
+and f.value is not null
+
+
 -- Delete fields where the lookup object is a Ref list, but value is empty
 DELETE dbo.[Field]
 WHERE  FieldTypeID in (
@@ -1326,6 +1336,16 @@ WHERE  FieldTypeID in (
 AND (value is null OR value = '');
 
 -- Copy Value to ReferenceListID for impacted Fields
+UPDATE f
+SET    f.ReferenceListID = at.ID 
+FROM dbo.[Field] f
+--SET    ReferenceListID = [Value] 
+INNER JOIN AssetType at on at.ObjectID = try_cast(f.[Value] as int) and at.[Object] = 'ReferenceItemType'
+WHERE  f.FieldTypeID in (
+          SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
+       );
+
+
 UPDATE dbo.[Field] 
 SET    ReferenceListID = [Value] 
 WHERE  FieldTypeID in (
