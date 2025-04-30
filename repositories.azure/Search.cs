@@ -63,9 +63,9 @@ namespace repositories.azure
 	select	100 as [Rank],
 			a.Id
 	from	dbo.Asset a
-			{appliedFilter} {permissionJoin}
-	where	Uid = @uid
-			and State = 1
+			{appliedFilter.Replace("a.AssetId", "a.id")} {permissionJoin}
+	where	a.Uid = @uid
+			and a.State = 1
 )
 ";
 				}
