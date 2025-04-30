@@ -555,11 +555,9 @@ OFFSET @offset ROWS FETCH NEXT @size ROWS ONLY";
 							join reporting.Global_Resource globalResource on globalResource.ResourceID = Semantic.CreatedBy
 						order by globalResource.FirstName + ' ' + globalResource.LastName";
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				var results = await connection.QueryAsync(sql);
-
-
 				return results;
 			}
 		}
@@ -571,7 +569,7 @@ OFFSET @offset ROWS FETCH NEXT @size ROWS ONLY";
 							join reporting.Global_Resource globalResource on globalResource.ResourceID = Semantic.UpdatedBy
 						order by globalResource.FirstName + ' ' + globalResource.LastName";
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				var results = await connection.QueryAsync(sql);
 				return results;
