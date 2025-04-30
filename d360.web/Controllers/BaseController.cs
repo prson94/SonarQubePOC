@@ -1482,6 +1482,15 @@ namespace d360.web.Controllers
 												.OrderBy(o => o.Text)
 												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
 												.ToList();
+
+											if (selectedValue != null)
+											{
+												var matcheItem = items.Find(i => i.Value == selectedValue);
+												if(matcheItem != null)
+												{
+													matcheItem.Selected = true;
+												}
+											}
 										}
 									}
 
