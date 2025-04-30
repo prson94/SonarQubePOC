@@ -2,6 +2,7 @@
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,6 +51,13 @@ namespace repositories
 		Task ReadRelationTypeDefinition();
 
 		Task<RepositoryResponse<PagedApiBaseViewModel<GetSemantic>>> ReadSemanticTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<List<GetSemantic>> PutSemanticsAsync(List<PutSemantic> semantics);
+		Task<List<GetSemantic>> PostSemanticsAsync(List<PostSemantic> semantics);
+		Task<HttpStatusCode> DeleteSemanticAsync(string qualifier);
+		Task<List<GetSemantic>> GetSemanticVersionsByQualifierAsync(string qualifier, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
+		Task<IEnumerable<dynamic>> GetPossibleCreators();
+		Task<IEnumerable<dynamic>> GetPossibleRedactors();
+		Task<List<GetSemantic>> PatchSemanticsAsync(List<PatchSemantic> semantics);
 
 		Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid);
 

@@ -39,18 +39,15 @@ namespace d360.web.Controllers.V2
     {	
 		internal IAssetRepository AssetRepository;
         internal IDataProfileRepository DataProfiles;
-        private readonly ISemanticsRepository SemanticsRepository;
 
         public DataProfilesController(
             ICoreComponentSet set,
             IAssetRepository assetRepository,
-            IDataProfileRepository dataProfileRepository,
-            ISemanticsRepository semanticsRepository)
+            IDataProfileRepository dataProfileRepository)
             : base(set)
         {
             AssetRepository = assetRepository;
             DataProfiles = dataProfileRepository;
-            SemanticsRepository = semanticsRepository;
         }
 
         #region Core Data Profile Endpoints
@@ -1355,7 +1352,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
             }
 
-			var apiModels = await Catalog.ReadSemanticTypesAsync(queryParams); //SemanticsRepository.GetSemanticsAsync(queryParams, cancellationToken);
+			var apiModels = await Catalog.ReadSemanticTypesAsync(queryParams); 
             HttpResponseMessage response;
 
             if (isStreamResponse)
@@ -1396,7 +1393,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
         {
 			var queryParams = Request.GetQueryNameValuePairs();
-            var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
+            var responseModels = await Catalog.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
             return Ok(responseModels);
         }
 
@@ -1522,7 +1519,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> PatchSemanticTypes(List<PatchSemantic> requestModels)
         {
-            var responseModels = await SemanticsRepository.PatchSemanticsAsync(requestModels);
+            var responseModels = await Catalog.PatchSemanticsAsync(requestModels);
             return Ok(responseModels);
         }
 
@@ -1552,7 +1549,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> PostSemanticTypes(List<PostSemantic> requestModels)
         {
-            var responseModels = await SemanticsRepository.PostSemanticsAsync(requestModels);
+            var responseModels = await Catalog.PostSemanticsAsync(requestModels);
             return Created("", responseModels);
         }
 
@@ -1583,7 +1580,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
         {
-            var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
+            var reponseModels = await Catalog.PutSemanticsAsync(requestModels);
             return Ok(reponseModels);
         }
 
@@ -1607,7 +1604,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
         {
-            var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
+            var status = await Catalog.DeleteSemanticAsync(qualifier);
 
             return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Semantic type removed." }));
         }
@@ -1622,7 +1619,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetPossibleCreators()
 		{
-			var result = await SemanticsRepository.GetPossibleCreators();
+			var result = await Catalog.GetPossibleCreators();
 			return Ok(result);
 		}
 
@@ -1636,7 +1633,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetPossibleRedactors()
 		{
-			var result = await SemanticsRepository.GetPossibleRedactors();
+			var result = await Catalog.GetPossibleRedactors();
 			return Ok(result);
 		}
 
