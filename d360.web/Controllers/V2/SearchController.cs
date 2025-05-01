@@ -1,30 +1,25 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.resources;
-using d360.core.search;
-using d360.extensions;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-using Microsoft.ApplicationInsights;
-using Microsoft.Web.Http;
-using Newtonsoft.Json;
-using repositories;
-using SpreadsheetLight;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.core.search;
+using d360.extensions;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.ApplicationInsights;
+using Microsoft.Web.Http;
+using repositories;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,7 +37,6 @@ namespace d360.web.Controllers.V2
 	{
 		private readonly IAssetRepository AssetRepository;
 		private readonly IQueueSource Queue;
-		private readonly ISemanticsRepository SemanticsRepository;
 		private readonly TelemetryClient Telemetry;
 
 		//Icons set based on main Nav item for category
@@ -50,11 +44,10 @@ namespace d360.web.Controllers.V2
 
 		ISearch Search;
 
-		public SearchController(ICoreComponentSet set, ISearch search, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository, IQueueSource queue) : base(set)
+		public SearchController(ICoreComponentSet set, ISearch search, IAssetRepository assetRepository,IQueueSource queue) : base(set)
 		{
 			AssetRepository = assetRepository;
 			Queue = queue;
-			SemanticsRepository = semanticsRepository;
 			Telemetry = new TelemetryClient();
 
 			Search = search;

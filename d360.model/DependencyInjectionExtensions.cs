@@ -31,7 +31,6 @@ namespace d360.model
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
-            builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
             builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
             builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();
 			builder.RegisterType<ResourceSettingRepository>().As<IResourceSettingRepository>().InstancePerRequest();
