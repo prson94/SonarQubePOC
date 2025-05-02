@@ -1367,7 +1367,7 @@ WHERE  Type = 'Lookup' AND LookupObjectType = 'ReferenceItemType';
 	</rollback>
   </changeSet>
 
-<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship.v1.2">
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.RefListRelationship.v1.3">
   <comment>Convert RefListRelationship fields to new ReferenceList Type</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1433,6 +1433,7 @@ AND NOT EXISTS (
 -- convert field type
 UPDATE dbo.[FieldType]
 SET	Type = 'ReferenceList',
+	IsEditable = 1,
 	LookupObjectType = null,
 	LookupObjectID = null,
 	Definition = JSON_MODIFY([Definition], '$.DisplayRefListInTable', 'true')
