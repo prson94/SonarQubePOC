@@ -318,16 +318,11 @@ select	r.uid as ResourceUid,
 			string countSql = $"select count(*) {tableSql} {whereClause}";
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				var count = 0;
 				var results = (await connection.QueryAsync<dynamic>(sql, dbArgs)).ToList();
 				if (includeTotal)
 				{
-					count = await connection.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
-				}
-				if (includeTotal)
-				{
-					response.Data.total = count;
-						response.Data.items = results;
+					response.Data.total  = await connection.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
+					response.Data.items = results;
 				}
 				else
 				{
@@ -426,7 +421,7 @@ select	r.uid as ResourceUid,
 						value.Tab
 					});
 				}
-				response = new RepositoryResponse<bool>(true, 200, true); ;
+				response = new RepositoryResponse<bool>(true, 200, true);
 			}
 			else
 			{
