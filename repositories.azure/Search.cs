@@ -58,13 +58,14 @@ namespace repositories.azure
 
 				if (searchByUid)
 				{
+					var whereType = permissionJoin == "" ? "where" : "and";
 					sql += $@"
 ;with cte{id} as (
 	select	100 as [Rank],
 			a.Id
 	from	dbo.Asset a
-			{appliedFilter.Replace("a.AssetId", "a.id")} {permissionJoin}
-	where	a.Uid = @uid
+			{appliedFilter.Replace("a.AssetId", "a.id")} {permissionJoin.Replace("a.AssetId", "a.id")}
+	{whereType}	a.Uid = @uid
 			and a.State = 1
 )
 ";
