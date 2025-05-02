@@ -273,8 +273,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.currentObject = res;
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
-            } else {
-				if (this.currentObject?.hasWorkFlow) {
+			} else {
+				if (this.currentObject?.hasWorkFlow && (this.currentObject.Uid != undefined)) {
                   this.loadAssetTypeAssignmentCount(); 
                 }
                 this.showStatus = false;
