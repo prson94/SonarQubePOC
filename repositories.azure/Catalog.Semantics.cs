@@ -151,10 +151,10 @@ namespace repositories.azure
 
 			string whereSql = "";
 
-			if (wheres.Count > 0)
-			{
-				whereSql = "where " + string.Join(" and ", wheres);
-			}
+			wheres.Add($"S.RowNum = 1");
+
+			whereSql = "where " + string.Join(" and ", wheres);
+
 			string orderBySql = $"{sortColumn} {sortDirection}";
 
 			var tableQuery = $"select ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSql} from Semantic where EffectiveDate <= @asOfEffectiveDate";
