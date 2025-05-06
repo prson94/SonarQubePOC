@@ -16,15 +16,14 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 import * as DOMPurify from "isomorphic-dompurify";
-import { FeatureFlags } from '../../../../services/feature-flags.enum';
-import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
+import { FeatureFlagsInitService } from "../../../../services/feature-flags-init.service";
+import { FeatureFlags } from "../../../../_shared/models/feature-flags";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
 	Form = "Form"
 }
 
-/*global $localize*/
 
 @Component({
 	selector: "field-type-modal-form",
@@ -128,10 +127,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
-
-	get isTagTypesFeatureEnabled(): boolean {
-		return this.featureFlagService.variation<boolean>(FeatureFlags.TagTypesEnabled);
-	}
+	isTagTypesFeatureEnabled: boolean;
 
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
@@ -139,7 +135,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		private assetService: AssetService,
 		private cdRef: ChangeDetectorRef,
 		private tagService: TagService,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {
 
 		this.relationshipDisplayFormatValueOptions = [
@@ -151,6 +147,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			{ label: $localize`True`, value: true },
 			{ label: $localize`False`, value: false },
 		];
+
+		featureFlagService.getFlagValue(FeatureFlags.TagTypesEnabled).then((flag) => {
+			this.isTagTypesFeatureEnabled = flag;
+		});
 	}
 
 	setDefaultTitle() {
@@ -450,6 +450,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.IntersectTypeUid = this.fieldTypeForm.get("IntersectTypeUid").value ?? null;
 		}
 
+		if (this.selectedFieldType === 'ReferenceList') {
+			fieldTypeApiObject.DisplayRefListDescription = this.fieldTypeForm.get("DisplayRefListDescription").value ?? null;
+			fieldTypeApiObject.DisplayRefListInTable = this.fieldTypeForm.get("DisplayRefListInTable").value ?? null;
+		}
 
 		if (this.selectedFieldType === 'Relationship') {
 			const relValues = (this.fieldTypeForm.get("IntersectTypeUid").value as string).split('|');
@@ -558,6 +562,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			HideHeader: [null],
 			HideFooter: [null],
 			DisplayRefListDescription: [null],
+			DisplayRefListInTable: [null],
 			UseDisplayFormat: [null],
 			ScoreType: [null],
 			ValidationPattern: [null],
@@ -679,6 +684,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
 			case 'ComputedRelationshipReferenceList':
+			case 'ReferenceList':
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -748,14 +755,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 				let defaultValue = type?.DefaultValue ?? null;
-				if (this.selectedFieldType === "Html") {
-					defaultValue = DOMPurify.sanitize(defaultValue);
-				}
-				else if (this.selectedFieldType === "Date") {
-					const effDate = this.dateRemoveTimeZone(new Date(defaultValue));
-					defaultValue = effDate;
-				}
 
+				if (defaultValue != null) {
+					if (this.selectedFieldType === "Html") {
+						defaultValue = DOMPurify.sanitize(defaultValue);
+					}
+					else if (this.selectedFieldType === "Date") {
+						const effDate = this.dateRemoveTimeZone(new Date(defaultValue));
+						defaultValue = effDate;
+					}
+				}
 				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue);
 				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
 				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
@@ -816,6 +825,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (this.selectedFieldType === 'ComputedRelationshipReferenceList') {
 					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
 					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
+				}
+
+				if (this.selectedFieldType === 'ReferenceList') {
+					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
+					this.fieldTypeForm.controls["DisplayRefListInTable"].setValue(type?.DisplayRefListInTable ?? null);
 				}
 
 				if (this.selectedFieldType === 'Relationship') {
@@ -1052,7 +1066,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (val) {
 			case 'IsDisplayable':
-				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'ReferenceList', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
 				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
@@ -1293,7 +1307,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return true;
 		}
 
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'JsonElement'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'ReferenceList', 'JsonElement'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1327,7 +1341,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'ReferenceList', 'Text', 'Boolean'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1357,7 +1371,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType || this.isUserType || this.actionTypeUid) {
 			return false;
 		}
-		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'Json' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'JsonElement' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ReferenceList' && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'Json' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'JsonElement' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
 	}
 
 	get isGroupType(): boolean {

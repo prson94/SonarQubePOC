@@ -4,7 +4,6 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using repositories;
@@ -27,9 +26,8 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queue, 
-			IStorageProvider storage, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storage)
+			: base(companyContext, securityContext)
 		{
 			Queue = queue;
 			Storage = storage;
@@ -91,7 +89,7 @@ namespace d360.model.DataAccessLayer
 				report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
 				if (report == null)
 				{
-					throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
+					throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.InvalidAssetTypeUidParameter, model.AssetTypeUid));
 				}
 
 				nowPreviousreport = report.CloneThis();
@@ -143,7 +141,7 @@ namespace d360.model.DataAccessLayer
 		{
 			if (model.AssetTypeUid == null || model.AssetTypeUid == Guid.Empty)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUid, model.AssetTypeUid));
+				throw new GenericException(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, String.Format(Error.InvalidAssetTypeUidParameter, model.AssetTypeUid));
 			}
 
 			var assetType = CompanyContext.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => new { x.uid, x.ID, x.Class }).FirstOrDefault();

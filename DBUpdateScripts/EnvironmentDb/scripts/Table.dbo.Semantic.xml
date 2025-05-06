@@ -123,8 +123,6 @@ END
 		]]>
 	</rollback>
   </changeSet>  
-  
-
 
    <changeSet author="Puneet Gupta" id="Index.dbo.Semantic-v3">
   <comment>GOV-20509</comment>
@@ -182,4 +180,19 @@ from	Semantic T
 	</rollback>
   </changeSet>
 
+ <changeSet author="Pappas" id="Index.dbo.Semantic-v4">
+  <sql dbms="mssql">
+<![CDATA[
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Semantic'
+		)
+BEGIN
+	CREATE FULLTEXT INDEX ON dbo.Semantic(Qualifier, Name) KEY INDEX PK_Semantic ON fullTextCatalog
+END
+]]>
+  </sql>
+ </changeSet>	
+	
 </databaseChangeLog>

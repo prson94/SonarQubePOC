@@ -1,7 +1,7 @@
 ﻿using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.web.Controllers;
+using d360.web.Services;
 using d360.web.Utilities;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,6 +14,7 @@ namespace igx.UnitTests.V2ControllerTests
 	{
 		protected readonly Mock<ICompanyContext> MockCompanyContext;
 		protected readonly Mock<ICommunity> MockCommunity;
+		protected readonly CommunityFeatureFlagService CommunityFlags;
 		protected readonly Mock<ISecurityContextProvider> MockSecurityContext;
 		protected readonly Mock<List<ICatalog>> MockCatalogs;
 		protected readonly Mock<ILogger> MockLog;
@@ -22,7 +23,6 @@ namespace igx.UnitTests.V2ControllerTests
 		protected readonly Mock<IThemeRepository> MockThemeRepository;
 		protected readonly Mock<IRuntimeInfo> RuntimeInfo;
 		protected readonly ICoreComponentSet CoreComponentSet;
-		protected readonly Mock<IFeatureFlagService> MockFlags;
 		protected readonly Mock<ICachingProvider> MockCache;
 
 		protected CoreComponentSetControllerTestBase()
@@ -38,19 +38,19 @@ namespace igx.UnitTests.V2ControllerTests
 			MockWorkspace = new Mock<IWorkspaces>();
 			MockThemeRepository = new Mock<IThemeRepository>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
-			MockFlags = new Mock<IFeatureFlagService>();
 			MockCache = new Mock<ICachingProvider>();
+			CommunityFlags = new CommunityFeatureFlagService(MockCache.Object, MockCommunity.Object, MockSecurityContext.Object);
 
 			CoreComponentSet = new CoreComponentSet(
 				MockCache.Object,
-				MockCommunity.Object, 
+				MockCommunity.Object,
+				CommunityFlags,
 				MockCompanyContext.Object,
 				MockSecurityContext.Object,
 				MockCatalogs.Object,
 				MockLog.Object,
 				MockMailProvider.Object, 
 				MockThemeRepository.Object,
-				MockFlags.Object, 
 				RuntimeInfo.Object, 
 				MockWorkspace.Object);
 		}

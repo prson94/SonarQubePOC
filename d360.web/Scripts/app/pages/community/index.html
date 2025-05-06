@@ -1,0 +1,31 @@
+﻿<div class="row">
+	<div class="col l4 m12 s12">
+		<div class="tile tile-detail">
+			<header i18n>User's Responsibilities</header>
+			@if (isLoading) {
+			<div><loading [isLoading]="isLoading"></loading></div>
+			}
+			@else {
+			<div>
+				<highcharts-chart [Highcharts]="Highcharts" [options]="options" style="width: 100%; height: auto"></highcharts-chart>
+			</div>
+			}
+		</div>
+	</div>
+	@if (selectedResponsibilityUid) {
+	<div class="col l8 m12 s12">
+		<div class="tile tile-detail">
+			<d3s-user-list [UserListHeading]="GetHeadingLabel()" [ResponsibilityTypeUid]="selectedResponsibilityUid"
+						   [IsCommunityUserResposibility]="true" [(selected)]="selectedResource"></d3s-user-list>
+		</div>
+	</div>s
+	}
+	@if (selectedResource) {
+	<div class="col s12">
+		<div class="tile tile-detail">
+			<d3s-resource-responsibility-tile [responsibilityTypeUid]="selectedResponsibilityUid"
+											  [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
+		</div>
+	</div>
+	}
+</div>

@@ -69,7 +69,7 @@ namespace d360.web.Controllers
 
 			// Serialize the authentication request to XML for transmission.
 			var authnRequestXml = authnRequest.ToXml();
-			Log.LogTrace($"createAuthnRequest => Idp Endpoint: {saml.IdpSsoEndpoint}");
+			//Log.LogTrace($"createAuthnRequest => Idp Endpoint: {saml.IdpSsoEndpoint}");
 
             return authnRequestXml;
         }
@@ -80,28 +80,20 @@ namespace d360.web.Controllers
             {
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
                 {
-					Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
+					//Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
 
                     if (saml.IdpCertificateFile != null)
                     {
                         var x509Certificate = new X509Certificate2(saml.IdpCertificateFile);
                         
-                        if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
-                        {
-                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
-                        }
-                        else
+                        if (!SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
                         {
                             throw new ArgumentNullException(core.resources.Error.FailedToVerifySignature);
                         }
                     }
                     else
                     {
-                        if (SAMLAssertionSignature.Verify(assertionXml))
-                        {
-                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
-                        }
-                        else
+                        if (!SAMLAssertionSignature.Verify(assertionXml))
                         {
                             throw new ArgumentNullException(core.resources.Error.FailedToVerifySignatureNoIDP);
                         }
@@ -143,6 +135,8 @@ namespace d360.web.Controllers
             Resource resource = null;
 			RepositoryResponse<Resource> response = null;
 
+			long? assetId = null;
+
 			if (!string.IsNullOrEmpty(eMail))
             {
 				eMail = eMail.ToLowerInvariant();
@@ -152,6 +146,21 @@ namespace d360.web.Controllers
 				if (response.IsSuccess && response.Data != null)
 				{
 					resource = response.Data;
+				}
+
+				if (resource == null)
+				{
+					Log.LogInformation($"Did not find resource account (Secondary location) for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
+					response = await Community.ReadUserByEmailAsync(eMail, false);
+					if (response.IsSuccess && response.Data != null)
+					{
+						resource = response.Data;
+					}
+				}
+
+				if (resource == null)
+				{
+					Log.LogInformation($"Did not find resource account (Primary location) for Username: {userName}. Other info: (Email : {eMail},  First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
 				}
 
 				//If there is a domain whitelist, make sure the user has access
@@ -179,7 +188,7 @@ namespace d360.web.Controllers
                             break;
                         }
                     }
-					Log.LogInformation($"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}");
+					//Log.LogInformation($"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}");
 				}
                 else
                 {
@@ -204,7 +213,7 @@ namespace d360.web.Controllers
 
                     isCompanyAdministrator = await Community.ReadShouldUserBeAutoAdminByGroupMembershipAsync(SecurityContext.CompanyID, SecurityContext.DomainSettingID, allGroups);
 					
-					Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
+					//Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
 				}
 
 				if (resource == null)
@@ -213,7 +222,7 @@ namespace d360.web.Controllers
 
                     if (SecurityContext.AllowNewUserLogin && !string.IsNullOrEmpty(userName))
                     {
-						Log.LogInformation($"Creating resource account for Username: {userName} and Email: {eMail}.");
+						//Log.LogInformation($"Creating resource account for Username: {userName} and Email: {eMail}.");
 
 						firstName = string.IsNullOrEmpty(firstName) ? "Unknown" : firstName;
 						lastName = string.IsNullOrEmpty(lastName) ? "Unknown" : lastName;
@@ -232,7 +241,11 @@ namespace d360.web.Controllers
 						{
 							resource.ID = userCreateResponse.Data;
 						}
-                    }
+						else
+						{
+							Log.LogInformation($"Error during create user . Username: {userName}. Other info: (Email : {eMail}, First: {firstName}, Last: {lastName}, Allow New Users: {SecurityContext.AllowNewUserLogin})");
+						}
+					}
                 }
                 
 				if (resource != null)
@@ -248,8 +261,8 @@ namespace d360.web.Controllers
 							var loggedInOn = DateTime.UtcNow;
 
 							await Community.CreateUserInTenantAsync(SecurityContext.CompanyID, resource.ID, isCompanyAdministrator, loggedInOn, AuthenticationMethod.UI);
-							saveUserAsLocalResource(resource, loggedInOn);
-							await saveUserAsAsset(resource);
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
 						}
                         else
                         {
@@ -258,7 +271,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}, Email: {eMail} .");
+						//Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}, Email: {eMail} .");
 
 						if (companyResource.State == CompanyResourceState.Active)
                         {
@@ -266,12 +279,18 @@ namespace d360.web.Controllers
 							var isAdmin = isCompanyAdministrator ? isCompanyAdministrator : companyResource.IsAdministrator; 
 							var loggedInOn = DateTime.UtcNow;
 							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, isAdmin, loggedInOn, AuthenticationMethod.UI);
-                        }
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
+						}
                         else
                         {
-                            // The company resource account is not active, so ensure that user is NOT able to log in.
-                            resource = null;
-                        }
+							// Because this is SSO, we are re-activating the disabled user.
+							var isAdmin = false;
+							var loggedInOn = DateTime.UtcNow;
+							await Community.UpdateUserInTenantAsync(companyResource.CompanyID, companyResource.ResourceID, false, loggedInOn, AuthenticationMethod.UI);
+							var upsertResponse = await Workspace.UpsertSingleUserAsync(resource);
+							assetId = upsertResponse.Data;
+						}
                     }
 
                     // Check b/c the company may not allow for new users to be added automatically.  If user was not already 
@@ -305,7 +324,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Log.LogWarning($"User attempting to log in does not have access. Username: {userName}, Email: {eMail}.");
+						//Log.LogWarning($"User attempting to log in does not have access. Username: {userName}, Email: {eMail}.");
 						return Redirect("/noaccess");
                     }
                 }
@@ -313,7 +332,7 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-				Log.LogTrace($"Resource account exists for Username: {userName}, Email: {eMail} . Now authorizing with cookie.");
+				//Log.LogTrace($"Resource account exists for Username: {userName}, Email: {eMail} . Now authorizing with cookie.");
 
 				if (resource.ID > 0)
                 {
@@ -418,46 +437,49 @@ namespace d360.web.Controllers
                             }
                         }
                     }
-                    #endregion
+                    
+					#endregion
 
                     #region Process custom claims
 
                     try
                     {
-						var resourceAssetType = Company.Filter<AssetType>(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
-                        
-						var resourceTypeFields = Company.Filter<FieldType>(i => i.AssetTypeID.HasValue && resourceAssetType.Contains(i.AssetTypeID.Value)).ToList();
+						if (assetId.HasValue)
+						{ 
+							var resourceAssetType = Company.Filter<AssetType>(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
+							var resourceTypeFields = Company.Filter<FieldType>(i => i.AssetTypeID.HasValue && resourceAssetType.Contains(i.AssetTypeID.Value)).ToList();
 						
-						var resourceAsset = Company.Filter<Asset>(a => a.uid == resource.Uid).FirstOrDefault();
-						var resourceFields = Company.Filter<Field>(i => i.AssetID == resourceAsset.ID).ToList();
+							var resourceFields = Company.Filter<Field>(i => i.AssetID == assetId).ToList();
 
-						var shouldSaveFields = false;
+							var shouldSaveFields = false;
 
-                        foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))
-                        {
-                            var claimName = f.Name.Trim().ToLower();
+							foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))
+							{
+								var claimName = f.Name.Trim().ToLower();
 
-                            var rf = resourceFields.FirstOrDefault(i => i.FieldTypeID == f.ID);
-                            if (rf != null)
-                            {
-                                if (rf.Value != customClaims[claimName])
-                                {
-                                    rf.Value = customClaims[claimName];
-                                    shouldSaveFields = true;
-                                }
-                            }
-                            else
-                            {
-                                rf = new Field { FieldTypeID = f.ID, AssetID = resourceAsset.ID, Value = customClaims[claimName] };
-                                Company.Fields.Add(rf);
-                                shouldSaveFields = true;
-                            }
-                        }
+								var rf = resourceFields.FirstOrDefault(i => i.FieldTypeID == f.ID);
+								if (rf != null)
+								{
+									if (rf.Value != customClaims[claimName])
+									{
+										rf.Value = customClaims[claimName];
+										shouldSaveFields = true;
+									}
+								}
+								else
+								{
+									rf = new Field { FieldTypeID = f.ID, AssetID = assetId, Value = customClaims[claimName] };
+									Company.Fields.Add(rf);
+									shouldSaveFields = true;
+								}
+							}
 
-                        if (shouldSaveFields)
-                        {
-                            Company.SaveChanges();
-                        }
+							if (shouldSaveFields)
+							{
+								Company.SaveChanges();
+							}						
+						}
+
                     }
                     catch (Exception ex)
                     {
@@ -541,52 +563,18 @@ namespace d360.web.Controllers
                 }
             }
 
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
-        }
-
-		async Task saveUserAsAsset(Resource resource)
-		{
-			//if there is no asset record call UpsertUsers method which will update both community and company
-			if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
+			string finalErrorMessage = "";
+			if (string.IsNullOrEmpty(eMail))
 			{
-				var execution = new ApiExecution
-				{
-					ExecutionID = Guid.NewGuid(),
-					StartedOn = DateTime.UtcNow,
-					Action = ApiExecutionAction.UpsertUsers,
-					Route = "",
-					Method = "",
-					ResourceID = resource.ID,
-					Total = 1,
-					Fields = "",
-					Error = 0,
-					Processed = 0,
-					ApplicationId = "AllowNewUserLogin"
-				};
-				var users = new UserApiModel
-									{
-										FirstName = resource.FirstName,
-										LastName = resource.LastName,
-										ResourceID = resource.ID,
-										uid = resource.Uid,
-										Username = resource.Username,
-										Email = resource.Email,
-										IsNew = true
-								};
-				
-				var usersvalid = new List<UserUpsertValidateModel>
-								{
-									new UserUpsertValidateModel
-									{
-										users = users,
-										Success = true,
-										Message = ""
-									}
-								};
-
-				await Workspace.UpsertUsersAsync(execution.Id, usersvalid, true);
+				finalErrorMessage += "No email address could be found in authentication response.";
 			}
-		}
+			if (resource == null)
+			{
+				finalErrorMessage += "No resource account could be created for the incoming authentication.";
+			}
+			Log.LogError(finalErrorMessage);
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest, finalErrorMessage); //If you made this far, then error occurred.
+        }
 
 		void saveUserAsLocalResource(Resource resource, DateTime loggedInOn)
 		{
@@ -639,11 +627,11 @@ namespace d360.web.Controllers
 					var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
                     var authnRequestXml = createAuthnRequest(saml);
 
-                    Log.LogTrace($"Login => relayState: {returnUrl}");
+                    //Log.LogTrace($"Login => relayState: {returnUrl}");
 
                     if (saml.SignInitialSSORequest)
                     {
-                        Log.LogTrace($"Login => signing initial authentication request");
+                        //Log.LogTrace($"Login => signing initial authentication request");
 
                         using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx"))
                         {
@@ -656,7 +644,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        Log.LogTrace($"Login => not signing initial authentication request");
+                        //Log.LogTrace($"Login => not signing initial authentication request");
 
                         var hashString = "";
                         switch (saml.HashAlgorithmType)
@@ -697,7 +685,9 @@ namespace d360.web.Controllers
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
-                    await Community.CreateOpenIdRequestAsync(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
+					var openIdRequest = new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow };
+                    await Community.CreateOpenIdRequestAsync(openIdRequest);
+					Cache.SetItemInListByID("openid", state, openIdRequest);
 
 					var client = new HttpClient();
 					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
@@ -755,12 +745,8 @@ namespace d360.web.Controllers
 			SAMLResponse samlResponse = null;
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out XmlElement samlResponseXml, out string relayState);
 
-            Log.LogInformation($"samlResponseXml: {samlResponseXml.InnerXml}");
-
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
-
-			Log.LogInformation($"IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}");
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
@@ -768,8 +754,6 @@ namespace d360.web.Controllers
 				var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
 				SAMLAssertion samlAssertion = null;
-
-				Log.LogInformation($"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}");
 
 				if (samlResponse.GetAssertions().Count > 0)
                 {
@@ -849,7 +833,7 @@ namespace d360.web.Controllers
 						customClaims.Add(attName, attValue);
 					}
                 }
-				Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, Email :  {eMail}, FirstName: {firstName}, LastName: {lastName}");
+				//Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, Email :  {eMail}, FirstName: {firstName}, LastName: {lastName}");
 
                 System.Action addSamlAssertionToCookie = () =>
                 {
@@ -871,7 +855,9 @@ namespace d360.web.Controllers
             {
                 string errorMessage = null;
 
-                if (samlResponse.Status.StatusMessage != null)
+				Log.LogInformation($"samlResponseXml: {samlResponseXml.InnerXml}");
+
+				if (samlResponse.Status.StatusMessage != null)
                 {
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
@@ -902,9 +888,20 @@ namespace d360.web.Controllers
             }
 
             var baseUri = oidc.baseUri;
-            var openIdRequest = await Community.GetOpenIdRequestAsync(state);
 
-            if (openIdRequest == null)
+			OpenIdRequest openIdRequest = null;
+			openIdRequest = Cache.GetItemInListByID<OpenIdRequest, string>("openid", state);	// Read from machine cache.
+			if (openIdRequest == null)
+			{
+				openIdRequest = await Community.GetOpenIdRequestAsync(state);					// Read from secondary
+			}
+			if (openIdRequest == null)
+			{
+				Log.LogError($"Could not find openIdRequest(fromSecondary).");
+				openIdRequest = await Community.GetOpenIdRequestAsync(state, false);			// Read from primary
+			}
+
+			if (openIdRequest == null)
             {
 				Log.LogError($"Could not find openIdRequest.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthentication);
@@ -930,11 +927,10 @@ namespace d360.web.Controllers
 
             if (response.IsError)
             {
+				Log.LogTrace($"Token Response: {response.Raw}");
 				Log.LogCritical(response.Exception, $"Got error from RequestAuthorizationCodeTokenAsync.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
             }
-
-			Log.LogTrace($"Token Response: {response.Raw}");
 
 			var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
@@ -1035,7 +1031,11 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
-                    if (!string.IsNullOrEmpty(ReturnUrl))
+
+					var loggedInOn = DateTime.UtcNow;
+					saveUserAsLocalResource(resource, loggedInOn);
+
+					if (!string.IsNullOrEmpty(ReturnUrl))
                     {
                         Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out Uri testUri);
 
@@ -1113,7 +1113,7 @@ namespace d360.web.Controllers
                     {
                         var resource = await Community.ReadUserByIdAsync(SecurityContext.ResourceID);
 
-                        var lr = new LogoutRequest
+						var lr = new LogoutRequest
                         {
                             NameID = new NameID(resource.Data.Username, APP_ID, APP_ID, "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress", APP_ID),
                             Issuer = new Issuer(APP_ID)

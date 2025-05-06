@@ -7,7 +7,6 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.validators;
 using d360.web.Filters;
@@ -25,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -102,6 +102,7 @@ namespace d360.web.Controllers.V2
 			{
 				throw new RestApiException(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid);
 			}
+
 			var results = await FieldsRepository.GetFieldTypes(queryParams);
 
 			if (results.Item2.StatusCode != HttpStatusCode.OK)
@@ -249,7 +250,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (!FeatureFlags.IsThisTrue(FlagList.PERM_TAG_TYPES_ENABLED, await GetFeatureFlagUser()))
+			if (!await GetFeatureFlagValue(FlagList.TAG_TYPES_ENABLED))
 			{
 
 				foreach (FieldTypeApiEditModel field in model.Fields)
@@ -262,6 +263,12 @@ namespace d360.web.Controllers.V2
 						}
 					}
 				}
+			}
+
+			if (model.Fields.Any(f => f.Type?.ComputedRelationshipReferenceList != null))
+			{
+				var forbiddenType = "ComputedRelationshipReferenceList";
+				throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, $"Field type {forbiddenType} is not supported");
 			}
 
 			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);
@@ -867,7 +874,7 @@ namespace d360.web.Controllers.V2
 					.Where(x => x.value != DataType.JSON.ToString())
 					.Where(x => x.value != DataType.JsonElement.ToString())
 					.Where(x => x.value != DataType.OwnershipLookup.ToString())
-					.Where(x => x.value != DataType.RefListRelationship.ToString())
+					.Where(x => x.value != DataType.ReferenceList.ToString())
 					.Where(x => x.value != DataType.ComplexRelationLookup.ToString())
 					.Where(x => x.value != DataType.Relationship.ToString())
 					.Where(x => x.value != DataType.Score.ToString())
@@ -1056,13 +1063,13 @@ namespace d360.web.Controllers.V2
 								lookup.HideHeader
 							};
 						}
-						else if (ft.Type == DataType.RefListRelationship.ToString())
-						{
-							refListFromRelSettings = new
-							{
-								definition.DisplayRefListDescription
-							};
-						}
+						//else if (ft.Type == DataType.RefListRelationship.ToString())
+						//{
+						//	refListFromRelSettings = new
+						//	{
+						//		definition.DisplayRefListDescription
+						//	};
+						//}
 					}
 				}
 
@@ -2002,7 +2009,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(Error.InvalidAssetTypeUid);
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			var types = Company.Query<int>(
@@ -2537,6 +2544,7 @@ namespace d360.web.Controllers.V2
 
 				bool hasColor = false;
 				bool UseAssetDisplayValue = false;
+				var AssetDisplayTextColumn = "adv.DisplayValue";
 
 				var colorjoin = "";
 
@@ -2550,7 +2558,35 @@ namespace d360.web.Controllers.V2
 					var fieldformat = !string.IsNullOrWhiteSpace(fieldType.LookupEditFormat) ? fieldType.LookupEditFormat : fieldType.LookupDisplayFormat;
 					bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
 					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
-					if (!string.IsNullOrWhiteSpace(assetformat) && assetformat == fieldformat)
+
+					var useFormat = !string.IsNullOrWhiteSpace(fieldformat) ? fieldformat : assetformat;
+					var patternFields = new List<string>();
+					if (!string.IsNullOrWhiteSpace(useFormat))
+					{
+						var pattern = new Regex(@"\{[\d\w]+\}", RegexOptions.IgnoreCase);
+						var tokens = pattern.Matches(useFormat);
+						var concatParts = new List<string>();
+
+						var lastPos = 0;
+						foreach (Match item in tokens)
+						{
+							if (item.Index > lastPos)
+							{
+								concatParts.Add("'" + useFormat.Substring(lastPos, item.Index - lastPos).CleanForSql() + "'");
+							}
+							var fld = useFormat.Substring(item.Index + 1, item.Length - 2);
+							patternFields.Add(fld.ToLower());
+							concatParts.Add("R." + fld);
+							lastPos = item.Index + item.Length;
+						}
+						if(lastPos < useFormat.Length)
+						{
+							concatParts.Add("'" + useFormat.Substring(lastPos).CleanForSql() + "'");
+						}
+						AssetDisplayTextColumn = concatParts.Count > 1 ? "CONCAT(" + string.Join(", ", concatParts) + ")" : concatParts.First();
+					}
+
+					if (!patternFields.Except(new List<string> { "firstname", "lastname", "email" }).Any())
 					{
 						UseAssetDisplayValue = true;
 						resourceJoin = $@" inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}";
@@ -2636,7 +2672,7 @@ namespace d360.web.Controllers.V2
 					{
 						query = $@"
 								drop table if exists #tempResults
-								select adv.DisplayValue text, a.SourceID value
+								select {AssetDisplayTextColumn} text, {(fieldType.LookupObjectType == "Resource" ? "r.ResourceID" : "a.SourceID")} value
 								into #tempResults
 								from AssetType Att 
 								inner join Asset a on a.assettypeid = att.id
@@ -2704,6 +2740,32 @@ namespace d360.web.Controllers.V2
 
 					}
 				}
+
+				if (fieldType.Type == DataType.ReferenceList.ToString())
+				{
+					countQuery = $@"
+					select count(1)
+					from AssetType att
+					where att.Class = {(int)AssetTypeClass.Reference}
+					{whereQuery};";
+
+					if(!onlyCount)
+					{
+						query = $@"
+							drop table if exists #tempResults
+							select LOWER(CAST(uid AS VARCHAR(36))) as Value, name as Text, ROW_NUMBER() over (order by name) as ORDERBYCOLUMN
+							into #tempResults
+							from AssetType Att 
+							where att.Class = {(int)AssetTypeClass.Reference}
+							{whereQuery}
+							order by text asc
+							{pagingQuery};
+
+							select {selectStatement} from #tempResults V
+						";
+					}
+				}
+
 				query = $@"
 						{query} 
 
@@ -3068,8 +3130,7 @@ namespace d360.web.Controllers.V2
 					response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
 				}
 
-				if (fieldType != null && (fieldType.Type == DataType.RefListRelationship.ToString()
-					|| fieldType.Type == DataType.ComplexRelationLookup.ToString()))
+				if (fieldType != null && (fieldType.Type == DataType.ComplexRelationLookup.ToString()))
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();

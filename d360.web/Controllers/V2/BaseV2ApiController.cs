@@ -1,10 +1,11 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.utils.excel;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
@@ -22,10 +23,12 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
 using System.Web.UI.WebControls;
+using System.Xml.XPath;
 
 namespace d360.web.Controllers.V2
 {
 	[ValidateModel] // [ValidateCompanyState]
+	[BusinessExceptionHandler]
 	public class BaseV2ApiController : BaseApiController
 	{
 		public BaseV2ApiController(ICoreComponentSet set) : base(set)
@@ -112,14 +115,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (!string.IsNullOrEmpty(fieldDataType))
 						{
-							if (fieldDataType == "bit")
-							{
-								fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-							}
-							else
-							{
-								fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-							}
+							fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
 						}
 						else
 						{
@@ -134,7 +130,7 @@ namespace d360.web.Controllers.V2
 						{
 							if (fieldDataType == "bit")
 							{
-								fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+								fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as nvarchar(max)) as [{columnName}]");
 							}
 							else
 							{
@@ -274,8 +270,8 @@ namespace d360.web.Controllers.V2
 		public string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, bool validateForExport = false)
 		{
 			var parameters = queryParams.ToList();
-			long pageSize = 0;
-			long pageNum = 0;
+			int pageSize = 0;
+			int pageNum = 0;
 
 			if (parameters.Any(q => q.Key == "_pageSize"))
 			{
@@ -286,9 +282,22 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageSize;
 				}
 
-				if (long.TryParse(_pageSize, out pageSize))
+				if (int.TryParse(_pageSize, out pageSize))
 				{
-					int maxRows = validateForExport ? Task.Run(() => Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows)).GetAwaiter().GetResult() : 200000;
+					string cacheKey = "ValidForExport";
+					int maxRows = 200000;
+					if (validateForExport)
+					{
+						if (Cache.ListItemExists<int, int>(cacheKey, SecurityContext.CompanyID))
+						{
+							maxRows = Cache.GetItemInListByID<int, int>(cacheKey, SecurityContext.CompanyID);
+						}
+						else
+						{
+							maxRows = Task.Run(() => Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.MaxExcelExportRows)).GetAwaiter().GetResult();
+							Cache.SetItemInListByID(cacheKey, SecurityContext.CompanyID, maxRows, true, 5);
+						}
+					}
 
 					if (pageSize > maxRows)
 					{
@@ -315,7 +324,7 @@ namespace d360.web.Controllers.V2
 					return Error.InvalidPageNum;
 				}
 
-				if (long.TryParse(_pageNum, out pageNum))
+				if (int.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
@@ -328,24 +337,51 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			long offset = (pageSize == 0 ? 250 : (long)pageSize) * ((pageNum == 0 ? 1 : (long)pageNum) - 1);
+			if (offset < 0 || pageNum > 21474836)
+			{
+				if (pageNum > 21474836)
+				{
+					return Error.InvalidPageNum;
+				}
+				else
+				{
+					return Error.InvalidPageSize;
+				}
+			}
+
+			if (parameters.Any(q => q.Key == "_includeTotal"))
+			{
+				var _includeTotal = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeTotal").Value.ToLower();
+
+				if (!bool.TryParse(_includeTotal, out _))
+				{
+					return Error.InvalidIncludeTotal;
+				}
+			}
+
 			return "";
 		}
 
 		protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)
 		{
-			string json;
+			string json = string.Empty;
+
+			if(request.Content == null)
+			{
+				return default;
+			}
 
 			if (request.Content.IsMimeMultipartContent())
 			{
-				var streamProvider = new MultipartMemoryStreamProvider();
-				await request.Content.ReadAsMultipartAsync(streamProvider);
-
-				json = await streamProvider.Contents.Single().ReadAsStringAsync();
+				  var streamProvider = new MultipartMemoryStreamProvider();
+				  await request.Content.ReadAsMultipartAsync(streamProvider);
+					json = await streamProvider.Contents.Single().ReadAsStringAsync();
 			}
 			else
 			{
-				json = await request.Content.ReadAsStringAsync();
-			}
+					json = await request.Content.ReadAsStringAsync();
+			}			
 
 			if (deserializeAsIs)
 			{

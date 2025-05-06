@@ -59,7 +59,6 @@ namespace d360.model.helpers.filters
 			List<string> listDataType = new List<string>();
 			//add item using add method
 			listDataType.Add(DataType.FieldFromRelationship.ToString());
-			listDataType.Add(DataType.RefListRelationship.ToString());
 			listDataType.Add(DataType.JsonElement.ToString());
 			listDataType.Add(DataType.Score.ToString());
 			listDataType.Add(DataType.Counter.ToString());

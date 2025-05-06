@@ -13,7 +13,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class GridPagingInfoComponent extends BaseComponent {
+export class LegacyGridPagingInfoComponent extends BaseComponent {
     @Input() first: number;
     @Input() rows: number;
     @Input() totalRecords: number;
@@ -43,10 +43,10 @@ export class GridPagingInfoComponent extends BaseComponent {
     imports: [CommonModule,        
     ],
     declarations: [
-        GridPagingInfoComponent
+        LegacyGridPagingInfoComponent
     ],
     exports: [
-        GridPagingInfoComponent
+        LegacyGridPagingInfoComponent
     ]
 })
 export class SharedGridPagingInfoModule { }

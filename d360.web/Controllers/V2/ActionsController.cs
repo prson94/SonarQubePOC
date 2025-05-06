@@ -23,6 +23,8 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 using repositories.azure;
+using d360.extensions;
+using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,19 +38,21 @@ namespace d360.web.Controllers.V2
 	]
 	public class ActionsController : BaseV2ApiController
 	{
+		private readonly IQueueSource QueueSource;
 		private readonly IAssetRepository assetRepository;
 		private readonly ISocial commentRepository;
 		private readonly IIssueRepository issueRepository;
 		private readonly IResponsibilityRepository responsibilityRepository;
 
 
-		public ActionsController(ICoreComponentSet set, ISocial comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities, IQueueSource queueSource)
 			: base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
 			issueRepository = issues;
 			responsibilityRepository = responsibilities;
+			QueueSource = queueSource;
 		}
 
 		/// <summary>
@@ -128,7 +132,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					return errorMessageArgumentResponse(Error.InvalidDirection);
+					return errorMessageArgumentResponse(Error.InvalidDirectionSimple);
 			}
 
 			if (string.IsNullOrEmpty(_order))
@@ -416,7 +420,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid) || assetTypeUid == Guid.Empty)
 				{
-					return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUidParam.Value));
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
@@ -426,7 +430,7 @@ namespace d360.web.Controllers.V2
 				}
 				else if (assetType.Class == AssetTypeClass.Diagram)
 				{
-					return errorMessageArgumentResponse(Error.InvalidAssetTypeUid);
+					return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 				}
 			}
 
@@ -539,8 +543,7 @@ namespace d360.web.Controllers.V2
 			Route("types/{AssetTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(IssueTypeApiModel)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type with Uid {uid} not found."),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.NotFound)
 		]
 		public async Task<IHttpActionResult> GetAllocationByAssetTypeAsync(Guid AssetTypeUid)
 		{
@@ -657,7 +660,8 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				return errorMessageArgumentResponse(Error.UidNotValid);
+				Guid actionuid = model.Uid ?? Guid.Empty;
+				return errorMessageArgumentResponse(string.Format(Error.ActionTypeUidIsNotValid, actionuid.ToString()));
 			}
 
 			if (model.Name == null)
@@ -843,6 +847,23 @@ namespace d360.web.Controllers.V2
 						Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
 					};
 					var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
+
+					if (comment.Tags != null && comment.Tags.Count > 0)
+					{
+						if (dtl.Tags.Count > 0)
+						{
+							foreach (var item in dtl.Tags)
+							{
+								await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+								{
+									CompanyId = SecurityContext.CompanyID,
+									CompanyPrefix = SecurityContext.CompanyPrefix,
+									Payload = dtl.ID
+								});
+							}
+						}
+					}
+
 					issueModel.Issue.CommentID = dtl.ID;
 				}
 
@@ -933,7 +954,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (model.AssetTypeUid.Value == Guid.Empty)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid);
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 				}
 
 				assetType = assetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
@@ -945,7 +966,7 @@ namespace d360.web.Controllers.V2
 
 				if (assetType.Class == AssetTypeClass.Reference)
 				{
-					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeUidIsNotValid, model.AssetTypeUid.Value));
+					return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetTypeUidParameter, model.AssetTypeUid.Value));
 				}
 
 				assetTypeID = assetType.ID;
@@ -1181,14 +1202,14 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Guid.TryParse(assetTypeUid, out Guid uid))
 				{
-					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 				}
 
 				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
 				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 				{
-					return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
+					return errorMessageNotFoundResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 				}
 
 				if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
@@ -1289,7 +1310,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
@@ -1303,7 +1324,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeUidIsNotValid, assetTypeUid));
+				return errorMessageNotFoundResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 			}
 
 			string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
@@ -1349,14 +1370,14 @@ namespace d360.web.Controllers.V2
 
 			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, model.assetTypeUid));
 			}
 
 			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
 
 			if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
 			{
-				return errorMessageArgumentResponse(string.Format(Error.AssetTypeUidIsNotValid, model.assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, model.assetTypeUid));
 			}
 
 			if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))

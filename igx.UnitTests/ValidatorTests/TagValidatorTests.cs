@@ -16,7 +16,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PostTest_ValidMode()
         {
-            var model = new TagApiUpsertModel() { Value = "valid length name" };
+            var model = new TagApiUpsertModel() { Value = "validLengthName" };
 
 
             //implicit "DoesNotThrow" check
@@ -91,7 +91,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PutTest_ValidMode()
         {
-            var model = new TagApiUpsertModel() { Value = "valid length name" };
+            var model = new TagApiUpsertModel() { Value = "validLengthName" };
             var guid = Guid.NewGuid();
 
             //implicit "DoesNotThrow" check
@@ -148,7 +148,7 @@ namespace igx.UnitTests.ValidatorTests
         {
             var model = new TagApiUpsertModel()
             {
-                Value = "valid name"
+                Value = "validName"
             };
             Guid guid = Guid.Empty;
 

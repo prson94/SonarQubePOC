@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { AdminRoutingModule } from './admin.routes';
-
 import { CoreModule } from '../shared/core.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -46,7 +44,6 @@ import { DirectivesModule } from '../../directives/directives.module';
         FormsModule,
 
         RouterModule,
-        AdminRoutingModule,
 
         SimpleAccordionModule,
 
@@ -70,8 +67,6 @@ import { DirectivesModule } from '../../directives/directives.module';
         SharedAssetTypeEditorModule,
         TilesModule,
         DirectivesModule
-    ],
-    providers: [
     ]
 })
 

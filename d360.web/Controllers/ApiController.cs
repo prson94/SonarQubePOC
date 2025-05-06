@@ -6,7 +6,6 @@ using d360.core.helpers;
 using d360.core.Models;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.helpers;
 using d360.web.Extensions;
@@ -14,6 +13,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -41,13 +41,13 @@ namespace d360.web.Controllers
 		private readonly ISocial commentsRepository;
 		private readonly ISecurityContextProvider SecProvider;
 		private readonly ITagRepository tagRepository;
-		private readonly IConnectorLabelRepository connectorLabelRepository;
+		private readonly ICatalog connectorLabelRepository;
 		private readonly IFieldsRepository fieldsRepository;
 
 		public D3SApiController(ICoreComponentSet set,
 			ISocial comments,
 			ITagRepository tagRepository,
-			IConnectorLabelRepository connectorLabelRepository,
+			ICatalog connectorLabelRepository,
 			ISecurityContextProvider secProvider,
 			IFieldsRepository fieldsRepository)
 			: base(set)
@@ -189,7 +189,7 @@ namespace d360.web.Controllers
 					Category = ft.Category
 				});
 			}
-			else if (!string.IsNullOrEmpty(formattedValue))
+			else if (!string.IsNullOrEmpty(formattedValue) && ft.Type != DataType.ReferenceList.ToString())
 			{
 				var ro = new ReadOnlyField
 				{
@@ -346,7 +346,7 @@ namespace d360.web.Controllers
 			{
 				list.AddRange(RenderTagField(ft, type, id));
 			}
-			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString() || ft.Type == DataType.RefListRelationship.ToString())
+			else if (ft.Type == DataType.ComplexRelationLookup.ToString() || ft.Type == DataType.OwnershipLookup.ToString() || ft.Type == DataType.ReferenceList.ToString())
 			{
 				//look at ownershiplookup / relationship lookup / reference list lookup field and figure out what to show
 				list.AddRange(await RenderComplexLookupField(type.ToString(), id, ft, complexRelationFieldHasAnyModel).ConfigureAwait(false));
@@ -752,11 +752,12 @@ namespace d360.web.Controllers
 			return complexRelationFieldHasAnyModels;
 		}
 
-		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+		private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id,FieldType ft)
 		{
 			List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
 			var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
-			var tags = tagRepository.GetTagsForAsset(asset.ID);
+			int tagTypeId = 0;
+			var tags = tagRepository.GetTagsForAsset(asset.ID,  ft.TagTypeID);
 			tags.ToList().ForEach(x =>
 			{
 				var roField = new ReadOnlyFieldValue
@@ -906,6 +907,10 @@ namespace d360.web.Controllers
 					columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
 					filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
 					break;
+				case "ReferenceList":
+					columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
+					filterType = GridColumn.FILTER_TYPE_LIST;
+					break;
 				case "Date":
 					cellsFormat = "MM/dd/yyyy";
 					columnType = GridColumn.COLUMN_TYPE_DATE;
@@ -1022,6 +1027,9 @@ namespace d360.web.Controllers
 						}
 
 						break;
+					case "ReferenceList":
+						fieldType = "referencelist";
+						break;
 					case "OwnershipLookup":
 						fieldType = "ownershiplookup";
 						break;
@@ -1074,7 +1082,7 @@ namespace d360.web.Controllers
 		{
 			if (!Guid.TryParse(uid, out var guid))
 			{
-				return Request.CreateResponse(HttpStatusCode.BadRequest, Error.CustomUidNotValid);
+				return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(Error.CustomUidNotValid, "uid", uid));
 			}
 
 			int objectId = Company.GetObjectId(guid, type);
@@ -1693,6 +1701,9 @@ namespace d360.web.Controllers
 
 		private List<DetailReadOnlyRowModel> RenderTagField(FieldType ft, SystemObjects type, int id)
 		{
+			var sql = $@"Select uid from TagType where ID = {ft.TagTypeID}";
+			var result = Company.Connection.QuerySingle<dynamic>(sql, new {ft.TagTypeID}).uid;
+
 			var list = new List<DetailReadOnlyRowModel>
 			{
 				new DetailReadOnlyRowModel
@@ -1706,7 +1717,8 @@ namespace d360.web.Controllers
 						FieldName = ft.Name,
 						ShowIfEmpty = true,
 						DataType = "tag",
-						Values = GetTagsValues(type, id),
+						TagTypeUID = result,
+						Values = GetTagsValues(type, id,ft),
 						IsPartOfKey = ft.IsPartOfKey
 					}
 				},
@@ -1847,10 +1859,10 @@ namespace d360.web.Controllers
 
 				}
 
-				if (fieldType.Type == "RefListRelationship")
+				if (fieldType.Type == DataType.ReferenceList.ToString())
 				{
 					(Columns, Fields, Values, count) =
-					   await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, "", "", "", "", countOnly: true);
+					   await fieldsRepository.GetReferenceListGrid(fields, dbArgs, "", "", "", "", countOnly: true);
 				}
 
 				if (fieldType.Type == "OwnershipLookup")
@@ -4890,7 +4902,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
 
 		[Route("{type}/{uid}/permissions")]
-		public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
+		public async Task<List<PermissionInfo>> GetPermissionsByObject(SystemObjects type, Guid uid)
 		{
 			if (type == SystemObjects.Tag)
 			{
@@ -4908,7 +4920,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			{
 				List<PermissionInfo> ret = new List<PermissionInfo>();
 
-				if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
+				if (await connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
 				{
 					ret.AddRange(Permission.DeleteAsset.GetList());
 				}
@@ -5195,8 +5207,8 @@ where v.id = {0}", id)).FirstOrDefault();
 				days *= -1;
 				dbArgs.Add("@d", days);
 				innerQuery = @"select  at.Name,
-						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
-						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) < @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) < @d then 0 else 1 end as Total,
 						at.id as Id								
 				from    Asset a
 						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";

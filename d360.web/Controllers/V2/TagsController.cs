@@ -5,6 +5,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using d360.web.Filters;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
@@ -61,6 +62,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Search()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
+			
 			var response = await Catalog.SearchTags(queryParams);
 			return (response.IsSuccess) ? 
 				Ok(response.Data) : 
@@ -170,12 +172,14 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTag(TagApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
-			var response = await Catalog.CreateTagAsync(model.Value, model.TagTypeUid);
+			var response = await Catalog.CreateTagAsync(model.Value?.Trim(), model.TagTypeUid);
 			return (response.IsSuccess) ?
 				Ok(response.Data) :
 				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
@@ -200,6 +204,14 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> Put(string tagUid, TagApiUpsertModel model)
 		{
 			Guid tagId;
+
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagUid, out tagId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
@@ -215,17 +227,10 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			var response = await Catalog.UpdateTagAsync(tagId, model.Value);
+			var response = await Catalog.UpdateTagAsync(tagId, model.Value?.Trim());
 
 			if (response.IsSuccess)
 			{
-				await Queue.CreateMessageAsync(constants.Queue.Search, new ReindexModel
-				{
-					To = QueueAction.UpdateInIndex,
-					BatchOperation = ReindexBatchOperation.Update,
-					BatchUids = new List<Guid> { tagId }
-				});
-
 				var result = await Catalog.ReadTagAsync(tagId);
 				return Ok(result.Data);
 			}
@@ -311,7 +316,7 @@ namespace d360.web.Controllers.V2
 			Guid _parentUid;
 			if (!Guid.TryParse(parentUid, out _parentUid))
 			{
-				return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, parentUid));
+				return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, "parentUid", parentUid));
 			}
 
 			var _childrenUids = new List<Guid>();
@@ -324,7 +329,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, item));
+					return errorMessageArgumentResponse(string.Format(Error.CustomUidNotValid, "Uids", item));
 				}
 			}
 
@@ -463,9 +468,10 @@ namespace d360.web.Controllers.V2
 
 			if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
 			{
-				if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
+				string assetTypeUid = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower();
+				if (!Guid.TryParse(assetTypeUid, out AssetTypeUid))
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 				}
 
 				if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
@@ -474,12 +480,12 @@ namespace d360.web.Controllers.V2
 
 					if (assetType == null)
 					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, AssetTypeUid));
 					}
 				}
 				else
 				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetTypeID);
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 				}
 			}
 
@@ -577,10 +583,10 @@ namespace d360.web.Controllers.V2
 		[HttpGet, Route("exists"), SwaggerProduces("application/json"),
 		SwaggerResponse(HttpStatusCode.OK, "Tag does exist.", typeof(HttpStatusCode)),
 		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse))]
-		public IHttpActionResult CheckIfTagExist(string value)
+		public IHttpActionResult CheckIfTagExist(string value, Guid? tagTypeUid = null)
 		{
-			var result = tagRepository.GetTagByName(value);
-			return (result == null) ? errorMessageNotFoundResponse("") : Ok();
+			var result = tagRepository.GetTagDetailIfExists(value,tagTypeUid);
+			return (result == null) ? errorMessageNotFoundResponse("") : Ok(result);
 		}
 
 		[HttpGet, Route("AssetTagDetails"), ApiExplorerSettings(IgnoreApi = true)]
@@ -721,14 +727,29 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTagType(TagTypeApiUpsertModel model)
 		{
-			if (model == null)
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
-			var response = await Catalog.CreateTagTypeAsync(model.Value);
-			return (response.IsSuccess) ?
-				Ok(response.Data) :
-				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			if(model?.Value.Length > 0  && model.Value?.Length <= 50)
+			{
+				var response = await Catalog.CreateTagTypeAsync(model.Value?.Trim());
+				return (response.IsSuccess) ?
+					Ok(response.Data) :
+					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+			var error = new ProblemDetailsResponse()
+			{
+				Title = "Bad Request",
+				Status = (int)HttpStatusCode.BadRequest,
+				Detail = Error.BadTagType,
+				Type = "Error"
+
+			};
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, error));
+
 		}
 
 		/// <summary>
@@ -751,6 +772,13 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
 		{
 			Guid tagTypeId;
+			if (model == null ||
+				string.IsNullOrWhiteSpace(model.Value) ||
+				!model.Value.IsValidForTag())
+			{
+				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
+			}
+
 			if (!Guid.TryParse(tagTypeUid, out tagTypeId))
 			{
 				return errorMessageArgumentResponse(Error.InvalidGuid);
@@ -761,11 +789,11 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.Invalid);
 			}
 
-			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
+			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value?.Trim());
 			if (response.IsSuccess)
 			{
 				var responseModel = await Catalog.ReadTagTypeAsync(tagTypeId);
-				return Ok(responseModel);
+				return Ok(responseModel.Data);
 			}
 			else
 			{

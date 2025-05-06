@@ -33,12 +33,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OWASP.AntiSamy" Version="1.1.1" />
+    <PackageReference Include="OWASP.AntiSamy" Version="1.2.1" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,7 +93,31 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="resources\Enums.*.resx">
+			<DependentUpon>resources\Enums.resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="resources\Error.*.resx">
+			<DependentUpon>resources\Error.resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="resources\Information.*.resx">
+			<DependentUpon>resources\Information.resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="resources\Label.*.resx">
+			<DependentUpon>resources\Label.resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
     <None Update="versioning.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>versioning.cs</LastGenOutput>

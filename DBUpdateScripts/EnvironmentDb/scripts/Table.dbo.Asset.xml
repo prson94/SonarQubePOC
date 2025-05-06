@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Asset-v7">
+  <changeSet author="Pappas" id="Table.dbo.Asset-v9">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Asset')
@@ -13,7 +13,13 @@ BEGIN
 	CREATE TABLE [dbo].[Asset](
 		[ID] [bigint] IDENTITY(1,1) NOT NULL,
 		[AssetTypeID] [int] NOT NULL,
+		[ParentID] bigint null,
+		[Level] int constraint DF_Asset_Level default(1) not null,
 		[State] [int] CONSTRAINT [DF_Asset_State] DEFAULT (1) NOT NULL,
+		[Path] xml constraint DF_Asset_Path default('<path />') not null,
+		[DisplayValue] nvarchar(850) null,
+		DisplayPath as dbo.GetDisplayPath([Path],' > ',' / ') PERSISTED,
+		KeyPath as dbo.GetKeyPath([Path]) PERSISTED,
 		[Object] [varchar](50) NOT NULL,
 		[ObjectID] [int] CONSTRAINT [DF_Asset_ObjectId] DEFAULT (NEXT VALUE FOR [dbo].[Asset_ObjectID_Seq]) NOT NULL,
 		[SourceID] [nvarchar](500) NULL,
@@ -27,69 +33,160 @@ BEGIN
 		[Code] [nvarchar](250) NULL,
 		[Color] [varchar](19) NULL,
 		[Icon] [varchar](50) NULL,
-		CONSTRAINT [PK_Asset] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [PK_Asset] PRIMARY KEY CLUSTERED ( [ID] ASC ),
 		CONSTRAINT [UC_Asset_Object_ObjectID] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
 	)
 END
+GO
 
 IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Asset_AssetType')
 BEGIN
 	ALTER TABLE [dbo].[Asset] WITH CHECK ADD  CONSTRAINT [FK_Asset_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID])
 	ALTER TABLE [dbo].[Asset] CHECK CONSTRAINT [FK_Asset_AssetType]
 END
-		]]>
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'DisplayValue')
+begin 
+	alter table dbo.Asset add DisplayValue nvarchar(850) null;
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'ParentID')
+begin 
+	alter table dbo.Asset add ParentID bigint null
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'Level')
+begin 
+	alter table dbo.Asset add [Level] int constraint DF_Asset_Level default(1) not null
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'Path')
+begin 
+	alter table dbo.Asset add [Path] xml constraint DF_Asset_Path default('<path />') not null;
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'DisplayValue')
+begin 
+	alter table dbo.Asset add DisplayValue nvarchar(850) null;
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'DisplayPath')
+begin 
+	alter table dbo.Asset add DisplayPath as dbo.GetDisplayPath([Path],' > ',' / ') PERSISTED;
+end
+GO
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'Asset' and column_name = 'KeyPath')
+begin 
+	alter table dbo.Asset add KeyPath as dbo.GetKeyPath([Path]) PERSISTED;
+end
+]]>
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7.2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Asset')
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v10">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'CIX_Asset')
 BEGIN
-	CREATE CLUSTERED INDEX [CIX_Asset] ON [dbo].[Asset] ( [AssetTypeID] ASC, [State] ASC, [Object] ASC, [ObjectID] ASC, [ID] ASC )
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetPath]  DROP  CONSTRAINT [FK_AssetPath_Asset];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile]  DROP  CONSTRAINT [FK_AssetDataProfile_Asset];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
+	BEGIN
+	ALTER TABLE [dbo].[AssetProcessDiagram]  DROP  CONSTRAINT [FK_AssetProcessDiagram_AssetID];
+	END
+	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_ASSETTAG_ASSET')
+	BEGIN
+	ALTER TABLE [dbo].[AssetTag]  DROP  CONSTRAINT [FK_ASSETTAG_ASSET];
+	END
+
+	ALTER TABLE [dbo].[Asset] DROP CONSTRAINT [PK_Asset]
+	DROP INDEX [CIX_Asset] ON [dbo].[Asset]
+	ALTER TABLE [dbo].[Asset] ADD CONSTRAINT [PK_Asset] PRIMARY KEY CLUSTERED ( [ID] ASC )
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetPath]  WITH CHECK ADD  CONSTRAINT [FK_AssetPath_Asset] FOREIGN KEY([ID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetPath] CHECK CONSTRAINT [FK_AssetPath_Asset]
+	END
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
+	BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetDataProfile] CHECK CONSTRAINT [FK_AssetDataProfile_Asset]
+	END
+
+	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
+	BEGIN
+	ALTER TABLE [dbo].[AssetProcessDiagram]  WITH CHECK ADD  CONSTRAINT [FK_AssetProcessDiagram_AssetID] FOREIGN KEY([AssetID])
+	REFERENCES [dbo].[Asset] ([ID])
+	ON DELETE CASCADE
+
+	ALTER TABLE [dbo].[AssetProcessDiagram] CHECK CONSTRAINT [FK_AssetProcessDiagram_AssetID]
+	END
+
+	IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ASSETTAG_ASSET')
+	BEGIN
+	ALTER TABLE [dbo].[AssetTag]  WITH CHECK ADD  CONSTRAINT [FK_ASSETTAG_ASSET] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetTag] CHECK CONSTRAINT [FK_ASSETTAG_ASSET]
+	END
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_AssetType_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC ) INCLUDE([ObjectID],[SourceID])
+	DROP INDEX [IX_Asset_AssetType_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_KeyHash_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_KeyHash_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_AssetType_KeyHash_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC, [KeyHash] ASC ) INCLUDE([ID])
+	DROP INDEX [IX_Asset_AssetType_KeyHash_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC ) INCLUDE([ID],[Object],[ObjectID])
+	DROP INDEX [IX_Asset_AssetTypeID_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_SourceID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_Object_Include] ON [dbo].[Asset] ( [Object] ASC ) INCLUDE([ID],[AssetTypeID],[ObjectID])
+	DROP INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_ObjectID_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_Object_ObjectID_Include] ON [dbo].[Asset] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID],[AssetTypeID])
+	DROP INDEX [IX_Asset_Object_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_ObjectID_Include')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_ObjectID_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_ObjectID_Include] ON [dbo].[Asset] ( [ObjectID] ASC ) INCLUDE([ID])
+	DROP INDEX [IX_Asset_Object_ObjectID_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_SourceID_Object_ObjectID')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_ObjectID_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_SourceID_Object_ObjectID] ON [dbo].[Asset] ( [SourceID] ASC, [Object] ASC, [ObjectID] ASC )
+	DROP INDEX [IX_Asset_ObjectID_Include] ON [dbo].[Asset]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_State_AssetTypeID')
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_SourceID_Object_ObjectID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_State_AssetTypeID] ON [dbo].[Asset] ( [State] ASC,  [AssetTypeID] ASC ) INCLUDE([ID],[ObjectID])
+	DROP INDEX [IX_Asset_SourceID_Object_ObjectID] ON [dbo].[Asset]
+END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_State_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_Asset_State_AssetTypeID] ON [dbo].[Asset]
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
@@ -97,9 +194,24 @@ BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_SourceID')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset] ( AssetTypeID, SourceID )
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID] ON [dbo].[Asset] ( [AssetTypeID] ASC ) include([State],[SourceID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_DisplayValue')
+BEGIN
+	create nonclustered index [IX_Asset_DisplayValue] ON [dbo].[Asset] ( [DisplayValue] ASC ) include([AssetTypeID],[Uid],[State])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_DisplayPath')
+BEGIN
+	create nonclustered index [IX_Asset_DisplayPath] ON [dbo].[Asset] ( [DisplayPath] ASC ) include([AssetTypeID],[Uid],[State])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_KeyPath')
+BEGIN
+	create nonclustered index [IX_Asset_KeyPath] ON [dbo].[Asset] ( [KeyPath] ASC ) include([AssetTypeID],[Uid],[State])
 END
 
 -- clean dupe SourceID before applying unique index below.
@@ -120,25 +232,22 @@ IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Asset_SourceID')
 BEGIN
 	CREATE UNIQUE INDEX UQ_Asset_SourceID ON dbo.Asset(AssetTypeID, SourceID) where SourceID is not null;
 END
-		]]>
+]]>
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Table.dbo.Asset-Asset_AfterDelete-v4">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Asset_AfterDelete]
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.Asset-Asset_AfterInsert-v4">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Asset_AfterInsert]
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.Asset-Asset_AfterUpdate-v11">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Asset_AfterUpdate]
+ <changeSet author="PuneetGupta" id="Table.dbo.Asset-FTI-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'Asset'
+		)
+BEGIN
+	CREATE FULLTEXT INDEX ON dbo.Asset(DisplayValue) KEY INDEX PK_Asset ON fullTextCatalog
+END
+]]>
   </sql>
  </changeSet>
 

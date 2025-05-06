@@ -38,8 +38,6 @@ namespace igx.jobs.apiexecutionprocessor
 
 					foreach (var c in tenants)
 					{
-						Guid executionUid = Guid.NewGuid();
-
 						bool IsError = false;
 
 						var logProperties = new Dictionary<string, object> {
@@ -62,20 +60,23 @@ namespace igx.jobs.apiexecutionprocessor
 
 									using (var transaction = companyConnection.BeginTransaction())
 									{
+										await companyConnection.ExecuteAsync(
+											sql: @"IF OBJECT_ID('tempdb..#TempExecItemsUsers') IS NOT NULL
+												DROP TABLE #TempExecItemsUsers;
 
-									 int executionid = await companyConnection.ExecuteScalarAsync<int>(
-											sql: @"
-													declare @d datetime = getutcdate();
-													insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [Action])
-													values (@executionUid, 0, 0, 0, 0, @d, @d, null,16);
+												CREATE TABLE #TempExecItemsUsers(
+													[ItemNumber] [int] NOT NULL,
+													[Properties] [nvarchar](max) default('{}') NOT NULL,
+													[Message] [nvarchar](max) NULL,
+													[Success] [bit] NULL,
+													PRIMARY KEY CLUSTERED ( [ItemNumber] ASC)
+												);",
+											transaction: transaction);
 
-													select Id from api.Execution where ExecutionID = @executionUid;",
-											transaction: transaction,param: new { executionUid});
-
-										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, transaction))
+										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
 										{
 											bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
-											bulkCopy.DestinationTableName = "api.ExecutionItem";
+											bulkCopy.DestinationTableName = "#TempExecItemsUsers";
 											bulkCopy.BulkCopyTimeout = 300;
 
 											int itemNumber = 0;
@@ -108,7 +109,6 @@ namespace igx.jobs.apiexecutionprocessor
 															var state = (int)(resources["State"] ?? resources["State"]);
 
 															itemNumber++;
-															row["ExecutionId"] = executionid;
 															row["ItemNumber"] = itemNumber;
 
 															jsonObject.Add("Uid", (Guid)resources["uid"]);
@@ -160,17 +160,46 @@ namespace igx.jobs.apiexecutionprocessor
 											}
 										}
 
-										int rowsAffected = await companyConnection.ExecuteScalarAsync<int>(
-											sql: @"exec api.UpsertUsers @executionId, 1, 1
-												   select Processed from api.Execution E where E.Id = @executionid;",
-										param: new {executionid},
-										transaction: transaction,
-										commandTimeout: 300
-										);
+										try
+										{
+											int rowsAffected = 0;
+											var processdata = (await companyConnection.QueryAsync<dynamic>(
+												sql: @" declare @count int;
+													declare @msg nvarchar(max);
+													exec api.UpsertUsers 0, 1, 1
+												   select @count = count(1) from #TempExecItemsUsers where coalesce(Success,1) = 1;
+												   select @msg = max(Message) from #TempExecItemsUsers where coalesce(Success,1) = 0;
+													select @count reccount,@msg message;
+												",
+											transaction: transaction,
+											commandTimeout: 300
+											)).FirstOrDefault();
 
-										log.LogInformation($"Found {updatedResourceIDs.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
+											if (processdata != null)
+											{
+												if (processdata.message != null)
+												{
+													IsError = true;
+													string msg = $"When User sync in process: {(string)processdata?.message}";
+													log.LogError(msg);
+												}
 
-										transaction.Commit();
+												if (processdata.reccount != null)
+												{
+													rowsAffected = (int)processdata.reccount;
+												}
+											}
+
+											log.LogInformation($"Found {updatedResourceIDs.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
+
+											transaction.Commit();
+										}
+										catch (Exception ex)
+										{
+											transaction.Rollback();
+											IsError = true;
+											log.LogError(ex, "When User sync in process");
+										}
 									}
 
 									#endregion
@@ -246,11 +275,7 @@ namespace igx.jobs.apiexecutionprocessor
 		{
 			var table = new DataTable();
 
-			var columnName = "ExecutionId";
-			table.Columns.Add(columnName, typeof(int));
-			bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-			columnName = "ItemNumber";
+			var columnName = "ItemNumber";
 			table.Columns.Add(columnName, typeof(int));
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 

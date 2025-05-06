@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v26.1">
+ <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v8">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [dbo].[DeleteObject]
@@ -385,22 +385,12 @@ create or alter procedure [dbo].[DeleteObject]
 						  inner join #types I on I.ID = O.AssetTypeID;
 
 				  delete	O
-				  from	AssetCrossReference O
-						  inner join Asset A on A.uid = O.uid
-						  inner join #types I on I.ID = A.AssetTypeID;
-
-				  delete	O
 				  from		AssetTypeLevel O
 							inner join #types I on I.ID = O.AssetTypeID;
 
 				  delete	O
 				  from		dbo.AssetPath O
 							inner join Asset A on A.ID = O.ID
-							inner join #types I on I.ID = A.AssetTypeID;
-
-				  delete	O
-				  from		dbo.AssetPathSegmentDtl O
-							inner join Asset A on A.ID = O.AssetID
 							inner join #types I on I.ID = A.AssetTypeID;
 
 				delete	T
@@ -459,26 +449,9 @@ create or alter procedure [dbo].[DeleteObject]
 					  from	AssetDetail O
 							  inner join #items I on O.ID = I.ID;
 
-				  insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-					  select	'ObjectIndex',
-							  'D',
-							  @Object,
-							  ObjectID,
-							  ID
-					  from	#items;
-
-				  delete	O
-				  from	AssetCrossReference O
-						  inner join Asset A on A.Uid = O.uid
-						  inner join #items I on I.ID = A.ID;
-
 				  delete	O
 				  from	dbo.AssetPath O
 						  inner join #items I on I.ID = O.ID;
-
-				  delete	O
-				  from		dbo.AssetPathSegmentDtl O
-							inner join #items I on I.ID = O.AssetID;
 
 					delete	T
 					from	[metrics].[ScoreItem] T

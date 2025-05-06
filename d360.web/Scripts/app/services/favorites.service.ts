@@ -29,7 +29,7 @@ export class FavoritesService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map((response) => <FavoriteApiModel[]>response),
+				map((response) => <FavoriteViewModel[]>response),
                 catchError((err) => this.handleError(err))
             );
     }

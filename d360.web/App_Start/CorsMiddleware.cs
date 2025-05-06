@@ -33,9 +33,19 @@ namespace d360.web
 				{
 					isPreflight = context.Request.Method == "OPTIONS";
 
-					string originsSetting = "";
-					var cmy = DependencyResolver.Current.GetService<ICommunity>();
-					originsSetting = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.AllowedOrigins);
+					string originsSetting = null;
+					string corsKey = "CorsHeaders";
+
+					if (Cache.ListItemExists<string, int>(corsKey, companyID ?? 0))
+					{
+						originsSetting = Cache.GetItemInListByID<string, int>(corsKey, companyID ?? 0);
+					}
+					else
+					{
+						var cmy = DependencyResolver.Current.GetService<ICommunity>();
+						originsSetting = await cmy.ReadSettingValueAsync<string>(companyID ?? 0, Setting.AllowedOrigins);
+						Cache.SetItemInListByID(corsKey, companyID ?? 0, originsSetting, true, 5);
+					}
 
 					List<string> allowedOrigins = new List<string> {
 						"https://shell-dev.dis.cloud.precisely.services",
@@ -75,7 +85,6 @@ namespace d360.web
 					}
 				}
 			}
-
 			await Next(environment);
         }
     }

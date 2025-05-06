@@ -1,13 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from "@angular/core";
-import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 import { Subscription } from "rxjs";
 import { AssetService } from '../../../../services/asset.service';
 import { AuthenticationService } from '../../../../services/authentication.service';
-import { FeatureFlags } from "../../../../services/feature-flags.enum";
 import { Permissions, PermissionsService } from '../../../../services/permissions.service';
 import { Tab } from "../../../shared/tabs/tabs.models";
-
-/*global $localize*/
 
 @Component({
 	selector: "d3s-reference-item-type-tabs",
@@ -27,8 +23,7 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 		private cdRef: ChangeDetectorRef,
 		private assetService: AssetService,
 		private authenticationService: AuthenticationService,
-		private permissionsService: PermissionsService,
-		private launchDarklyService:LaunchDarklyService
+		private permissionsService: PermissionsService
 	) { }
 
 	get tabs(): Tab[] {

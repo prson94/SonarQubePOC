@@ -1,10 +1,11 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagApiModel, TagPermissionItem, TagType } from '../models/tag.model';
-import { Observable } from 'rxjs';
+import { Observable} from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { of } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -48,7 +49,18 @@ export class TagService extends BaseObservableService {
         const url = `api/v2/tags/${uid}?cascade=${cascade}`;
         return this.http.delete(url)
             .pipe(map((response) => <any>response),
-                catchError((err) => this.handleError(err, true)));
+				catchError((err) => {
+					if (err.status === 404) {
+						this.messages.showError('Error', err.error.message);
+						return of({
+							isError: true,
+							statusCode: 404,
+							errorMessage: err.error.message,
+							status: 'error'
+						});
+					}
+					this.handleError(err, true);
+				}));
     }
 
     deleteTags(tags: TagType[]): Observable<any> {
@@ -118,11 +130,15 @@ export class TagService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
-    doesTagExist(tag: TagType): Observable<any> {
-        const url = 'api/v2/tags/exists?value=' + encodeURIComponent(tag.Value);
+	doesTagExist(tag: TagType): Observable<any> {
+		if (tag.TagTypeUID === undefined)
+			tag.TagTypeUID = '';
+
+		const url = 'api/v2/tags/exists?value=' + encodeURIComponent(tag.Value) + ('&tagTypeUid=' + tag.TagTypeUID);
+
         return this.http.get(url, { observe: "response" })
             .pipe(map((data) => {
-                return data.status;
+                return data;
             }));
     }
 
@@ -147,8 +163,8 @@ export class TagService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
-    searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
-        const url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
+	searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200, TagTypeUid: any): Observable<any[]> {
+		const url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}&TagTypeUid=${TagTypeUid}`;
         return this.http.get(url)
             .pipe(map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true)));

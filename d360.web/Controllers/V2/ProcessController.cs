@@ -3,15 +3,19 @@ using d360.core.entities.Process;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
+using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
+using SpreadsheetLight;
+using SpreadsheetLight.Drawing;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -32,15 +36,22 @@ namespace d360.web.Controllers.V2
 	public class ProcessController : BaseV2ApiController
 	{
 		private readonly IAssetRepository AssetRepository;
-		private readonly IProcessRepository ProcessRepository;
+		private readonly ICatalog ProcessRepository;
+		private readonly IQueueSource QueueSource;
+		private readonly ISecurity Security;
 
 		public ProcessController(
 			ICoreComponentSet set, 
-			IAssetRepository assetRepository, 
-			IProcessRepository processRepository) : base(set)
+			IAssetRepository assetRepository,
+			ICatalog processRepository,
+			IQueueSource queueSource,
+			ISecurity security
+			) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
+			QueueSource = queueSource;
+			Security = security;
 		}
 
 		/// <summary>
@@ -157,7 +168,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
-			ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+			ProcessDiagramModel model = await ProcessRepository.GetAssetsProcessDiagram(assetUid);
 			var assetDetail = (await Catalog.ReadAssetDetail(asset.ID));
 			var result = new { model, assetDetail };
 
@@ -183,7 +194,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
+		public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
 		{
 			Asset targetAsset;
 			Asset sourceAsset = null;
@@ -215,13 +226,14 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentNullException(Error.SourceAssetUidModelNotEmpty);
 			}
 
-			targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+			targetAsset = await Catalog.GetAsset(assetUid);
 
 			if (sourceAssetUid.HasValue)
 			{
 				isDiagramReplace = true;
 
-				sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
+				sourceAsset = await Catalog.GetAsset(sourceAssetUid);
+
 				if (sourceAsset == null)
 				{
 					throw new ArgumentNullException(Error.SourceUidNotExists);
@@ -237,30 +249,9 @@ namespace d360.web.Controllers.V2
 					throw new ArgumentNullException(Error.SourceTargetTypeMustSame);
 				}
 
-				model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
+				model = await ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
 
-				copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
-															drop table if exists #assets
-															create table #assets(assetUid uniqueidentifier)
-
-															insert into #assets
-																select fromuid as assetuid from processexpandeddata pxd
-																where pxd.diagramassetuid = @assetuid
-																union
-																select touid as assetuid from processexpandeddata pxd
-																where pxd.diagramassetuid = @assetuid
-
-
-															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
-															 union
-															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid 
-																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
-															", new { assetUid = sourceAsset.uid }).ToList();
+				copyRelationshipModel = (await Catalog.CopyRelationshipModel(sourceAsset.uid)).ToList();
 
 				rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
 				copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
@@ -295,8 +286,11 @@ namespace d360.web.Controllers.V2
 					node["key"] = newKey.ToString();
 				}
 			}
-
-			if (!Company.HasAssetPermission(targetAsset.ID, Permission.EditAsset))
+			
+			if (!Security.PermissionInMask(
+				Permission.EditAsset, 
+				await Security.ReadCombinedPermissionByAssetId(targetAsset.ID)
+				))
 			{
 				var err = new List<ValidationError>
 				{
@@ -310,7 +304,7 @@ namespace d360.web.Controllers.V2
 				});
 			}
 
-			ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+			ProcessDiagramModel existingProcess = await ProcessRepository.GetAssetsProcessDiagram(assetUid);
 			foreach (var item in model.linkDataArray)
 			{
 				if (item.from == Guid.Empty || item.to == Guid.Empty)
@@ -463,10 +457,12 @@ namespace d360.web.Controllers.V2
 				execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
 			}
 
-			validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
+			validationRes = await ProcessRepository.UpdateProcessDiagram(execution, model,
 				toAdd, toUpdate, toDelete,
 				targetAsset.ID, isDiagramReplace,
 				copyRelationshipModel, pdCopyMapper);
+
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
 
 			if (validationRes.Count > 0)
 			{
@@ -498,21 +494,133 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(string.Format(Error.InvalidAssetUid, assetUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
+				return errorMessageNotFoundResponse(Error.AssetuidDoesnotExists);
 			}
 
 			string result = await Request.Content.ReadAsStringAsync();
 
 			result = result.Replace("data:image/png;base64,", "");
 			byte[] image = Convert.FromBase64String(result);
-			byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
+
+
+			var dbResponse = await Catalog.GetDiagramExport(asset.ID);
+
+			var document = new SLDocument();
+			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
+
+			int rowNumber = 1;
+			dbResponse.AssetProperties.ForEach(p =>
+			{
+				document.SetCellValue(rowNumber, 1, p.Name);
+				document.SetCellValue(rowNumber, 2, p.Value);
+				rowNumber++;
+			});
+			for (int i = 1; i <= 2; i++) { document.AutoFitColumn(i); }
+
+			string detailSheetName = "Asset Item Details";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Step No");
+			document.SetCellValue(1, 2, "Name");
+			document.SetCellValue(1, 3, "Governance Role");
+			document.SetCellValue(1, 4, "Flow Object Type");
+			document.SetCellValue(1, 5, "Diagram Asset Type");
+			document.SetCellValue(1, 6, "Next Asset Connector Label");
+			document.SetCellValue(1, 7, "Next Asset Step No");
+			document.SetCellValue(1, 8, "Next Asset Name");
+			document.SetCellValue(1, 9, "Asset UID");
+			document.SetCellValue(1, 10, "Asset ID");
+			document.SetCellValue(1, 11, "Asset URL");
+			document.SetCellValue(1, 12, "Next Asset UID");
+			document.SetCellValue(1, 13, "Next Asset ID");
+			document.SetCellValue(1, 14, "Next Asset URL");
+
+			rowNumber = 2;
+			dbResponse.Nodes.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.StepNo);
+				document.SetCellValue(rowNumber, 2, n.Name);
+				document.SetCellValue(rowNumber, 3, n.GovernanceRole);
+				document.SetCellValue(rowNumber, 4, n.FlowObjectType);
+				document.SetCellValue(rowNumber, 5, n.DiagramAssetType);
+				document.SetCellValue(rowNumber, 6, n.NextAssetConnectorLabel);
+				document.SetCellValue(rowNumber, 7, n.NextAssetStepNo);
+				document.SetCellValue(rowNumber, 8, n.NextAssetName);
+				document.SetCellValue(rowNumber, 9, n.AssetUID);
+				document.SetCellValue(rowNumber, 10, n.AssetID);
+				document.SetCellValue(rowNumber, 11, n.AssetURL);
+				document.SetCellValue(rowNumber, 12, n.NextAssetUID);
+				document.SetCellValue(rowNumber, 13, n.NextAssetID);
+				document.SetCellValue(rowNumber, 14, n.NextAssetURL);
+
+				rowNumber++;
+			});
+			for (int i = 1; i <= 14; i++) { document.AutoFitColumn(i); }
+
+			detailSheetName = "Diagram Types";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Asset Type Uid");
+			document.SetCellValue(1, 2, "Name");
+			document.SetCellValue(1, 3, "Assets Uids");
+
+			rowNumber = 2;
+			dbResponse.NodeTypes.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.AssetTypeUid);
+				document.SetCellValue(rowNumber, 2, n.AssetTypeName);
+				document.SetCellValue(rowNumber, 3, n.assets);
+
+				rowNumber++;
+			});
+			for (int i = 1; i <= 3; i++) { document.AutoFitColumn(i); }
+
+			detailSheetName = "Related Assets";
+			document.AddWorksheet(detailSheetName);
+			document.SelectWorksheet(detailSheetName);
+
+			document.SetCellValue(1, 1, "Diagram Asset Id");
+			document.SetCellValue(1, 2, "Diagram Asset Uid");
+			document.SetCellValue(1, 3, "Step No");
+			document.SetCellValue(1, 4, "Diagram Asset Name");
+			document.SetCellValue(1, 5, "Asset Uid");
+			document.SetCellValue(1, 6, "Asset Type Uid");
+			document.SetCellValue(1, 7, "Asset Type Name");
+			document.SetCellValue(1, 8, "Predicate Uid");
+
+			rowNumber = 2;
+			dbResponse.RelatedAssets.ForEach(n =>
+			{
+				document.SetCellValue(rowNumber, 1, n.DiagramAssetId);
+				document.SetCellValue(rowNumber, 2, n.DiagramAssetUid);
+				document.SetCellValue(rowNumber, 3, n.StepNo);
+				document.SetCellValue(rowNumber, 4, n.DiagramAssetName);
+				document.SetCellValue(rowNumber, 5, n.AssetUid);
+				document.SetCellValue(rowNumber, 6, n.AssetTypeUid);
+				document.SetCellValue(rowNumber, 7, n.AssetTypeName);
+				document.SetCellValue(rowNumber, 8, n.PredicateUid);
+				rowNumber++;
+			});
+			for (int i = 1; i <= 8; i++) { document.AutoFitColumn(i); }
+			
+			document.AddWorksheet("Diagram");
+			document.SelectWorksheet("Diagram");
+			var picture = new SLPicture(image, DocumentFormat.OpenXml.Packaging.ImagePartType.Png);
+			document.InsertPicture(picture);
+
+			var stream = new MemoryStream();
+			document.SaveAs(stream);
+			byte[] bytes = stream.ToArray();
+
 			var detail = await Catalog.ReadAssetDetail(asset.ID);
 			var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now:MMM dd yyyy}.xlsx", bytes);
 
@@ -535,7 +643,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetProcessDiagramBadges(Guid assetUid)
+		public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
@@ -549,7 +657,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
-			IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
+			IEnumerable<dynamic> response = await ProcessRepository.GetDiagramAssetBadges(assetUid);
 
 			return Ok(response);
 		}
@@ -566,7 +674,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Url of diagram asset", typeof(string)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetProcessDiagramUrl(Guid assetUid)
+		public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
@@ -580,7 +688,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(Error.AssetuidDoesnotExists);
 			}
 
-			Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
+			Guid baseAssetUid = await Catalog.GetDiagramAssetuid(assetUid);
 			string url = $"asset/{baseAssetUid.ToString()}/diagrams/Process/{assetUid}";
 
 			return Ok(url);
@@ -606,17 +714,7 @@ namespace d360.web.Controllers.V2
 		{
 			var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
 
-			var results = await Company.QueryAsync<dynamic>($@"
-					select a.uid,
-						an.DisplayPath as assetPath,
-						P.Path as typePath
-						from asset a
-							inner join AssetProcessDiagram apd on a.ID = apd.AssetID and a.AssetTypeID = @assettypeid
-							inner join AssetPath an on an.ID = a.ID
-							cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
-						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
-						order by an.DisplayPath",
-						new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
+			var results = await Catalog.GetAssetCopyOption(asset.uid, asset.AssetTypeID);
 
 			return Ok(results);
 		}
@@ -639,35 +737,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetIgnoredRelationships(Guid targetAssetUid)
 		{
-			var results = await Company.QueryAsync<dynamic>($@";with assets as (
-					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
-					union
-					select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
-					select	assets.uid,
-							adv.DisplayValue as 'FlowObject',
-							adv2.DisplayValue as 'RelatedAsset'
-					 from	assets
-							inner join asset a on a.uid = assets.duid
-							inner join AssetDisplayValue adv on adv.AssetID = a.ID
-							inner join [intersect] i on i.SubjectAssetID = a.ID 
-							inner join intersecttype it on i.intersecttypeid = it.id
-							inner join asset a2 on a2.ID = i.ObjectAssetID
-							inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
-					where	it.objectcardinality = 1 or it.SubjectCardinality = 1
-					union
-					select 
-						assets.uid,
-						adv.DisplayValue as 'FlowObject',
-						adv2.DisplayValue as 'RelatedAsset'
-					 from assets
-						inner join asset a on a.uid = assets.duid
-						inner join AssetDisplayValue adv on adv.AssetID = a.ID
-						inner join [intersect] i on i.ObjectAssetID = a.ID 
-						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.ID = i.SubjectAssetID 
-						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
-					where it.objectcardinality = 1 or it.SubjectCardinality = 1
-					", new { targetAssetUid });
+			var results = await Catalog.GetAssetIgnoredRelationships(targetAssetUid);
 
 			return Ok(results);
 		}

@@ -10,9 +10,8 @@ import { AppConstants } from '../../../../static/constants';
 import { BaseComponent } from '../../../shared/base.component';
 import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { Table } from "primeng/table";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../../services/feature-flags.enum";
-
+import { FeatureFlagsInitService } from '../../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-admin-relationships-list',
@@ -21,7 +20,6 @@ import { FeatureFlags } from "../../../../services/feature-flags.enum";
 	styleUrls: ['admin-relationships-list.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
-
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
 	relationships: RelationshipTypeSimpleUIModel[] = [];
 
@@ -48,6 +46,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 	@ViewChild('dt', { static: false }) dataTable: Table;
 
+	cardinalityFlag: boolean;
+
 	constructor(
 		private messagesService: MessagesObservableService,
 		private relationshipsService: RelationshipsService,
@@ -55,14 +55,18 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		private sidePanelService: SidePanelService,
 		private cdRef: ChangeDetectorRef,
 		private router: Router,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
 	) {
 		super(settingsService);
 		this.filterToName = '';
 
+		featureFlagService.getFlagValue(FeatureFlags.RelationshipCardinality).then((flag) => {
+			this.cardinalityFlag = flag;
+		});
+
 		this.sidePanelService.editClickSource$.subscribe((res) => {
 			const data = res as RelationshipType;
-			this.edit(RelationshipType.ConvertToUIModeldata(data, this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)));
+			this.edit(RelationshipType.ConvertToUIModeldata(data, this.cardinalityFlag));
 		});
 	}
 
@@ -105,7 +109,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 		obs.subscribe((result) => {
 			this.relationships = [];
-			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel, this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)));
+			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel, this.cardinalityFlag));
 
 			this.relationships =
 				this.relationships.sort((a, b) => a.Subject > b.Subject ? 1 : -1);
@@ -141,7 +145,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	private getEditDisabledTooltip(rel: RelationshipTypeSimpleUIModel) {
 		let tooltip = "";
 
-		if (this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)) {
+		if (this.cardinalityFlag) {
 			const listSeperator = "\r\n\u2022 "; //New-line and bullet char (•)
 
 			if (DisabledReason.InterType === (rel.DisabledReason & DisabledReason.InterType)) {

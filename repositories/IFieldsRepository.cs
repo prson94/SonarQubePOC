@@ -35,7 +35,7 @@ namespace repositories
         
         Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false);
         
-        Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false);
+        Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetReferenceListGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false);
         
         Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false);
     }

@@ -1,0 +1,103 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas,PuneetGupta,TKlok" id="Procedure.api.UpsertSingleUsers-v2">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure [api].[UpsertSingleUsers]
+	@ID int,
+	@FirstName [nvarchar](250),
+	@LastName  [nvarchar](250),
+	@Email [nvarchar](500),
+	@UpdatedOn datetime,
+	@uid [uniqueidentifier]	
+as
+begin
+	declare @usercreated bit = 0,
+			@state int = 1;
+	
+	if exists (select 1 from reporting.Global_Resource where ResourceID = @ID)
+	begin
+		update	reporting.Global_Resource
+		set		FirstName = @FirstName,
+				LastName = @LastName,
+				UpdatedOn = @UpdatedOn,
+				LastLoggedInOn = getutcdate(),
+				State = @state
+		where	ResourceID = @ID
+	end
+	else
+	begin
+		insert into reporting.Global_Resource (ResourceID, FirstName, LastName, Email, IsAdministrator, CreatedOn, [State], LastLoggedInOn, [uid], UpdatedOn)
+		values (@ID, @FirstName, @LastName, @Email, 0, @UpdatedOn, @state, getutcdate(), @Uid, @UpdatedOn)
+
+		set @usercreated = 1;
+	end
+
+	declare @assetTypeId int,
+			@assetId bigint,
+			@FullName nvarchar(500) = @FirstName + ' ' + @LastName;
+	select @assetTypeId = ID from AssetType where Object = 'ResourceType';
+	if exists (select 1 from Asset where Uid = @Uid)
+	begin
+		select @assetId = ID from dbo.Asset where Uid = @Uid;
+	end
+	else
+	begin
+		insert into dbo.Asset (AssetTypeID, [State], Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, uid)
+		values (@assetTypeId, @state, 'Resource', @ID, @ID, @UpdatedOn, 0, @UpdatedOn, 0, @Uid);
+		set @assetId = SCOPE_IDENTITY();
+	end
+
+	declare @pathXml xml;
+	set @pathXml =	(
+					select	1 as '@level',
+							1 as '@position',
+							@assetTypeId as '@assetTypeId',
+							@assetId as '@assetId',
+							@FullName as 'data()'
+					for xml path('segment'),root('path')
+					)
+	if exists (select 1 from AssetPath where ID = @assetId)
+	begin
+		update	AssetPath 
+		set		Segments = @pathXml
+		where	ID = @assetId;
+	end
+	else
+	begin
+		insert into AssetPath (ID, Segments) values (@assetId, @pathXml);
+	end
+
+	if exists (select 1 from AssetDisplayValue where AssetID = @assetId)
+	begin
+		update	AssetDisplayValue 
+		set		DisplayValue = @FullName,
+				DisplayValuePrefix = @FullName
+		where	AssetID = @assetId;
+	end
+	else
+	begin
+		insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValuePrefix) values (@assetId, @FullName, @FullName);
+	end
+	if (@usercreated = 1 and coalesce(@assetId,0) !=0)
+	begin
+			begin try
+				exec api.UpsertChangeLog null, 'Resource',@assetId;
+			end try
+			begin catch
+				--no code
+			end catch
+	end
+	
+
+	select @assetId;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

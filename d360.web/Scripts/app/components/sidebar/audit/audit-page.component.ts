@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AuditService } from '../../../services/audit.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Subscription } from 'rxjs';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-audit-page',
@@ -15,7 +13,6 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
     templateUrl: './audit-page.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class AuditPageComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub?: Subscription;
 
@@ -24,13 +21,11 @@ export class AuditPageComponent extends BaseComponent implements OnInit, OnDestr
         private auditService: AuditService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService
+        protected settingsService: CompanySettingsService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

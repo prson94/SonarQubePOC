@@ -15,13 +15,13 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../services/feature-flags.enum";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { AssetTypeService } from '../../services/asset-type.service';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 /*global $localize*/
 
@@ -62,6 +62,9 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	resourceUid: any;
 	sidePanelWidth: number;
 
+	dataProfilingUi: boolean;
+
+
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
 	constructor(private artifactTypeService: ArtifactTypeService,
@@ -75,11 +78,15 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		secondaryNavService: SecondaryNavService,
 		private linkClickInterceptor: LinkClickInterceptor,
 		protected settingsService: CompanySettingsService,
-		private featureFlagService: LaunchDarklyService) {
+		private featureFlagService: FeatureFlagsInitService) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);
+		});
+
+		featureFlagService.getFlagValue(FeatureFlags.DataProfilingUiFlag).then((flag) => {
+			this.dataProfilingUi = flag;
 		});
 	}
 
@@ -179,7 +186,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			this.assetDetail?.load();
 		}
 
-		if (this.selection && this.selection.HasProfiling && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
+		if (this.selection && this.selection.HasProfiling && this.dataProfilingUi) {
 			this.sidePanelLoading = true;
 			this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
 				(r) => {
@@ -220,7 +227,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		if (this.selection == null || this.sidePanelTab === 'detail') {
 			return true;
 		}
-		if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
+		if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.dataProfilingUi) {
 			return this.selection.HasProfiling;
 		}
 	}

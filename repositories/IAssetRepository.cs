@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using d360.core;
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
@@ -15,8 +14,6 @@ namespace repositories
 {
 	public interface IAssetRepository
 	{
-		Asset GetAssetByObjectId(string obj, int objId);
-
 		Asset GetAssetByUID(Guid assetUid);
 		AssetTypeClass GetAssetClassByUID(Guid assetUid);
 
@@ -26,17 +23,15 @@ namespace repositories
 
 		Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null);
 
-		Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
-
 		Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
 
 		dynamic GetFieldTypes(Guid assetTypeUid);
 
-		List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
+		List<DatabaseBulkAssetResult> PostAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 
 		Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
 
-		List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
+		List<DatabaseBulkAssetResult> PutAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
 
 		Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
 
@@ -46,9 +41,9 @@ namespace repositories
 
 		Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true);
 
-		Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
+		Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true);
 
-		Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
+		Task<ApiExecutionInfo> PostBulkAssets(List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true);
 
 		Predicate GetPredicateByUID(Guid predicateGuid);
 

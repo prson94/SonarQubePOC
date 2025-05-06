@@ -191,18 +191,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#endregion
 
-			#region Cross-references
-
-			Connection.Execute($@"
-								delete	T
-								from	AssetCrossReference T
-										inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-			addMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-			sw.Restart();
-
-			#endregion
-
 			#region Process diagram
 
 			if (canHaveProcess)
@@ -381,6 +369,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										where ProcessUid = @ProcessUid
 										and i.IsSubject = 0;
 
+										delete t
+										from dbo.InProcessRelationAuditLog t
+										where ProcessUid = @ProcessUid;
 
 									select @totalcount = count(id) from #tempintersect;
 									while (@runcount <= @totalcount)
@@ -987,6 +978,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				table.Columns.Add("ParentUid", typeof(Guid));
 				table.Columns.Add("ParentItemNumber", typeof(int));
 
+				table.Columns.Add("ChildItemNumber", typeof(int));
+
 				table.Columns.Add("ObjectType", typeof(string));
 				table.Columns.Add("ObjectTypeID", typeof(int));
 				table.Columns.Add("SourceID", typeof(string));
@@ -1018,10 +1011,12 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				int? intersectTypeID = null;
 				CurrentExecutionLocationModel currentLocation = null;
 				bool hasLookupFieldTypes = false;
+				bool hasReferenceListFieldTypes = false;
 				bool hasRelationshipFieldTypes = false;
 				bool hasParentsSetInPayload = false;
 				Guid processUid = new Guid();
-
+				processUid = Guid.NewGuid(); 
+				
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
 				try
@@ -1046,6 +1041,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
 					requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList();
 					hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
+					hasReferenceListFieldTypes = fieldTypes.Any(f => f.Type == DataType.ReferenceList.ToString());
 					hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
 					hasCounterField = fieldTypes.Any(x => x.Type == DataType.Counter.ToString());
 					addMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
@@ -1104,6 +1100,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							row["ExecutionID"] = execution.ExecutionID;
 							row["ItemNumber"] = i;
 
+							if (model.ChildItemNumber.HasValue)
+							{
+								row["ChildItemNumber"] = model.ChildItemNumber;
+							}
+							else
+							{
+								row["ChildItemNumber"] = i;
+							}
+
 							if (model.ExecutionItemUid.HasValue)
 							{
 								row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
@@ -1136,10 +1141,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								row["ParentItemNumber"] = model.ParentItemNumber;
 								hasParentsSetInPayload = true;
 
-								if (model.ParentItemNumber > i)
+								if (model.ParentItemNumber > model.ChildItemNumber)
 								{
 									success = false;
-									errorMessage = $"ParentItemNumber {model.ParentItemNumber} cannot be higher than current ItemNumber {i}";
+									errorMessage = $"ParentItemNumber {model.ParentItemNumber} cannot be higher than ChildItemNumber {model.ChildItemNumber} current ItemNumber {i}";
 								}
 							}
 
@@ -1217,6 +1222,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
 								bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
 
+								bulkCopy.ColumnMappings.Add("ChildItemNumber", "ChildItemNumber");
+
 								bulkCopy.ColumnMappings.Add("IntersectTypeUid", "IntersectTypeUid");
 								bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
 
@@ -1286,6 +1293,20 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						addMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
 						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
 						addMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
+						sw.Restart();
+					}
+
+					if (hasReferenceListFieldTypes)
+					{
+						addMeasurement(metrics, "ResolveFieldReferenceList-Begin", 0, ++step);
+						ResolveFieldReferenceList(execution.ExecutionID, ApiExecutionFieldTable, timeout);
+						addMeasurement(metrics, "ResolveFieldReferenceList", sw.ElapsedMilliseconds, ++step);
+
+						sw.Restart();
+
+						addMeasurement(metrics, "LogFieldReferenceListErrors-Begin", 0, ++step);
+						LogFieldReferenceListErrors(execution.ExecutionID, "Asset", timeout);
+						addMeasurement(metrics, "LogFieldReferenceListErrors", sw.ElapsedMilliseconds, ++step);
 						sw.Restart();
 					}
 
@@ -1390,13 +1411,14 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						if exists(select 1 from api.ExecutionAsset T where  ExecutionID = @ExecutionID and success = 0)
 						begin
 							drop table if exists #tempExecuAsset;
-							select itemnumber,Success,cast(Message as nvarchar(4000)) Message,ParentItemNumber
+							select ItemNumber,ChildItemNumber,Success,cast(Message as nvarchar(4000)) Message,ParentItemNumber
 							into #tempExecuAsset
 							from api.ExecutionAsset T
 							where ExecutionID = @ExecutionID;
 
 							create clustered index cix_tempExecuAsset on #tempExecuAsset (ParentItemNumber);
-							create index ix_tempExecuAsset_ItemNumber on #tempExecuAsset (ItemNumber) include (ParentItemNumber);
+							create index ix_tempExecuAsset_ChildItemNumber on #tempExecuAsset (ChildItemNumber) include (ParentItemNumber);
+							create index ix_tempExecuAsset_ItemNumber on #tempExecuAsset (ItemNumber);
 
 
 							drop table if exists #tempchild;
@@ -1404,15 +1426,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 							with rs as
 							(
-							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							select ItemNumber,ChildItemNumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
 							from #tempExecuAsset T
 							where success = 0
 							union all
-							select T.itemnumber, s.itemnumber,s.Message,1 Include
+							select T.ItemNumber,T.ChildItemNumber, s.ChildItemNumber,s.Message,1 Include
 							from rs s
-							inner join #tempExecuAsset T on s.itemnumber = T.ParentItemNumber and T.Success is null
+							inner join #tempExecuAsset T on s.ChildItemNumber = T.ParentItemNumber and T.Success is null
 							)
-							select itemnumber,Message
+							select ItemNumber,ChildItemNumber,Message
 							into #tempchild
 							from rs
 							where Include = 1;
@@ -1420,25 +1442,25 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							create clustered index cix_tempchild on #tempchild (itemnumber);
 
 							update	T
-							set		T.Success = 0,
-									T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on parent record :' + S.[Message] + '; ', ''),1,2000)
-							from	api.ExecutionAsset T
-									inner join	#tempchild S on T.itemnumber = S.itemnumber
+							set	T.Success = 0,
+							T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on parent record :' + S.[Message] + '; ', ''),1,2000)
+							from api.ExecutionAsset T
+							inner join	#tempchild S on T.itemnumber = S.itemnumber
 							where	T.ExecutionID = @ExecutionID
 							and T.Success is null;
 
 							---Parent Record
 							with rs as
 							(
-							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							select itemnumber,ChildItemNumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
 							from #tempExecuAsset T
 							where success = 0
 							union all
-							select T.itemnumber, T.ParentItemNumber,s.Message,1 Include
+							select T.itemnumber,T.ChildItemNumber, T.ParentItemNumber,s.Message,1 Include
 							from rs s
-							inner join #tempExecuAsset T on s.ParentItemNumber = T.itemnumber and T.Success is null
+							inner join #tempExecuAsset T on s.ParentItemNumber = T.ChildItemNumber and T.Success is null
 							)
-							select itemnumber,Message
+							select itemnumber,ChildItemNumber,Message
 							into #tempparent
 							from rs
 							where Include = 1;
@@ -1672,7 +1694,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														ea.ParentObjectType = parent.ObjectType,
 														ea.ParentObjectTypeID = parent.ObjectTypeID
 														from api.ExecutionAsset ea 
-														inner join api.ExecutionAsset parent on parent.ExecutionID = ea.ExecutionID and parent.ItemNumber = ea.ParentItemNumber
+														inner join api.ExecutionAsset parent on parent.ExecutionID = ea.ExecutionID and parent.ChildItemNumber = ea.ParentItemNumber
 														inner join asset a on a.ID = parent.AssetID
 														where ea.ExecutionID = @ExecutionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber",
 										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -1885,23 +1907,15 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (shouldRunMergeAssetPath)
 									{
-										if (isInsert)
-										{
-											//call MergeAssetPath only on insert as queries in govern require asset path to be populated to be returned
-											addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
+										//call MergeAssetPath only on insert as queries in govern require asset path to be populated to be returned
+										addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
-											Connection.Execute(
-												"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
-												new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
-												transaction: trans, timeout);
-											addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
-											sw.Restart();
-										}
-										else
-										{
-											//in case of update, delegate path processing to post execution processor for faster updating
-											sendAssetGraphPostExecutionEvent = true;
-										}
+										Connection.Execute(
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
+											transaction: trans, timeout);
+										addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
+										sw.Restart();
 									}
 
 									// Must execute BEFORE the Success flag is updated below.
@@ -1990,6 +2004,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 			'R'
 	from	dbo.InProcessRelationAuditLog i
 	where ProcessUid = @processUid;
+
+	delete t
+	from dbo.InProcessRelationAuditLog t
+	where ProcessUid = @ProcessUid;
+
 ";
 
 										Connection.Execute(rlogSql, new { execution.Id, execution.ExecutionID, processUid}, transaction: trans, commandTimeout: timeout);
@@ -2344,7 +2363,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											set		T.Object = S.Object, 
 													T.ObjectID = S.ObjectID, 
 													T.AssetID = S.ID,
-													T.[ObjectTypeId] = {at.ID},
+													T.[ObjectTypeId] = {at.ObjectID},
 													[ObjectType] = '{at.Object}'
 											from	api.ExecutionDeletedAsset T
 													inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
@@ -2648,12 +2667,29 @@ where	T.ExecutionID = @ExecutionID
 									inner join [Predicate] P on P.ID = IT.PredicateID
 									where P.Type in @hierarchyPredicates;
 
-									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-										select S.ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' from api.ExecutionDeletedAsset S 
+									drop table if exists #tempExecutionItemDependentChange;
+
+									select S.ItemNumber, 1 DependentChangeType, 2 [Action], max(P.Uid) PUid
+									into #tempExecutionItemDependentChange
+										from api.ExecutionDeletedAsset S 
 										inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
 										inner join #parent_relationship_types IT on IT.ID = I.IntersectTypeID
 										inner join Asset P on P.Id = I.SubjectAssetId
-									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber and ([Level] is null or [Level] = 0)
+									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber
+									group by S.ItemNumber;
+
+									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+									select @ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(S.PUid as varchar(50)) + '""}' 
+									from #tempExecutionItemDependentChange S 
+									where not exists (
+												select 1 from api.ExecutionItemDependentChange dc
+												where dc.ExecutionID = @ExecutionID
+												and dc.ItemNumber = S.ItemNumber
+												and dc.DependentChangeType = S.DependentChangeType
+												and dc.[Action] = S.[Action]
+											);
+
+									drop table if exists #tempExecutionItemDependentChange;
 									", new { execution.ExecutionID, beginItemNumber, endItemNumber, hierarchyPredicates }, commandTimeout: timeout);
 
 								addMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
@@ -2949,15 +2985,6 @@ where	T.ExecutionID = @ExecutionID
 			}
 		}
 
-		public void CreateAssetReindexRequest(List<Guid> assets, ReindexBatchOperation operation)
-		{
-			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-			{
-				CompanyID = SecurityContext.CompanyID,
-				BatchUids = assets,
-				BatchOperation = operation
-			});
-		}
 		#endregion
 	}
 }

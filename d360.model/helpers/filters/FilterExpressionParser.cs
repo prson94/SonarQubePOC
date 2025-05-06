@@ -22,7 +22,7 @@ namespace d360.model.helpers
         public List<string> filteredCustomFields = new List<string>();
         private readonly FilterExpressionParseType parseType;
         private readonly List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
-        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup"};
 
         private readonly bool registerTokensAsFields;
         private readonly bool allowTempTableFiltering;
@@ -50,7 +50,7 @@ namespace d360.model.helpers
 			this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
-            allowedDefaultFields.Add(new DefaultFilter("[Path]", "Node.KeyPath", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("[Path]", "SubString(Node.KeyPath,1,850)", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("[Level]", "LVL.Level", SqlFieldType.Number));
             allowedDefaultFields.Add(new DefaultFilter("uid", "A.Uid", SqlFieldType.Text));
 

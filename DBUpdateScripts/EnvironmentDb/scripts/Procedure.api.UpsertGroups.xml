@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.UpsertGroups-v1">
+  <changeSet author="Pappas,Puneet" id="Procedure.api.UpsertGroups-v1.8">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertGroups
@@ -21,6 +21,8 @@ begin
 			@assetTypeId int,
 			@transactionCompleted bit = 0;
 	
+	declare @errormessage nvarchar(4000)='';
+
 	select @assetTypeId = ID from AssetType where Object = 'GroupType';
 	
 	select	@isInsert = iif([Action] = 19, 1, 0),
@@ -72,7 +74,14 @@ begin
 		update	t
 		set		t.ObjectID = s.ID,
 				t.IsValid = 0,
-				t.Message = 'Group already exists.'
+				t.Message = 'Already a group called [' + s.name + '];'
+		from	#Items  t
+				inner join [Group] s on s.Name = t.Name and t.Name is not null;
+
+		update	t
+		set		t.ObjectID = s.ID,
+				t.IsValid = 0,
+				t.Message = coalesce(t.Message,'') + ' Group already exists.'
 		from	#Items  t
 				inner join [Group] s on s.Uid = t.Uid and t.Uid is not null;
 
@@ -98,22 +107,58 @@ begin
 	end
 
 	update	T
-	set		T.PrimaryOwnerResourceID = S.ResourceID,
+	set		T.PrimaryOwnerResourceID = coalesce(S.ResourceID,T.PrimaryOwnerResourceID),
 			T.IsValid = iif(S.ResourceID is null, 0, T.IsValid),
-			T.Message = iif(S.ResourceID is null, 'Primary owner not found.', T.Message)
+			T.Message = iif(S.ResourceID is null, 'Primary Owner Uid provided is not a resource uid.', T.Message)
 	from	#Items T
 			left join reporting.Global_Resource S on S.Uid = T.PrimaryOwnerUid 
 	where	T.PrimaryOwnerUid is not null
 			and T.IsValid is null;
 
 	update	T
-	set		T.SecondaryOwnerResourceID = S.ResourceID,
+	set		T.SecondaryOwnerResourceID = coalesce(S.ResourceID,T.SecondaryOwnerResourceID),
 			T.IsValid = iif(S.ResourceID is null, 0, T.IsValid),
-			T.Message = iif(S.ResourceID is null, 'Secondary owner not found.', T.Message)
+			T.Message = iif(S.ResourceID is null, 'Secondary Owner Uid provided is not a resource uid.', T.Message)
 	from	#Items T
 			left join reporting.Global_Resource S on S.Uid = T.SecondaryOwnerUid 
 	where	T.SecondaryOwnerUid is not null
 			and T.IsValid is null;
+			
+
+	drop table if exists #dup;
+	
+	select t.name
+	into #dup
+	from #Items  t
+	where t.Name is not null
+	group by t.name
+	having count(1) > 1;
+	
+	update	t
+	set		t.IsValid = 0,
+			t.Message = 'Duplicate Names: ' + t.name + '. Name must be unique within a batch.'
+	from	#Items  t
+			inner join #dup s on s.Name = t.Name;
+
+	drop table if exists #dup;
+
+	delete f
+	from #Fields f
+	inner join #Items T on f.ItemNumber = t.ItemNumber and t.IsValid = 0;
+	
+	exec api.ValidateLookupFields @lookupFieldsPassedByValue;
+	
+	update T
+	set T.IsValid = 0,
+	T.Message = 'Invalid lookup value for field ' + F.FieldName + '. '
+	from #Items T
+	inner join #Fields f on f.ItemNumber = t.ItemNumber 
+	inner join FieldType s on s.ID = f.FieldTypeID and s.[Type] = 'Lookup'
+	where coalesce(f.FieldValue,'') !='' and  f.LookupValue is null and T.IsValid  is null;
+
+	delete f
+	from #Fields f
+	inner join #Items T on f.ItemNumber = t.ItemNumber and t.IsValid = 0;
 
 	begin try
 		begin transaction;
@@ -232,6 +277,7 @@ begin
 	end try
 	begin catch
 		rollback transaction;
+		set @errormessage = substring(ERROR_MESSAGE(),1,4000);
 	end catch
 
 	if @transactionCompleted = 1
@@ -268,7 +314,14 @@ begin
 	end
 	else
 	begin 
-		exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		if (@errormessage is not null)
+		begin
+			exec api.CompleteExecution @executionId, @date, @errormessage;
+		end
+		else
+		begin
+			exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		end
 	end
 end
 ]]>

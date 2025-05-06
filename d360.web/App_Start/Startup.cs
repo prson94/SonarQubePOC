@@ -5,7 +5,6 @@ using d360.core;
 using d360.core.enums;
 using d360.core.types;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers;
@@ -98,6 +97,7 @@ namespace d360.web
 				builder.AddWebApiExceptionHandler<UnauthorizedWebApi2ExceptionHandler>();
 				builder.AddWebApiExceptionHandler<ForbiddenWebApi2ExceptionHandler>();
 				builder.RegisterType<WebApi2ExceptionHandlerMediator>().AsSelf().SingleInstance();
+				builder.RegisterType<BusinessExceptionHandler>().SingleInstance();
 
 				builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
 				builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
@@ -112,10 +112,6 @@ namespace d360.web
 
 				#region Config Setting Reader   
 
-				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
-					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.ReadOnlyConnection);
-					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
 						i.Instance.ApiKey = Config.GetValue<string>("MandrillApiKey");
@@ -132,11 +128,6 @@ namespace d360.web
 					});
 
 				#endregion
-
-				builder.Register(c =>
-				{
-					return new FeatureFlagService(Config.GetValue<string>(constants.Setting.FeatureFlagKey));
-				}).As<IFeatureFlagService>().SingleInstance();
 
 				builder.RegisterType<OidcDiscoveryCache>().AsSelf().InstancePerRequest();
 
@@ -221,8 +212,10 @@ namespace d360.web
 
 					return new DapperConnectionProvider
 					{
-						ReadOnlyConnectionString = $"{connectionString}",//ApplicationIntent = ReadOnly",
-						ReadWriteConnectionString = $"{connectionString}"//ApplicationIntent=ReadWrite"
+						ReadOnlyConnectionString = $"{connectionString};ApplicationIntent=ReadOnly",
+						ReadWriteConnectionString = $"{connectionString};ApplicationIntent=ReadWrite",
+						CommandTimeOut = Config.GetValue<string>("DbConnectionTimeout"),
+
 					};
 				}).InstancePerRequest();
 
@@ -235,6 +228,8 @@ namespace d360.web
 					};
 				}).InstancePerRequest();
 
+				builder.RegisterType<CommunityFeatureFlagService>().AsSelf().InstancePerRequest();
+
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 				//builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
@@ -242,31 +237,42 @@ namespace d360.web
 				builder.RegisterType<Catalog>().As<ICatalog>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
-				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
 
 				builder.RegisterType<History>().As<IHistory>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Scoring>().As<IScoring>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
+
+				builder.RegisterType<Search>().As<ISearch>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Security>().As<ISecurity>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Social>().As<ISocial>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.CompanyPrefix = sec.PrimaryCompanyPrefix;
@@ -276,12 +282,14 @@ namespace d360.web
 				builder.RegisterType<Workflow>().As<IWorkflow>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 					});
 
 				builder.RegisterType<Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.WorkspaceId = "";

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using d360.core.entities;
 using d360.core.enums;
 
@@ -10,7 +9,8 @@ namespace repositories
 	public interface ISocial
 	{
 		Task<CommentDetail> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social);
-		int InsertComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social);
+
+		bool ProcessWithQueue(List<Asset> taggedAssets, CommentApiPutModel comment);
 
 		bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true);
 
@@ -29,13 +29,5 @@ namespace repositories
 		Task<List<CommentVoterDetail>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji);
 
 		Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams);
-		List<Asset> AddCommentRelation(List<Guid> tags, int commentId);
-		void DeleteCommentRelation(int commentId);
-
-		int UpdateComment(Guid commentUid, CommentApiPutModel comment);
-		void DeleteCommentRelationByCommentId(int commentId);
-
-		void SendCommentNotification(List<Asset> taggedAssets, Comment comment);
-		Comment GetCommentByCommentUid(Guid commentUid);
 	}
 }

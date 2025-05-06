@@ -6,12 +6,10 @@ import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
-
-declare var CurrentResourceID;
-declare var VersionNumber: string;
-declare var ResourceName;
-declare var ResourceEmail;
-
+import { AngularPlugin } from '@microsoft/applicationinsights-angularplugin-js';
+import { ApplicationInsights } from '@microsoft/applicationinsights-web';
+import { environment } from '../environments/environment';
+import { CompanySettingsService } from './services/settings.service';
 
 @Component({
     selector: 'd3s-app',
@@ -45,7 +43,8 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         protected headerActionsService: HeaderActionsService,
         private cookieService: CookieService,
         private route: ActivatedRoute,
-        private toastService: MessageService,
+		private toastService: MessageService,
+		private settingsService: CompanySettingsService,
         private router: Router,
         @Inject(DOCUMENT)
         private _document: Document,
@@ -81,7 +80,33 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             }
         });
 
-        this.config.setTranslation(this.primeNgTranslations);
+		this.config.setTranslation(this.primeNgTranslations);
+
+		this.settingsService.getUserVariables().subscribe((res) => {
+			const angularPlugin = new AngularPlugin();
+			const appInsights = new ApplicationInsights({
+				config: {
+					connectionString: res.ApplicationInsightsConnectionString,
+					// *** If you're adding the Click Analytics plug-in, delete the next line. ***  
+					extensions: [angularPlugin],
+					// *** Add the Click Analytics plug-in. ***
+					// extensions: [angularPlugin, clickPluginInstance],
+					extensionConfig: {
+						[angularPlugin.identifier]: { router: this.router }
+						// *** Add the Click Analytics plug-in. ***
+						// [clickPluginInstance.identifier]: clickPluginConfig
+					}
+				}
+			});
+			appInsights.loadAppInsights();
+			appInsights.setAuthenticatedUserContext(res.CurrentResourceUid);
+			//appInsights.addTelemetryInitializer((envelope) => {
+			//	envelope.tags = envelope.tags || [];
+			//	envelope.tags['ai.cloud.role'] = 'testTag';
+			//});
+		});
+
+
     }
 
     ngAfterContentInit() {

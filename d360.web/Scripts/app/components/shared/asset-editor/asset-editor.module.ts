@@ -41,6 +41,8 @@ import { FindMultiselectOptionPipe } from "./find-multiselect-option.pipe";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.module";
 import { TaggedAssetDetailModule } from "../tagged-assets/tagged-assets-detail.module";
+import { LazyDropdownModule } from "../controls/lazy-dropdown/lazy-dropdown";
+import { LazyMultiSelectModule } from '../controls/lazy-multiselect/lazy-multiselect';
 
 @NgModule({
     imports: [
@@ -86,7 +88,9 @@ import { TaggedAssetDetailModule } from "../tagged-assets/tagged-assets-detail.m
         SwitchModule,
 
         JsonViewerModule,
-        SidePanelModule,
+		SidePanelModule,
+		LazyDropdownModule,
+		LazyMultiSelectModule,
 		
 		AssetDetailModule,
 		AssetTypeDetailModule,

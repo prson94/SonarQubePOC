@@ -47,70 +47,20 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core,Puneet" id="Table.dbo.Nym-Nym_AfterDelete-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Nym_AfterDelete]
-   ON  [dbo].[Nym] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	declare @ot varchar(50) = 'Synonym'
+ <changeSet author="Pappas" id="Table.dbo.Nym-Nym_AfterDelete-v3">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[Nym_AfterDelete]
+]]>
+  </sql>
+ </changeSet>
 
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select Distinct 'ObjectIndex',
-				'D', 
-				@ot, 
-				ID
-		from	deleted;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core,Puneet" id="Table.dbo.Nym-Nym_AfterUpsert-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Nym_AfterUpsert]
-   ON  [dbo].[Nym] 
-   AFTER INSERT, UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	declare @ot varchar(50) = 'Synonym'
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select	 Distinct 'ObjectIndex',
-				case 
-					when D.ID is not null then 'U'
-					else 'A'
-				end, 
-				@ot, 
-				I.ID,
-				A.ID as AssetID
-		from	inserted I
-				left join deleted D on D.ID = I.ID
-				left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.Nym-Nym_AfterUpsert-v3">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop trigger if exists [dbo].[Nym_AfterUpsert]
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

@@ -305,6 +305,41 @@
 				</div>
 			</div>
 		</ig-property-group>
+		<ig-property-group *ngIf="['ReferenceList'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Reference List"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Show Reference List Description</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].DisplayRefListDescription; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Show Reference List Items in table</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].DisplayRefListInTable; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
 		<ig-property-group *ngIf="['ComputedOwnershipLookup'].indexOf(currentType) > -1"
 						   i18n-title
 						   title="Ownership Lookup"

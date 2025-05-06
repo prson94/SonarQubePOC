@@ -29,6 +29,15 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
+
+	<include file="scripts/Function.dbo.GetCombinedPermissions.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetId.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetLegacy.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetUid.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeId.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeLegacy.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeUid.xml"/>
+	
 	<include file="scripts/Function.dbo.GetDisplayPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPathHash.xml"/>
@@ -53,15 +62,14 @@
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
+	<include file="scripts/Table.dbo.AssetField.xml"/>
 	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
-	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSampleJson.xml"/>
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetPath.xml"/>
-	<include file="scripts/Table.dbo.AssetPathSegmentDtl.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.Comment.xml"/>
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>
@@ -74,13 +82,16 @@
 	<include file="scripts/Table.dbo.FieldCounterValue.xml"/>
 	<include file="scripts/Table.dbo.Follow.xml"/>
 	<include file="scripts/Table.dbo.Group.xml"/>
+	<include file="scripts/Table.dbo.GroupField.xml"/>
 	<include file="scripts/Table.dbo.HelpResource.xml"/>
 	<include file="scripts/Table.dbo.Predicate.xml"/>
 	<include file="scripts/Table.dbo.IntersectType.xml"/>
 	<include file="scripts/Table.dbo.Intersect.xml"/>
+	<include file="scripts/Table.dbo.IntersectField.xml"/>
 	<include file="scripts/Table.dbo.IssueType.xml"/>
 	<include file="scripts/Table.dbo.IssueTypeRelation.xml"/>	
 	<include file="scripts/Table.dbo.Issue.xml"/>
+	<include file="scripts/Table.dbo.IssueField.xml"/>
 	<include file="scripts/Table.dbo.Load.xml"/>
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
 	<include file="scripts/Table.dbo.LoadItem.xml"/>
@@ -90,6 +101,7 @@
 	<include file="scripts/Table.dbo.Color.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
+	<include file="scripts/Table.dbo.ResourceField.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
 	<include file="scripts/Table.dbo.ResourceSetting.xml"/>
@@ -102,7 +114,6 @@
 	<include file="scripts/Table.dbo.ResponsibilityRuleResultSecurityAsset.xml"/>
 	<include file="scripts/Table.dbo.SearchBoost.xml"/>
 	<include file="scripts/Table.dbo.Semantic.xml"/>
-	<include file="scripts/Table.dbo.Setting.xml"/>
 	<include file="scripts/Table.dbo.Shortcut.xml"/>
 	<include file="scripts/Table.dbo.SiteNav.xml"/>
 	<include file="scripts/Table.dbo.SiteNavPermission.xml"/>
@@ -133,7 +144,7 @@
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
-	<include file="scripts/Table.queue.Task.xml"/>
+	<include file="scripts/Table.queue.ResponsibilityIndex.xml"/>
 	<include file="scripts/Table.queue.Search.xml"/>
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>
@@ -260,6 +271,7 @@
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityTypeIDByResourceID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissions.xml"/>
+	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissionsAssetID.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissionsByAssetID.xml"/>
 	<include file="scripts/Function.dbo.ArtifactSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
@@ -302,18 +314,23 @@
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
 	<include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
+	<include file="scripts/Function.utility.GetStringWithinBrackets.xml"/>
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.api.CompleteExecution.xml"/>
+	<include file="scripts/Procedure.api.ValidateLookupFields.xml"/>
 	<include file="scripts/Procedure.api.UpsertChangeLog.xml"/>
 	<include file="scripts/Procedure.api.UpsertItemFields.xml"/>
 	<include file="scripts/Procedure.api.DeleteGroups.xml"/>
 	<include file="scripts/Procedure.api.DeleteUsers.xml"/>
+	<include file="scripts/Procedure.api.UpsertAssets.xml"/>
 	<include file="scripts/Procedure.api.UpsertGroups.xml"/>
 	<include file="scripts/Procedure.api.UpsertUsers.xml"/>
+	<include file="scripts/Procedure.api.UpsertSingleUsers.xml"/>
 	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
+	<include file="scripts/Procedure.api.DeleteInProcessRecords.xml"/>
 	<include file="scripts/Procedure.api.DeleteTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteTagTypes.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
@@ -326,6 +343,9 @@
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateItemColumnByIntersectType.xml"/>
+	<include file="scripts/Procedure.bulkload.GetModelPathForLevel.xml"/>
+	<include file="scripts/Procedure.bulkload.FillParentUid.xml"/>
+	<include file="scripts/Procedure.bulkload.GetErrorRecords.xml"/>
 	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.GenerageDisplayValuesByTempAssetTable.xml"/>
@@ -339,6 +359,7 @@
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
+	<include file="scripts/Procedure.dbo.GetProcessDiagramExport.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderedTemplateBodyNg.xml"/>
 	<include file="scripts/Procedure.dbo.GetResponsibilityTypeBreakdown.xml"/>
@@ -348,19 +369,19 @@
 	<include file="scripts/Procedure.dbo.PatchCatalog.xml"/>
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
-    <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
-    <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
+  <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
+  <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateOwnerShipDataForGetAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderRelationshipField.xml"/>
+
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Procedure.metrics.GenerateScore.xml"/>
 	<include file="scripts/Procedure.metrics.GetImpactedAssetsForAssetResults.xml"/>
 	
-	<include file="scripts/Procedure.Queue.DeleteQueueTaskRecords.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
@@ -368,12 +389,11 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
-    <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+  <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
 	<include file="scripts/Procedure.dbo.CachedAssetFiltersProvider.xml"/>
 	<include file="scripts/Procedure.usage.Add.xml"/>
 	<include file="scripts/Procedure.dbo.GetRulesForRerun.xml"/>
-
-    <include file="scripts/Function.Deletions.xml"/>
+  <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
 	<include file="scripts/View.Deletions.xml"/>
 	<include file="scripts/Table.Deletions.xml"/>

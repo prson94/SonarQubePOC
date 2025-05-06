@@ -9,14 +9,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	selector: 'd3s-dashboard',
 	templateUrl: './dashboard.component.html',
 	providers: [DashboardService],
 })
-
 export class DashboardComponent extends BaseComponent implements OnInit, OnDestroy {
 	private sub: any;
 	dashboards: DashboardModel[] = [];
@@ -37,13 +35,11 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		private titleAndTabsService: TitleAndTabsService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
-		protected settingsService: CompanySettingsService,
-		launchDarklyService: LaunchDarklyService
+		protected settingsService: CompanySettingsService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
-		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {
@@ -138,7 +134,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 				}
 			);
 		} else {
-			var location = null;
+			let location = null;
 			if (this.assetTypeUid) {
 				location = 1;
 			}

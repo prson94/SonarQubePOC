@@ -12,6 +12,7 @@ using d360.model.helpers;
 using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 using Dapper;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Web.Http;
@@ -83,6 +84,8 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		async Task<bool> UseAssetFieldStorageAsync() { return await GetFeatureFlagValue(FlagList.USE_ASSET_FIELD); }
 
 		/// <summary>
 		/// Retrieves a list of all asset types classes.
@@ -835,166 +838,171 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
 		{
-			var prefix = "Assets.GetAssetsAsync => ";
+			var queryParams = Request.GetQueryNameValuePairs();
+			string isValid = isPageSizeAndNumValid(queryParams);
 
-			try
+			if (!string.IsNullOrEmpty(isValid))
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				string isValid = isPageSizeAndNumValid(queryParams);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid));
+			}
 
-				if (!string.IsNullOrEmpty(isValid))
+			var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+			var validator = new AssetTypeValidator(Company);
+			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid);
+			}
+
+			if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Information.CorrectEndpoint, assetType.Class.ToString(), Request.RequestUri.Scheme, Request.RequestUri.Host, assetType.Class == AssetTypeClass.Group ? Error.GroupEndPoint : Error.UserEndPoint));
+			}
+
+			//if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
+			if (!SecurityContext.IsAdministrator && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_uirequest").Value;
+				bool.TryParse(value, out bool isuiRequest);
+
+				HttpStatusCode httpStatusCode = isuiRequest ? HttpStatusCode.BadRequest : HttpStatusCode.Forbidden;
+				return errorMessageResponse(httpStatusCode, Error.InvalidRequest, Error.RestrictReadAssettype);
+			}
+
+			if (isStreamResponse)
+			{
+				queryParams = getqueryParamsforexcel(queryParams, isStreamResponse, assetType);
+			}
+
+			if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidOrderRequese);
+			}
+
+			if (!validator.IsValidOrderDirectionGetAssets(queryParams))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidDirectionSimple);
+			}
+
+			if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUserGroupRequestAsOwner);
+			}
+
+			if (!validator.IsValidOwnersGetAssets(queryParams, "_notownedby"))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUserGroupRequestAsNonOwner);
+			}
+
+			if (!validator.IsValidGetAssets(queryParams))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetUid);
+			}
+
+			if (!validator.IsValidRelationFilter(queryParams))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.FilterResrictPredicateUid);
+			}
+
+			if (!validator.IsValidIncludeTotalFlag(queryParams))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidIncludeTotal);
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid") && !isStreamResponse)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ExportTemplateMessage);
+			}
+
+			HttpResponseMessage response;
+
+			if (isStreamResponse)
+			{
+				if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid"))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid));
-				}
-
-				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-				var validator = new AssetTypeValidator(Company);
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid));
-				}
-
-				if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Information.CorrectEndpoint, assetType.Class.ToString(), Request.RequestUri.Scheme, Request.RequestUri.Host, (assetType.Class == AssetTypeClass.Group ? Error.GroupEndPoint : Error.UserEndPoint))));
-				}
-
-				//if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-				if (!SecurityContext.IsAdministrator && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_uirequest").Value;
-					bool.TryParse(value, out bool isuiRequest);
-
-					HttpStatusCode httpStatusCode = isuiRequest ? HttpStatusCode.BadRequest : HttpStatusCode.Forbidden;
-					return await Task.FromResult(errorMessageResponse(httpStatusCode, Error.InvalidRequest, Error.RestrictReadAssettype));
-				}
-
-				if (isStreamResponse)
-				{
-					queryParams = getqueryParamsforexcel(queryParams, isStreamResponse, assetType);
-				}
-
-				if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidOrderRequese));
-				}
-
-				if (!validator.IsValidOrderDirectionGetAssets(queryParams))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidDirection));
-				}
-
-				if (!validator.IsValidOwnersGetAssets(queryParams, "_ownedby"))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUserGroupRequestAsOwner));
-				}
-
-				if (!validator.IsValidOwnersGetAssets(queryParams, "_notownedby"))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidUserGroupRequestAsNonOwner));
-				}
-
-				if (!validator.IsValidGetAssets(queryParams))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidAssetUid));
-				}
-
-				if (!validator.IsValidRelationFilter(queryParams))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.FilterResrictPredicateUid));
-				}
-
-				if (!validator.IsValidIncludeTotalFlag(queryParams))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidIncludeTotal));
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid") && !isStreamResponse)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ExportTemplateMessage));
-				}
-
-				HttpResponseMessage response;
-
-				if (isStreamResponse)
-				{
-					if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid"))
+					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_exporttemplateuid").Value, out Guid exportTemplateUID))
 					{
-						if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_exporttemplateuid").Value, out Guid exportTemplateUID))
-						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidExportTemplatedUid));
-						}
-						var template = (await AssetRepository.GetExportTemplates(exportTemplateUID: exportTemplateUID)).FirstOrDefault();
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidExportTemplatedUid);
+					}
+					var template = (await AssetRepository.GetExportTemplates(exportTemplateUID: exportTemplateUID)).FirstOrDefault();
 
-						if (template == null)
-						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.ExportTemplateUidNotExist, exportTemplateUID.ToString())));
-						}
+					if (template == null)
+					{
+						return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.ExportTemplateUidNotExist, exportTemplateUID.ToString()));
+					}
 
-						if (template.AssetTypeID != assetType.ID)
-						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidExportTemplateCurrent));
-						}
-						List<FieldType> fieldsForCustomExport = new List<FieldType>();
-						var paramList = queryParams.ToList();
+					if (template.AssetTypeID != assetType.ID)
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.InvalidExportTemplateCurrent);
+					}
+					List<FieldType> fieldsForCustomExport = new List<FieldType>();
+					var paramList = queryParams.ToList();
 
-						if (template.IncludeParent)
-						{
-							paramList.RemoveAll(x => x.Key.ToLower() == "_includeparent");
-							paramList.Add(new KeyValuePair<string, string>("_includeparent", "true"));
-							queryParams = paramList;
-						}
+					if (template.IncludeParent)
+					{
+						paramList.RemoveAll(x => x.Key.ToLower() == "_includeparent");
+						paramList.Add(new KeyValuePair<string, string>("_includeparent", "true"));
+						queryParams = paramList;
+					}
 
-						queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-						var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
+					queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
+					var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
 
-						SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
+					SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
 
-						// Select the first worksheet as the active one.
-						var firstSheet = document.GetWorksheetNames()[0];
-						document.SelectWorksheet(firstSheet);
+					// Select the first worksheet as the active one.
+					var firstSheet = document.GetWorksheetNames()[0];
+					document.SelectWorksheet(firstSheet);
 
-						var stream = new MemoryStream();
-						document.SaveAs(stream);
+					var stream = new MemoryStream();
+					document.SaveAs(stream);
 
-						byte[] bytes = stream.ToArray();
+					byte[] bytes = stream.ToArray();
 
-						response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+					response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+				}
+				else
+				{
+
+					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+					bool.TryParse(value, out bool isHierachyItem);
+
+					var valueChild = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ischildtab").Value;
+					bool.TryParse(valueChild, out bool isChildItem);
+
+					var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
+
+					queryParams = paramList;
+
+					SLDocument results;
+
+					if (isHierachyItem)
+					{
+						results = await AssetRepository.GetHierarchyExcel(assetTypeUid, queryParams, true);
 					}
 					else
 					{
-
-						var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
-						bool.TryParse(value, out bool isHierachyItem);
-
-						var valueChild = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ischildtab").Value;
-						bool.TryParse(valueChild, out bool isChildItem);
-
-						var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
-
-						queryParams = paramList;
-
-						SLDocument results;
-
-						if (isHierachyItem)
-						{
-							results = await AssetRepository.GetHierarchyExcel(assetTypeUid, queryParams, true);
-						}
-						else
-						{
-							results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams, isChildItem);
-						}
-
-						var stream = new MemoryStream();
-						results.SaveAs(stream);
-						byte[] bytes = stream.ToArray();
-
-						response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+						results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams, isChildItem);
 					}
+
+					var stream = new MemoryStream();
+					results.SaveAs(stream);
+					byte[] bytes = stream.ToArray();
+
+					response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
 				}
-				else
+			}
+			else
+			{
+				if (await UseAssetFieldStorageAsync())
+				{
+					var result = await Catalog.ReadAssetsAsync(assetTypeUid, queryParams);
+					response = result.IsSuccess ? 
+						Request.CreateResponse(HttpStatusCode.OK, result.Data) :
+						Request.CreateResponse((HttpStatusCode)result.StatusCode, result.Message);
+				}
+				else 
 				{
 					var countCacheKey = calculateCacheKeyForGetAssetsTotal(assetType.ID, queryParams);
 					int? total = null;
@@ -1021,34 +1029,12 @@ namespace d360.web.Controllers.V2
 						Cache.SetItem(countCacheKey, results.total, false, 5);
 					}
 
-					response = Request.CreateResponse(HttpStatusCode.OK, results);
+					response = Request.CreateResponse(HttpStatusCode.OK, results);				
 				}
-
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
 			}
-			catch (ArgumentException ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage));
-			}
-			catch (FilterExpressionParserException ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return ResponseMessage(response);
 		}
 
 		private IEnumerable<KeyValuePair<string, string>> getqueryParamsforexcel(IEnumerable<KeyValuePair<string, string>> queryParams, bool isStreamResponse, AssetType assetType)
@@ -1102,55 +1088,36 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssetsByPathAsync(AssetsByPathApiRequestModel model)
 		{
-			var prefix = "Assets.GetAssetsByPathAsync => ";
-
-			try
+			if (model == null)
 			{
-				#region Validation
-
-				if (model == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.EmptyInvalidParameterSet));
-				}
-
-				if (string.IsNullOrEmpty(model.searchPhrase))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ProvideSearchPhrase));
-				}
-
-				if (model.filters == null)
-				{
-					model.filters = new List<AssetsByPathItemApiFilterRequestModel>();
-				}
-
-				if (model.filters.Count() > 0)
-				{
-					if (!model.filters.Any(i =>
-						(i.AsSideOfRelationship != null) ||
-						i.Class.HasValue ||
-						i.Uid.HasValue ||
-						i.UseAsTransformation.HasValue))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ProvidePreFilterCriteria));
-					}
-				}
-
-				#endregion
-
-				var results = await AssetRepository.GetAssetsByPath(model);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.EmptyInvalidParameterSet);
 			}
-			catch (Exception ex)
+
+			if (string.IsNullOrEmpty(model.searchPhrase))
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.model, JsonConvert.SerializeObject(model) }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ProvideSearchPhrase);
 			}
+
+			if (model.filters == null)
+			{
+				model.filters = new List<AssetsByPathItemApiFilterRequestModel>();
+			}
+
+			if (model.filters.Count() > 0)
+			{
+				if (!model.filters.Any(i =>
+					(i.AsSideOfRelationship != null) ||
+					i.Class.HasValue ||
+					i.Uid.HasValue ||
+					i.UseAsTransformation.HasValue))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ProvidePreFilterCriteria);
+				}
+			}
+
+			var results = await AssetRepository.GetAssetsByPath(model);
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -1168,22 +1135,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssetsTypeFieldsAsync(Guid assetTypeUid)
 		{
-			var prefix = "Assets.GetAssetsTypeFieldsAsync => ";
-			string errorMessage;
-
-			try
-			{
-				var fieldTypes = AssetRepository.GetFieldTypes(assetTypeUid) as object;
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes)));
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			var fieldTypes = AssetRepository.GetFieldTypes(assetTypeUid) as object;
+			return Ok(fieldTypes);
 		}
 
 		/// <summary>
@@ -1216,220 +1169,204 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
 		{
-			var prefix = "Assets.PostAssetTypeAsync => ";
-
-			try
+			if (model.Class == AssetTypeClass.Glossary)
 			{
-				if (model.Class == AssetTypeClass.Glossary)
+				model.Class = AssetTypeClass.BusinessAsset;
+			}
+
+			var governanceRoleReferenceListUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+
+			var validator = new AssetTypeValidator(Company, governanceRoleReferenceListUid);
+
+			AssetType parentAssetType = null;
+
+			if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
+			{
+				parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
+			}
+
+			Predicate predicate = null;
+
+			if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
+			{
+				predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
+			}
+
+			var validationStatus = validator.ValidateModel(true, model, parentAssetType, predicate);
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
+			if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Label.UseAsTransformation, Error.TransformationClassRestriction);
+			}
+
+			if (model.AutoDisplayParent.HasValue && (!model.Class.AllowsAutoDisplayParent() || parentAssetType == null))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Label.AutoDisplayParent, Error.AutoDisplayParentRestriction);
+			}
+
+			if (model.CanEditParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Label.CanEditParent, Error.CanEditParentClassRestriction);
+			}
+
+			var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+
+			if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded);
+			}
+
+			AssetType governanceRoleRefList = null;
+
+			if (model.Class == AssetTypeClass.Diagram)
+			{
+				governanceRoleRefList = Company.AssetTypes.FirstOrDefault(x => x.uid == governanceRoleReferenceListUid);
+
+				if (governanceRoleRefList == null)
 				{
-					model.Class = AssetTypeClass.BusinessAsset;
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.GovernRoleReferListNotExists, governanceRoleReferenceListUid.ToString()));
 				}
+			}
 
-				var governanceRoleReferenceListUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+			AssetType assetType = null;
 
-				var validator = new AssetTypeValidator(Company, governanceRoleReferenceListUid);
+			var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, SecurityContext.ResourceID, out string nameFriendlyName, out bool isNamePartOfKey);
 
-				AssetType parentAssetType = null;
-
-				if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
+			if (insertStatus.Item1 != HttpStatusCode.OK)
+			{
+				return errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3);
+			}
+			List<FieldType> addedFieldTypes = new List<FieldType>();
+			if (model.AssetTypeID > 0 || model.IssueTypeID > 0 || model.IntersectTypeID > 0)
+			{
+				if (model.Class != AssetTypeClass.Reference)
 				{
-					parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
-				}
-
-				Predicate predicate = null;
-
-				if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
-				{
-					predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
-				}
-
-				var validationStatus = validator.ValidateModel(true, model, parentAssetType, predicate);
-
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
-				}
-
-				if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.UseAsTransformation, Error.TransformationClassRestriction));
-				}
-
-				if (model.AutoDisplayParent.HasValue && (!model.Class.AllowsAutoDisplayParent() || parentAssetType == null))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.AutoDisplayParent, Error.AutoDisplayParentRestriction));
-				}
-
-				if (model.CanEditParent.HasValue && ((model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset) || parentAssetType == null))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.CanEditParent, Error.CanEditParentClassRestriction));
-				}
-
-				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
-
-				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded));
-				}
-
-				AssetType governanceRoleRefList = null;
-
-				if (model.Class == AssetTypeClass.Diagram)
-				{
-					governanceRoleRefList = Company.AssetTypes.FirstOrDefault(x => x.uid == governanceRoleReferenceListUid);
-
-					if (governanceRoleRefList == null)
+					var nameFieldType = new FieldType
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, string.Format(Error.GovernRoleReferListNotExists, governanceRoleReferenceListUid.ToString())));
-					}
-				}
-
-				AssetType assetType = null;
-
-				var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, SecurityContext.ResourceID, out string nameFriendlyName, out bool isNamePartOfKey);
-
-				if (insertStatus.Item1 != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
-				}
-				List<FieldType> addedFieldTypes = new List<FieldType>();
-				if (model.AssetTypeID > 0 || model.IssueTypeID > 0 || model.IntersectTypeID > 0)
-				{
-					if (model.Class != AssetTypeClass.Reference)
-					{
-						var nameFieldType = new FieldType
-						{
-							AssetTypeID = model.AssetTypeID,
-							IsListable = true,
-							IsRequired = true,
-							IsEditable = true,
-							FriendlyName = nameFriendlyName,
-							Name = "Name",
-							MaximumLength = 500,
-							MinimumLength = 1,
-							SortOrder = 1,
-							SortByAscending = true,
-							Type = DataType.Text.ToString(),
-							IsDisplayable = true,
-							IsPartOfKey = isNamePartOfKey,
-							UpdatedBy = SecurityContext.ResourceID
-						};
-
-						if (model.Class == AssetTypeClass.Diagram)
-						{
-							nameFieldType.ColumnOrder = 2;
-							nameFieldType.ShowIfEmpty = true;
-						}
-
-						addedFieldTypes.Add(nameFieldType);
-						Company.Add(nameFieldType);
-					}
-
-					if (model.Class == AssetTypeClass.Reference)
-					{
-						var codeFieldType = new FieldType
-						{
-							Name = "Code",
-							FriendlyName = "Code",
-							Type = DataType.System.ToString(),
-							AssetTypeID = model.AssetTypeID,
-							IsRequired = true,
-							IsListable = true,
-							IsDisplayable = true,
-							IsEditable = true,
-							IsPartOfKey = true,
-							ShowIfEmpty = true,
-							MaximumLength = 500,
-							MinimumLength = 1,
-							SortOrder = 1,
-							ColumnOrder = 1,
-							SortByAscending = true,
-							UpdatedBy = SecurityContext.ResourceID
-						};
-
-						Company.Add(codeFieldType);
-					}
+						AssetTypeID = model.AssetTypeID,
+						IsListable = true,
+						IsRequired = true,
+						IsEditable = true,
+						FriendlyName = nameFriendlyName,
+						Name = "Name",
+						MaximumLength = 500,
+						MinimumLength = 1,
+						SortOrder = 1,
+						SortByAscending = true,
+						Type = DataType.Text.ToString(),
+						IsDisplayable = true,
+						IsPartOfKey = isNamePartOfKey,
+						UpdatedBy = SecurityContext.ResourceID
+					};
 
 					if (model.Class == AssetTypeClass.Diagram)
 					{
-						Company.Add(new FieldType
-						{
-							AssetTypeID = model.AssetTypeID,
-							IsListable = true,
-							IsRequired = true,
-							IsEditable = true,
-							FriendlyName = "Governance Role",
-							Name = "GovernanceRole",
-							ColumnOrder = 3,
-							Type = DataType.Lookup.ToString(),
-							IsDisplayable = true,
-							IsPartOfKey = false,
-							LookupObjectID = governanceRoleRefList.ObjectID,
-							LookupObjectType = SystemObjects.ReferenceItem.ToString(),
-							UpdatedBy = SecurityContext.ResourceID,
-							ShowIfEmpty = true,
-							LookupDisplayFormat = "{Code}",
-							LookupEditFormat = "{Code}",
-							SortByAscending = true
-						});
-
-						Company.Add(new FieldType
-						{
-							AssetTypeID = model.AssetTypeID,
-							IsListable = true,
-							IsRequired = true,
-							IsEditable = true,
-							FriendlyName = "Step No",
-							Name = "StepNo",
-							ColumnOrder = 1,
-							Type = DataType.Decimal.ToString(),
-							IsDisplayable = true,
-							IsPartOfKey = false,
-							UpdatedBy = SecurityContext.ResourceID,
-							ShowIfEmpty = true,
-							SortByAscending = true
-						});
+						nameFieldType.ColumnOrder = 2;
+						nameFieldType.ShowIfEmpty = true;
 					}
+
+					addedFieldTypes.Add(nameFieldType);
+					Company.Add(nameFieldType);
 				}
 
-				assetType = AssetRepository.GetAssetTypeByModel(model);
-
-				AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.IconStyle.Icon, model.Name);
-
-				if (assetType == null)
+				if (model.Class == AssetTypeClass.Reference)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidType, Error.NotFoundGeneric));
+					var codeFieldType = new FieldType
+					{
+						Name = "Code",
+						FriendlyName = "Code",
+						Type = DataType.System.ToString(),
+						AssetTypeID = model.AssetTypeID,
+						IsRequired = true,
+						IsListable = true,
+						IsDisplayable = true,
+						IsEditable = true,
+						IsPartOfKey = true,
+						ShowIfEmpty = true,
+						MaximumLength = 500,
+						MinimumLength = 1,
+						SortOrder = 1,
+						ColumnOrder = 1,
+						SortByAscending = true,
+						UpdatedBy = SecurityContext.ResourceID
+					};
+
+					Company.Add(codeFieldType);
 				}
 
-				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
-				var result = new AssetTypeSuccess { Uid = assetType.uid, Message = Information.AssetTypeCreatedMessage, Success = true };
-
-				//handle change logs
-				await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Created }); ;
-				var fields = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
-				foreach (var item in fields)
+				if (model.Class == AssetTypeClass.Diagram)
 				{
-					await AuditRepository.CreateHistoryJob(new ObjectInfo() {
-						Object = SystemObjects.FieldType.ToString(),
-						ObjectId = item.ID, 
-						ChangeType = ChangeLogType.Created,
-						AssetTypeId = assetType.ID
-					}); ;
+					Company.Add(new FieldType
+					{
+						AssetTypeID = model.AssetTypeID,
+						IsListable = true,
+						IsRequired = true,
+						IsEditable = true,
+						FriendlyName = "Governance Role",
+						Name = "GovernanceRole",
+						ColumnOrder = 3,
+						Type = DataType.Lookup.ToString(),
+						IsDisplayable = true,
+						IsPartOfKey = false,
+						LookupObjectID = governanceRoleRefList.ObjectID,
+						LookupObjectType = SystemObjects.ReferenceItem.ToString(),
+						UpdatedBy = SecurityContext.ResourceID,
+						ShowIfEmpty = true,
+						LookupDisplayFormat = "{Code}",
+						LookupEditFormat = "{Code}",
+						SortByAscending = true
+					});
+
+					Company.Add(new FieldType
+					{
+						AssetTypeID = model.AssetTypeID,
+						IsListable = true,
+						IsRequired = true,
+						IsEditable = true,
+						FriendlyName = "Step No",
+						Name = "StepNo",
+						ColumnOrder = 1,
+						Type = DataType.Decimal.ToString(),
+						IsDisplayable = true,
+						IsPartOfKey = false,
+						UpdatedBy = SecurityContext.ResourceID,
+						ShowIfEmpty = true,
+						SortByAscending = true
+					});
 				}
+			}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
-			}
-			catch (BaseException ex)
-			{
-				return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
-			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
+			assetType = AssetRepository.GetAssetTypeByModel(model);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+			AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.IconStyle.Icon, model.Name);
+
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidType, Error.NotFoundGeneric);
 			}
+
+			Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
+			var result = new AssetTypeSuccess { Uid = assetType.uid, Message = Information.AssetTypeCreatedMessage, Success = true };
+
+			//handle change logs
+			await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Created }); ;
+			var fields = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
+			foreach (var item in fields)
+			{
+				await AuditRepository.CreateHistoryJob(new ObjectInfo() {
+					Object = SystemObjects.FieldType.ToString(),
+					ObjectId = item.ID, 
+					ChangeType = ChangeLogType.Created,
+					AssetTypeId = assetType.ID
+				}); ;
+			}
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -1494,98 +1431,150 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeUpsert model)
 		{
-			var prefix = "Assets.PutAssetTypeAsync => ";
+			var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+			var validator = new AssetTypeValidator(Company, govRoleUid);
 
+			if (model.Class == AssetTypeClass.Glossary)
+			{
+				model.Class = AssetTypeClass.BusinessAsset;
+			}
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUidAndClass(model.Uid, model.Class);
+
+			AssetType parentAssetType = null;
+
+			if (model.ParentUid != null && model.ParentUid != Guid.Empty)
+			{
+				parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
+			}
+
+			Predicate predicate = null;
+
+			if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
+			{
+				predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
+			}
+
+			var validationStatus = validator.ValidateModel(false, model, parentAssetType, predicate, assetType);
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
+			if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Label.UseAsTransformation, Error.TransformationClassRestriction);
+			}
+
+			var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
+			if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded);
+			}
+
+			if (model.AutoDisplayParent.HasValue && parentAssetType == null && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Label.AutoDisplayParent, Error.AutoDisplayParentRestriction);
+			}
+
+			bool isUseAsTransformationChanged = (!model.UseAsTransformation && assetType.UseAsTransformation) || (model.UseAsTransformation && !assetType.UseAsTransformation);
+
+			if (isUseAsTransformationChanged && (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset))
+			{
+				var IsTransformPredicateExists = await RelationshipRepository.IsTransformPredicateExists(assetType.ID);
+
+				if (IsTransformPredicateExists)
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.TransormationReationExists, Error.RelationshipExistsForAssetType);
+				}
+			}
+
+			var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
+
+			if (updateStatus.Item1 != HttpStatusCode.OK)
+			{
+				return errorMessageResponse(updateStatus.Item1, updateStatus.Item2, updateStatus.Item3);
+			}
+
+			AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.IconStyle.Icon, model.Name);
+
+			//update affected display values
+			Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
+			Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
+
+			await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Updated }); ;
+
+			var result = new AssetTypeSuccess { Uid = model.Uid, Message = string.Format(Information.SucessfullyUpdated, model.Name), Success = true };
+
+			return Ok(result);
+		}
+
+		private async Task<IHttpActionResult> upsertAssetsAsync(bool isInsert, Guid assetTypeUid, List<AssetApiModel> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, string applicationId = null)
+		{
+			if (applicationId != null && applicationId.Length > 200)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
+			}
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
+			}
+
+			if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, isInsert ? Permission.AddAsset : Permission.EditAsset))
+			{
+				return errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, isInsert ? Error.AssetTypeAddAssetPermissionsDenied : Error.AssetTypeEditAssetPermissionsDenied);
+			}
+
+			if (assets == null)
+			{
+				assets = readRequestJsonContent<List<AssetApiModel>>(Request).Result;
+			}
+
+			if (assets == null || assets.Count == 0)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			ApiExecution execution = isInsert ? 
+				getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets): 
+				getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
+
+			ExecutionsRepository.UpsertExecution(execution);
+
+			bool enableJsonAttributes = false;
 			try
 			{
-				var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
-				var validator = new AssetTypeValidator(Company, govRoleUid);
-
-				if (model.Class == AssetTypeClass.Glossary)
-				{
-					model.Class = AssetTypeClass.BusinessAsset;
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUidAndClass(model.Uid, model.Class);
-
-				AssetType parentAssetType = null;
-
-				if (model.ParentUid != null && model.ParentUid != Guid.Empty)
-				{
-					parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
-				}
-
-				Predicate predicate = null;
-
-				if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
-				{
-					predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
-				}
-
-				var validationStatus = validator.ValidateModel(false, model, parentAssetType, predicate, assetType);
-
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
-				}
-
-				if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.UseAsTransformation, Error.TransformationClassRestriction));
-				}
-
-				var useAsTransformationLimit = await Community.ReadSettingValueAsync<int>(SecurityContext.CompanyID, Setting.UseAsTransformationLimit);
-				if (AssetRepository.IsReachedTransformationLimit(model, useAsTransformationLimit))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.ReachedTransformationlimit, Error.TransformationLimitExceeded));
-				}
-
-				if (model.AutoDisplayParent.HasValue && parentAssetType == null && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Label.AutoDisplayParent, Error.AutoDisplayParentRestriction));
-				}
-
-				bool isUseAsTransformationChanged = (!model.UseAsTransformation && assetType.UseAsTransformation) || (model.UseAsTransformation && !assetType.UseAsTransformation);
-
-				if (isUseAsTransformationChanged && (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset))
-				{
-					var IsTransformPredicateExists = await RelationshipRepository.IsTransformPredicateExists(assetType.ID);
-
-					if (IsTransformPredicateExists)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.TransormationReationExists, Error.RelationshipExistsForAssetType));
-					}
-				}
-
-				var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
-
-				if (updateStatus.Item1 != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(updateStatus.Item1, updateStatus.Item2, updateStatus.Item3));
-				}
-
-				AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.IconStyle.Icon, model.Name);
-
-				//update affected display values
-				Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
-				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
-
-				await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Updated }); ;
-
-				var result = new AssetTypeSuccess { Uid = model.Uid, Message = string.Format(Information.SucessfullyUpdated, model.Name), Success = true };
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+				enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
 			}
-			catch (BaseException ex)
+			catch
 			{
-				return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
+				// Safely ignore. Just assume it is false.
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+			if (await UseAssetFieldStorageAsync())
+			{
+				var response = await Catalog.UpsertAssetsAsync(execution.Id, assets, lookupFieldsPassedByValue, enableJsonAttributes);
+				List<AssetApiResultModel> results = response.Data;
+				return response.IsSuccess ?
+					Ok(results) :
+					errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+			else 
+			{
+				var results = isInsert ?
+					AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes) :
+					AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
+
+				return Ok(results);
 			}
 		}
 
@@ -1610,7 +1599,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPost,
 			Route("{assetTypeUid:Guid}"),
-			SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+			SwaggerRequestExample(typeof(AssetApiModel), typeof(AssetInsertsExample)),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
@@ -1619,75 +1608,12 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostAssetsAsync(
 			Guid assetTypeUid,
-			List<AssetInsert> assets,
+			List<AssetApiModel> assets,
 			bool triggersWorkflow = true,
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PostBulkAssetsAsync => ";
-
-			try
-			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.AddAsset))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, Error.EndpointNotAuthorizedHeading, Error.AssetTypeAddAssetPermissionsDenied));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
-				}
-
-				if (assets == null || assets.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
-				ExecutionsRepository.UpsertExecution(execution);
-
-				bool enableJsonAttributes = false;
-				try
-				{
-					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
-				}
-				catch
-				{
-					// Safely ignore. Just assume it is false.
-				}
-				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return await upsertAssetsAsync(true, assetTypeUid, assets, triggersWorkflow, lookupFieldsPassedByValue, applicationId);
 		}
 
 		/// <summary>
@@ -1711,7 +1637,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPut,
 			Route("{assetTypeUid:Guid}"),
-			SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
+			SwaggerRequestExample(typeof(AssetApiModel), typeof(AssetUpdatesExample)),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
@@ -1720,68 +1646,12 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutAssetsAsync(
 			Guid assetTypeUid,
-			List<AssetUpdate> assets,
+			List<AssetApiModel> assets,
 			bool triggersWorkflow = true,
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PutAssetsAsync => ";
-			try
-			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
-				}
-
-				if (assets == null || assets.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
-				}
-
-				bool enableJsonAttributes = false;
-				try
-				{
-					enableJsonAttributes = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.EnableJsonAttribute);
-				}
-				catch
-				{
-					// Safely ignore. Just assume it is false.
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
-				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, enableJsonAttributes);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return await upsertAssetsAsync(false, assetTypeUid, assets, triggersWorkflow, lookupFieldsPassedByValue, applicationId);
 		}
 
 		/// <summary>
@@ -1814,54 +1684,38 @@ namespace d360.web.Controllers.V2
 			AssetDeletes assets,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.DeleteAssetsAsync => ";
-			string errorMessage;
-
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<AssetDeletes>(Request).Result;
-				}
-
-				if (assets == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
-				List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAssets(assets, assetType, execution, false);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
+
+			if (assets == null)
+			{
+				assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+			}
+
+			if (assets == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
+			
+			var results = await Task.FromResult(AssetRepository.DeleteAssets(assets, assetType, execution, false));
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -2006,7 +1860,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetTypeUidIsNotValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
 			else
 			{
@@ -2129,7 +1983,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.FieldTypeAssetNotFound, fieldApiName)));
 				}
 
-				if (!new string[] { "ComplexRelationLookup", "RefListRelationship", "OwnershipLookup" }.Contains(fieldType.Type))
+				if (!new string[] { "ComplexRelationLookup", "OwnershipLookup", "ReferenceList"}.Contains(fieldType.Type))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.FieldTypeNotSupport, fieldType.Type)));
 				}
@@ -2220,7 +2074,7 @@ namespace d360.web.Controllers.V2
 
 					if (!new string[] { "desc", "asc" }.Contains(direction))
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection));
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirectionSimple));
 					}
 				}
 
@@ -2290,10 +2144,10 @@ namespace d360.web.Controllers.V2
 
 				}
 
-				if (fieldType.Type == "RefListRelationship")
+				if (fieldType.Type == DataType.ReferenceList.ToString())
 				{
 					(Columns, Fields, Values, count) =
-					   await FieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
+					   await FieldsRepository.GetReferenceListGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 				}
 
 				if (fieldType.Type == "OwnershipLookup")
@@ -2349,21 +2203,17 @@ namespace d360.web.Controllers.V2
 						fileName += " List";
 					}
 
-					if (fieldType.Type == "RefListRelationship")
+					if (fieldType.Type == DataType.ReferenceList.ToString())
 					{
 						var refassetid = asset.ID;
-						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
+						var referenceItemTypeID = Company.Filter<core.entities.Field>(f => f.FieldTypeID == fieldType.ID && f.AssetID == refassetid).FirstOrDefault().ReferenceListID;
 
-						if (intersect != null)
+						var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
+
+						if (assetType != null)
 						{
-							var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
-							var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
-
-							if (assetType != null)
-							{
-								fileName = assetType.Name.GetSafeFilename();
-								fileName += " List";
-							}
+							fileName = assetType.Name.GetSafeFilename();
+							fileName += " List";
 						}
 
 						//remove Color column from export
@@ -2422,15 +2272,12 @@ namespace d360.web.Controllers.V2
 					result.Add("pageNum", pageNum);
 					result.Add("total", count);
 
-					if (fieldType.Type == "RefListRelationship")
+					if (fieldType.Type == DataType.ReferenceList.ToString())
 					{
 						var refassetid = asset.ID;
-						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
+						var referenceItemTypeID = Company.Filter<core.entities.Field>(f => f.FieldTypeID == fieldType.ID && f.AssetID == refassetid).FirstOrDefault().ReferenceListID;
 
-						if (intersect != null)
-						{
-							var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
-							var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
+						var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
 
 							if (assetType != null)
 							{
@@ -2451,9 +2298,8 @@ namespace d360.web.Controllers.V2
 								}
 							}
 						}
-					}
 
-					result.Add("items", Values);
+						result.Add("items", Values);
 
 					if (returnForUI)
 					{
@@ -2509,7 +2355,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -2553,7 +2399,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -2597,7 +2443,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetTypeUid));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
 				}
 
 				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -2665,7 +2511,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPost,
 			Route("batch/{assetTypeUid:Guid}"),
-			SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
+			SwaggerRequestExample(typeof(AssetApiModel), typeof(AssetInsertsExample)),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
@@ -2674,52 +2520,36 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostBulkAssetsAsync(
 			Guid assetTypeUid,
-			List<AssetInsert> assets,
+			List<AssetApiModel> assets,
 			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PostBulkAssetsAsync => ";
-
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
-				}
-
-				if (assets == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
-
-				ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+			if (assetType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
+
+			if (assets == null)
+			{
+				assets = readRequestJsonContent<List<AssetApiModel>>(Request).Result;
+			}
+
+			if (assets == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
+
+			ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
+			
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -2742,7 +2572,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPut,
 			Route("batch/{assetTypeUid:Guid}"),
-			SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
+			SwaggerRequestExample(typeof(AssetApiModel), typeof(AssetUpdatesExample)),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
@@ -2751,50 +2581,35 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutBulkAssetsAsync(
 			Guid assetTypeUid,
-			List<AssetUpdate> assets,
+			List<AssetApiModel> assets,
 			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.PutBulkAssetsAsync => ";
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null)
-				{
-					assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
-				}
-
-				if (assets == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
-				var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+			if (assetType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
+
+			if (assets == null)
+			{
+				assets = readRequestJsonContent<List<AssetApiModel>>(Request).Result;
+			}
+
+			if (assets == null)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
+			var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
+			
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -2831,47 +2646,32 @@ namespace d360.web.Controllers.V2
 			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Label.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Assets.DeleteBulkAssetsAsync => ";
-			try
+			if (applicationId != null && applicationId.Length > 200)
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
-				}
-
-				AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				if (assets == null && !clearAllAssetsFromType)
-				{
-					assets = readRequestJsonContent<AssetDeletes>(Request).Result;
-				}
-
-				if ((assets == null && !clearAllAssetsFromType) || (assets != null && assets.Count == 0 && !clearAllAssetsFromType) || (assets != null && assets.Count > 0 && clearAllAssetsFromType))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
-
-				var executionInfo = await AssetRepository.DeleteBulkAssets(assetTypeUid, assets, execution, clearAllAssetsFromType, triggersWorkflow);
-				return await sendExecutionProcessingResponse(executionInfo);
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.ApplicationIdMaxLengthViolated);
 			}
-			catch (Exception ex)
+
+			AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetTypeUid, assetTypeUid.ToString() },
-					{ Label.AssetCount, $"{((assets != null) ? assets.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
+
+			if (assets == null && !clearAllAssetsFromType)
+			{
+				assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+			}
+
+			if ((assets == null && !clearAllAssetsFromType) || (assets != null && assets.Count == 0 && !clearAllAssetsFromType) || (assets != null && assets.Count > 0 && clearAllAssetsFromType))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
+			}
+
+			var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
+
+			var executionInfo = await AssetRepository.DeleteBulkAssets(assetTypeUid, assets, execution, clearAllAssetsFromType, triggersWorkflow);
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -2899,65 +2699,41 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteBulkAssetTypesAsync(AssetTypeDeletes assetTypes)
 		{
-			var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
-			var errorMessage = "";
-
-			try
+			if (assetTypes == null)
 			{
-				if (assetTypes == null)
-				{
-					assetTypes = readRequestJsonContent<AssetTypeDeletes>(Request).Result;
-				}
-
-				if (assetTypes == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				var maxDeleteAssetTypes = 35;
-				if(assetTypes.Count > maxDeleteAssetTypes)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAssetType, maxDeleteAssetTypes.ToString())));
-				}
-
-				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
-				foreach (var asset in assetTypes)
-				{
-					if (governanceRole == asset.Uid)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ReferenceUIDConfigureAsGovernRole, asset.Uid.ToString())));
-					}
-				}
-
-				List<ApiExecutionFields_DeleteAssetTypes> typesForDelete = assetTypes.Select(x => new ApiExecutionFields_DeleteAssetTypes() { AssetTypeUid = x.Uid }).ToList();
-				var execution = getApiExecution(assetTypes.Count, typesForDelete, action: ApiExecutionAction.DeleteAssetTypes);
-
-				ApiExecutionInfo executionInfo = await AssetRepository.DeleteBulkAssetTypes(assetTypes, execution);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = Error.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				assetTypes = readRequestJsonContent<AssetTypeDeletes>(Request).Result;
 			}
-			catch (Exception ex)
+
+			if (assetTypes == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetCount, $"{((assetTypes != null) ? assetTypes.Count : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage);
 			}
+
+			var maxDeleteAssetTypes = 35;
+			if(assetTypes.Count > maxDeleteAssetTypes)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.RequestMaxAssetType, maxDeleteAssetTypes.ToString()));
+			}
+
+			var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
+			foreach (var asset in assetTypes)
+			{
+				if (governanceRole == asset.Uid)
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ReferenceUIDConfigureAsGovernRole, asset.Uid.ToString()));
+				}
+			}
+
+			List<ApiExecutionFields_DeleteAssetTypes> typesForDelete = assetTypes.Select(x => new ApiExecutionFields_DeleteAssetTypes() { AssetTypeUid = x.Uid }).ToList();
+			var execution = getApiExecution(assetTypes.Count, typesForDelete, action: ApiExecutionAction.DeleteAssetTypes);
+
+			ApiExecutionInfo executionInfo = await AssetRepository.DeleteBulkAssetTypes(assetTypes, execution);
+
+			return Ok(new ApiExecutionRecievedResponse {
+				ExecutionID = executionInfo.ExecutionID,
+				Message = Error.ExecutionIDStatus,
+				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+			});
 		}
 
 		/// <summary>
@@ -3072,47 +2848,21 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
 		{
-			var prefix = "Assets.GetExecutionStatus => ";
-			var errorMessage = "";
 			var summaryOnly = false;
 			var queryParams = Request.GetQueryNameValuePairs();
 
-			try
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
 			{
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
-				{
-					bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
-				}
-
-				var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly);
-
-				if (res == null)
-				{
-					return await Task.FromResult(
-						errorMessageResponse(
-							HttpStatusCode.NotFound,
-							Error.NotFound,
-							Error.ExecutionUIDNotFound
-						)
-					);
-				}
-				return resolveEndpointPayloadResponse(res);
+				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 			}
-			catch (ArgumentException)
+
+			var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly);
+
+			if (res == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, Error.ExecutionUIDNotFound));
+				return errorMessageNotFoundResponse(Error.ExecutionUIDNotFound);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.ExecutionID, executionID.ToString() },
-					{ Label.ExecutionUid, executionID.ToString() }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			return resolveEndpointPayloadResponse(res);
 		}
 
 		#endregion
@@ -3141,18 +2891,18 @@ namespace d360.web.Controllers.V2
 			{
 				AssetTagSuccessApiModel result;
 
-				if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
-				{
-					result = new AssetTagSuccessApiModel()
-					{
-						Message = $"Only TagUid OR TagName can be specified.",
-						Success = false
-					};
+				//if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+				//{
+				//	result = new AssetTagSuccessApiModel()
+				//	{
+				//		Message = $"Only TagUid OR TagName can be specified.",
+				//		Success = false
+				//	};
 
-					resultList.Add(result);
+				//	resultList.Add(result);
 
-					continue;
-				}
+				//	continue;
+				//}
 
 				if (assetTagApi.TagUID == Guid.Empty)
 				{
@@ -3247,7 +2997,7 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				var response = await Catalog.CreateAssetTagAsync(asset.ID, currentTag.ID);
+				var response = await Catalog.CreateAssetTagAsync(asset.ID, currentTag.ID, currentTag.TagTypeID);
 
 				if (response.IsSuccess)
 				{
@@ -3352,7 +3102,7 @@ namespace d360.web.Controllers.V2
 
 				if (assetTag != null)
 				{
-					await Catalog.RemoveAssetTagAsync(asset.ID, currentTag.ID);
+					await Catalog.RemoveAssetTagAsync(asset.ID, currentTag.ID, currentTag.TagTypeID);
 					result = new AssetTagSuccessApiModel
 					{
 						Message = $"Asset / Tag Association  Deleted",
@@ -3464,24 +3214,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetColors()
 		{
-			var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
-			var errorMessage = "";
-
-			try
-			{
-				var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color", ApiTimeout);
-
-				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Name, title = x.Value }))));
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage));
-			}
+			var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color", ApiTimeout);
+			return Ok(results.Select(x => new { label = x.Name, value = x.Name, title = x.Value }));
 		}
 
 		/// <summary>
@@ -3513,7 +3247,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, Error.InvalidAssetTypeUid)));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			int pageSize = 500;
@@ -3523,7 +3257,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (res > maxPageSize || res < 1)
 					{
-						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.PageSizeRange)));
+						return errorMessageArgumentResponse(Error.PageSizeRange);
 					}
 					else
 					{
@@ -3532,7 +3266,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.PageSizeNotNumber)));
+					return errorMessageArgumentResponse(Error.PageSizeNotNumber);
 				}
 			}
 
@@ -3543,7 +3277,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (res < 1)
 					{
-						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidPageNumberGT0)));
+						return errorMessageArgumentResponse(Error.InvalidPageNumberGT0);
 					}
 					else
 					{
@@ -3552,7 +3286,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidPageNumber)));
+					return errorMessageArgumentResponse(Error.InvalidPageNumber);
 				}
 			}
 
@@ -3565,14 +3299,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Error.InvalidParameterIncludeTotal)));
+					return errorMessageArgumentResponse(Error.InvalidParameterIncludeTotal);
 				}
 			}
 
 			AssetPathResults results = await Catalog.ReadAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
 
-			HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+			return Ok(results);
 		}
 
 
@@ -3890,17 +3623,8 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid));
 			}
 
-			try
-			{
-				var results = await AssetRepository.GetWatchedAssetDetails(assetTypeUid, queryParams);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			var results = await AssetRepository.GetWatchedAssetDetails(assetTypeUid, queryParams);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -4129,7 +3853,7 @@ namespace d360.web.Controllers.V2
 			Guid assetTypeID;
 			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
 			{
-				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetUid, assetTypeUid));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid));
 			}
 
 			ValidateParameters();
@@ -4138,7 +3862,7 @@ namespace d360.web.Controllers.V2
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{
-				return errorMessageNotFoundResponse($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid));
 			}
 
 			var result = entities.Select(x => new AssetTypeAncestryModel
@@ -4149,7 +3873,7 @@ namespace d360.web.Controllers.V2
 
 			return Ok(result);
 		}
-
+		
 		/// <summary>
 		/// Hidden API to return class of asset
 		/// </summary>

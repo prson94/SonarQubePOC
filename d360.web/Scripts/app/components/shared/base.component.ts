@@ -8,7 +8,6 @@ import {
 import { Permissions, PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-
 import { Subscription } from 'rxjs';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
@@ -27,9 +26,6 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-
-/*global $localize*/
 
 export class BaseComponent {
 	public isLoading = false;
@@ -103,11 +99,9 @@ export class BaseComponent {
 	//permissions coming from v2 api's
 	objectPermission: Permissions;
 
-
 	// default paging options
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
-	launchDarklyService: LaunchDarklyService
 
 	protected secondaryNavService: SecondaryNavService = null;
 	protected webAnalyticsService: WebAnalyticsService = null;
@@ -316,7 +310,7 @@ export class BaseComponent {
 	//#endregion permissions functionality
 
 	setScoringSecondaryNavTabs(assetTypeUid: string, selectedAllocationUid: string, allocations: ScoreTypeAllocation[]) {
-		var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
+		const baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
 
 		if (this.secondaryNavService) {
 			this.clearSidebar();

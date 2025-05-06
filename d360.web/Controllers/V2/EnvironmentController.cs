@@ -4,11 +4,11 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Usage;
+using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -34,7 +34,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
-
+using static IdentityModel.OidcConstants;
 namespace d360.web.Controllers.V2
 {
 	/// <summary>
@@ -59,20 +59,6 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
-
-		private bool IsCustomCssEnabled {
-			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, ffUser);
-			}
-		}
-		private bool IsDashboardingEnabled {
-			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, ffUser, true);
-			}
-		}
-
 
 		public EnvironmentController(
 			ICoreComponentSet set, 
@@ -117,9 +103,6 @@ namespace d360.web.Controllers.V2
 					case CompanyRebuildJobToken.DisplayValues:
 						Company.RebuildDisplayValuesRequest();
 						break;
-					case CompanyRebuildJobToken.SearchIndex:
-						Company.RebuildIndexRequest();
-						break;
 				}
 			}
 			return (response.IsSuccess) ?
@@ -143,10 +126,8 @@ namespace d360.web.Controllers.V2
 				ResourceName = res.FullName,
 				ResourceEmail = res.Email,
 				VersionNumber = typeof(EnvironmentController).Assembly.GetName().Version.ToString(),
-				DataDogApplicationId = ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "",
-				DataDogClientToken = ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "",
-				DataDogService = ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "",
-				ApplicationLanguageSetting = ""
+				ApplicationLanguageSetting = "",
+				ApplicationInsightsConnectionString = Config.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING")
 			};
 
 			return Request.CreateResponse(HttpStatusCode.OK, data);
@@ -490,34 +471,18 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// Retrieves environment licensing info. 
-		/// Infogix users are excluded from user counts.
+		/// Retrieves a list of feature flags for this environemnt.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>An HTTP status code and message.</returns>
 		[
 			HttpGet,
-			Route("featureflaginfo"),
-			SwaggerConsumes("application/json"),
+			Route("feature-flags"),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetFeatureFlagInfo()
+		public async Task<IHttpActionResult> GetFeatureFlagsForTenant()
 		{
-			var userModel = await GetFeatureFlagUser();
-			var user = new FeatureFlagUser
-			{
-				key = userModel.Key,
-				anonymous = false,
-				firstName = userModel.FirstName,
-				lastName = userModel.LastName,
-				email = userModel.Email,
-				custom = new Dictionary<string, string> {
-						{ "tenantId", userModel.TenantId.ToString() },
-						{ "tenantName", userModel.TenantName }
-					}
-			};
-				
-			var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
-			return Ok(new { clientId = ClientId, user });
+			var response = await GetFeatureFlags();
+			return Ok(response);
 		}
 
 		/// <summary>
@@ -689,13 +654,13 @@ namespace d360.web.Controllers.V2
 								else
 								{
 									code = HttpStatusCode.BadRequest;
-									errorMessage = Error.InvalidResourceUID;
+									errorMessage = Error.Invalid_ResourceUID;
 								}
 							}
 							else
 							{
 								code = HttpStatusCode.BadRequest;
-								errorMessage = Error.InvalidResourceUID;
+								errorMessage = Error.Invalid_ResourceUID;
 							}
 						}
 						else if (key == "_assetuid")
@@ -976,7 +941,7 @@ select	r.uid as ResourceUid,
 						value.Sidebar,
 						value.Tab
 					});
-				return Request.CreateResponse(HttpStatusCode.OK);
+				return Request.CreateResponse(HttpStatusCode.OK, new { });
 			}
 			else
 			{
@@ -1426,6 +1391,26 @@ select	r.uid as ResourceUid,
 
 		#endregion
 
+		/// <summary>
+		/// Provides the version number and revision of Govern for this environment.
+		/// </summary>
+		[
+		   HttpGet,
+		   MapToApiVersion("2.0"),
+		   Route("product-version"),
+		   SwaggerProduces("application/json")
+		]
+		public IHttpActionResult GetProductVersion()
+		{
+			var version = typeof(HomeController).Assembly.GetName().Version;
+
+			return Ok(new
+			{
+				version = $"{version.Major}.{version.Minor}.{version.Build}",
+				revision = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+			});
+		}
+
 		#region Theme Endpoints
 
 		const string THEME_UID_FILTER_PARAMETER = "An optional unique identifier of the theme, to limit this list to a specific theme.";
@@ -1446,20 +1431,28 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
 		{
-			try
+			var queryParams = Request.GetQueryNameValuePairs();
+			Guid themeUid = Guid.Empty;
+
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "uid"))
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				var apiModels = await ThemeRepository.GetThemesAsync(queryParams, cancellationToken);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
+				if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "uid").Value, out themeUid))
+				{
+					return errorMessageArgumentResponse(Error.InvalidUidParameter);
+				}
 			}
-			catch (GenericException)
-			{
-				throw;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			List<ThemewithResource> dbModels = await Community.ReadThemesAsync(SecurityContext.CompanyID, themeUid);
+
+			var baseUri = await ThemeRepository.GetBaseUriTheme();
+
+			var apiModels = dbModels
+				   .ToList()
+				   .Select(m => m.ToGetModel(baseUri, SecurityContext.CompanyID))
+				   .OrderBy(t => t.Name)
+				   .ToList();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
 		}
 
 		/// <summary>
@@ -1476,111 +1469,103 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetCurrentThemeCss()
 		{
-			try
+			ThemewithResource themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			if (themerec == null)
 			{
-				var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
+				throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
+			}
+			var theme = await ThemeRepository.GetCurrentThemeByUserAsync(themerec);
 
-				string textColorFromBackground(string backgroundColor)
+			string textColorFromBackground(string backgroundColor)
+			{
+				Color col = ColorTranslator.FromHtml(backgroundColor);
+				if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
 				{
-					Color col = ColorTranslator.FromHtml(backgroundColor);
-					if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
-					{
-						return "white";
-					}
-					return "black";
+					return "white";
 				}
+				return "black";
+			}
 
-				string hexToRGBA(string backgroundColor, float opacity)
-				{
-					Color col = ColorTranslator.FromHtml(backgroundColor);
-					return $"rgba({col.R},{col.G},{col.B},{opacity})";
-				}
+			string hexToRGBA(string backgroundColor, float opacity)
+			{
+				Color col = ColorTranslator.FromHtml(backgroundColor);
+				return $"rgba({col.R},{col.G},{col.B},{opacity})";
+			}
 
-				string BlendHexToRGB(string color, string backgroundColor, float opacity)
-				{
-					var col = ColorTranslator.FromHtml(color);
-					var background = ColorTranslator.FromHtml(backgroundColor);
-					var resultColor = Blend(col, background, opacity);
-					return $"rgba({resultColor.R},{resultColor.G},{resultColor.B})";
-				}
+			string BlendHexToRGB(string color, string backgroundColor, float opacity)
+			{
+				var col = ColorTranslator.FromHtml(color);
+				var background = ColorTranslator.FromHtml(backgroundColor);
+				var resultColor = Blend(col, background, opacity);
+				return $"rgba({resultColor.R},{resultColor.G},{resultColor.B})";
+			}
 
-				Color Blend(Color color, Color backColor, double amount)
-				{
-					byte r = (byte)(color.R * amount + backColor.R * (1 - amount));
-					byte g = (byte)(color.G * amount + backColor.G * (1 - amount));
-					byte b = (byte)(color.B * amount + backColor.B * (1 - amount));
-					return Color.FromArgb(r, g, b);
-				}
+			Color Blend(Color color, Color backColor, double amount)
+			{
+				byte r = (byte)(color.R * amount + backColor.R * (1 - amount));
+				byte g = (byte)(color.G * amount + backColor.G * (1 - amount));
+				byte b = (byte)(color.B * amount + backColor.B * (1 - amount));
+				return Color.FromArgb(r, g, b);
+			}
 
-				if (theme == null)
-				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoActiveThemeExists);
-				}
+			if (theme == null)
+			{
+				return errorMessageArgumentResponse(Error.NoActiveThemeExists);
+			}
 
-				var css = new StringBuilder();
-				css.AppendLine(":root {");
-				css.AppendCssVariable("backColor", theme.BackColor);
-				css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-				css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-				css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-				css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-				css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-				css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
-				css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-				//secondary button select color is derived from primary button color
-				css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
-				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
-				css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-				css.AppendCssVariable("tableRowBackColorHover", BlendHexToRGB(theme.TableRowBackSelectedColor, "#ffffff", 0.35f));
-				css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			var css = new StringBuilder();
+			css.AppendLine(":root {");
+			css.AppendCssVariable("backColor", theme.BackColor);
+			css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+			css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+			css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+			css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+			css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+			css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
+			css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+			//secondary button select color is derived from primary button color
+			css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
+			css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+			css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+			css.AppendCssVariable("tableRowBackColorHover", BlendHexToRGB(theme.TableRowBackSelectedColor, "#ffffff", 0.35f));
+			css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			css.AppendLine("");
+			css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
+			css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
+			css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+
+			css.AppendCssVariable("calculatedHeaderTextColorOpacity20", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.2f));
+			css.AppendCssVariable("calculatedHeaderTextColorOpacity40", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.4f));
+
+			css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
+			css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
+			css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
+			css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
+			css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
+			css.AppendLine("");
+
+			var imgVersionString = $"?v={theme.UpdatedOn.Ticks.ToString()}";
+			var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
+			css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri}{imgVersionString})");
+
+			var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
+			css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri}{imgVersionString})");
+
+			css.AppendLine("}");
+
+			if (SecurityContext.ResourceID > 0)
+			{
+				var customCss = await Community.ReadCurrentThemeCustomCssByUsersAsync(SecurityContext.CompanyID,SecurityContext.ResourceID);
 				css.AppendLine("");
-				css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
-				css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
-				css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+				css.Append(customCss);
+			}
 
-				css.AppendCssVariable("calculatedHeaderTextColorOpacity20", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.2f));
-				css.AppendCssVariable("calculatedHeaderTextColorOpacity40", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.4f));
-
-				css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
-				css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
-				css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
-				css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
-				css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
-				css.AppendLine("");
-
-				var imgVersionString = $"?v={theme.UpdatedOn.Ticks.ToString()}";
-				var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
-				css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri}{imgVersionString})");
-
-				var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
-				css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri}{imgVersionString})");
-
-				css.AppendLine("}");
-
-				if (SecurityContext.ResourceID > 0)
+			return ResponseMessage(
+				new HttpResponseMessage
 				{
-					//https://jira.syncsort.com/browse/GOV-21052
-					//Limited / Low-risk information disclosure via CSS overrides
-					var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
-					css.AppendLine("");
-					css.Append(customCss);
-				}
-
-				return ResponseMessage(
-					new HttpResponseMessage
-					{
-						Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
-						StatusCode = HttpStatusCode.OK
-					});
-			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGetMany, Error.UnknownErrorInvestigatingMessage);
-			}
+					Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+					StatusCode = HttpStatusCode.OK
+				});
 		}
 
 		/// <summary>
@@ -1595,49 +1580,38 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult GetThemeCssByUid(Guid uid)
+		public async Task<IHttpActionResult> GetThemeCssByUid(Guid uid)
 		{
-			try
-			{
-				var theme = ThemeRepository.GetThemeByUid(uid);
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
-				if (theme == null)
+			if (theme == null)
+			{
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
+			}
+
+			var css = new StringBuilder();
+			css.AppendLine(":root {");
+			css.AppendCssVariable("backColor", theme.BackColor);
+			css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+			css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+			css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+			css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+			css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+			css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+			css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+			css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+			css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+			css.AppendLine("}");
+
+			css.AppendLine("");
+			css.Append(theme.CustomCss + "");
+
+			return ResponseMessage(
+				new HttpResponseMessage
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
-				}
-
-				var css = new StringBuilder();
-				css.AppendLine(":root {");
-				css.AppendCssVariable("backColor", theme.BackColor);
-				css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-				css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-				css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-				css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-				css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-				css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
-				css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-				css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
-				css.AppendLine("}");
-
-				css.AppendLine("");
-				css.Append(theme.CustomCss + "");
-
-				return ResponseMessage(
-					new HttpResponseMessage
-					{
-						Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
-						StatusCode = HttpStatusCode.OK
-					});
-			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnGet, Error.UnknownErrorInvestigatingMessage);
-			}
+					Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+					StatusCode = HttpStatusCode.OK
+				});
 		}
 
 		/// <summary>
@@ -1653,25 +1627,25 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult GetThemeCustomCssByUid(Guid uid)
+		public async Task<IHttpActionResult> GetThemeCustomCssByUid(Guid uid)
 		{
 			try
 			{
-				if (!IsCustomCssEnabled)
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
-					throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnGet, Error.CustomCssNotAllowed);
+					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
 				}
 
 
-				var theme = ThemeRepository.GetThemeByUid(uid);
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 				if (theme == null)
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.ThemeWithUidNotFound);
+					return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 				}
 
 				if (string.IsNullOrEmpty(theme.CustomCss))
 				{
-					throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.CustomCssNotFound);
+					return errorMessageArgumentResponse(Error.CustomCssNotFound);
 				}
 
 				return ResponseMessage(
@@ -1714,7 +1688,7 @@ select	r.uid as ResourceUid,
 
 			try
 			{
-				var theme = ThemeRepository.GetThemeByUid(uid);
+				var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
 				if (theme == null)
 				{
@@ -1865,28 +1839,48 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostTheme(PostTheme requestModel, [FromUri] bool validationOnly = false)
 		{
-			try
+			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!string.IsNullOrEmpty(requestModel.CustomCss))
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
-					if (!IsCustomCssEnabled)
-					{
-						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.CustomCssNotAllowed);
-					}
+					return errorMessageArgumentResponse(Error.CustomCssNotAllowed);
+				}
+			}
+
+			var repoTheme = requestModel.ToRepositoryModel(SecurityContext.ResourceID);
+			repoTheme.Validate();
+
+			var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, repoTheme.Name);
+
+			if (themerec !=null)
+			{
+				return errorMessageArgumentResponse(Error.ThemeNameMustBeUnique);
+			}
+
+			var responseModel = new GetTheme();
+
+			if (!validationOnly)
+			{
+				RepositoryResponse<bool> response = null;
+				var resource = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+				response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, repoTheme, SecurityContext.ResourceID , true, true);
+
+				if (!response.IsSuccess)
+				{
+					return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 				}
 
-				var responseModel = await ThemeRepository.PostThemeAsync(requestModel, validationOnly);
+				var baseUri = await ThemeRepository.GetBaseUriTheme();
+				var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
+				responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+				await addStorageFile(responseModel.Uid, "icon", repoTheme.BrowserIcon, repoTheme.BrowserIconExtension);
+				await addStorageFile(responseModel.Uid, "logo", repoTheme.HeaderLogo, repoTheme.HeaderLogoExtension);
+				await addStorageFile(responseModel.Uid, "background", repoTheme.HomePageBackground, repoTheme.HomePageBackgroundExtension);
+
 			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnCreate, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 		}
 
 		/// <summary>
@@ -1912,28 +1906,93 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutTheme(Guid uid, PutTheme requestModel)
 		{
-			try
+			if (!string.IsNullOrEmpty(requestModel.CustomCss))
 			{
-				if (!string.IsNullOrEmpty(requestModel.CustomCss))
+				if (!await GetFeatureFlagValue(FlagList.BRANDING_CUSTOM_CSS))
 				{
-					if (!IsCustomCssEnabled)
-					{
-						throw new GenericException(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
-					}
+					return errorMessageResponse(HttpStatusCode.Conflict, Error.ErrorOnUpdate, Error.CustomCssNotAllowed);
 				}
+			}
 
-				var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel);
+			var existingTheme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModel));
-			}
-			catch (GenericException ex)
+			if (existingTheme == null)
 			{
-				throw ex;
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 			}
-			catch
+
+			if (requestModel.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(Error.ThemeInUseForIsCurrentEdit);
 			}
+
+			if (existingTheme.Locked)
+			{
+				return errorMessageArgumentResponse(Error.ThemeIsLocked);
+			}
+
+			var deleteIcon = (requestModel.Icon == "" && existingTheme.BrowserIconExtension != null);
+			var deleteLogo = (requestModel.HeaderLogo == "" && existingTheme.HeaderLogoExtension != null);
+			var deleteBackground = (requestModel.HomeBackground == "" && existingTheme.HomePageBackgroundExtension != null);
+
+			existingTheme = requestModel.ToRepositoryModel(existingTheme, SecurityContext.ResourceID);
+			existingTheme.Validate();
+
+			var themerec = await Community.ReadThemeAsync(SecurityContext.CompanyID, existingTheme.Name);
+
+			if (themerec != null && themerec.Uid != existingTheme.Uid)
+			{
+				return errorMessageArgumentResponse(Error.ThemeNameMustBeUnique);
+			}
+
+			RepositoryResponse<bool> response = null;
+			var createdBy = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, existingTheme.CreatedBy);
+			var updatedBy = await Community.ReadUsersByTenantFromIDAsync(SecurityContext.CompanyID, existingTheme.UpdatedBy);
+			response = await Community.UpsertThemeAsync(SecurityContext.CompanyID, existingTheme, SecurityContext.ResourceID, true);
+			if (!response.IsSuccess)
+			{
+				return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
+			}
+
+			if (deleteIcon)
+			{
+				await deleteStorageFile(existingTheme.Uid, "icon", existingTheme.BrowserIconExtension);
+			}
+			if (deleteLogo)
+			{
+				await deleteStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogoExtension);
+			}
+			if (deleteBackground)
+			{
+				await deleteStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackgroundExtension);
+			}
+
+			await addStorageFile(existingTheme.Uid, "icon", existingTheme.BrowserIcon, existingTheme.BrowserIconExtension);
+			await addStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogo, existingTheme.HeaderLogoExtension);
+			await addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
+
+			var baseUri = await ThemeRepository.GetBaseUriTheme();
+			var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
+			var reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
+
+			return Ok(reponseModel);
+		}
+
+		private async Task addStorageFile(Guid uid, string fileSuffix, byte[] content, string extension)
+		{
+			if (content != null && content.Length > 0)
+			{
+				var path = $"{SecurityContext.CompanyID}/{uid.ToString().ToLowerInvariant()}_{fileSuffix}{extension}";
+				var contentType = MimeTypeExtensionsMap.GetMimeType(extension);
+				var stream = new MemoryStream(content);
+				await _storage.CreateFile("themes", path, stream, contentType);
+			}
+		}
+
+		private async Task deleteStorageFile(Guid uid, string fileSuffix, string extension)
+		{
+			var path = $"{SecurityContext.CompanyID}/{uid.ToString().ToLowerInvariant()}_{fileSuffix}{extension}";
+			await _storage.DeleteFile("themes", path);
 		}
 
 
@@ -1955,26 +2014,17 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> MarkThemeAsCurrent(Guid uid)
 		{
-			try
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+			if (theme == null)
 			{
-				var success = await ThemeRepository.MarkThemeAsCurrentAsync(uid);
-				if (success)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
-				}
-				else
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
-				}
+				return errorMessageArgumentResponse(Error.ThemeWithUidNotFound);
 			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			var response = await Community.MarkThemeCurrentAsync(SecurityContext.CompanyID, uid);
+
+			return response.IsSuccess ?
+				Ok(new ConfirmResponse { message = "Theme marked as current." }) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -1993,22 +2043,33 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
-		public IHttpActionResult DeleteTheme(Guid uid)
+		public async Task<IHttpActionResult> DeleteTheme(Guid uid)
 		{
-			try
-			{
-				var status = ThemeRepository.Delete(uid);
+			var theme = await Community.ReadThemeUidAsync( SecurityContext.CompanyID, uid);
 
-				return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
-			}
-			catch (GenericException ex)
+			if (theme == null)
 			{
-				throw ex;
+				return errorMessageNotFoundResponse(Error.ThemeWithUidNotFound);
 			}
-			catch
+
+			if (theme.Locked)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnDelete, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ThemeIsLockedForRemoval);
 			}
+
+			if (theme.IsCurrent)
+			{
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ThemeInUseForRemoval);
+			}
+
+			RepositoryResponse<bool> response = null;
+			response = await Community.RemoveThemeAsync(SecurityContext.CompanyID, uid);
+			if (!response.IsSuccess)
+			{
+				return errorMessageResponse(HttpStatusCode.Conflict, Error.ErrorOnCreate, Error.ErrorRemoveTheme);
+			}
+
+			return Ok(new ConfirmResponse { message = "Theme removed." });
 		}
 
 
@@ -2052,39 +2113,25 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> ConvertImageToDataUrl()
 		{
-			const string ERROR_HEADING = "Error converting css";
+			var c = await Request.Content.ReadAsMultipartAsync();
+			var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
 
-			try
+			if (file == null)
 			{
-				var c = await Request.Content.ReadAsMultipartAsync();
-				var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
-
-				if (file == null)
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, "You must provide an image file to convert.");
-				}
-
-				byte[] bytes = await file.ReadAsByteArrayAsync();
-				string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
-
-				var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
-				if (!goodExtensions.Contains(extension))
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, "You must provide a valid image file.");
-				}
-
-				var dataUri = bytes.GetDataUrlFromStream(extension);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataUri));
+				return errorMessageArgumentResponse("You must provide an image file to convert.");
 			}
-			catch (GenericException ex)
+
+			byte[] bytes = await file.ReadAsByteArrayAsync();
+			string extension =  Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+
+			var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
+			if (!goodExtensions.Contains(extension))
 			{
-				throw ex;
+				return errorMessageArgumentResponse("You must provide a valid image file.");
 			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			var dataUri = bytes.GetDataUrlFromStream(extension);
+			return Ok(dataUri);
 		}
 
 		/// <summary>
@@ -2102,47 +2149,53 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> Base64Images(Guid uid)
 		{
-			var theme = Company.Themes.AsNoTracking().FirstOrDefault(x => x.Uid == uid);
+			var theme = await Community.ReadThemeUidAsync(SecurityContext.CompanyID, uid);
+			if (theme == null)
+			{
+				return errorMessageNotFoundResponse(Error.ThemeWithUidNotFound);
+			}
+
 			var response = new ThemeBase64Data();
+
 			if (theme.HomePageBackgroundExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+				response.HomeBackground = await GetImageAsString(url, theme.HomePageBackgroundExtension);
 			}
 
 			if (theme.BrowserIconExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+				response.Icon = await GetImageAsString(url, theme.BrowserIconExtension);
 			}
 
 			if (theme.HeaderLogoExtension != null)
 			{
-				using (var stream = new MemoryStream())
-				{
-					var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
-					await _storage.GetFileStream("themes", url, stream);
-					response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
-				}
+				var url = $"{SecurityContext.CompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+				response.HeaderLogo = await GetImageAsString(url, theme.HeaderLogoExtension);
 			}
 
 			return Ok(response);
 		}
 
+		private async Task<string> GetImageAsString(string url, string extension)
+		{
+			try
+			{
+				using (var stream = new MemoryStream())
+				{
+					await _storage.GetFileStream("themes", url, stream);
+					return stream.ToArray().GetDataUrlFromStream(extension);
+				}
+			} catch (FileNotFoundException ex)
+			{
+				return null;
+			}
+		}
+
 
 		#endregion
-
 		#region Dashboard Endpoints
-
 		/// <summary>
 		/// Gets a list of dashboards in an environment.
 		/// </summary>
@@ -2204,7 +2257,7 @@ select	r.uid as ResourceUid,
 				}
 			}
 
-			if (IsDashboardingEnabled)
+			if (await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 				return Ok(responseModel);
@@ -2255,7 +2308,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PostDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnCreate, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2365,7 +2418,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> PutDashboard()
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageForbiddenResponse(Error.EndpointNotAuthorizedMessage);
 			}
@@ -2455,7 +2508,7 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> DeleteDashboard(Guid uid)
 		{
-			if (!IsDashboardingEnabled)
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED))
 			{
 				return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnDelete, Error.EndpointNotAuthorizedMessage);
 			}
@@ -2497,48 +2550,37 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> UpdatePowerBiCredentials(PowerBiCredentials credentials)
 		{
-			try
+			if (!await GetFeatureFlagValue(FlagList.DASHBOARDING_ENABLED) || !SecurityContext.IsAdministrator)
 			{
-				if (!IsDashboardingEnabled || !SecurityContext.IsAdministrator)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, Error.ErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
-				}
-
-				if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
-				{
-					throw new ArgumentNullException(Error.PleaseSpecifyUserNamePassword);
-				}
-
-				var companySettings = await GetCachedSettings();
-				var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
-				var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
-
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
-				}
-
-				// if the workspace id is null create a new one and update the companysettings
-				groupId = await checkPowerBIValidWorkspace(groupId, clientId);
-
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(Error.UnableToFindPowerBISettings);
-				}
-
-				//save password in this workspace for all ds's
-				await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Power Bi credentials updated" }));
+				return errorMessageResponse(HttpStatusCode.Forbidden, Error.DashboardingErrorOnUpdate, Error.EndpointNotAuthorizedMessage);
 			}
-			catch (GenericException ex)
+
+			if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
 			{
-				throw ex;
+				return errorMessageArgumentResponse(Error.PleaseSpecifyUserNamePassword);
 			}
-			catch
+
+			var companySettings = await GetCachedSettings();
+			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
+			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
+
+			if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorOnUpdate, Error.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(Error.UnableToFindPowerBISettings);
 			}
+
+			// if the workspace id is null create a new one and update the companysettings
+			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+
+			if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+			{
+				return errorMessageArgumentResponse(Error.UnableToFindPowerBISettings);
+			}
+
+			//save password in this workspace for all ds's
+			await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
+
+			return Ok(new ConfirmResponse { message = "Power Bi credentials updated" });
 		}
 
 		[
@@ -2678,6 +2720,9 @@ select	r.uid as ResourceUid,
 			{
 				await this.ResourceSettingRepository.UpsertGlobalSetting(SecurityContext.ResourceID, "ApplicationLanguage", model.LanguageCode);
 			}
+			string langKey = "ResourceLanguages";
+			string resourceKey = $"{SecurityContext.CompanyID}_{SecurityContext.ResourceID}";
+			Cache.SetItemInListByID(langKey, resourceKey, model.LanguageCode);
 
 			return Request.CreateResponse(HttpStatusCode.OK);
 		}
@@ -2827,32 +2872,21 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetUserSettings(CancellationToken cancellationToken)
 		{
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				Guid AssetTypeUID = Guid.Empty;
+			var queryParams = Request.GetQueryNameValuePairs();
+			Guid AssetTypeUID = Guid.Empty;
 
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+			{
+				if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
 				{
-					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
-					{
-						AssetTypeUID = Guid.Empty;
-						throw new GenericException(HttpStatusCode.BadRequest, Error.ErrorGeneric, Error.InvalidAssetTypeUid);
-					}
+					AssetTypeUID = Guid.Empty;
+					return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 				}
+			}
 
-				var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
+			var settings = await ResourceSettingRepository.GetSettings(SecurityContext.ResourceID, AssetTypeUID);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
-			}
-			catch (GenericException)
-			{
-				throw;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.UnknownErrorInvestigatingMessage);
-			}
+			return Ok(settings);
 		}
 
 		/// <summary>

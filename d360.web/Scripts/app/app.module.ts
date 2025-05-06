@@ -1,4 +1,4 @@
-﻿import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
+﻿import { APP_INITIALIZER, ErrorHandler, LOCALE_ID, NgModule } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
@@ -23,17 +23,23 @@ import { AngularSplitModule } from 'angular-split';
 import { FeatureFlagsInitService } from './services/feature-flags-init.service';
 import { forkJoin } from "rxjs";
 import { SessionTimeoutModalModule } from './components/session-timeout-modal/session-timeout-modal.module';
+import { ApplicationinsightsAngularpluginErrorService } from '@microsoft/applicationinsights-angularplugin-js';
+import { CompanySettingsService } from './services/settings.service';
 
 export function localeIdFactory() {
     return navigator.language;
 }
 
-export function featureFlagServiceInitializer(provider: FeatureFlagsInitService) {
-    return () => provider.initialize();
+export function featureFlagsFromCommunity(provider: FeatureFlagsInitService) {
+	return () => provider.getFlags();
 }
 
 export function settingsInitializer(provider: SettingsProviderService) {
 	return () => forkJoin(provider.loadSettings(), provider.loadApplicationSettings());
+}
+
+export function userVariablesInitializer(provider: CompanySettingsService) {
+	return () => provider.loadUserVariables();
 }
 
 export function localeInitializer(localeId: string) {                  
@@ -100,20 +106,27 @@ export function localeInitializer(localeId: string) {
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
         },
-        {
-            provide: APP_INITIALIZER,
-            multi: true,
-            useFactory: featureFlagServiceInitializer,
-            deps: [FeatureFlagsInitService]
-        },
-        {
+		{
+			provide: APP_INITIALIZER,
+			multi: true,
+			useFactory: featureFlagsFromCommunity,
+			deps: [FeatureFlagsInitService]
+		},
+		{
+			provide: APP_INITIALIZER,
+			multi: true,
+			useFactory: userVariablesInitializer,
+			deps: [CompanySettingsService]
+		},
+		{
             provide: APP_INITIALIZER,
             multi: true,
             useFactory: settingsInitializer,
 			deps: [SettingsProviderService]
         },
         NumberOfRowsByCategoryServiceInitializer,
-        { provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },
+		{ provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },
+		{ provide: ErrorHandler, useClass: ApplicationinsightsAngularpluginErrorService }
     ]
 })
 

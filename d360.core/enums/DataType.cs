@@ -66,9 +66,6 @@ namespace d360.core
         [Description("Field from Relationship")]
         FieldFromRelationship = 1 << 22,
 
-        [Description("Reference Item List from Relationship")]
-        RefListRelationship = 1 << 23,
-
         [Description("JSON")]
         JSON = 1 << 24,
 
@@ -85,7 +82,10 @@ namespace d360.core
         Counter = 1 << 28,
 
 		[Description("System")]
-		System = 1 << 29
+		System = 1 << 29,
+
+		[Description("Reference List")]
+		ReferenceList = 1 << 30
 	}
 
     public class DataTypeInfo
@@ -215,12 +215,12 @@ namespace d360.core
                 case DataType.Number: return Enums.FieldType_Number;
                 case DataType.OwnershipLookup: return Enums.FieldType_OwnershipLookup;
                 case DataType.Path: return Enums.FieldType_AssetPath;
-                case DataType.RefListRelationship: return Enums.FieldType_ReferenceItemListFromRel;
                 case DataType.Relationship: return Enums.FieldType_Relationship;
                 case DataType.Score: return Enums.FieldType_Score;
                 case DataType.Tag: return Enums.FieldType_Tag;
                 case DataType.Text: return Enums.FieldType_SimpleText;
 				case DataType.System: return Enums.FieldType_System;
+				case DataType.ReferenceList: return Enums.FieldType_ReferenceList;
 
 				default: throw new ArgumentOutOfRangeException("DataType");
             }

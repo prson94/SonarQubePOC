@@ -48,10 +48,6 @@ import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { GridSortData } from '../../services/state.service';
 import { isEmpty } from "lodash-es";
-import { FeatureFlags } from '../../services/feature-flags.enum';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-
-/*global $localize*/
 
 @Component({
 	selector: 'd3s-hierarchy-item-structure',
@@ -184,8 +180,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		private router: Router,
 		private changeDetectorRef: ChangeDetectorRef,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private elRef: ElementRef,
-		private featureFlagService: LaunchDarklyService
+		private elRef: ElementRef
 	) {
 		super(settingsService);
 

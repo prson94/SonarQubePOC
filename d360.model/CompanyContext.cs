@@ -1191,6 +1191,7 @@ from	Field F
 				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
 				 where it.SubjectAssetTypeID = T.ID)");
 			}
+			whereStatements.Add($"T.UID NOT IN ('{Refertypelistuid.ToString().CleanForSql()}')");
 
 			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
 
@@ -2101,11 +2102,6 @@ from	IntersectType I
 		public void RebuildDisplayValuesRequest()
 		{
 			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = SecurityContext.CompanyID, RebuildAll = true });
-		}
-
-		public void RebuildIndexRequest()
-		{
-			Enqueue(constants.Queue.Search, new ReindexModel { CompanyID = SecurityContext.CompanyID });
 		}
 
 		public string RenderTooltip(string action, SystemObjects type, int id)

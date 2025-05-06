@@ -1,4 +1,13 @@
-﻿using d360.core;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -6,16 +15,6 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -43,7 +42,7 @@ namespace d360.model
 
 		#region Methods
 
-		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField");
+		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField", bool isFieldtypeDatePK = false);
 
 		void CompleteApiExecutionAndGetCounts(Guid executionId, ApiExecutionAction action);
 		void CompleteApiExecutionAndGetCounts(int executionId, ApiExecutionAction action);
@@ -64,13 +63,15 @@ namespace d360.model
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
 
-		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
+		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true, bool hasReferenceListFieldTypes = true);
 
 		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
 
 		List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
 
 		void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
+
+		void ResolveFieldReferenceList(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
 
 		void SetApiExecutionProcessingStartTime(Guid ExecutionId);
 
@@ -503,33 +504,34 @@ from    api.ExecutionAsset T
             if (!SecurityContext.IsAdministrator)
             {
                 Connection.Execute($@"
-									declare @hasAssetTypePermission bit = 0
+declare	@assetTypePermissions int, 
+		@hasAssetTypePermission bit = 0
 
-									select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissionsByAssetID(@resourceID, @assetTypeID, 0) where PermissionsBitMask & @p = @p) then 1 else 0 end
+select	@assetTypePermissions = dbo.GetCombinedPermissionsForUserByAssetTypeId(@assetTypeID, @resourceID);
+set		@hasAssetTypePermission = @assetTypePermissions & @p
 
-									if @hasAssetTypePermission = 0
-									begin
+if @hasAssetTypePermission = 0
+begin
+	drop table if exists #tempcheckpermission;
 
-										drop table if exists #tempcheckpermission;
+	select	usrper.AssetID
+	into	#tempcheckpermission
+	from	api.Execution E
+			cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
+	where	E.ExecutionID = @executionID
+			and usrper.PermissionsBitMask & @p = @p
+	group by usrper.AssetID;
 
-										select usrper.AssetID
-										into #tempcheckpermission
-										from api.Execution E
-										cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
-										where E.ExecutionID = @executionID
-										and usrper.PermissionsBitMask & @p = @p
-										group by usrper.AssetID;
+	create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
 
-										create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
-
-										update	T
-										set		T.Success = 0,
-												T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
-										from    api.{apiTableName} T
-										where   T.ExecutionID = @executionID
-												and T.AssetID is not null
-												and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
-									end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	from    api.{apiTableName} T
+	where   T.ExecutionID = @executionID
+			and T.AssetID is not null
+			and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
+end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = SecurityContext.ResourceID }, commandTimeout: timeout);
             }
         }
 
@@ -654,7 +656,21 @@ from    api.ExecutionAsset T
             }
         }
 
-        private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
+		private void LogFieldReferenceListErrors(Guid executionID, string errorPrefix, int timeout = 3600)
+		{
+			Connection.Execute($@"
+									update	T
+									set		T.Success = 0,
+											T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields [' + F.FieldName + '] with invalid Reference List value: [' + F.FieldValue + ']'
+									from	api.ExecutionAsset T
+									inner join {ApiExecutionFieldTable} F on T.executionid = F.executionid 
+									inner join FieldType FT on F.FieldTypeID = ft.Id and ft.Type = 'ReferenceList'
+									left join assettype att on att.uid = try_cast(f.fieldvalue as uniqueidentifier)  and att.class = 9 and att.objectid > 0
+									where T.executionid = @executionid and att.id is null and coalesce(f.fieldvalue,'')!='';
+									", new { executionID }, commandTimeout: timeout);
+		}
+		
+		private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
             string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "Cast(AD.DisplayValue as nvarchar(4000)) = V.[value]";
@@ -1131,7 +1147,7 @@ from    api.ExecutionAsset T
 										from 
 												FieldType FT 
 												inner join 
-												[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship', 'FieldFromRelationship')
+												[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'FieldFromRelationship')
 												inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
 												and 
 												EDR.Success is null
@@ -1187,9 +1203,25 @@ from    api.ExecutionAsset T
 												and  ER.ExecutionID = @ExecutionID 
 												and ER.Success is null;
 
+									update  ER
+									SET     Success = 0,
+										Message = 'Relationship types not allowed because SubjectUid is Reference List of Reference List Type`s' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join AssetType AST on AST.UID = ER.SubjectUID and AST.Class = 9 and AST.ObjectID = 0
+									where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
+									update  ER
+									SET     Success = 0,
+										Message = 'Relationship types not allowed because ObjectUID is Reference List of Reference List Type`s' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9 and AST.ObjectID = 0
+									where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
 									Update  T
 									set     SubjectClass = SA.[Class], 
-											SubjectAssetTypeID = CASE WHEN SA.Class = 9 and SA.ObjectID = 0 then 0 else SA.ID end
+											SubjectAssetTypeID = SA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType SA on SA.Uid = T.SubjectUid
@@ -1197,7 +1229,7 @@ from    api.ExecutionAsset T
 
 									Update  T
 									set     ObjectClass = OA.[Class], 
-											ObjectAssetTypeID = CASE WHEN OA.Class = 9 and OA.ObjectID = 0 then 0 else OA.ID end
+											ObjectAssetTypeID = OA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType OA on OA.Uid = T.ObjectUid
@@ -1337,15 +1369,31 @@ from    api.ExecutionAsset T
 									and Success is null 
 									and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
+								update  ER
+								SET     Success = 0,
+									Message = 'Relationship types not allowed because SubjectUid is Reference List of Reference List Type`s' 
+								from    [api].[ExecutionRelationshipType] ER 
+										inner join AssetType AST on AST.UID = ER.SubjectUID and AST.Class = 9 and AST.ObjectID = 0
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
+								update  ER
+								SET     Success = 0,
+									Message = 'Relationship types not allowed because ObjectUID is Reference List of Reference List Type`s' 
+								from    [api].[ExecutionRelationshipType] ER 
+										inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9 and AST.ObjectID = 0
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+
 								Update  ER 
-								set     ER.SubjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
+								set     ER.SubjectAssetTypeID = AST.ID,
 										ER.SubjectClass = AST.Class
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.SubjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								Update  ER 
-								set     ER.ObjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
+								set     ER.ObjectAssetTypeID = AST.ID,
 										ER.ObjectClass = AST.Class 
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID 
@@ -1457,8 +1505,9 @@ where   ER.ExecutionID = @ExecutionID
 
 		#region Methods
 
-		public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
+		public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField", bool isFieldtypeDatePK = false)
 		{
+			string sqlstmt = string.Empty;
 			string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
 			string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
 			string keyComparisonUpdateStatement = $@"
@@ -1495,7 +1544,7 @@ where   ER.ExecutionID = @ExecutionID
 
 			if (at.Object == "ReferenceItemType")
 			{
-				Connection.Execute($@"
+				sqlstmt = $@"
 									update  T
 									set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 									from    {assetTable} T
@@ -1515,117 +1564,124 @@ where   ER.ExecutionID = @ExecutionID
 									from		Asset A 
 									where	    A.AssetTypeID = @ID;
 
-									{keyComparisonUpdateStatement}",
-													new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
+									{keyComparisonUpdateStatement}";
+				Connection.Execute(sqlstmt, new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
 			}
 			else
 			{
 				if (parentIntersectTypeId.HasValue)
 				{
 					string CreateFieldTempData = $@"
-													drop table if exists #Keys;
-													CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
-																		KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
+				drop table if exists #Keys;
+				CREATE TABLE #Keys (AssetID bigint, ParentAssetUID uniqueidentifier null, 
+									KeyValue nvarchar(max) null, ActiveKey varchar(32) null);
 
-													{shouldCheckHashStatement}
+				{shouldCheckHashStatement}
 
-													insert into #Keys WITH(TABLOCK)
-													select		A.ID, P.UID as ParentAssetUID, Null, Null
-													from		Asset A 
-															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.ObjectAssetId = A.Id
-															left join Asset P on P.Id = I.SubjectAssetId
-													where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
+				insert into #Keys WITH(TABLOCK)
+				select		A.ID, P.UID as ParentAssetUID, Null, Null
+				from		Asset A 
+						left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.ObjectAssetId = A.Id
+						left join Asset P on P.Id = I.SubjectAssetId
+				where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 
-													create clustered index idx_key_assetid on #keys(AssetID);
+				create clustered index idx_key_assetid on #keys(AssetID);
 
-													if (select count(1) from fieldtype ft 
-														inner join assettype att on att.id = ft.AssetTypeID 
-														where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
-														and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
-														and (select count(1) from fieldtype ft 
-														inner join assettype att on att.id = ft.AssetTypeID 
-														where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID) = 1
+				if (select count(1) from fieldtype ft 
+					inner join assettype att on att.id = ft.AssetTypeID 
+					where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID and ft.DefaultValue is null 
+					and replace(replace(att.DisplayFormat,'}}',''),'{{','') = ft.Name) = 1
+					and (select count(1) from fieldtype ft 
+					inner join assettype att on att.id = ft.AssetTypeID 
+					where ft.IsPartOfKey = 1 and ft.AssetTypeID = @ID) = 1
 
-														begin
-															-- display value is the key field and its the only key field and required...	
-															update T
-															set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
-															from 
-																#Keys T		
-																inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
-														end
-													else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) = 1
-														begin
-															--only key field and required
+					begin
+						-- display value is the key field and its the only key field and required...	
+						update T
+						set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + ADV.DisplayValue
+						from 
+							#Keys T		
+							inner join AssetDisplayValue ADV on ADV.AssetID = T.AssetID
+					end
+				else if (select count(1) from fieldtype where IsPartOfKey = 1 and Assettypeid = @ID) = 1
+					begin
+						--only key field and required
 			
-															select @fieldtypeid = id,
-																   @DefaultValue = DefaultValue,
-																   @FieldDataType = Type
-															from fieldtype
-															where assettypeid = @id and IsPartOfKey = 1;
+						select @fieldtypeid = id,
+								@DefaultValue = DefaultValue,
+								@FieldDataType = Type
+						from fieldtype
+						where assettypeid = @id and IsPartOfKey = 1;
 			
-															if (@FieldDataType = 'Counter')
-																begin
-																	update T
-																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(cast(FCV.Value as nvarchar(100)), @DefaultValue)
-																	from #Keys T
-																	left join FieldCounterValue FCV on FCV.FieldTypeID = @fieldtypeid and FCV.AssetID = T.AssetID
-																end
-															else
-																begin
-																	update T
-																	set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
-																	from #Keys T
-																	left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
-																end
+						if (@FieldDataType = 'Counter')
+							begin
+								update T
+								set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(cast(FCV.Value as nvarchar(100)), @DefaultValue)
+								from #Keys T
+								left join FieldCounterValue FCV on FCV.FieldTypeID = @fieldtypeid and FCV.AssetID = T.AssetID
+							end
+						else if (@FieldDataType like 'Date%')
+							begin
+							update T
+							set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + convert(varchar(25),try_Cast(coalesce(F.Value, F.FormattedValue, @DefaultValue) as datetime),120)
+							from #Keys T
+							left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+							end
+						else
+							begin
+								update T
+								set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + coalesce(F.Value, F.FormattedValue, @DefaultValue)
+								from #Keys T
+								left join Field F on F.AssetID = T.AssetID and F.FieldTypeID = @fieldtypeid
+							end
 
-														end
-													else
-														begin
-															-- multiple key fields need to agg all the values
-															drop table if exists #KeysField;
-															CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
+					end
+				else
+					begin
+						-- multiple key fields need to agg all the values
+						drop table if exists #KeysField;
+						CREATE TABLE #KeysField (AssetID bigint,FormattedValue nvarchar(max));
 			
-															insert into #KeysField WITH(TABLOCK)
-															select A.AssetID,STRING_AGG(coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
-															from #Keys A
-															inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
-															left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
-															left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
-															group by A.AssetID;
+						insert into #KeysField WITH(TABLOCK)
+						select A.AssetID,STRING_AGG({(isFieldtypeDatePK ? "case when FT.type Like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120 ) else coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue) end" : "coalesce(cast(FCV.Value as nvarchar(50)),F.Value, F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) FormattedValue
+						from #Keys A
+						inner join FieldType FT on FT.AssetTypeID = @ID and FT.IsPartOfKey = 1
+						left join Field F on FT.ID = F.FieldTypeID and A.AssetID = F.AssetID  
+						left join FieldCounterValue FCV on FT.Type = 'Counter' and FCV.FieldTypeId = FT.ID and FCV.AssetId = A.AssetId
+						group by A.AssetID;
 
-															CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
+						CREATE NONCLUSTERED INDEX CIX_KeysFieldKeys ON #KeysField ( AssetID ASC );
 			
-															update T
-															set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
-															from #Keys T
-															inner join #KeysField KF on T.AssetID = KF.AssetID;
+						update T
+						set T.KeyValue = cast(@ID as nvarchar(50)) + '|' + COALESCE(cast(T.ParentAssetUid as nvarchar(50))+'|', '') + KF.FormattedValue
+						from #Keys T
+						inner join #KeysField KF on T.AssetID = KF.AssetID;
 
-															drop table if exists #KeysField;
-														end
+						drop table if exists #KeysField;
+					end
 
-														update #Keys set ActiveKey = utility.GetHash(KeyValue);
+					update #Keys set ActiveKey = utility.GetHash(KeyValue);
 
-														CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+					CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
 
 
 					string keyHashCalulationScript = $@"
-										Declare @fieldtypeid int =-1;
-										declare @DefaultValue nvarchar(max);
-										declare @FieldDataType nvarchar(50);
+					Declare @fieldtypeid int =-1;
+					declare @DefaultValue nvarchar(max);
+					declare @FieldDataType nvarchar(50);
 
-										update  T
-										set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
-										from    {assetTable} T
-											inner join	(
-														select		A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-														from		{assetTable} A
-																	inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
-														where		A.ExecutionID = @ExecutionID
-														group by	A.ItemNumber, A.ParentUid
-														) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
+					update  T
+					set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+					from    {assetTable} T
+						inner join	(
+									select		A.ItemNumber,
+												COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+									from		{assetTable} A
+												inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+												inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+									where		A.ExecutionID = @ExecutionID
+									group by	A.ItemNumber, A.ParentUid
+									) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
 
 					if (at.Class == AssetTypeClass.Model)
 					{
@@ -1655,7 +1711,7 @@ where   ER.ExecutionID = @ExecutionID
 										from    {assetTable} T
 											inner join	(
 														select		A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 														from		{assetTable} A
 																	inner join #BulkExecutionFieldUnique F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
 																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
@@ -1674,9 +1730,9 @@ where   ER.ExecutionID = @ExecutionID
 				}
 				else
 				{
-					 string activeKeySql = $@"
+					string activeKeySql = $@"
 											select		A.ID,
-													utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+													utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG({(isFieldtypeDatePK ? "case when FT.type like 'Date%' then convert(varchar(25),try_Cast(coalesce(F.FormattedValue, FT.DefaultValue) as datetime),120) else coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue) end" : "coalesce((case when ft.type <> 'Counter' then F.Value else isnull(cast(FCV.Value as nvarchar(50)),newid()) end), F.FormattedValue, FT.DefaultValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 											from		Asset A 
 													inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 													left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1692,7 +1748,7 @@ where   ER.ExecutionID = @ExecutionID
 											from    {assetTable} T
 												inner join	(
 															select	A.ItemNumber,
-																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG({(isFieldtypeDatePK ? "case when FT.Type Like 'Date%' then convert(varchar(25),try_Cast(F.FieldValue as datetime),120 ) else coalesce(F.LookupValue, F.FieldValue) end" : "coalesce(F.LookupValue, F.FieldValue)")}, '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 															from	{assetTable} A
 																	inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
 																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
@@ -2313,14 +2369,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
 									and 
 									EDR.Success is null                                
-
-							delete FT
-							from FieldType FT 
-									inner join 
-									[IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='RefListRelationship'
-									inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
-									and 
-									EDR.Success is null
 
 							delete FT
 							from FieldType FT 
@@ -3273,36 +3321,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1)
 										option (recompile);
 
-										if @sc = 9 and @stid = 0
-										begin
-										update	T
-										set		T.SubjectAssetID = 0,
-												T.SubjectAssetTypeID = S.ID
-										from	api.ExecutionRelationship T
-												inner join AssetType S on S.[uid] = T.SubjectUid and S.[Class] = @sc and T.SubjectAssetTypeID = 0 
-												where T.ExecutionID = @ExecutionID;
-										end
-
-										if @oc = 9 and @otid = 0 
-										begin
-											update	T
-											set		T.ObjectAssetID = 0,
-													T.ObjectAssetTypeID = O.ID
-											from	api.ExecutionRelationship T
-													inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
-													where T.ExecutionID = @ExecutionID;
-										end
-
-										if ((@sc = 9 and @stid = 0) or (@oc = 9 and @otid = 0))
-										begin
-											update	T
-											set		T.IsNew = 0
-											from	api.ExecutionRelationship T
-													inner join [Intersect] I on  I.IntersectTypeId = @it 
-													and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
-													and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
-											where T.ExecutionID = @ExecutionID and T.IsNew = 1;
-										end
 										drop table if exists #tempassetS;
 										drop table if exists #tempassetO;
 											",
@@ -4259,8 +4277,8 @@ where ProcessUid = @ProcessUid;
             return results;
         }
 
-        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
-        {
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true, bool hasReferenceListFieldTypes = true)
+		{
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
             if (sendWorkflowEvents)
@@ -4287,7 +4305,7 @@ where ProcessUid = @ProcessUid;
 							EA.IsNew,
 							EF.FieldValue,
 							FT.Type,
-							{(!isInsert ? "case when (EF.Ignore = 0 or EF.Ignore is null) and EF.FieldValue is null and EF.LookupValue is null then 1 else 0 end" : "0")}  IgnoreFieldValueLookupValueIsnull
+							{(!isInsert ? "case when (EF.Ignore = 0 or EF.Ignore is null) and EF.FieldValue is null and EF.LookupValue is null and EF.ReferenceListId is null then 1 else 0 end" : "0")}  IgnoreFieldValueLookupValueIsnull
 					from    {tableName} EA 
 							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
@@ -4305,7 +4323,7 @@ where ProcessUid = @ProcessUid;
 					from    #tempexecution EA 
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
 											and F.AssetID = EA.AssetID
-					where   EA.IsNew <> 1 and EA.Type != 'Lookup'
+					where   EA.IsNew <> 1 and EA.Type != 'Lookup' and EA.Type != 'ReferenceList'
 							{(!isInsert ? "and F.FormattedValue <> EA.FieldValue" : "")} 
 
 					union all
@@ -4328,9 +4346,21 @@ where ProcessUid = @ProcessUid;
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
 											and F.AssetID = EA.AssetID 
 					where   EA.IsNew <> 1 and EA.Type = 'Lookup'
-							{(!isInsert ? "and F.Value <> EA.FieldValue" : "")}";
+							{(!isInsert ? "and F.Value <> EA.FieldValue" : "")}
+					UNION ALL
+					select  
+							EA.Object, 
+							EA.ObjectID, 
+							EA.FieldTypeID AS Id 
+					from    #tempexecution EA 
+							inner join Field F on F.FieldTypeId = EA.FieldTypeID and F.AssetID = EA.AssetID 
+							{(!isInsert ? "inner join AssetType att on att.uid = cast(EA.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0" : "")}
+					where   EA.IsNew <> 1 and EA.Type = 'ReferenceList'
+							{(!isInsert ? "and coalesce(F.ReferenceListID,0) <> att.ID" : "")}
 
-                if (!isInsert)
+					";
+
+				if (!isInsert)
                 {
                     changedFieldsSql += $@"
 					union all
@@ -4379,6 +4409,7 @@ where ProcessUid = @ProcessUid;
 										and FT.Type != 'Relationship'
 										and FT.Type != 'Counter'
 										and FT.Type != 'Lookup'
+										and FT.Type != 'ReferenceList'
 										and FieldValue is not null";
 
 			// Merge Field Filter field
@@ -4421,8 +4452,43 @@ where ProcessUid = @ProcessUid;
 										and FT.Type = 'Lookup'
 										and FieldValue is not null";
 
-            // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
-            if (isInsert)
+
+			string updReferenceListfieldValuesSql = $@"
+								update t
+								set FieldId = S.Id
+								from #tempmergeRefListfield t
+								inner join Field S on t.FieldTypeID = S.FieldTypeId and {mergefieldSQL};
+
+								create clustered index cix_tempmergeRefListfield ON #tempmergeRefListfield (FieldID)
+								";
+
+			string tempReferenceListFieldValuesSql = $@"
+								drop table if exists #tempmergeRefListfield;
+								select 
+										cast (Null as bigint) FieldID
+										,F.FieldTypeID as [FieldTypeID]
+										,F.ReferenceListID as [ReferenceListID]
+										,att.Name as [FormattedValue]
+										,getutcdate() as [UpdatedOn]
+										,@resourceId as [UpdatedBy]
+										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}
+										{(hasIntersectID ? ",A.IntersectID as IntersectID" : ",null as IntersectID")}  
+								into #tempmergeRefListfield
+								from    {tableName} A
+										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
+											and F.ItemNumber = A.ItemNumber 
+											and F.FieldTypeID is not null
+											and A.Success is null
+										inner join FieldType FT on FT.Id = F.FieldTypeID
+										inner join AssetType att on att.id = f.ReferenceListID
+								where   A.ExecutionID = @executionID
+										and A.ItemNumber between @beginItemNumber and @endItemNumber 
+										and (F.Ignore = 0 or F.Ignore is null)
+										and FT.Type = 'ReferenceList'
+										and FieldValue is not null";
+
+			// Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
+			if (isInsert)
             {
 				string inssql = $@"
 						{tempfieldValuesSql}
@@ -4448,7 +4514,19 @@ where ProcessUid = @ProcessUid;
 						// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
 					Connection.Execute(inssql,new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 				}
+				if (hasReferenceListFieldTypes)
+				{
+					inssql = $@"
+						{tempReferenceListFieldValuesSql}
+						INSERT INTO 
+						dbo.[Field] ([FieldTypeID],[ReferenceListID],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])
+						select FieldTypeID, [ReferenceListID],[FormattedValue],[UpdatedOn],[UpdatedBy],AssetID,IntersectID
+						from #tempmergeRefListfield t;
 
+						drop table if exists #tempmergeRefListfield;";
+					// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					Connection.Execute(inssql, new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
+				}
 			}
 			else
             {
@@ -4475,7 +4553,8 @@ where ProcessUid = @ProcessUid;
 					 {fieldIdSQL}
 					 and F.FieldTypeID = EF.FieldTypeID
 					 and EF.FieldValue is null 
-					 and EF.LookupValue is null;",
+					 and EF.LookupValue is null
+					 and EF.ReferenceListID is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 
@@ -4520,7 +4599,29 @@ where ProcessUid = @ProcessUid;
 					drop table if exists #tempmergefield;";
 					Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
                 }
-            }
+				if (hasReferenceListFieldTypes)
+				{
+					// update lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					mrgsql = $@"
+					{tempReferenceListFieldValuesSql}
+					{updReferenceListfieldValuesSql}
+					merge       Field as T
+					using       (
+									select * 
+									from #tempmergeRefListfield
+								) as S 
+					on          ( T.ID = S.FieldID)
+					when matched and coalesce(T.ReferenceListID,0) <> coalesce(S.ReferenceListID,0) then
+					update set T.ReferenceListID = S.ReferenceListID, T.FormattedValue = S.FormattedValue,
+					T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()
+					when		not matched by target then
+					insert		(FieldTypeID, ReferenceListID, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
+					values		(S.FieldTypeID, S.ReferenceListID, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);
+
+					drop table if exists #tempmergeRefListfield;";
+					Connection.Execute(mrgsql, new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = SecurityContext.ResourceID }, transaction: trans, commandTimeout: timeout);
+				}
+			}
 
             return res;
         }
@@ -5456,6 +5557,19 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								",
                                 new { executionID }, commandTimeout: timeout, transaction: trans);
         }
+
+		public void ResolveFieldReferenceList(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
+		{
+			Connection.Execute($@"
+								update	T
+								set		T.ReferenceListID = att.ID
+								from	{fieldTable} T
+								inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'ReferenceList'
+								inner join AssetType att on att.Uid = try_cast(T.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0
+								where T.ExecutionId = @executionid;
+								",
+								new { executionID }, commandTimeout: timeout, transaction: trans);
+		}
 
 		public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
 		{

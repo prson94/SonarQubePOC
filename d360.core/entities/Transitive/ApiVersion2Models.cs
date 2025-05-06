@@ -41,6 +41,8 @@ namespace d360.core.entities
 
 		int? ParentItemNumber { get; set; }
 
+		int? ChildItemNumber { get; set; }
+
 		string SourceID { get; set; }
 
 		Dictionary<string, string> Fields { get; set; }
@@ -158,48 +160,43 @@ namespace d360.core.entities
 		public string Icon { get; set; }
 	}
 
-	[DataContract(Name = "asset")]
-	public class AssetInsert : IAssetUpsert, IExecutionItem
+	public class AssetApiModel : IAssetUpsert, IExecutionItem
 	{
-		[DataMember]
 		public Guid Uid { get; set; }
 
-		[DataMember]
 		public Guid? ExecutionItemUid { get; set; }
 
-		[DataMember]
 		public Guid? ParentUid { get; set; }
 
-		[DataMember]
 		public int? ParentItemNumber { get; set; }
 
-		[DataMember]
+		public int? ChildItemNumber { get; set; }
+
 		public string SourceID { get; set; }
 
-		[DataMember]
 		public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
 	}
 
-	[DataContract(Name = "asset")]
-	public class AssetUpdate : IAssetUpsert, IExecutionItem
+	public class AssetApiResultModel
 	{
-		[DataMember]
-		public Guid Uid { get; set; }
+		public int ItemNumber { get; set; }
 
-		[DataMember]
+		public Guid uid { get; set; }
+
 		public Guid? ExecutionItemUid { get; set; }
 
-		[DataMember]
-		public Guid? ParentUid { get; set; }
+		public string Message { get; set; }
 
-		[DataMember]
-		public int? ParentItemNumber { get; set; }
+		public bool Success { get; set; }
 
-		[DataMember]
+		public int? ChildItemNumber { get; set; }
+
 		public string SourceID { get; set; }
 
-		[DataMember]
 		public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+		
+		[JsonIgnore]
+		public bool IsNew { get; set; }
 	}
 
 	public class PatchBulkCatalogPropertyRequestModel

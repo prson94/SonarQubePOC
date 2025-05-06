@@ -35,11 +35,11 @@ namespace d360.web.Controllers.V2
     ]
     public class ConnectorLabelsController : BaseV2ApiController
     {
-        private readonly IConnectorLabelRepository ConnectorLabelRepository;
+        private readonly ICatalog _connectorLabelRepository;
 
-        public ConnectorLabelsController(ICoreComponentSet set, IConnectorLabelRepository connectorLabelRepository) : base(set)
+        public ConnectorLabelsController(ICoreComponentSet set, ICatalog connectorLabelRepository) : base(set)
         {
-            ConnectorLabelRepository = connectorLabelRepository;
+            _connectorLabelRepository = connectorLabelRepository;
         }
 
         /// <summary>
@@ -59,38 +59,9 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null)
         {
-            string labelsSql;
+			var response = await _connectorLabelRepository.GetLabels(q, isExact,getUseCount) as object;
+            return  ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, response));
 
-            if (isExact)
-            {
-                labelsSql = $@"SELECT top 10 uid, Value
-                                {(getUseCount ? ", Labels.cnt as UseCount" : "")}
-                                  FROM [dbo].[ConnectorLabel] cl 
-                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
-                                where Value = @q and state = 1 
-                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
-                                order by Value";
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(q))
-                {
-                    q = $"%{q}%";
-                }
-
-                labelsSql = $@"SELECT top 10 uid, Value                                
-                                    {(getUseCount ? ", Labels.cnt as UseCount" : "")}
-                                  FROM [dbo].[ConnectorLabel] cl
-                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
-                                where state = 1 
-                                {(!string.IsNullOrEmpty(q) ? " and Value like @q" : "")}
-                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
-                                order by Value";
-            }
-
-            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -124,11 +95,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                IEnumerable<dynamic> response = ConnectorLabelRepository.GetConnectorLabelUsage(labelUid, Request.GetQueryNameValuePairs());
+                IEnumerable<dynamic> response = await _connectorLabelRepository.GetConnectorLabelUsage(labelUid, Request.GetQueryNameValuePairs());
 
                 if (isStreamResponse)
                 {
-                    (byte[] bytes, string filename) = ConnectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
+                    (byte[] bytes, string filename) = await _connectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
                     var fileResponse = createFileResponseMessage(HttpStatusCode.OK, $"{filename}.xlsx", bytes);
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(fileResponse)).ConfigureAwait(false);
 
@@ -167,33 +138,40 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-            if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
+			var labelValue = label?.Value?.Trim();
+			if (label == null || string.IsNullOrWhiteSpace(labelValue) || labelValue.Length > 40)
             {
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelValieNotEmpty))).ConfigureAwait(false);
             }
-
-            var labelValue = label.Value.Trim();
-            var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == labelValue.ToLower());
+            var dbRecord = await _connectorLabelRepository.GetLabel(labelValue);
             if (dbRecord != null)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
-            }
+				var getResult = new
+				{
+					uid = dbRecord.uid,
+					Value = dbRecord.Value,
+					State = dbRecord.State,
+					CreatedOn = dbRecord.CreatedOn,
+					UpdatedOn = dbRecord.UpdatedOn,
 
-            if (labelValue.Length > 40)
-            {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, Error.LabelMax40Char))).ConfigureAwait(false);
+				};
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, getResult))).ConfigureAwait(false);
             }
-
-            dbRecord = new ConnectorLabel
-            {
-                Value = labelValue
+			var labelRecord = new ConnectorLabelPostModel
+			{
+                Value = labelValue,
             };
-            dbRecord.UpdatedBy = dbRecord.CreatedBy = SecurityContext.ResourceID;
-            dbRecord.UpdatedOn = dbRecord.CreatedOn = DateTime.UtcNow;
+			var result = await _connectorLabelRepository.CreateConnectorLabel(labelRecord);
+			var createResult = new
+			{
+				uid = result.uid,
+				Value = result.Value,
+				State = State.Active,
+				CreatedOn = result.CreatedOn,
+				UpdatedOn = result.UpdatedOn,
 
-            Company.Add(dbRecord);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
+			};
+			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, createResult)));
         }
 
         /// <summary>
@@ -222,7 +200,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, isValid)).ConfigureAwait(false);
                 }
 
-                var res = await ConnectorLabelRepository.GetLabels(queryParams);
+                var res = await _connectorLabelRepository.GetLabels(queryParams);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
             }
@@ -245,7 +223,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult PostTag(ConnectorLabelPostModel model)
+        public async Task<IHttpActionResult> PostTag(ConnectorLabelPostModel model)
         {
             if (model == null)
             {
@@ -258,12 +236,12 @@ namespace d360.web.Controllers.V2
                 ConnectorLabelValidator.ValidateForPost(model);
 
                 //make sure no tag with the same name exists
-                if (ConnectorLabelRepository.DoesLabelExists(model.Value))
+                if (await _connectorLabelRepository.DoesLabelExists(model.Value))
                 {
                     throw new ArgumentNullException(Error.LabelAlreadyExists);
                 }
 
-                result = ConnectorLabelRepository.CreateConnectorLabel(model);
+                result = await _connectorLabelRepository.CreateConnectorLabel(model);
             }
             catch (Exception e)
             {
@@ -289,9 +267,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid labelUid, ConnectorLabelPostModel model)
+        public async Task<IHttpActionResult> Put(Guid labelUid, ConnectorLabelPostModel model)
         {
-            if (!ConnectorLabelRepository.DoesLabelExists(labelUid))
+            if (!(await _connectorLabelRepository.DoesLabelExists(labelUid)))
             {
                 return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorUpdateLabel, string.Format(Error.UidNotFound, labelUid.ToString()));
             }
@@ -309,12 +287,12 @@ namespace d360.web.Controllers.V2
                     throw new ArgumentNullException(string.Format(Error.UidNotFound, labelUid.ToString()));
                 }
 
-                if (ConnectorLabelRepository.DoesLabelExists(labelUid, model))
+                if (await _connectorLabelRepository.DoesLabelExists(labelUid, model))
                 {
                     throw new ArgumentNullException(Error.LabelAlreadyExists);
                 }
 
-                result = ConnectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
+                result = await _connectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
             }
             catch (Exception e)
             {
@@ -340,12 +318,12 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
 			RequireAdminPermissions
 		]
-        public IHttpActionResult DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
+        public async Task<IHttpActionResult> DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
         {
 
             foreach (var label in labels)
             {
-                if (!ConnectorLabelRepository.DoesLabelExists(label.uid))
+                if (! (await _connectorLabelRepository.DoesLabelExists(label.uid)))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorDeleteLabel, string.Format(Error.UidNotFound, label.uid.ToString()));
                 }
@@ -353,7 +331,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (!ConnectorLabelRepository.DeleteConnectorLabels(labels))
+                if (!(await _connectorLabelRepository.DeleteConnectorLabels(labels)))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, Error.ErrorDeleteLabel, Error.LabelNotFound);
                 }
@@ -386,7 +364,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> ExportToExcel()
         {
             var queryParams = Request.GetQueryNameValuePairs();
-            var labels = await ConnectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
+            var labels = await _connectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
             var document = new SLDocument();
 
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
@@ -456,107 +434,104 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true), 
 			RequireAdminPermissions
 		]
-        public IHttpActionResult ConsolidateLabels(string parentUid, List<string> childrenUids)
+        public async Task<IHttpActionResult> ConsolidateLabels(string parentUid, List<string> childrenUids)
         {
-            try
+            if (Guid.Parse(parentUid) == Guid.Empty)
             {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, "parentUid", parentUid));
+            }
 
-                if (Guid.Parse(parentUid) == Guid.Empty)
+			bool childrenValid = true;
+			List<string> invalidList = new List<string>();
+            foreach (var item in childrenUids)
+            {
+                if (Guid.Parse(item) == Guid.Empty)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, parentUid));
-                }
+					childrenValid = false;
+					invalidList.Add(item);
+				}
+            }
+			if (!childrenValid)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, "Uids", string.Join(", ", invalidList)));
+			}
 
-                foreach (var item in childrenUids)
+            if (childrenUids.Contains(parentUid))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, Error.UnableIncludeParentinChildLabels);
+            }
+            var parentGuid = Guid.Parse(parentUid);
+
+            var parentLabel = await _connectorLabelRepository.GetLabel(parentGuid);
+            if (parentLabel == null)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.UidNotFound, parentUid));
+            }
+
+            //Get diagram usage
+            List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
+            IEnumerable<long> assetUids = await _connectorLabelRepository.GetAssetUids(children);
+
+            var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
+
+            if (Company.Database.Connection.State != ConnectionState.Open)
+            {
+                Company.Connection.Open();
+            }
+
+            using (var trans = Company.Connection.BeginTransaction())
+            {
+                var conn = trans.Connection;
+                try
                 {
-                    if (Guid.Parse(item) == Guid.Empty)
+                    foreach (var process in processes)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.CustomUidNotValid, item));
+                        if (process.Diagram != null)
+                        {
+                            var model = JsonConvert.DeserializeObject<ProcessDiagramModel>(process.Diagram);
+                            foreach (var link in model.linkDataArray.Where(x => x.labelUid.HasValue))
+                            {
+                                if (children.Contains(link.labelUid.Value))
+                                {
+                                    link.labelUid = parentGuid;
+                                }
+                            }
+
+                            conn.Execute($@"
+                            update AssetProcessDiagram
+                                set Diagram = @updatedDiagram
+                            where ID = @diagramId",
+                                new
+                                {
+                                    diagramId = process.ID,
+                                    updatedDiagram = JsonConvert.SerializeObject(model),
+                                    resourceId = SecurityContext.ResourceID
+                                }, transaction: trans);
+                        }
                     }
+                    conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
+                    trans.Commit();
                 }
-
-                if (childrenUids.Contains(parentUid))
+                catch (Exception ex)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, Error.UnableIncludeParentinChildLabels);
-                }
-                var parentGuid = Guid.Parse(parentUid);
-
-                var parentLabel = Company.ConnectorLabels.FirstOrDefault(x => x.uid == parentGuid);
-                if (parentLabel == null)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, Error.ErrorConsolidateLabel, string.Format(Error.UidNotFound, parentUid));
-                }
-
-                //Get diagram usage
-                List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
-                List<long> assetUids = Company.Query<long>($@"select a.id from processexpandeddata ped
-                                            inner join asset a on a.uid = ped.diagramassetuid
-                                            where labeluid in @children", new { children }).ToList();
-
-                var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
-
-                if (Company.Database.Connection.State != ConnectionState.Open)
-                {
-                    Company.Connection.Open();
-                }
-
-                using (var trans = Company.Connection.BeginTransaction())
-                {
-                    var conn = trans.Connection;
                     try
                     {
-                        foreach (var process in processes)
+                        if (trans != null)
                         {
-                            if (process.Diagram != null)
-                            {
-                                var model = JsonConvert.DeserializeObject<ProcessDiagramModel>(process.Diagram);
-                                foreach (var link in model.linkDataArray.Where(x => x.labelUid.HasValue))
-                                {
-                                    if (children.Contains(link.labelUid.Value))
-                                    {
-                                        link.labelUid = parentGuid;
-                                    }
-                                }
-
-                                conn.Execute($@"
-                                update AssetProcessDiagram
-                                    set Diagram = @updatedDiagram
-                                where ID = @diagramId",
-                                    new
-                                    {
-                                        diagramId = process.ID,
-                                        updatedDiagram = JsonConvert.SerializeObject(model),
-                                        resourceId = SecurityContext.ResourceID
-                                    }, transaction: trans);
-                            }
+                            trans.Rollback();
                         }
-                        conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
-                        trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        try
-                        {
-                            if (trans != null)
-                            {
-                                trans.Rollback();
-                            }
-                        }
-                        catch
-                        {
-                            //swallow exception here.
-                        }
-
-                        throw;
+                        //swallow exception here.
                     }
-                }
-                var result = Information.ConsolidateSucessfully;
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+                    throw;
+                }
             }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, Error.ErrorConsolidateLabel, ex.Message);
-            }
+            
+			var result = Information.ConsolidateSucessfully;
+            return Ok(result);
         }
     }
 }

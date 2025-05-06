@@ -518,6 +518,42 @@ namespace d360.core.entities
 		public bool DisplayRefListDescription { get; set; }
 	}
 
+	public class FieldTypeDataTypeReferenceListApiViewModel
+	{
+		[DataMember]
+		public int? ColumnOrder { get; set; }
+
+		[DataMember]
+		public int? ColumnWidth { get; set; }
+
+		[DataMember]
+		public int SortOrder { get; set; }
+
+		[DataMember]
+		public bool SortByAscending { get; set; }
+
+		[DataMember]
+		public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
+
+		[DataMember]
+		public bool IsDisplayable { get; set; }
+
+		[DataMember]
+		public bool ShowIfEmpty { get; set; }
+
+		[DataMember]
+		public bool DisplayRefListDescription { get; set; }
+
+		[DataMember]
+		public bool DisplayRefListInTable { get; set; }
+
+		[DataMember]
+		public bool IsListable { get; set; }
+
+		[DataMember]
+		public bool IsEditable { get; set; }
+	}
+
 	public class FieldTypeDataTypeComputedScoreApiViewModel
 	{
 		[DataMember]
@@ -986,6 +1022,9 @@ namespace d360.core.entities
 		public FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel ComputedRelationshipReferenceList { get; set; }
 
 		[DataMember]
+		public FieldTypeDataTypeReferenceListApiViewModel ReferenceList { get; set; }
+
+		[DataMember]
 		public FieldTypeCounterApiViewModel Counter { get; set; }
 
 		[DataMember]
@@ -1052,6 +1091,7 @@ namespace d360.core.entities
 			childPopulatedCount += (Lookup != null) ? 1 : 0;
 			childPopulatedCount += (Number != null) ? 1 : 0;
 			childPopulatedCount += (Path != null) ? 1 : 0;
+			childPopulatedCount += (ReferenceList != null) ? 1 : 0;
 			childPopulatedCount += (Relationship != null) ? 1 : 0;
 			childPopulatedCount += (Text != null) ? 1 : 0;
 			childPopulatedCount += (Tag != null) ? 1 : 0;

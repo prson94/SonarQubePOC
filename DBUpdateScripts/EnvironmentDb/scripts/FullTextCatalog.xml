@@ -7,18 +7,15 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 
-      <changeSet author="Andy Kelly" id="Environment Full Text Catalog">
-        <preConditions onFail="MARK_RAN" onFailMessage="The Full Text Catalog has already been created. Skipping changeset and will mark as ran">
-          <sqlCheck expectedResult="0">select count(*) from sys.fulltext_catalogs where [name] = 'FieldCatalog'</sqlCheck>
-        </preConditions>
-        <sqlFile dbms="mssql"
-                encoding="utf8"
-                endDelimiter="GO"
-                path="FullTextCatalog.sql"
-                relativeToChangelogFile="true"
-                splitStatements="true"
-                stripComments="true"/>
-
-    </changeSet>
+ <changeSet author="Pappas" id="FullTextCatalog.v1.1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if not exists(select 1 from [sys].[fulltext_catalogs] where name = 'fullTextCatalog')
+begin
+	CREATE FULLTEXT CATALOG fullTextCatalog WITH ACCENT_sensitivity = on as default AUTHORIZATION dbo
+end
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

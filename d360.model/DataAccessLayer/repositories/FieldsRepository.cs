@@ -7,7 +7,6 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -31,19 +30,16 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
-
 		public FieldsRepository(
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource, 
-			IStorageProvider storageProvider, 
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storageProvider)
+			: base(companyContext, securityContext)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
 		}
-
 		public async Task<Tuple<FieldTypesApiViewModel, WorkHttpStatus>> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			Guid? actionTypeUid = null;
@@ -115,12 +111,12 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeUidNotFound, assetTypeUid.ToString()));
+							workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 						}
 					}
 					else
 					{
-						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.InvalidAssetTypeUid, assetTypeUidString));
+						workHttpStatus = new WorkHttpStatus(HttpStatusCode.NotFound, Error.TypeNotFound, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUidString));
 					}
 				}
 			}
@@ -232,6 +228,13 @@ namespace d360.model.DataAccessLayer
 				{
 					includeId = false;
 				}
+			}
+			if (parameters.Any(q => q.Key.ToLower() == "_excludetypes"))
+			{
+				var excludeTypesString = parameters.FirstOrDefault(q => q.Key.ToLower() == "_excludetypes").Value;
+				dbArgs.Add("@excludeTypes", excludeTypesString.ToLower().Split(','));
+				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Type]) not in (@excludeTypes)";
+
 			}
 
 			StringBuilder additionalApply = new StringBuilder();
@@ -382,14 +385,6 @@ namespace d360.model.DataAccessLayer
 										) else null end as 'Type.ComputedRelationshipLookup.Definition.FiltersJSON',
 										case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
 										case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
-
-										case when FT.Type = 'RefListRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipReferenceList.ColumnOrder',
-										case when FT.Type = 'RefListRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipReferenceList.Description.Display',
-										case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
-										{(resolveUIDetails ? "case when FT.Type = 'RefListRelationship' then ITName.Name else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeName'," : "")}
-										case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
-										case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
-										case when FT.Type = 'RefListRelationship' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ComputedRelationshipReferenceList.DisplayRefListDescription',
 
 										case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 										case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
@@ -586,6 +581,17 @@ namespace d360.model.DataAccessLayer
                                         case when FT.Type = 'Path' then JSON_VALUE(FT.Definition,'$.AssetTypeUid') else null end as 'Type.Path.Definition.AssetTypeUid',
 										{(resolveUIDetails ? "case when FT.Type = 'Path' then PathType.Name else null end as 'Type.Path.Definition.AssetTypeName'," : "")}
 
+										case when FT.Type = 'ReferenceList' then FT.ColumnOrder else null end as 'Type.ReferenceList.ColumnOrder',
+										case when FT.Type = 'ReferenceList' then FT.ColumnWidth else null end as 'Type.ReferenceList.ColumnWidth',
+										case when FT.Type = 'ReferenceList' then FT.DisplayDescription else null end as 'Type.ReferenceList.Description.Display',
+										case when FT.Type = 'ReferenceList' then FT.IsDisplayable else null end as 'Type.ReferenceList.IsDisplayable',
+										case when FT.Type = 'ReferenceList' then FT.IsListable else null end as 'Type.ReferenceList.IsListable',
+										case when FT.Type = 'ReferenceList' then FT.SortOrder else null end as 'Type.ReferenceList.SortOrder',
+										case when FT.Type = 'ReferenceList' then FT.SortByAscending else null end as 'Type.ReferenceList.SortByAscending',
+										case when FT.Type = 'ReferenceList' then FT.ShowIfEmpty else null end as 'Type.ReferenceList.ShowIfEmpty',
+										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ReferenceList.DisplayRefListDescription',
+										case when FT.Type = 'ReferenceList' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListInTable'),'true') else null end as 'Type.ReferenceList.DisplayRefListInTable',
+
 										case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 										case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
 										case when FT.Type = 'Relationship' then FT.SortOrder else null end as 'Type.Relationship.SortOrder',
@@ -712,7 +718,7 @@ namespace d360.model.DataAccessLayer
 										left join IntersectType O_R on O_R.ID = FT.IntersectTypeID
 				
 										left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
-										left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'RefListRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
+										left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
 										left join FieldType LFT on FT.[Type] = 'FieldFromRelationship' and LFT.ID = FT.LookupObjectFieldTypeID
 
 										left join FieldType FilterFT on FT.[Type] = 'Lookup' and FilterFT.ID = FT.FilterFieldTypeID
@@ -1299,7 +1305,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.NotUseReferenceListItemList, f.Name));
 					}
 
-					newFieldType.Type = DataType.RefListRelationship.ToString();
+					//newFieldType.Type = DataType.RefListRelationship.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder.HasValue ? f.Type.ComputedRelationshipReferenceList.ColumnOrder.Value : fldColunmnOrder;
 
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
@@ -1875,6 +1881,28 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortByAscending = f.Type.Path.SortByAscending;
 					newFieldType.IsPrimaryFilter = false;
 					newFieldType.DisplayInColumn = f.Type.Path.DisplayInColumn;
+
+				}
+				else if (f.Type.ReferenceList != null)
+				{
+					newFieldType.Type = DataType.ReferenceList.ToString();
+					newFieldType.ColumnOrder = f.Type.ReferenceList.ColumnOrder.HasValue ? f.Type.ReferenceList.ColumnOrder.Value : fldColunmnOrder;
+					newFieldType.ColumnWidth = f.Type.ReferenceList.ColumnWidth;
+
+					if (f.Type.ReferenceList.Description != null)
+					{
+						newFieldType.DisplayDescription = f.Type.ReferenceList.Description.Display.SanitizeHtml();
+					}
+					newFieldType.IsDisplayable = f.Type.ReferenceList.IsDisplayable;
+					newFieldType.ShowIfEmpty = f.Type.ReferenceList.ShowIfEmpty;
+					newFieldType.IsListable = f.Type.ReferenceList.IsListable;
+					newFieldType.IsEditable = f.Type.ReferenceList.IsEditable;
+					newFieldType.IsPartOfKey = false;
+					newFieldType.SortOrder = f.Type.ReferenceList.SortOrder;
+					newFieldType.SortByAscending = f.Type.ReferenceList.SortByAscending;
+					newFieldType.IsPrimaryFilter = false;
+					newFieldType.Definition = JsonConvert.SerializeObject(new { f.Type.ReferenceList.DisplayRefListDescription, f.Type.ReferenceList.DisplayRefListInTable });
+					newFieldType.IsRequired = false;
 
 				}
 				else if (f.Type.Relationship != null)
@@ -2482,35 +2510,19 @@ namespace d360.model.DataAccessLayer
 						Type = DataType.Text.ToString()
 					}).ToList();
 			}
-			else if (fieldType.Type == "RefListRelationship")
+			else if (fieldType.Type == DataType.ReferenceList.ToString())
 			{
 				var fields = new List<FieldType>();
 				var sql = $@"
-					declare @objectAssetId int
+					declare @assetId int
 					declare @referenceId int
-					declare @isSubject bit
 
-					select  @objectAssetId = Id  from asset where uid = @assetUid
+					select  @assetId = Id  from asset where uid = @assetUid
 
-
-					select	@isSubject = iif(I.ObjectClass = {(int)AssetTypeClass.Reference} and I.ObjectAssetTypeId = 0, 1, 0) 
-						from	IntersectType I 
-								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
-		
-						if @isSubject = 1
-						begin
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
-						end
-						else
-						begin 
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
-						end
+					select @referenceId = ReferenceListID
+					from dbo.[Field]
+					where FieldTypeID = @fieldTypeId
+					and AssetID = @assetId;
 
 				   select * from fieldtype
 						where assettypeid = @referenceid and IsListable = 1
@@ -2757,7 +2769,10 @@ namespace d360.model.DataAccessLayer
 				}
 				idxs.AddRange(uidFields.Except(ids).Select(u => u.ToString()));
 
-				orderByClause = "order by " + string.Join(",", idxs);
+				if (idxs.Count > 0)
+				{
+					orderByClause = "order by " + string.Join(",", idxs);
+				}
 			}
 			else
 			{
@@ -2766,7 +2781,14 @@ namespace d360.model.DataAccessLayer
 				uidFields.Remove(uidFields.SingleOrDefault(i => i == index));
 				if (index != 0)
 				{
-					orderByClause = $"order by {index} {direction}, " + string.Join(",", uidFields);
+					if (uidFields.Count > 0)
+					{
+						orderByClause = $"order by {index} {direction}, " + string.Join(",", uidFields);
+					}
+					else
+					{
+						orderByClause = $"order by {index} {direction}";
+					}
 				}
 			}
 
@@ -2926,7 +2948,7 @@ namespace d360.model.DataAccessLayer
 			return (Columns, Fields, Values, count, scoringInfo);
 		}
 
-		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetReferenceListGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
 		{
 			string orderByClause = "order by A.Code";
 			var Columns = new List<GridColumn>();
@@ -3184,33 +3206,10 @@ namespace d360.model.DataAccessLayer
 
 		private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
 		{
-			return (await CompanyContext.QueryAsync<int?>($@"declare @objectAssetId int
-					declare @referenceId int
-					declare @isSubject bit
-
-					select  @objectAssetId = Id  from asset where uid = @assetUid
-
-
-					select	@isSubject = iif(I.ObjectClass = 9 and I.ObjectAssetTypeId = 0, 1, 0) 
-						from	IntersectType I 
-								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
-		
-						if @isSubject = 1
-						begin
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
-						end
-						else
-						begin 
-							select	top 1
-									@referenceId = A.ID
-							from	[Intersect] I
-									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
-						end
-
-						select @referenceId", dbArgs)).FirstOrDefault();
+			return (await CompanyContext.QueryAsync<int?>($@"select ReferenceListID
+					from field
+					where FieldTypeID = @fieldTypeId
+					and AssetID = @assetId", dbArgs)).FirstOrDefault();
 		}
 
 		private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)

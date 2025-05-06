@@ -17,4 +17,17 @@
     <ProjectReference Include="..\repositories\repositories.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Update=".\Catalog.*.cs">
+			<DependentUpon>.\Catalog.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update=".\Community.*.cs">
+			<DependentUpon>.\Community.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	
+	
 </Project>

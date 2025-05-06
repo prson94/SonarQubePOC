@@ -295,6 +295,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reference Item List from Relationship.
+        /// </summary>
+        public static string FieldType_ReferenceItemListFromRel1 {
+            get {
+                return ResourceManager.GetString("FieldType_ReferenceItemListFromRel1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference List.
+        /// </summary>
+        public static string FieldType_ReferenceList {
+            get {
+                return ResourceManager.GetString("FieldType_ReferenceList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relation Lookup.
         /// </summary>
         public static string FieldType_RelationLookup {

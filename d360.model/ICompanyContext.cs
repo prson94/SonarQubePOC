@@ -197,9 +197,7 @@ namespace d360.model
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         
         void RebuildDisplayValuesRequest();
-        
-        void RebuildIndexRequest();
-        
+              
         string RenderTooltip(string action, SystemObjects type, int id);
         
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);

@@ -7,11 +7,11 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
 using d360.utils.excel;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
+using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -28,6 +28,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -107,7 +108,7 @@ namespace d360.web.Controllers
 
 		IRuntimeInfo RuntimeInfo { get; set; }
 
-		IFeatureFlagService FeatureFlags { get; set; }
+		CommunityFeatureFlagService CommunityFlags { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
@@ -128,7 +129,7 @@ namespace d360.web.Controllers
 
 		public IThemeRepository ThemeRepository { get; set; }
 
-		public IFeatureFlagService FeatureFlags { get; set; }
+		public CommunityFeatureFlagService CommunityFlags { get; set; }
 
 		public IRuntimeInfo RuntimeInfo { get; set; }
 
@@ -137,13 +138,13 @@ namespace d360.web.Controllers
 		public CoreComponentSet(
 			ICachingProvider cache,
 			ICommunity community,
+			CommunityFeatureFlagService communityFlags,
 			ICompanyContext company,
 			ISecurityContextProvider securityContext,
 			IEnumerable<ICatalog> catalogs,
 			ILogger log,
 			IMailProvider mail,
 			IThemeRepository themeRepository,
-			IFeatureFlagService ff,
 			IRuntimeInfo runtimeInfo,
 			IWorkspaces workspace
 			)
@@ -151,8 +152,8 @@ namespace d360.web.Controllers
 			Cache = cache;
 			Company = company;
 			Community = community;
+			CommunityFlags = communityFlags;
 			Catalogs = catalogs;
-			FeatureFlags = ff;
 			Log = log;
 			Mail = mail;
 			ThemeRepository = themeRepository;
@@ -164,10 +165,10 @@ namespace d360.web.Controllers
 
 	public class BaseApiController : ApiController
 	{
-		internal IFeatureFlagService FeatureFlags { get; set; }
 		internal ICatalog Catalog { get; set; }
 		internal ICompanyContext Company;
 		internal ICommunity Community;
+		private CommunityFeatureFlagService CommunityFlags;
 		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
 		internal IWorkspaces Workspace;
@@ -205,50 +206,25 @@ namespace d360.web.Controllers
 
 		public BaseApiController(ICoreComponentSet set)
 		{
-			/*Future Use:
-		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
-
-		private ICatalog Catalog { 
-			get 
-			{ 
-				return UseCatalogMicroservice ? 
-					Catalogs.Single(c => c.Platform  == Platform.Dis) :
-					Catalogs.Single(c => c.Platform == Platform.Azure);
-			}
-		}			 
-			 */
 			Catalog = set.Catalogs.Single(c => c.Platform == Platform.Azure);
 			Company = set.Company;
 			Community = set.Community;
+			CommunityFlags = set.CommunityFlags;
 			Log = set.Log;
 			RuntimeInfo = set.RuntimeInfo;
-			FeatureFlags = set.FeatureFlags;
 			Workspace = set.Workspace;
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
 		}
 
-		internal async Task<ClientUserModel> GetFeatureFlagUser()
+		internal async Task<bool> GetFeatureFlagValue(string flag)
 		{
-			var listKey = "ClientUserModels";
-			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
-			ClientUserModel userModel = null;
-			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-			{
-				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
-			}
-			if (userModel == null)
-			{
-				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
-			}
-			if (userModel != null)
-			{
-				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-				{
-					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
-				}
-			}
-			return userModel;
+			return await CommunityFlags.GetFlagValue(flag);
+		}
+
+		internal async Task<Dictionary<string, bool>> GetFeatureFlags()
+		{
+			return await CommunityFlags.GetFlags();
 		}
 
 		protected internal async Task<bool> GetHideData3SixtyUsers()
@@ -674,9 +650,9 @@ namespace d360.web.Controllers
 		internal ICatalog Catalog;
 		internal ICompanyContext Company;
 		internal ICommunity Community;
+		private CommunityFeatureFlagService CommunityFlags;
 		internal ILogger Log;
 		internal IMailProvider Mail;
-		internal IFeatureFlagService FeatureFlags;
 		internal IThemeRepository ThemeRepository;
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
@@ -687,7 +663,6 @@ namespace d360.web.Controllers
 			DataType.ComplexRelationLookup.ToString(),
 			DataType.FieldFromRelationship.ToString(),
 			DataType.OwnershipLookup.ToString(),
-			DataType.RefListRelationship.ToString(),
 			DataType.JsonElement.ToString(),
 			DataType.Tag.ToString(),
 			DataType.JSON.ToString(),
@@ -709,14 +684,24 @@ namespace d360.web.Controllers
 		{
 			Catalog = set.Catalogs.Single(o => o.Platform == Platform.Azure);
 			Community = set.Community;
+			CommunityFlags = set.CommunityFlags;
 			Company = set.Company;
-			FeatureFlags = set.FeatureFlags;
 			Log = set.Log;
 			Mail = set.Mail;
 			ThemeRepository = set.ThemeRepository;
 			Workspace = set.Workspace;
 			SecurityContext = set.SecurityContext;
 			Cache = set.Cache;
+		}
+
+		internal async Task<bool> GetFeatureFlagValue(string flag)
+		{
+			return await CommunityFlags.GetFlagValue(flag);
+		}
+
+		internal async Task<Dictionary<string, bool>> GetFeatureFlags()
+		{
+			return await CommunityFlags.GetFlags();
 		}
 
 		#region Validation constants
@@ -1055,6 +1040,59 @@ namespace d360.web.Controllers
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
 										";
+
+									if(f.LookupObjectType == "Resource")
+									{
+										var assetformat = Company.Connection.Query<string>($"select DisplayFormat from assettype where uid = '{constants.CommonIdentifiers.ResourceTypeUid}'").FirstOrDefault();
+										var fieldformat = !string.IsNullOrWhiteSpace(f.LookupEditFormat) ? f.LookupEditFormat : f.LookupDisplayFormat;
+										var useFormat = !string.IsNullOrWhiteSpace(fieldformat) ? fieldformat : assetformat;
+
+										var patternFields = new List<string>();
+										var concatParts = new List<string>();
+
+										if (!string.IsNullOrWhiteSpace(useFormat))
+										{
+											var pattern = new Regex(@"\{[\d\w]+\}", RegexOptions.IgnoreCase);
+											var tokens = pattern.Matches(useFormat);
+
+											var lastPos = 0;
+											foreach (Match item in tokens)
+											{
+												if (item.Index > lastPos)
+												{
+													concatParts.Add("'" + useFormat.Substring(lastPos, item.Index - lastPos).CleanForSql() + "'");
+												}
+												var fieldToken = useFormat.Substring(item.Index + 1, item.Length - 2);
+												patternFields.Add(fieldToken.ToLower());
+												concatParts.Add("R." + fieldToken);
+												lastPos = item.Index + item.Length;
+											}
+											if (lastPos < useFormat.Length)
+											{
+												concatParts.Add("'" + useFormat.Substring(lastPos).CleanForSql() + "'");
+											}
+										}
+
+										if (!patternFields.Except(new List<string> { "firstname", "lastname", "email" }).Any())
+										{
+											var textSelect = concatParts.Count > 1 ? "CONCAT(" + string.Join(", ", concatParts) + ")" : concatParts.First();
+											itemSql = $@"select {f.ID} as FieldTypeID,
+																'{f.LookupObjectType}' as LookupObjectType,
+																{f.LookupObjectID} as LookupObjectID,
+																r.ResourceID as Value,
+																{textSelect} as Text
+															from AssetType Att 
+															inner join Asset a on att.id = a.assettypeid
+															inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+															where att.uid = '{constants.CommonIdentifiers.ResourceTypeUid}'";
+
+											countSql = $@"select count(*)
+															from AssetType Att 
+															inner join Asset a on att.id = a.assettypeid
+															inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+															where att.uid = '{constants.CommonIdentifiers.ResourceTypeUid}'";
+										}
+									}
 
 									if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
 									{
@@ -1444,6 +1482,15 @@ namespace d360.web.Controllers
 												.OrderBy(o => o.Text)
 												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
 												.ToList();
+
+											if (selectedValue != null)
+											{
+												var matcheItem = items.Find(i => i.Value == selectedValue);
+												if(matcheItem != null)
+												{
+													matcheItem.Selected = true;
+												}
+											}
 										}
 									}
 
@@ -1523,7 +1570,15 @@ namespace d360.web.Controllers
 						{
 							if (f != null)
 							{
-								if (!string.IsNullOrEmpty(f.Value))
+								if (ft.Type == DataType.ReferenceList.ToString())
+								{
+									var refAssetType = Company.AssetTypes.Where(at => at.ID == f.ReferenceListID).FirstOrDefault();
+									if (refAssetType != null)
+									{
+										fld.Value = refAssetType.uid.ToString().ToLowerInvariant();
+									}
+
+								} else if (!string.IsNullOrEmpty(f.Value))
 								{
 									fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
 								}
@@ -2255,29 +2310,6 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			}
 		}
 
-		internal async Task<ClientUserModel> GetFeatureFlagUser()
-		{
-			var listKey = "ClientUserModels";
-			var itemKey = $"{SecurityContext.ClientID}.{SecurityContext.CompanyID}.{SecurityContext.ResourceID}";
-			ClientUserModel userModel = null;
-			if (Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-			{
-				userModel = Cache.GetItemInListByID<ClientUserModel, string>(listKey, itemKey);
-			}
-			if (userModel == null) 
-			{
-				userModel = await Community.ReadUserFeatureFlagContext(SecurityContext.CompanyID, SecurityContext.ResourceID);
-			}
-			if (userModel != null)
-			{
-				if (!Cache.ListItemExists<ClientUserModel, string>(listKey, itemKey))
-				{
-					Cache.SetItemInListByID(listKey, itemKey, userModel, true, 5);
-				}
-			}
-			return userModel;
-		}
-
 		protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
 		{
 			if (ViewData.ContainsKey("Settings"))
@@ -2290,7 +2322,8 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			settings["CustomCSSLocation"] = "";
 			settings["CompanyIcon"] = "";
 			settings["CompanyLogo"] = "";
-			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
+			ThemewithResource themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
+			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync(themerec);
 			if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
 			{
 				settings["CompanyIcon"] = currentTheme.IconUri;

@@ -17,7 +17,7 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
-		public Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		public Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			throw new NotImplementedException();
 		}
@@ -145,7 +145,7 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
-		public Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		public Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			throw new NotImplementedException();
 		}

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.UpsertItemFields-v2">
+  <changeSet author="Pappas,AmitYadav,PuneetGupta" id="Procedure.api.UpsertItemFields-v2.4">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.UpsertItemFields
@@ -18,54 +18,6 @@ begin
 	--create table #Items (ItemNumber int, IsValid bit, ObjectID int, AssetID bigint);
 	--create table #Fields (ItemNumber int, FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max), LookupValue nvarchar(max));
 
-	-- Resolve lookup field values.
-	if @lookupPassedByValue = 1
-	begin
-		update	T 
-		set		T.LookupValue = T.[FieldValue] 
-		from	#Fields T 
-				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup';
-	end
-	else
-	begin
-		declare @listFieldTypes table (FieldTypeID int, AllowMultipleValues bit);
-		declare @uniqueListValues table (FieldTypeID int, AllowMultipleValues bit, FieldValue nvarchar(max), LookupValue nvarchar(max))
-
-		insert into @listFieldTypes
-			select	t.FieldTypeID, s.AllowMultipleValues
-			from	#Fields t
-					inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
-			group by t.FieldTypeID, s.AllowMultipleValues;
-
-		insert into @uniqueListValues
-			select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue, null
-			from	#Fields t
-					inner join @listFieldTypes s on s.FieldTypeID = t.FieldTypeID
-					cross apply string_split(t.FieldValue, ',') tmv
-			group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
-
-		update	t
-		set		t.LookupValue = s.[Value]
-		from	@uniqueListValues t
-				inner join FieldLookupValue s on s.FieldTypeID = t.FieldTypeID and s.[Text] = t.FieldValue;
-
-		update	t
-		set		t.LookupValue = s.LookupValue
-		from	#Fields t
-				inner join @uniqueListValues s on s.FieldTypeID = t.FieldTypeID and s.AllowMultipleValues = 0;
-
-		update	t
-		set		t.LookupValue = ms.LookupValue
-		from	#Fields t
-				inner join FieldType ft on ft.ID = t.FieldTypeID and ft.[Type] = 'Lookup' and ft.AllowMultipleValues = 1
-				cross apply (
-					select	string_agg(s.LookupValue, ',') as LookupValue
-					from	@uniqueListValues s
-					where	s.FieldTypeID = t.FieldTypeID
-							and LookupValue in (select [value] from string_split(t.FieldValue, ','))
-				) ms;
-	end
-
 	-- Merge the field data.
 	declare @fieldSql nvarchar(max) = '';
 	set @fieldSql = '
@@ -73,9 +25,11 @@ begin
 	using	(
 			select	i.ObjectID,
 					i.AssetID,
-					f.*
+					f.*,
+					case when coalesce(ft.Type,'''') = ''Link'' then 1 else 0 end IsValueUpdate
 			from	#Fields f
 					inner join #Items i on i.ItemNumber = f.ItemNumber
+					left Join FieldType Ft on Ft.ID = f.FieldTypeID
 			) as s '
 
 	if @object = 'Group'
@@ -93,15 +47,29 @@ begin
 	set @fieldSql = @fieldSql + '
 	when	matched then
 	update	set
-			t.Value = iif(s.LookupValue is null, null, s.LookupValue),
+			t.Value = case when s.IsValueUpdate = 1 and s.LookupValue is null then s.FieldValue else iif(s.LookupValue is null, null, s.LookupValue) end,
 			t.FormattedValue = iif(s.LookupValue is null, s.FieldValue, null),
 			t.UpdatedBy = @userId,
 			t.UpdatedOn = @date
 	when	not matched by target then
 	insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
-	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, iif(s.LookupValue is null, null, s.LookupValue), iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);'
+	values	(s.AssetID, @object, s.ObjectID, s.FieldTypeID, case when s.IsValueUpdate = 1 and s.LookupValue is null then s.FieldValue else iif(s.LookupValue is null, null, s.LookupValue) end, iif(s.LookupValue is null, s.FieldValue, null), @userId, @date);'
 
 	exec sp_executesql @fieldSql, N'@userId int, @date datetime, @object varchar(50)', @userId, @date, @object;
+	
+	if @object = 'Group'
+	begin
+		declare @groupassettypeid int = (select id from assettype where class = 12);
+		if exists(select * from FieldType where AssetTypeID = @groupassettypeid and Type = 'Counter')
+		begin
+			insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
+			select distinct i.AssetID, @groupassettypeid, ft.id, Null 
+			from #Items i
+			cross apply (select fte.id from FieldType fte where fte.AssetTypeID = @groupassettypeid and fte.Type = 'Counter') ft
+			left join dbo.FieldCounterValue FCV on FCV.AssetId = i.AssetID and FCV.FieldTypeId = ft.id
+			where FCV.AssetId is null and i.AssetID is not null;
+		end
+	end
 
 	update	F
 	set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)

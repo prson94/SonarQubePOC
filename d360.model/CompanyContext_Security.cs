@@ -172,58 +172,38 @@ namespace d360.model
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,0) ua where ua.PermissionsBitMask & {(int)permission} = 0)
-																						begin
-																							select 0;
-																						end				                                                                        
-																						else
-																						begin
-																							select 1;
-																						end", new { t = assetTypeId, r = SecurityContext.ResourceID });
+			return Database.Connection.QuerySingle<bool>($@"
+declare	@assetTypePermissions int, 
+		@hasAssetTypePermission bit = 0
+
+select	@assetTypePermissions = dbo.GetCombinedPermissionsForUserByAssetTypeId(@t, @r);
+set		@hasAssetTypePermission = @assetTypePermissions & {(int)permission}
+
+select  @hasAssetTypePermission", new { t = assetTypeId, r = SecurityContext.ResourceID });
 		}
 
 		private bool HasPermission(long assetId, int assetTypeId, Permission permission)
 		{
 			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
-
 			if (isReadPermission)
 			{
-				Asset asset = Assets.Single(a => a.ID == assetId);
-
-				if (permission == Permission.ReadAsset)
-				{
-					return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, SecurityContext.ResourceID);
-				}
-
-				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
+				permission = Permission.ReadAsset;
 			}
-			else
-			{
-				return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																	begin
-																		select 1;
-																	end
-																else
-																	begin
-																		select 0;
-																end", new { assetId, t = assetTypeId, r = SecurityContext.ResourceID });
-			}
+
+			return Database.Connection.QuerySingle<bool>($@"
+declare	@assetPermissions int
+select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetId(@assetId, @r);
+select  (@assetPermissions & {(int)permission})
+", new { assetId, r = SecurityContext.ResourceID });
 		}
 
 		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
 		{
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = SecurityContext.ResourceID });
+			return Database.Connection.QuerySingle<bool>(
+				$"declare	@assetPermissions int;" +
+				$"select	@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
+				$"select	(@assetPermissions & {(int)permission})", 
+				new { type, objectId, r = SecurityContext.ResourceID });
 		}
 
 
@@ -298,7 +278,7 @@ where R.ID = @ID
 						thenSql = string.Format(thenSql, "");
 
 						//create impacted assets temporary table.
-						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)";
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint, IsAssetForRescoring bit, IsAssetForIndex bit)";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						//merge into the asset table 
@@ -322,7 +302,7 @@ where R.ID = @ID
 							where T.RuleID = @ruleId;
 
 							delete T
-							{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetID into #changes" : "")}
+							OUTPUT 'DELETE',@ruleId,DELETED.AssetID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes
 							from [dbo].[ResponsibilityRuleResultAsset] T
 							left join #tempdatarule S on S.AssetID = T.AssetID
 							where T.RuleID = @ruleId and S.AssetID is null;
@@ -332,7 +312,7 @@ where R.ID = @ID
 							on		@ruleId = T.RuleID and S.AssetID = T.AssetID
 							when	not matched by target then
 							insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
-							{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetID into #changes" : "")};
+							output  $action as ActionType,inserted.RuleID,inserted.AssetID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes;
 
 							
 							drop table if exists #tempdatarule;
@@ -373,25 +353,23 @@ select  A.Uid
 from    #changes C 
 		inner join Asset A on A.ID = C.AssetID 
 		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
-where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT') 
+where C.IsAssetForRescoring = 1 and C.ActionType in ('DELETE', 'INSERT') 
 group by A.Uid";
-						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid, IsAssetForRescoring }, transaction: transaction, commandTimeout: timeout)).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid }, transaction: transaction, commandTimeout: timeout)).ToList();
+
+						// Get impacted assets, for re-indexing purposes.
+						sqlToExecute = @"
+insert into queue.ResponsibilityIndex (AssetUID)
+select  A.Uid
+from    #changes C 
+		inner join Asset A on A.ID = C.AssetID 
+		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
+where C.IsAssetForIndex = 1 and C.ActionType in ('DELETE', 'INSERT')";
+						await Connection.ExecuteAsync(sqlToExecute, new { assetTypeUid }, transaction: transaction);
 
 						//drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
-
-						//First time a rule runs, queue the asset type for search re-indexing
-						if (rule.LastRunOn == null)
-						{
-							Enqueue(constants.Queue.Search, new ReindexModel
-							{
-								CompanyID = SecurityContext.CompanyID,
-								AssetTypeUid = assetTypeUid,
-								Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
-							});
-						}
-
 						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 						transaction.Commit();
@@ -480,7 +458,7 @@ where R.ID = @ID
 						thenSql = string.Format(thenSql, "");
 
 						//create impacted assets temporary table.
-						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)";
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int, IsAssetForRescoring bit, IsAssetForIndex bit)";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						//merge into the asset table 
@@ -504,7 +482,7 @@ where R.ID = @ID
 								where T.RuleID = @ruleId;
 
 								delete T
-								{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetTypeID into #changes" : "")}
+								OUTPUT 'DELETE',@ruleId,DELETED.AssetTypeID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes
 								from [dbo].[ResponsibilityRuleResultAsset] T
 								left join #tempdataruleAT S on S.AssetTypeID = T.AssetTypeID
 								where T.RuleID = @ruleId and S.AssetTypeID is null;
@@ -515,7 +493,7 @@ where R.ID = @ID
 								on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
 								when	not matched by target then
 										insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
-								{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetTypeID into #changes" : "")};
+								output  $action as ActionType,inserted.RuleID,inserted.AssetTypeID, {(IsAssetForRescoring ? 1 : 0)}, 1 into #changes;
 
 								drop table if exists #tempdataruleAT";
 						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
@@ -550,33 +528,27 @@ where R.ID = @ID
 	from    #changes C 
 			inner join AssetType T on T.ID = C.AssetTypeID 
 			inner join Asset A on A.AssetTypeID = T.ID 
-	where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT')
+	where C.IsAssetForRescoring = 1 and C.ActionType in ('DELETE', 'INSERT')
 	group by A.Uid";
-						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { IsAssetForRescoring }, transaction: transaction)).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, transaction: transaction)).ToList();
+
+						// Get impacted assets, for re-indexing purposes.
+						sqlToExecute = @"
+	insert into queue.ResponsibilityIndex (AssetUID)
+	select  A.Uid
+	from    #changes C 
+			inner join AssetType T on T.ID = C.AssetTypeID 
+			inner join Asset A on A.AssetTypeID = T.ID 
+	where C.IsAssetForIndex = 1 and C.ActionType in ('DELETE', 'INSERT')";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 						// Drop impacted assets temporary table.
 						sqlToExecute = "drop table if exists #changes";
 						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
-
-						//First time a rule runs, queue the asset type for search re-indexing
-						if (rule.LastRunOn == null)
-						{
-							Enqueue(constants.Queue.Search, new ReindexModel
-							{
-								CompanyID = SecurityContext.CompanyID,
-								AssetTypeUid = assetTypeUid,
-								Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
-							});
-						}
-
 						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 						transaction.Commit();
 
-						if (assets != null && assets.Count() > 0)
-						{
-							CreateRescoreRequests(assets, ScoreType.Governance); // Trigger a rescore only when you commit the transaction.
-						}
 						runCompleted = true;
 					}
 					catch (Exception ex)
@@ -1121,37 +1093,23 @@ where R.ID = @ID
 			return permissions;
 		}
 
-		private string permissionQuery = $@"
-			declare @permissionValues table (val int)
-
-			insert into @permissionValues
-			select PermissionsBitMask from UserAssetPermissionsByAssetID(@r,@assetTypeId,@assetId)
-
-			--check default read access if there are no permissions set and if user is not an administrator
-			if @IsAdministrator = 0 and
-				(select max(val) from @permissionValues) = 0 and 
-				(select DefaultPermissions from AssetType where id = @assetTypeId) = 0
-			begin
-				--15854 is a permission mask for all permissions except read
-				select 15854
-				return
-			end
-
-			select distinct val from @permissionValues";
-
 		public List<PermissionInfo> GetPermissions(long assetId, int assetTypeId)
 		{
 			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
+			int mask = 0;
 
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
+			//if (SecurityContext.IsAdministrator)
+			//{
+			//	mask = 15854;
+			//}
 
-			if (responsibilityAssignments.Any())
+			mask = Query<int>("select dbo.GetCombinedPermissionsForUserByAssetId(@assetId, @r)", new { r = SecurityContext.ResourceID, assetId }).First();
+			Permission CombinedPermission = (Permission)mask;
+
+			permissions.ForEach(p =>
 			{
-				permissions.ForEach(p =>
-				{
-					p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
-				});
-			}
+				p.Selected = (CombinedPermission & p.ID) == p.ID;
+			});
 
 			permissions.RemoveAll(i => !i.Selected);
 
@@ -1165,16 +1123,8 @@ where R.ID = @ID
 
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
-			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = SecurityContext.ResourceID, assetTypeId, assetId, SecurityContext.IsAdministrator });
-
-			if (responsibilityAssignments.Any())
-			{
-				return responsibilityAssignments.Any(i => (i & (int)Permission.ReadAsset) == (int)Permission.ReadAsset);
-			}
-			else
-			{
-				return true;
-			}
+			var perms = GetPermissions(assetId, assetTypeId);
+			return perms.Any(p => p.ID == Permission.ReadAsset);
 		}
 
 		public string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true)
@@ -1822,18 +1772,11 @@ where id = @IntersectTypeID";
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 
-																		 from asset a
-																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
-																		 where a.Object = @type and a.ObjectID = @id 
-																		 and ua.PermissionsBitMask & {(int)permission} = 0)
-																	begin
-																		select 0;
-																		end
-																	else
-																	begin
-																		select 1;
-																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
+			return Database.Connection.QuerySingle<bool>(
+				"declare	@assetPermissions int;" +
+				"select		@assetPermissions = dbo.GetCombinedPermissionsForUserByAssetLegacy(@type, @objectId, @r);" +
+				$"select	(@assetPermissions & {(int)permission})",
+				new { type, objectId, r = resourceId });
 		}
 
 		public bool HasAssetPermission(long id, Permission permission)
@@ -1918,7 +1861,7 @@ where id = @IntersectTypeID";
             DataType.ComplexRelationLookup.ToString(),
             DataType.FieldFromRelationship.ToString(),
             DataType.OwnershipLookup.ToString(),
-            DataType.RefListRelationship.ToString(),
+			DataType.ReferenceList.ToString(),
             DataType.JsonElement.ToString(),
             DataType.Tag.ToString(),
             DataType.JSON.ToString(),
@@ -2311,8 +2254,6 @@ where id = @IntersectTypeID";
 			{
 				throw new ApplicationException(ruleExceptionMessages);
 			}
-
-			ProcessAssetReindexForResponsibilityChanges();
 		}
 
 		public async Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber)
@@ -2390,6 +2331,32 @@ where id = @IntersectTypeID";
 					CreateRescoreRequestsBasedOnResponsibilityRulesRun(ruleIds);
 
 					Database.ExecuteSqlCommand(@"
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	ResponsibilityTypeRelationOverrideItem O
+														inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
+														inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	[dbo].[ResponsibilityRuleResultAsset] O
+														inner join Asset A on A.ID = O.AssetID
+												where	O.RuleID in @RuleIds
+														and O.AssetTypeID = 0
+
+												insert into queue.ResponsibilityIndex (AssetUID)
+												select distinct A.UID 
+												from	[dbo].[ResponsibilityRuleResultAsset] O
+														inner join Asset A on A.AssetTypeID = O.AssetTypeID
+												where	O.RuleID in @RuleIds
+														and O.AssetID = 0;",
+														new SqlParameter("@ResponsibilityTypeID", relation.ResponsibilityTypeID),
+														new SqlParameter("@ObjectType", relation.ObjectType),
+														new SqlParameter("@ObjectID", relation.ObjectID),
+														new SqlParameter("@RuleIds", ruleIds.AsTableValuedParameter("dbo.IDTable"))
+														);
+
+					Database.ExecuteSqlCommand(@"
 												delete	O 
 												from	ResponsibilityTypeRelationOverrideItem O
 														inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
@@ -2442,25 +2409,22 @@ where id = @IntersectTypeID";
 
 		public void ProcessAssetReindexForResponsibilityChanges()
 		{
-			var batchID = randomNumberGenerator.Next(15000);
+			var batchID = randomNumberGenerator.Next(15000) + 1;
 
-			Execute(@"update queue.task
-				set MachineAssigned = @batchID
-				where Action = 'ObjectIndex' and Custom = 'U' and MachineAssigned is null", new { batchID });
+			Execute(@"update queue.ResponsibilityIndex
+				set BatchID = @batchID
+				where BatchID = 0", new { batchID });
 
 			var impactedAssets = Query<Guid>(@"
-				select distinct a.uid
-				from asset a
-				inner join queue.task q on a.id = q.AssetID
-				where q.Action = 'ObjectIndex' and q.Custom = 'U' and q.MachineAssigned = @batchID",
+				select distinct AssetUid
+				from  queue.ResponsibilityIndex
+				where BatchID = @batchID",
 				new { batchID });
 
 			if (impactedAssets.Any())
 			{
-				CreateAssetReindexRequest(impactedAssets.ToList(), ReindexBatchOperation.Update);
-
-				Execute(@"delete queue.task
-					where MachineAssigned = @batchID", new { batchID });
+				Execute(@"delete queue.ResponsibilityIndex
+					where BatchID = @batchID", new { batchID });
 			}
 		}
 

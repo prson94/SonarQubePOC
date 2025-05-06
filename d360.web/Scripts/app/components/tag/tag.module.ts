@@ -12,7 +12,7 @@ import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
-
+import { PopupMenuModule } from "../shared/controls/popup-menu/popup-menu.component";
 import { TableModule } from 'primeng/table';
 import { TagComponent } from './tag.component';
 import { TagItemComponent } from './tag-item.component';
@@ -32,7 +32,8 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
-    imports: [
+	imports: [
+		PopupMenuModule,
         CommonModule,        
         FormsModule,
 

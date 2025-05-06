@@ -1,0 +1,731 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.UpsertAssets-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure [api].[UpsertAssets]
+	@executionId int,
+	@lookupFieldsPassedByValue bit = 0,
+	@enableJsonAttributes bit = 0
+as
+begin
+	set nocount on;
+	declare @errormessage nvarchar(4000)='';
+	declare @userId int,
+			@date datetime,
+			@object varchar(50) = 'Artifact',
+			@assetTypeId int,
+			@assetTypeUid uniqueidentifier,
+			@displayFormat nvarchar(250),
+			@transactionCompleted bit = 0;
+		
+	select	@assetTypeUid = JSON_VALUE(Fields, '$.AssetTypeUid'),
+			@userId = ResourceID,
+			@date = StartedOn
+	from	api.Execution 
+	where	ID = @executionId;
+
+	select	@assetTypeId = ID,
+			@displayFormat = DisplayFormat,
+			@object = replace(Object, 'Type', '')
+	from	AssetType 
+	where	Uid = @assetTypeUid;
+
+	-- The Items to import (a.k.a. Assets)
+	drop table if exists #Items;
+	create table #Items (
+		ItemNumber int, 
+		[Uid] uniqueidentifier, 
+		ParentUid uniqueidentifier,
+		IsValid bit, IsSuccess bit, 
+		ObjectID int, AssetID bigint, ParentAssetID bigint,
+		KeyColumnRaw nvarchar(2000), KeyHash varchar(50),
+		DisplayValue nvarchar(850),
+		[Message] nvarchar(max)
+	);
+	
+	create clustered index cx_Items on #Items(ItemNumber);
+	create index ix_Items_Uid on #Items(Uid);
+
+	-- The raw fields that are being imported.
+	drop table if exists #OriginalFields;
+	create table #OriginalFields (
+		ItemNumber int, FieldName nvarchar(250), FieldTypeID int, 
+		FieldValue nvarchar(max), FieldFormattedValue nvarchar(max), 
+		[Type] varchar(25),
+		VariantValue sql_variant);
+
+	-- The legacy field table, and all the looksups we need to resolve.
+	drop table if exists #Lookup_Fields;
+	create table #Lookup_Fields (ItemNumber int, FieldTypeID int, FieldValue nvarchar(max), FieldFormattedValue nvarchar(max));
+
+	-- The new field table, with lokups that are flattened and not grouped in a comma-delimited list.
+	drop table if exists #Lookup_AssetFields;
+	create table #Lookup_AssetFields (ItemNumber int, FieldTypeID int, AssetID bigint);
+
+	-- Get data from JSON columns in api.ExecutionItem
+	insert into #Items (ItemNumber, Uid, ParentUid)
+		select	ItemNumber,
+				JSON_VALUE(Properties, '$.Uid'),
+				JSON_VALUE(Properties, '$.ParentUid')
+		from	api.ExecutionItem
+		where	ExecutionId = @executionId;
+
+	-- Get the field data from incoming JSON blob.
+	insert into #OriginalFields (ItemNumber, FieldName, FieldTypeID, FieldValue)
+		select	i.ItemNumber,
+				f.FieldName,
+				f.FieldTypeID,
+				f.FieldValue
+		from	api.ExecutionItem i
+				cross apply openjson(i.CustomProperties) with (FieldName nvarchar(250), FieldTypeID int, FieldValue nvarchar(max)) f
+		where	ExecutionId = @executionId;
+
+	-- Populate the type.
+	update	t
+	set		t.[Type] = s.[Type]
+	from	#OriginalFields t
+			inner join FieldType s on s.ID = t.FieldTypeID;
+
+	-- Perform field data conversion to eventually store in sql_variant.
+
+	delete #OriginalFields where FieldValue is null;
+
+	update	#OriginalFields set VariantValue = cast(FieldValue as bit) where [Type] = 'Boolean';
+	update	#OriginalFields set VariantValue = cast(FieldValue as date) where [Type] = 'Date';
+	update	#OriginalFields set VariantValue = cast(FieldValue as datetime) where [Type] = 'DateTime';
+	update	#OriginalFields set VariantValue = cast(FieldValue as decimal(18,6)) where [Type] = 'Decimal';
+	update	#OriginalFields set VariantValue = cast(FieldValue as bigint) where [Type] = 'Number';
+	update	#OriginalFields set VariantValue = cast(SUBSTRING(reporting.StripHtml(FieldValue), 1, 850) as nvarchar(850)) where [Type] = 'Html';
+	update	#OriginalFields set VariantValue = cast(SUBSTRING(FieldValue, 1, 850) as nvarchar(850)) where [Type] = 'Text';
+
+	-- select * from #OriginalFields
+	
+	--Validate Request
+	drop table if exists #dupes;
+	
+	-- Any duplicate assets, with the same Uid?
+	select		[Uid]
+	into		#dupes
+	from		#Items
+	where		IsValid is null
+				and [Uid] is not null
+	group by	[Uid]
+	having		count(1)>1;
+	
+	-- If dupes, then we will error these rows.
+	update	t
+	set		[Message] = 'Uid must be unique within the request.',
+			IsValid = 0
+	from	#Items t
+			inner join #dupes tu on t.Uid = tu.Uid
+	where	IsValid is null;
+
+	-- Populate new uids for assets without one
+	update	#Items
+	set		Uid = newid()
+	where	Uid is null;
+	
+	--Remove record from Field table because record already mark as invalid and execution record mark sucess = 0
+	delete	f
+	from	#OriginalFields f
+			inner join #Items t on f.ItemNumber = t.ItemNumber and t.IsValid = 0;
+
+	--exec api.UpsertItemFields @userId, @date, @object, @lookupFieldsPassedByValue;
+		
+	-- RESOLVE List fields ------------------
+	drop table if exists #ListFieldTypes;
+	create table #ListFieldTypes (FieldTypeID int, AllowMultipleValues bit, AssetTypeId int);
+	create index ix_ListFieldTypes_Temp_1 on #ListFieldTypes(FieldTypeID);
+
+	drop table if exists #UniqueListItems;
+	create table #UniqueListItems (FieldTypeID int, AllowMultipleValues bit, ObjectID int, AssetID bigint, DisplayValue nvarchar(max));
+	create index ix_UniqueListItems_Temp_1 on #UniqueListItems(FieldTypeID, ObjectID);
+
+	insert into #ListFieldTypes
+		select	t.FieldTypeID, s.AllowMultipleValues, [at].ID
+		from	#OriginalFields t
+				inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Lookup'
+				inner join AssetType [at] on [at].Object = s.LookupObjectType+'Type' and [at].ObjectID = s.LookupObjectID
+		group by t.FieldTypeID, s.AllowMultipleValues, [at].ID;
+
+	insert into #UniqueListItems
+		select	t.FieldTypeID, s.AllowMultipleValues, t.FieldValue, null, null
+		from	#OriginalFields t
+				inner join #ListFieldTypes s on s.FieldTypeID = t.FieldTypeID
+				cross apply string_split(t.FieldValue, ',') tmv
+		group by t.FieldTypeID, s.AllowMultipleValues, t.FieldValue;
+
+	update	t
+	set		t.AssetID = la.ID,
+			t.DisplayValue = la.DisplayValue
+	from	#UniqueListItems t
+			inner join #ListFieldTypes lft on lft.FieldTypeID = t.FieldTypeID
+			inner join Asset la on la.AssetTypeID = lft.AssetTypeId and la.ObjectID = t.ObjectID;
+
+	-- select * from #UniqueListItems
+
+	-- !MultiValue
+	insert into #Lookup_Fields (ItemNumber, FieldTypeID, FieldValue, FieldFormattedValue)
+		select	t.ItemNumber,
+				t.FieldTypeID,
+				t.FieldValue,
+				s.DisplayValue
+		from	#OriginalFields t
+				inner join #ListFieldTypes f on f.FieldTypeID = t.FieldTypeID and ISNUMERIC(t.FieldValue) = 1
+				inner join #UniqueListItems s on s.FieldTypeID = t.FieldTypeID and s.ObjectID = t.FieldValue and s.AllowMultipleValues = 0;
+
+	-- new field table for individual objects.
+	insert into #Lookup_AssetFields (ItemNumber, FieldTypeID, AssetID)
+		select	t.ItemNumber,
+				t.FieldTypeID,
+				s.AssetID
+		from	#OriginalFields t
+				inner join #ListFieldTypes f on f.FieldTypeID = t.FieldTypeID and ISNUMERIC(t.FieldValue) = 1
+				inner join #UniqueListItems s on s.FieldTypeID = t.FieldTypeID and s.ObjectID = t.FieldValue and s.AllowMultipleValues = 0;
+
+	-- MultiValue
+	insert into #Lookup_Fields (ItemNumber, FieldTypeID, FieldValue, FieldFormattedValue)
+		select	t.ItemNumber,
+				t.FieldTypeID,
+				ms.FieldValue,
+				ms.FieldFormattedValue
+		from	#OriginalFields t
+				inner join #ListFieldTypes ft on ft.FieldTypeID = t.FieldTypeID and ft.AllowMultipleValues = 1
+				cross apply (
+					select	string_agg(s.ObjectID, ',') as FieldValue,
+							string_agg(s.DisplayValue, ',') as FieldFormattedValue
+					from	#UniqueListItems s
+					where	s.FieldTypeID = t.FieldTypeID
+							and s.ObjectID in (select [value] from string_split(t.FieldValue, ','))
+				) ms;
+
+	-- new field table for individual objects.
+	insert into #Lookup_AssetFields (ItemNumber, FieldTypeID, AssetID)
+		select	t.ItemNumber,
+				t.FieldTypeID,
+				s.AssetID
+		from	#OriginalFields t
+				inner join #ListFieldTypes ft on ft.FieldTypeID = t.FieldTypeID and ft.AllowMultipleValues = 1
+				inner join #UniqueListItems s on s.FieldTypeID = t.FieldTypeID and s.AssetID = t.FieldValue;
+		
+	-- Now remove the Lookup fields from the RawFields table so we do not add twice.
+	delete	t
+	from		#OriginalFields t
+					inner join #ListFieldTypes f on f.FieldTypeID = t.FieldTypeID;
+
+	--select * from #OriginalFields;
+	--select * from #Lookup_Fields;
+	--select * from #Lookup_AssetFields;
+
+	-- Deal with ParentID references for generating relationships.
+	declare @parentIntersectTypeId int,
+					@parentAssetTypeId int,
+					@type int;
+	select	@parentIntersectTypeId = i.ID,
+					@parentAssetTypeId = SubjectAssetTypeID, 
+					@type = p.[Type] 
+	from		IntersectType i 
+					inner join [Predicate] p on p.ID = i.PredicateID and p.[Type] in (3,4) and i.ObjectAssetTypeID = @assetTypeId;
+
+	if @parentAssetTypeId is not null 
+	begin
+		update	t
+		set		t.ParentAssetID = a.ID
+		from	#Items t
+				inner join dbo.Asset a on a.Uid = t.ParentUid and a.AssetTypeID = @parentAssetTypeId;
+
+		if @type = 3 -- since this is not a model or policy, we need to verify that the paren is present and is correct type.
+		begin
+			update	#Items
+			set		IsValid = 0,
+					[Message] = iif([Message] is null, '', [Message] + '; ') + 'Parent not found'
+			where	ParentAssetID is null;
+		end
+	end
+
+
+	-- Check key fields --------------------------------
+	-- KeyColumnRaw nvarchar(2000), KeyHash varchar(100),
+	if @parentAssetTypeId is not null 
+	begin
+		update	#Items 
+		set		KeyColumnRaw = cast(coalesce(ParentAssetID, 0) as nvarchar(20)) + ';'
+		where	IsValid is null;
+	end
+		
+	update	t
+	set		t.KeyColumnRaw = coalesce(t.KeyColumnRaw, '') + af.AggregateKey
+	from	#Items t
+			cross apply (
+				select		string_agg(orderedFields.FieldValue, ';') as AggregateKey
+				from		(
+							select		top 100 percent
+										o.FieldValue
+							from		#OriginalFields o 
+										inner join FieldType ft on ft.ID = o.FieldTypeID and o.ItemNumber = t.ItemNumber and ft.IsPartOfKey = 1 and ft.AllowMultipleValues = 0
+							order by	ft.ColumnOrder
+							) orderedFields
+			) af;
+
+	-- Calculate the incoming key hash to check for potential asset duplicates below.
+	update	#Items
+	set		[KeyHash] = utility.GetHash(KeyColumnRaw)
+	where	IsValid is null;
+
+	-- select * from #Items
+		
+	-- Compare hashes to see if there are any potential duplicates.
+	update	t
+	set		t.IsValid = 0,
+			t.[Message] = iif(t.[Message] is null, '', t.[Message] + '; ') + 'Asset matches key fields on another asset'
+	from	#Items t
+			inner join dbo.Asset a on a.AssetTypeID = @assetTypeId and a.KeyHash = t.KeyHash and a.Uid <> t.Uid;
+
+	--RESOLVE Relation fields
+	drop table if exists #RelationFieldTypes;
+	create table #RelationFieldTypes (ItemNumber int, FieldTypeID int, IsSubject bit, TargetCardinality int, IntersectTypeID int, RelatedAssetID bigint);
+	create index ix_RelationFieldTypes_Temp_1 on #RelationFieldTypes(FieldTypeID);
+
+	insert into #RelationFieldTypes
+		select	t.ItemNumber, t.FieldTypeID, s.IsSubject, iif(s.IsSubject = 1, i.ObjectCardinality, i.SubjectCardinality) as TargetCardinality, i.ID as IntersectTypeID, relatedAsset.ID as RelatedAssetID
+		from	#OriginalFields t
+				inner join FieldType s on s.ID = t.FieldTypeID and s.[Type] = 'Relationship'
+				inner join IntersectType i on i.ID = s.LookupObjectID
+				inner join AssetType [at] on [at].Id = iif(s.IsSubject = 1, i.ObjectAssetTypeID, i.SubjectAssetTypeID)
+				left join dbo.Asset relatedAsset on relatedAsset.AssetTypeID = [at].ID and t.FieldValue = relatedAsset.ObjectID;
+
+	--select * from #RelationFieldTypes
+	--select * from #OriginalFields
+
+	update	t
+	set		t.IsValid = 0,
+			t.[Message] = iif(t.[Message] is null, '', t.[Message] + '; ') + 'Requested related asset not found'
+	from	#Items t
+			inner join #RelationFieldTypes r on r.ItemNumber = t.ItemNumber and r.RelatedAssetID is null;
+
+	-- Start persistence into permantent tables.
+	begin try
+		begin transaction;
+
+		-- Merge into Asset table --------------------------
+		merge	dbo.Asset as T
+		using	(select * from #Items where IsValid is null) as S
+		on		(T.AssetTypeID = @assetTypeId and T.Uid = S.Uid)
+		when	matched then
+		update  set
+				T.UpdatedOn = @date,
+				T.UpdatedBy = @userId,
+				T.KeyHash = S.KeyHash,
+				T.ParentID = S.ParentAssetID
+				--T.SourceID = S.SourceID,
+				--T.Code = S.Code,
+				--T.Color = S.Color,
+				--T.Icon = S.Icon,
+		when	not matched by target then
+		insert	(AssetTypeID, [State], [Object], SourceID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Uid, Code, Color, Icon, KeyHash)
+		values	(@assetTypeId, 1, 'Artifact', null, @userId, @date, @userId, @date, S.Uid, null, null, null, S.KeyHash);
+
+		update	T
+		set		T.AssetID = A.ID,
+				T.ObjectID = A.ObjectID
+		from	#Items T
+				inner join dbo.Asset A on A.AssetTypeID = @assetTypeId and A.Uid = T.Uid
+		where	IsValid is null;
+
+		-- Upsert parent/child relationship ---------------
+		merge	dbo.[Intersect] as T
+		using	(
+				select	ParentAssetID as SubjectID,
+						AssetID as ObjectID
+				from	#Items
+				where	IsValid is null
+						and ParentAssetID is not null
+				) as S
+		on		(T.IntersectTypeID = @parentIntersectTypeId and T.ObjectAssetID = S.ObjectID)
+		when	matched then
+		update	set	
+				T.SubjectAssetID = S.SubjectID,
+				UpdatedBy = @userId,
+				UpdatedOn = @date
+		when	not matched by target then
+		insert	(IntersectTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, SubjectAssetID, ObjectAssetID)
+		values	(@parentIntersectTypeId, @userId, @date, @userId, @date, S.SubjectID, S.ObjectID);
+
+		-- Calculate the Level values on these assets. ----
+		with lvls as (
+			select	-1 as [Level],
+					AssetID as GroupID,
+					AssetID as ID,
+					ParentAssetID as ParentID
+			from	#items
+			union all
+			select	lvls.[Level] -1 as [Level],
+					lvls.GroupID,
+					a.ID,
+					a.ParentID
+			from	dbo.Asset a
+					inner join lvls on lvls.ParentID = a.ID
+		)
+
+		update	T
+		set		T.[Level] = abs(S.[Level])
+		from	dbo.Asset T
+				inner join (
+					select		GroupID as ID,
+								min([Level]) as[Level]
+					from		lvls
+					group by	GroupID
+				) S on S.ID = T.ID;
+
+		-- Save List fields -------------------------------
+		merge	dbo.Field as f
+		using	(
+				select	a.AssetID,
+						a.ObjectID,
+						o.FieldTypeID,
+						o.FieldValue,
+						o.FieldFormattedValue
+				from	#Items a
+						inner join #Lookup_Fields o on o.ItemNumber = a.ItemNumber and a.IsValid is null
+				) as s
+		on		(f.AssetID = s.AssetID and f.FieldTypeID = s.FieldTypeID)
+		when	matched then
+		update	set
+				f.[Value] = s.FieldValue,
+				f.FormattedValue = s.FieldFormattedValue,
+				f.UpdatedBy = @userId,
+				f.updatedOn = @date
+		when	not matched by target then
+		insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedBy, UpdatedOn)
+		values	(s.AssetID, @object, s.ObjectId, s.FieldTypeiD, s.FieldValue, s.FieldFormattedValue, @userId, @date);
+
+		-- need to deal with inserts and deletes separately.
+		insert into dbo.AssetField (AssetID, FieldTypeID, [Value])
+			select	a.AssetID,
+					o.FieldTypeID,
+					o.AssetID as [Value]
+			from	#Items a
+					inner join #Lookup_AssetFields o on o.ItemNumber = a.ItemNumber and a.IsValid is null
+					left join dbo.AssetField ef on ef.AssetID = a.AssetID and ef.FieldTypeID = o.FieldTypeID and ef.[Value] = o.AssetID
+			where	ef.ID is null;
+		delete	t
+		from	dbo.AssetField t
+				inner join #Items a on a.AssetID = t.AssetID and a.IsValid is null
+				inner join #ListFieldTypes lst on lst.FieldTypeID = t.FieldTypeID
+				left join #Lookup_AssetFields o on o.ItemNumber = a.ItemNumber and o.FieldTypeID = t.FieldTypeID and o.AssetID = t.[Value]
+		where	o.AssetID is null;
+
+		-- Save Scalar fields
+		merge	dbo.Field as f
+		using	(
+				select	a.AssetID,
+						a.ObjectID,
+						o.FieldTypeID,
+						o.FieldValue
+				from	#Items a
+						inner join #OriginalFields o on o.ItemNumber = a.ItemNumber and a.IsValid is null
+				) as s
+		on		(f.AssetID = s.AssetID and f.FieldTypeID = s.FieldTypeID)
+		when	matched then
+		update	set
+				f.FormattedValue = s.FieldValue,
+				f.UpdatedBy = @userId,
+				f.updatedOn = @date
+		when	not matched by target then
+		insert	(AssetID, ObjectType, ObjectID, FieldTypeID, FormattedValue, UpdatedBy, UpdatedOn)
+		values	(s.AssetID, @object, s.ObjectId, s.FieldTypeiD, s.FieldValue, @userId, @date);
+
+		merge	dbo.AssetField as f
+		using	(
+				select	a.AssetID,
+						o.FieldTypeID,
+						VariantValue
+				from	#Items a
+						inner join #OriginalFields o on o.ItemNumber = a.ItemNumber and a.IsValid is null
+				where	VariantValue is not null
+				) as s
+		on		(f.AssetID = s.AssetID and f.FieldTypeID = s.FieldTypeID)
+		--when	not matched by source then
+		--		delete
+		when	not matched by target then
+		insert	(AssetID, FieldTypeID, [Value])
+		values	(s.AssetID, s.FieldTypeID, s.VariantValue);
+
+		-- HTML and Text special case
+		update	t
+		set		t.LongText = o.FieldValue
+		from	dbo.AssetField t
+				inner join #Items a on a.AssetID = t.AssetID and a.IsValid is null
+				inner join #OriginalFields o on o.ItemNumber = a.ItemNumber and o.FieldTypeID = t.FieldTypeID and ((o.[Type] = 'Html') OR (o.[Type] = 'Text' and len(FieldValue) > 750));
+		
+		if @enableJsonAttributes = 1
+		begin
+			select 1;
+		end;
+
+
+
+		-- Add relationships via Relation fields ----------
+
+		-- Merge cardinality = 1 ( Replace the existing relationship )
+
+			-- Where IsSubject is TRUE
+			merge	[Intersect] as t
+			using	(
+					select	i.AssetId as SubjectAssetID,
+							r.RelatedAssetID as ObjectAssetID,
+							r.IntersectTypeID
+					from	#Items i 
+							inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 1
+					) as s
+			on		(t.IntersectTypeID = s.IntersectTypeID and t.SubjectAssetID = s.SubjectAssetID)
+			when	matched then
+			update	set
+					t.ObjectAssetID = s.ObjectAssetID,
+					t.UpdatedBy = @userId,
+					t.UpdatedOn = @date
+			when	not matched then
+			insert	(IntersectTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, SubjectAssetID, ObjectAssetID)
+			values	(s.IntersectTypeID, @userId, @date, @userId, @date, s.SubjectAssetID, s.ObjectAssetID);
+
+			-- Where IsSubject is FALSE
+			merge	[Intersect] as t
+			using	(
+					select	r.RelatedAssetID as SubjectAssetID,
+							i.AssetId as ObjectAssetID,
+							r.IntersectTypeID
+					from	#Items i 
+							inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 0
+					) as s
+			on		(t.IntersectTypeID = s.IntersectTypeID and t.ObjectAssetID = s.ObjectAssetID)
+			when	matched then
+			update	set
+					t.SubjectAssetID = s.SubjectAssetID,
+					t.UpdatedBy = @userId,
+					t.UpdatedOn = @date
+			when	not matched then
+			insert	(IntersectTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, SubjectAssetID, ObjectAssetID)
+			values	(s.IntersectTypeID, @userId, @date, @userId, @date, s.SubjectAssetID, s.ObjectAssetID);
+
+		-- Merge cardinality = 2 ( Remove any not part of incoming payload )
+
+			-- Where IsSubject is TRUE
+			delete	t
+			from	[Intersect] t
+					inner join (
+						select	i.AssetId as SubjectAssetID,
+								r.RelatedAssetID as ObjectAssetID,
+								r.IntersectTypeID
+						from	#Items i 
+								inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 1				
+					) s on t.IntersectTypeID = s.IntersectTypeID and t.SubjectAssetID = s.SubjectAssetID and t.ObjectAssetID <> s.ObjectAssetID;
+
+			insert into [Intersect] (IntersectTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, SubjectAssetID, ObjectAssetID)
+				select	r.IntersectTypeID, @userId, @date, @userId, @date, i.AssetId, r.RelatedAssetID
+				from	#Items i 
+						inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 1	
+						left join [Intersect] er on er.IntersectTypeID = r.IntersectTypeID and er.SubjectAssetID = i.AssetID and er.ObjectAssetID = r.RelatedAssetID
+				where	er.ID is null;
+
+			-- Where IsSubject is FALSE
+			delete	t
+			from	[Intersect] t
+					inner join (
+						select	r.RelatedAssetID as SubjectAssetID,
+								i.AssetId as ObjectAssetID,
+								r.IntersectTypeID
+						from	#Items i 
+								inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 0				
+					) s on t.IntersectTypeID = s.IntersectTypeID and t.SubjectAssetID <> s.SubjectAssetID and t.ObjectAssetID = s.ObjectAssetID;
+
+			insert into [Intersect] (IntersectTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, SubjectAssetID, ObjectAssetID)
+				select	r.IntersectTypeID, @userId, @date, @userId, @date, r.RelatedAssetID, i.AssetId
+				from	#Items i 
+						inner join #RelationFieldTypes r on r.ItemNumber = i.ItemNumber and r.TargetCardinality = 1 and r.IsSubject = 0	
+						left join [Intersect] er on er.IntersectTypeID = r.IntersectTypeID and er.SubjectAssetID = r.RelatedAssetID and er.ObjectAssetID = i.AssetID
+				where	er.ID is null;
+
+		---------------------------------------------------
+
+
+		-- Deal with Asset Path ---------------------------
+		drop table if exists #h;
+		create table #h (GroupID bigint, [Level] int, [Position] int, AssetTypeID int, AssetID bigint, [Value] nvarchar(850));
+
+		with hierarchy as (
+			select	ID as GroupID,
+					ID,
+					ParentID,
+					a.[Level],
+					a.AssetTypeID
+			from	dbo.Asset a
+					inner join #Items i on i.AssetID = a.ID and a.AssetTypeID = @assetTypeId
+			union all
+			select	h.GroupID,
+					p.ID,
+					p.ParentID,
+					p.[Level],
+					p.AssetTypeID
+			from	dbo.Asset p
+					inner join hierarchy h on h.ParentID = p.ID
+		)
+
+		insert into #h
+			select	h.GroupID,
+					h.[Level],	
+					row_number() over (partition by h.GroupID, h.[Level] order by h.GroupID, h.[Level], ft.ColumnOrder, ft.Name) as [position],
+					h.AssetTypeID, 
+					h.ID as AssetID,
+					cast(f.[Value] as nvarchar(850))
+			from	hierarchy h
+					inner join dbo.FieldType ft on ft.AssetTypeID = h.AssetTypeID and ft.IsPartOfKey = 1
+					inner join dbo.AssetField f on f.FieldTypeID = ft.ID and f.AssetID = h.ID;
+
+		update	t
+		set		t.[Path] = s.[Path]
+		from	dbo.Asset t
+				inner join (
+				select	GroupID as AssetID,
+						(
+							select		l.[Level] as '@level',
+										l.[Position] as '@position',
+										l.AssetTypeID as '@assetTypeId',
+										l.AssetID as '@assetId',
+										l.[Value] as 'data()'
+							from		#h l
+							where		l.GroupID = a.GroupID
+							order by	l.[Level], l.[Position]
+							for xml path('segment'), root('path')
+						) as [Path]
+				from	#h a					
+				) s on s.AssetID = s.AssetID and t.AssetTypeID = @assetTypeId;
+
+		merge	dbo.AssetPath as t
+		using	(
+				select	a.ID,
+						a.[Path]
+				from	dbo.Asset a
+						inner join #Items i on i.AssetID = a.ID and a.AssetTypeID = @assetTypeId and i.IsValid is null
+						) as s
+		on		(s.ID = t.ID)
+		when	matched then
+		update	set
+				t.Segments = s.[Path]
+		when	not matched by target then
+		insert	(ID, Segments)
+		values	(s.ID, s.[Path]);
+
+		-- Parse and deal with DisplayValues on Assets. ---
+		declare @fieldTypes table (RowNumber int identity, FieldTypeID int, Name nvarchar(250))
+		insert into @fieldTypes
+			select	ID,
+					Name 
+			from	FieldType
+			where	AssetTypeID = @assetTypeId
+					and [Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Number', 'Text');
+
+		declare @current int = 1,
+				@max int,
+				@fieldTypeId int,
+				@fieldTypeName nvarchar(250);
+		select @max = max(RowNumber) from @fieldTypes;
+
+		update	#Items
+		set		DisplayValue = @displayFormat;
+
+		while	@current <= @max
+		begin
+			select	@fieldTypeId = FieldTypeID,
+					@fieldTypeName = '{' + Name + '}'
+			from	@fieldTypes 
+			where	RowNumber = @current;
+
+			update	t
+			set		t.DisplayValue = REPLACE(t.DisplayValue, @fieldTypeName, cast(f.[Value] as nvarchar(850)))
+			from	#Items t
+					inner join AssetField f on f.AssetID = t.AssetID and f.FieldTypeID = @fieldTypeId;
+
+			set @current = @current + 1;
+		end
+
+		update	t
+		set		t.DisplayValue = s.DisplayValue
+		from	dbo.Asset t
+				inner join #Items s on s.AssetID = t.ID and t.AssetTypeID = @assetTypeId;
+
+		merge	dbo.AssetDisplayValue as t
+		using	#Items as s
+		on		(s.AssetID = t.AssetID)
+		when	matched then
+		update	set
+				t.DisplayValue = s.DisplayValue,
+				t.DisplayValuePrefix = substring(s.DisplayValue, 1, 250)
+		when	not matched by target then
+		insert	(AssetID, DisplayValue, DisplayValuePrefix, UpdatedOn)
+		values	(s.AssetID, s.DisplayValue, substring(s.DisplayValue, 1, 250), @date);
+
+		exec api.UpsertChangeLog @executionId, @object;
+
+		commit transaction;
+		set @transactionCompleted = 1;
+	end try
+	begin catch
+		rollback transaction;
+		set @errormessage = substring(ERROR_MESSAGE(),1,4000);
+	end catch
+
+	if @transactionCompleted = 1
+	begin
+		-- Updated the messaging.
+		update	#Items
+		set		Message = 'Successfully upserted asset.',
+				IsValid = 1
+		where	IsValid is null
+
+		-- Update api.ExecutionItem
+		update	t
+		set		t.Success = s.IsValid,
+				t.Message = s.Message
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId
+		where t.Success is null and coalesce(t.Message,'')  = '';
+
+		update	t
+		set		t.Properties = JSON_MODIFY(t.Properties, '$.assetId', s.AssetID)
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.AssetID is not null;
+
+		update	t
+		set		t.Properties = JSON_MODIFY(t.Properties, '$.id', s.ObjectID)
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.ObjectID is not null;
+
+		update	t
+		set		t.Properties = JSON_MODIFY(t.Properties, '$.Uid', cast(s.Uid as nvarchar(50)))
+		from	api.ExecutionItem t
+				inner join #Items s on s.ItemNumber = t.ItemNumber and t.ExecutionId = @executionId and s.Uid is not null;
+
+		exec api.CompleteExecution @executionId, @date, '';
+	end
+	else
+	begin 
+		if (@errormessage is not null)
+		begin
+			exec api.CompleteExecution @executionId, @date, @errormessage;
+		end
+		else
+		begin
+			exec api.CompleteExecution @executionId, @date, 'Transaction failed to complete.';
+		end
+	end
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

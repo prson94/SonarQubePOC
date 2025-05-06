@@ -4,13 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
-
 using d360.core.entities;
 using d360.core.entities.Permissions;
 using d360.core.enums;
 using d360.core.resources;
-using d360.featureflags;
-using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
@@ -36,14 +33,6 @@ namespace d360.web.Controllers.V2
         private readonly IAssetRepository AssetRepository;
 		private readonly ISecurity Security;
 
-		private bool IsNewPermissions
-		{
-			get {
-				var ffUser = Task.Run(() => GetFeatureFlagUser()).GetAwaiter().GetResult();
-				return FeatureFlags.IsThisTrue(FlagList.TEMP_NEW_SECURITY_MODEL, ffUser);
-			}
-		}
-
         public PermissionsController(ICoreComponentSet set, IAssetRepository repository, ISecurity security) : base(set)
         {
             AssetRepository = repository;
@@ -68,7 +57,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetPermissionsByUid(Guid assetUid)
         {
-			if (IsNewPermissions)
+			if (await GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED))
 			{
 				var permissions = await Security.ReadPermissionsByAssetAsync(assetUid);
 				return Ok(permissions.Data);
@@ -114,7 +103,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {
-			if (IsNewPermissions)
+			if (await GetFeatureFlagValue(FlagList.SECURITY_POLICY_CONVERSION_ENABLED))
 			{
 				var permissions = await Security.ReadPermissionsByAssetTypeAsync(assetTypeUid);
 				return Ok(permissions.Data);

@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -246,8 +247,24 @@ namespace d360.web
 
 		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context)
 		{
+			int companyID = context.Get<int>("CompanyID");
+			var urlSegment = context.Get<string>("CompanyDomain");
+
 			string authority = await getJwtAuthority(context);
-			var authenticationSettings = context.Request.Get<OidcAuthenticationSettings>("AuthenticationSettings");
+
+			var cacheKey = $"OidcSettings_{companyID}";
+			OidcAuthenticationSettings authenticationSettings = null;
+			if (Cache.ListItemExists<OidcAuthenticationSettings, int>(cacheKey, companyID))
+			{
+				authenticationSettings = Cache.GetItemInListByID<OidcAuthenticationSettings, int>(cacheKey, companyID);
+			}
+			else
+			{
+				var cmy = DependencyResolver.Current.GetService<ICommunity>();
+				authenticationSettings = await cmy.ReadIdpOidcSettingsByTenantPrefix(urlSegment);
+				Cache.SetItemInListByID(cacheKey, companyID, authenticationSettings, true, 5);
+			}
+
 			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
 			Log.LogTrace($"JWT Authority : {authority}");
@@ -377,7 +394,7 @@ namespace d360.web
 
 						if (groups?.Any() == true)
 						{
-							var governHasGroups = (await company.QueryFirstOrDefaultAsync<Group>("select * from Group where IsActiveDirectoryGroup = 1")) != null;
+							var governHasGroups = (await company.QueryFirstOrDefaultAsync<Group>("select * from [Group] where IsActiveDirectoryGroup = 1")) != null;
 
 							if (governHasGroups)
 							{

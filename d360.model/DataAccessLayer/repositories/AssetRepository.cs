@@ -8,12 +8,10 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.search;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using MoreLinq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,17 +40,11 @@ namespace d360.model.DataAccessLayer
 			ICompanyContext companyContext,
 			ISecurityContextProvider securityContext,
 			IQueueSource queueSource,
-			IStorageProvider storageProvider,
-			IFeatureFlagService ff)
-			: base(companyContext, securityContext, ff)
+			IStorageProvider storageProvider)
+			: base(companyContext, securityContext)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
-		}
-
-		public Asset GetAssetByObjectId(string obj, int objId)
-		{
-			return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
 		}
 
 		public Asset GetAssetByUID(Guid assetUid)
@@ -415,7 +407,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			List<string> tempTablelist = new List<string>();
 			bool addOwnerShipDataIntoTemp = false;
 			List<bool> addOwnerShipDataIntolist = new List<bool>();
-			bool IsBusTechAssetType = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -431,12 +422,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			assetTypeID = assetType.ID;
 
-			if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset)
-			{
-				IsBusTechAssetType = true;
-			}
-
-			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
+			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
@@ -595,36 +581,18 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				long ObjAssetID = -1;
 				int ObjAssetTypeID = 0;
 				bool IsApplyObjectFilter = false;
-				bool ObjIsReferenceList = false;
 
 				long SubjAssetID = -1;
 				int SubjAssetTypeID = 0;
 				bool SubjIsReferenceList = false;
 				bool IsApplySubjectFilter = false;
-				bool IsListReferenceListType = false;
-				string RefListName = "Reference List";
 
-				string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId, 0 IsReference
+				string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId
 									   From Asset A
-									   WHERE  [Uid]= @AssetUid
-									   union all
-									   Select 0 as AssetId,A.ID AssetTypeId, 1 IsReference
-									   From AssetType A
 									   WHERE  [Uid]= @AssetUid";
 
 				if (Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value, out predicateUID))
 				{
-					IsListReferenceListType = GetIsListReferenceListType(assetTypeID, predicateUID);
-
-					if (IsListReferenceListType)
-					{
-						var at = CompanyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).SingleOrDefault();
-						if (at != null)
-						{
-							dbArgs.Add("@RefListName", RefListName);
-						}
-					}
-
 					if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
 					{
 						Guid ObjectAssetUID;
@@ -639,7 +607,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							{
 								ObjAssetID = assetObj?.AssetId;
 								ObjAssetTypeID = assetObj?.AssetTypeId;
-								ObjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
@@ -657,116 +624,71 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							{
 								SubjAssetID = assetObj?.AssetId;
 								SubjAssetTypeID = assetObj?.AssetTypeId;
-								SubjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
 					tempincludeRelationships = $@"
 							drop table if exists #InclPredFilterIds;
 							
-							create table #InclPredFilterIds(ID int,AssetTypeID int,Class int,isRefList bit,ObjType char(1))
+							create table #InclPredFilterIds(ID int,AssetTypeID int,Class int,ObjType char(1))
 
 							insert into #InclPredFilterIds
 							select IT.ID,
 							IT.SubjectAssetTypeID AssetTypeID,
 							IT.SubjectClass Class,
-							case when IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'S' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
-							and IT.SubjectAssetTypeID = @assetTypeID         
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
+							and IT.SubjectAssetTypeID = @assetTypeID
+							{(IsApplyObjectFilter ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
+							{(IsApplySubjectFilter ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
 
 
 							insert into #InclPredFilterIds
 							select IT.ID,
 							IT.ObjectAssetTypeID AssetTypeID,
 							IT.ObjectClass Class,
-							case when IT.SubjectAssetTypeID = 0 and IT.Subjectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'O' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
 							and IT.ObjectAssetTypeID = @assetTypeID         
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
+							{(IsApplyObjectFilter ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
+							{(IsApplySubjectFilter ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
 
-							create index idx_InclPredFilterIds on #InclPredFilterIds(AssetTypeID,ObjType,isRefList) include (ID)
-
+							create index idx_InclPredFilterIds on #InclPredFilterIds(AssetTypeID,ObjType) include (ID)
 
 							drop table if exists #tempInclRela;
-							create table #tempInclRela (ID int,AssetID bigint,AssetTypeID int,BAssetID bigint,BAssetTypeID int,isRefList bit)
+							create table #tempInclRela (ID int,AssetID bigint,AssetTypeID int,BAssetID bigint,BAssetTypeID int)
 
 							insert into #tempInclRela
 							select I.ID,
 							I.[SubjectAssetID] AssetID,
 							I.[SubjectAssetTypeID] AssetTypeID,
 							I.ObjectAssetID BAssetID,
-							I.ObjectAssetTypeID BAssetTypeID,
-							0 isRefList
+							I.ObjectAssetTypeID BAssetTypeID
 							from #InclPredFilterIds ids
 							inner join [intersect] I on ids.id = I.IntersectTypeId 
 							inner join [Asset] B on B.ID = I.ObjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'S' 
-							and ids.isRefList = 0
-							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and I.ObjectAssetID = @ObjAssetID" : "")}
+							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
 							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 						
-							insert into #tempInclRela
-							select I.ID,
-							I.[SubjectAssetID] AssetID,
-							I.[SubjectAssetTypeID] AssetTypeID,
-							I.ObjectAssetID BAssetID,
-							I.ObjectAssetTypeID BAssetTypeID,
-							1 isRefList
-							from #InclPredFilterIds ids
-							inner join [intersect] I on ids.id = I.IntersectTypeId 
-							inner join [AssetType] B on B.ID = I.ObjectAssetTypeID and B.Class = ids.Class
-							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'S' 
-							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
-							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and I.ObjectAssetID = 0 and  I.ObjectAssetTypeId = @ObjAssetTypeID and Ids.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
-							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
-
 							insert into #tempInclRela
 							select I.ID,
 							I.[ObjectAssetID] AssetID,
 							I.[ObjectAssetTypeID] AssetTypeID,
 							I.SubjectAssetID BAssetID,
-							I.SubjectAssetTypeID BAssetTypeID,
-							0 isRefList
+							I.SubjectAssetTypeID BAssetTypeID
 							from #InclPredFilterIds ids
 							inner join [intersect] I on ids.id = I.IntersectTypeId and I.SubjectAssetId is not null
 							inner join [Asset] B on B.ID = I.SubjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O'
-							and ids.isRefList = 0 
 							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
-							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and I.SubjectAssetID = @SubjAssetID" : "")}
+							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 
-							insert into #tempInclRela
-							select I.ID,
-							I.[ObjectAssetID] AssetID,
-							I.[ObjectAssetTypeID] AssetTypeID,
-							I.SubjectAssetID BAssetID,
-							I.SubjectAssetTypeID BAssetTypeID,
-							1 isRefList
-							from #InclPredFilterIds ids
-							inner join [intersect] I on ids.id = I.IntersectTypeId 
-							inner join [AssetType] B on B.ID = I.SubjectAssetTypeID and B.Class = ids.Class
-							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O' 
-							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
-							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and I.SubjectAssetID = 0 and  I.SubjectAssetTypeId = @ObjAssetTypeID and Ids.Subjectclass = {(int)AssetTypeClass.Reference} " : "")}
-							OPTION(RECOMPILE);
-						
-							create index idx_tempInclRela on #tempInclRela(AssetID,isRefList) include (BAssetID,BAssetTypeID)";
-
-					var typeNameParameter = dbArgs.ParameterNames.Contains("RefListName") ? "@RefListName as TypeName" : "TB.[Name] as TypeName";
+							create index idx_tempInclRela on #tempInclRela(AssetID) include (BAssetID,BAssetTypeID)";
 
 					var innerSql = $@"
 							  select * from (
@@ -779,16 +701,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								inner join Asset B on B.ID = TIR.BAssetID
 								inner join AssetType TB on TB.ID = B.AssetTypeID
 								inner join AssetDisplayValue BD on B.ID = BD.AssetID
-								where TIR.AssetID =  A.ID and TIR.isRefList = 0
-								union all
-									Select
-									TB.[UID] as AssetUid 
-									,TB.[Name] DisplayValue
-									,{typeNameParameter}
-									,@predicateUid as PredicateUid
-								from #tempInclRela TIR
-								inner join AssetType TB on TIR.BAssetId = 0 and TB.ID = TIR.BAssetTypeID 
-								where TIR.AssetID =  A.ID and TIR.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
+								where TIR.AssetID =  A.ID
 								) apr";
 
 					var innerCountSql = $@"
@@ -1039,7 +952,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					group by {string.Join(", ", groupColumns)}";
 				}
 			}
-
+			
 			if (! SecurityContext.IsAdministrator && !useAsAdmin)
 			{
 				if (restrictions.HasAssetTypeRestriction)
@@ -1257,20 +1170,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment || IsBusTechAssetType))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
 					{
 						bool scoringtypeallowed = false;
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
-						bool usePathSegDtlTbl = false;
-						if (ft.Type == DataType.Path.ToString() && IsBusTechAssetType)
-						{
-							var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(ft.Definition);
-							if (pathDefinition?.AssetTypeUid != null)
-							{
-								usePathSegDtlTbl = true;
-							}
-						}
 						if (ft.Type == DataType.Score.ToString() && !isNumber )
 						{
 							var checknum = simpleFilter;
@@ -1289,7 +1193,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
 
-						if (ft.Type == DataType.Path.ToString() && !usePathSegDtlTbl && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
+						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -1320,7 +1224,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						}
 					}
 
-					if (simpleFilterFields.Any(x => x.IsPathSegment) && !IsBusTechAssetType)
+					if (simpleFilterFields.Any(x => x.IsPathSegment))
 					{
 						List<Guid> assetTypeUids = new List<Guid>();
 						foreach (var ft in simpleFilterFields.Where(x => x.IsPathSegment))
@@ -2208,90 +2112,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			return model;
 		}
 
-		public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-
-			int pageSize = 5000;
-			int pageNum = 0;
-			bool includeTotal = true;
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
-				{
-					pageSize = res;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
-				{
-					pageNum = res - 1;
-				}
-			}
-
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
-			{
-				if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
-				{
-					includeTotal = res;
-				}
-			}
-
-			dbArgs.Add("@assetTypeId", assetType.ID);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * pageNum);
-
-
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			int? total = null;
-			if (includeTotal)
-			{
-				var countSql = $@"
-				select 
-					count(1)
-				from 
-					Asset A
-				where 
-					A.assetTypeId = @assetTypeId";
-
-				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
-			}
-
-			var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs, ApiTimeout);
-
-			return new AssetPathResults
-			{
-				items = results,
-				total = total
-			};
-		}
-
 		public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false)
 		{
 			var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
@@ -2447,7 +2267,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						else
 						{
 							var val = rowValues[field.Name];
-							setCellValueFromField(document, rowNumber, index, field, val);
+
+							//check for reference list
+							if (field.Type == DataType.ReferenceList.ToString() && !string.IsNullOrWhiteSpace(val?.ToString()))
+							{
+								object cellValue = string.Empty;
+								JArray jsonArray = JArray.Parse(val.ToString());
+								cellValue = jsonArray[0]["Name"]?.ToString() ?? string.Empty;
+								setCellValueFromField(document, rowNumber, index, field, cellValue);
+							}
+							else
+							{
+								setCellValueFromField(document, rowNumber, index, field, val);
+							}
 						}
 
 					}
@@ -3603,15 +3435,6 @@ drop table if exists #tempAssetsIds;
 			{
 				CompanyContext.Update(assetType);
 				UpdateAssetTypeSynonymAllocations(model, assetType);
-				if (defaultPermissionChanged)
-				{
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						AssetTypeUid = assetType.uid,
-						Origin = "AssetType change permissions: " + assetType.Name
-					});
-				}
 			}
 			catch (Exception ex)
 			{
@@ -3712,17 +3535,6 @@ drop table if exists #tempAssetsIds;
 				}
 
 				#endregion DQ Scoring
-
-				// Queue successfully deleted asset types for reindexing
-				results.Where(r => r.Success).ToList().ForEach(r =>
-				{
-					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
-					{
-						CompanyID = SecurityContext.CompanyID,
-						AssetTypeUid = r.uid,
-						Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
-					});
-				});
 			}
 			catch (Exception ex)
 			{
@@ -3741,7 +3553,8 @@ drop table if exists #tempAssetsIds;
 				CompanyDomainPrefix = SecurityContext.CompanyPrefix,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				SendWorkflowEvents = sendWorkflowEvents
+				SendWorkflowEvents = sendWorkflowEvents,
+				Action = ApiExecutionAction.DeleteAssets
 			};
 
 			if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
@@ -3772,7 +3585,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3805,7 +3618,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -3819,7 +3632,7 @@ drop table if exists #tempAssetsIds;
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetApiModel> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
@@ -3852,7 +3665,7 @@ drop table if exists #tempAssetsIds;
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
+		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetApiModel> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -4208,7 +4021,7 @@ drop table if exists #tempAssetsIds;
 												when AL.ScoreType = 2 then 'DataQuality'
 											end as ScoreType,
 											ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
-											S.Value, 
+											cast(S.Value * 100 as decimal(18,1))/100 as Value, 
 											AL.LowerThreshold, 
 											AL.UpperThreshold 
 									from    metrics.Score S
@@ -4343,39 +4156,41 @@ drop table if exists #tempAssetsIds;
 							drop table if exists #TempAssetpremission;
 							drop table if exists #TempAssetCount;
 
+							CREATE TABLE #TempAssetpremission(ASSETTYPEID INT,AssetID BIGINT);
+							CREATE index idx_TempAssetpremission on #TempAssetpremission(ASSETTYPEID);
+
 							CREATE TABLE #TempAssetCount(ASSETTYPEID BIGINT,RecordCount BIGINT);
 							CREATE index idx_TempAssetCount on #TempAssetCount(ASSETTYPEID);
 
+							insert into #TempAssetpremission(ASSETTYPEID,AssetID)
 							select distinct att.id assettypeid, up.assetid
-							 into #TempAssetpremission
 							from assettype att
 							cross apply dbo.userassetpermissions(@resourceId, att.id) up
 							 where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
 							{assetTypePermissionWhere};
 
 								IF EXISTS(SELECT 1 FROM #TempAssetpremission)
-														BEGIN
-
-									INSERT INTO #TempAssetCount
-															select Att.ID, count(1) RecordCount
-															 from AssetType Att
-															inner join Asset A on Att.ID = A.AssetTypeID
-															where att.class in @filterClasses
-															{assetTypePermissionWhere}
-							and NOT EXISTS (select 1 from #TempAssetpremission U
-															where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
-															GROUP BY Att.ID
-														END
-														ELSE
-														BEGIN
-															INSERT INTO #TempAssetCount
-															select Att.ID , count(1) RecordCount
-															from AssetType Att
-															inner join Asset A on Att.ID = A.AssetTypeID
-															where att.class in @filterClasses
-							{assetTypePermissionWhere}
-							group by Att.ID
-							END ";
+									BEGIN
+										INSERT INTO #TempAssetCount
+										select Att.ID, count(1) RecordCount
+										from AssetType Att
+										inner join Asset A on Att.ID = A.AssetTypeID
+										where att.class in @filterClasses
+										{assetTypePermissionWhere}
+										and NOT EXISTS (select 1 from #TempAssetpremission U
+										where U.ASSETTYPEID = Att.ID and (U.AssetID = A.ID or U.AssetID = 0))	
+										GROUP BY Att.ID
+									END
+								ELSE
+									BEGIN
+										INSERT INTO #TempAssetCount
+										select Att.ID , count(1) RecordCount
+										from AssetType Att
+										inner join Asset A on Att.ID = A.AssetTypeID
+										where att.class in @filterClasses
+										{assetTypePermissionWhere}
+										group by Att.ID
+									END ";
 
 			}
 
@@ -4411,7 +4226,11 @@ drop table if exists #tempAssetsIds;
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
-					order by att.name";
+					order by att.name
+
+					drop table if exists #TempAssetpremission;
+					drop table if exists #TempAssetCount;
+					";
 
 			return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId =  SecurityContext.ResourceID, filterClasses, p = (int)Permission.ReadAsset, assetTypeUidPassed = assetTypeUid }, ApiTimeout);
 		}
@@ -4504,6 +4323,12 @@ drop table if exists #tempAssetsIds;
 
 
 			var sql = $@"
+						declare @AssetID bigint;
+
+						select @AssetID = id 
+						from asset 
+						where uid = @assetUid;
+
 						select  A.ID as AssetId,
 								A.[uid] as AssetUid,
 								A.SourceID as XrefId,
@@ -4525,7 +4350,7 @@ drop table if exists #tempAssetsIds;
 								left join Asset parentAsset on parentAsset.ID = Parent.ID
 								left join AssetDisplayValue parentAdv on parentAdv.AssetID = parentAsset.ID
 								{string.Join("\n", fieldJoins.GetStatements())}
-						where   A.[uid] = @assetUid";
+						where   A.[id] = @AssetID";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
 		}
@@ -4551,7 +4376,7 @@ drop table if exists #tempAssetsIds;
 			var fieldJoins = new DynamicQueryJoins();
 			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
-			dbArgs.Add("@assetUid", assetUid);
+			dbArgs.Add("@assetid", asset.ID);
 
 			getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
@@ -4560,7 +4385,7 @@ drop table if exists #tempAssetsIds;
 								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
 								{fieldJoins.SQLJoinStatement}
-						where   A.[uid] = @assetUid";
+						where   A.[id] = @assetid";
 
 			var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;
 
@@ -5403,17 +5228,6 @@ drop table if exists #tempAssetsIds;
 				and LookupOT.ObjectID = tft.ft_LookupObjectID 
 				where tft.[Type] = 'Lookup';
 
-
-				update tft
-				set tft.One_to_Many_Relationship = ITName.Name,
-				Show_Reference_List_Description = coalesce(JSON_VALUE(tft.ft_Definition,'$.DisplayRefListDescription'),'true')
-				from #tempfieldtype  tft
-				outer apply (
-				select	top 1 
-				Name from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
-				) ITName
-				where tft.[Type] = 'RefListRelationship';
-
 				update tft
 				set tft.Many_to_One_Relationship = ITName.Name,
 				Field = Ft.FriendlyName
@@ -5582,15 +5396,11 @@ drop table if exists #tempAssetsIds;
 				order by fr.FieldTypeID ,fr.RelationIndex,FRF.DisplayOrder";
 
 			string relationsql = $@"
-				select top 1  @referencelistname = cast(name as nvarchar(250))
-				from assettype
-				where class = 9 and objectid = 0;
-
-				select  case when it.SubjectAssetTypeID = 0 and it.subjectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ats.Name end SubjectName,
+				select  ats.Name SubjectName,
 						it.SubjectClass,
 						it.SubjectCardinality,
 						p.Name [PredicateName],
-						case when it.ObjectAssetTypeID = 0 and it.objectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ato.Name end ObjectName,
+						ato.Name ObjectName,
 						it.ObjectClass,
 						it.ObjectCardinality,
 						it.uid,
@@ -5778,13 +5588,6 @@ drop table if exists #tempAssetsIds;
 			else if (dtype.In(DataType.FieldFromRelationship))
 			{
 				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "display_in_column", "many_to_one_relationship", "field"))
-				{
-					retval = true;
-				}
-			}
-			else if (dtype.In(DataType.RefListRelationship))
-			{
-				if (fieldname.In("one_to_many_relationship", "show_reference_list_description"))
 				{
 					retval = true;
 				}

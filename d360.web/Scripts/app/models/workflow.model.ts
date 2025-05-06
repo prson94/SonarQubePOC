@@ -80,6 +80,7 @@ export class WorkflowDiagramModel {
 
 export class WorkflowDiagramNode {
 	Key: string;
+	isNewNode: boolean;
 	XPosition: string;
 	YPosition: string;
 	StepType: StepType;
@@ -109,6 +110,7 @@ export class WorkflowDiagramLink {
 
 export class LinkModel {
 	key: string;
+	isNewNode: boolean;
 	from: string;
 	to: string;
 	name: string;
@@ -131,6 +133,7 @@ export class LinkModel {
 
 export class NodeModel {
 	key: string;
+	isNewNode: boolean;
 	name: string;
 	pos: string;
 	category: string = 'task';
@@ -506,6 +509,7 @@ export enum StepState {
 	NoValidTransitions = 7,
 	InvalidInitiator = 8,
 	NoValidAssignee = 9,
+	NoValidAsset = 10,
 }
 
 //#endregion

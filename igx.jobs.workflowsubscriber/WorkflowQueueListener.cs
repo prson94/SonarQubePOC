@@ -62,6 +62,7 @@ namespace igx.jobs.workflowsubscriber
 				{
 					CompanyID = companyId,
 					CompanyPrefix = info.DomainPrefix,
+					PrimaryCompanyPrefix = info.DomainPrefix,
 					ResourceID = info.ResourceID,
 					IsAdministrator = true
 				};
@@ -124,9 +125,11 @@ namespace igx.jobs.workflowsubscriber
 							{
 								log.LogTrace($"Debug - Event is an item step.");
 
-								SettingValuesForWorkflow wfsv = await Community.ReadSettingValueForWorkFlowAsync<SettingValuesForWorkflow>(companyId);
-
-								await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info, wfsv.defaultGroup, wfsv.fromName, wfsv.fromEmail);
+								var settings = await Community.ReadSettingsAsync(companyId);
+								var defaultGroup = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowCatchAllGroup).Value;
+								var fromEmail = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowFromEmail).Value;
+								var fromName = settings.Single(o => o.ID == d360.core.enums.Setting.WorkflowFromName).Value;
+								await company.ExecuteStep(info.ItemStepID, info.WorkflowItemID, info, defaultGroup, fromName, fromEmail);
 							}
 						}
 					}

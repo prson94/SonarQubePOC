@@ -1,0 +1,25 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.dbo.ReadFeatureFlagForCompany-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure dbo.ReadFeatureFlagForCompany
+	@companyId int,
+	@slug varchar(100)
+as
+begin 
+	select	coalesce(c.[Value], f.DefaultValue) as [Value]
+	from	FeatureFlag f
+			left join CompanyFeatureFlag c on c.FeatureFlagId = f.Id and c.CompanyID = @companyId
+	where	f.Slug = @slug;
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

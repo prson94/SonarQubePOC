@@ -38,11 +38,11 @@ import {
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
 import { AddRelationshipComponent } from './add-relationship.component';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { PopupMenu } from "../controls/popup-menu/popup-menu.component";
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'gov-relationship-grid',
@@ -52,8 +52,6 @@ import { IOutputData } from 'angular-split';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [RelationshipsService]
 })
-
-
 export class RelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
@@ -171,7 +169,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         private linkClickInterceptor: LinkClickInterceptor,
         private messagesService: MessagesObservableService,
         private permissionService: PermissionsService,
-		private featureFlagService: LaunchDarklyService
+		private featureFlagService: FeatureFlagsInitService
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
@@ -183,7 +181,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.linkClickInterceptor.handleEvent(this, ev);
         });
 
-		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
+		featureFlagService.getFlagValue(FeatureFlags.ContainsSearchDefaultUi).then((flag) => {
+			this.isContainsSearchDefault = flag;
+		});
 	}
 
 

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v3">
+  <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -90,7 +90,7 @@ RETURN
 	cross apply (select ResourceID,IsAdministrator 
 				from reporting.Global_Resource 
 				where ResourceID = @ResourceID and IsAdministrator = 0) R 
-	cross apply GetAssetsOfDefaultPermissions(@ResourceID,@AssetTypeID,T.DefaultPermissions,R.IsAdministrator, 0) A
+	cross apply GetAssetsOfDefaultPermissionsAssetID(@ResourceID,@AssetTypeID,T.DefaultPermissions,R.IsAdministrator, 0, @AssetID) A
 	where A.AssetID = @AssetID and T.ID = @AssetTypeID and T.DefaultPermissions = 0
 )
 		]]>

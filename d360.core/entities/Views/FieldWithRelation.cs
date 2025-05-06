@@ -71,6 +71,8 @@ namespace d360.core.entities
 		public int? IssueTypeID { get; set; }
 		public int? IssueID { get; set; }
 
+		public int? ReferenceListID { get; set; }
+
 		public string Value { get; set; }
         
         public string FormattedValue { get; set; }

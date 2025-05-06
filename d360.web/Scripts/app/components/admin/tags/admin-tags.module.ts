@@ -1,9 +1,6 @@
-﻿/// <reference path="tag-details/tag-detail.module.ts" />
-/// <reference path="tag-details/tag-detail.module.ts" />
-import { NgModule } from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -12,18 +9,14 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { TabsModule } from '../../shared/tabs/tabs.module';
 import { PageHeaderModule } from '../../shared/page-header/page-header.module';
-
 import { AdminTagsComponent } from './admin-tags.component';
 import { AdminTagsConsolidateComponent } from './admin-tags-consolidate.component';
-
 import { AdminTagsRoutingModule } from './admin-tags.routes';
-
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
-
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TagUsageInfoModule } from './tags-usage-info.module';
 import { AdminTagsActionModule } from './admin-tags-action.module';
@@ -37,14 +30,15 @@ import { RouterModule } from '@angular/router';
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component"; 
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { AngularSplitModule } from 'angular-split';
-/*import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';*/
 import { TagDetailComponent } from './tag-details/tag-detail.component';
-import { TagDetail } from '../../../models/tag.model';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-assets-detail.module';
+import { TagDetailModule } from './tag-details/tag-detail.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 @NgModule({
 	imports: [
+		AssetPreviewModule,
 		TaggedAssetDetailModule,
 		PropertyGroupModule,
         CommonModule,
@@ -76,7 +70,8 @@ import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-asset
         AdminTagsActionModule,
         TabsModule,
         PageHeaderModule,
-        SiteMenuModule,
+		SiteMenuModule,
+		TagDetailModule
     ],
     declarations: [
         AdminTagsComponent,
@@ -84,9 +79,6 @@ import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-asset
         TagsHeaderComponent,
 		TagTypesPanelComponent,
 		TagDetailComponent
-    ],
-    providers: [
-        
     ]
     
 })

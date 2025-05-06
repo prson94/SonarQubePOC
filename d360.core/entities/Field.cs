@@ -34,6 +34,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int? IntersectID { get; set; }
+
+		[DataMember]
+		public int? ReferenceListID { get; set; }
 	}
 
     [DataContract]

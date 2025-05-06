@@ -20,13 +20,13 @@ import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../services/feature-flags.enum";
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { FeatureFlagsInitService } from '../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../_shared/models/feature-flags';
 
 @Component({
     selector: 'd3s-semantic-list',
@@ -35,7 +35,6 @@ import { IOutputData } from 'angular-split';
 	providers: [DataProfileService],
 	styles: [`.checkbox-container { display: flex; flex-direction: row-reverse; padding: 14px 10px 6px 0; }`]
 })
-
 export class SemanticTypeListComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
 
     @Output() selectedTypeChanged = new EventEmitter();
@@ -166,15 +165,18 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: LaunchDarklyService,
+        private featureFlagService: FeatureFlagsInitService,
         private messagesService: MessagesObservableService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
         private cdRef: ChangeDetectorRef) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
-        this.theDisableCallback = this.changeSemanticDisabledStatus.bind(this);
-		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
+		this.theDisableCallback = this.changeSemanticDisabledStatus.bind(this);
+
+		featureFlagService.getFlagValue(FeatureFlags.ContainsSearchDefaultUi ).then((flag) => {
+			this.isContainsSearchDefault = flag;
+		});
 	}
 
     ngOnInit() {

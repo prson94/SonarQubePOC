@@ -469,7 +469,7 @@ namespace d360.web.Controllers.V2
 
 						if (assetType == null)
 						{
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetTypeUid, assetTypeUid)));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetTypeUidParameter, assetTypeUid)));
 						}
 					}
 				}
@@ -754,7 +754,7 @@ namespace d360.web.Controllers.V2
 			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (!Company.AssetTypes.Any(ast => ast.uid == uid)) {
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.InvalidAssetTypeUid, uid)));
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Error.AssetTypeNotFound, uid)));
 				}
 			}
 

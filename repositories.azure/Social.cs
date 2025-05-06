@@ -1,34 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
-using d360.core.queue;
 using d360.core.resources;
-using d360.extensions;
-using d360.model.helpers.filters;
 using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Office2019.Word.Cid;
-using static LaunchDarkly.Logging.LogCapture;
+using repositories.azure.extensions;
 
 namespace repositories.azure
 {
 	public class Social : Repository, ISocial
 	{
-		internal IQueueSource Queue;
-		internal IStorageProvider Storage;
-
-		public Social(DapperConnectionProvider provider, IQueueSource queue,
-			IStorageProvider storage) : base(provider)
+		public Social(DapperConnectionProvider provider) : base(provider)
 		{
-			Queue = queue;
-			Storage = storage;
 		}
 
 		#region Common Sql
@@ -193,8 +181,6 @@ namespace repositories.azure
 
 									connection.Execute(commentReln, parameters, transaction);
 								};
-
-								await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyId, CompanyPrefix = CompanyPrefix, Payload = commentId });
 							}
 
 							connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId }, transaction);
@@ -216,7 +202,7 @@ namespace repositories.azure
 				}
 			}
 		}
-		public int InsertComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
+		public (int CommentId, Guid CommentUid, IDbTransaction Transaction) InsertComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -308,10 +294,13 @@ namespace repositories.azure
 							}
 						}
 
-						string query = "INSERT INTO Comment (CommentType, CreatedBy, CreatedOn, IsDeleted, AssetID, Body, ParentID, Uid, UpdatedBy, UpdatedOn) " +
-								"VALUES (@CommentType, @CreatedBy , @CreatedOn, @IsDeleted, @AssetID,@Body,@ParentID,@Uid,@UpdatedBy,@UpdatedOn);SELECT CAST(SCOPE_IDENTITY() as int);";
+						// Define query with OUTPUT to return CommentId and CommentUid directly
+						string query = @"
+    INSERT INTO Comment (CommentType, CreatedBy, CreatedOn, IsDeleted, AssetID, Body, ParentID, Uid, UpdatedBy, UpdatedOn) 
+    OUTPUT INSERTED.ID, INSERTED.Uid
+    VALUES (@CommentType, @CreatedBy , @CreatedOn, @IsDeleted, @AssetID, @Body, @ParentID, @Uid, @UpdatedBy, @UpdatedOn);";
 
-						var dbComment =  new Comment
+						var dbComment = new Comment
 						{
 							CommentType = commentType,
 							CreatedBy = CurrentUserId,
@@ -320,13 +309,15 @@ namespace repositories.azure
 							AssetID = assetId.Value,
 							Body = comment.Body,
 							ParentID = parentId,
-							Uid = Guid.NewGuid(),
+							Uid = Guid.NewGuid(),  // Generates a unique identifier before insertion
 							UpdatedBy = CurrentUserId,
 							UpdatedOn = DateTime.UtcNow
 						};
 
-						var commentAdded = connection.QuerySingle<int>(query, dbComment, transaction);
-						return commentAdded;
+						// Use a tuple to return both CommentId and CommentUid
+						var commentAdded = connection.QuerySingle<(int CommentId, Guid CommentUid)>(query, dbComment, transaction);
+						return (commentAdded.CommentId, commentAdded.CommentUid, transaction);
+
 					}
 					catch (Exception ex)
 					{
@@ -572,12 +563,12 @@ namespace repositories.azure
 						var commentId = dbComment.ID;
 
 						connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
-
+						var taggedAssets = new List<Asset>();
 						if (comment.Tags != null)
 						{
 							if (comment.Tags.Count > 0)
 							{
-								var taggedAssets = connection.Query<Asset>("SELECT * FROM Asset WHERE Uid IN @Tags", new { Tags = comment.Tags }).ToList();
+								taggedAssets = connection.Query<Asset>("SELECT * FROM Asset WHERE Uid IN @Tags", new { Tags = comment.Tags }).ToList();
 
 								foreach (var r in taggedAssets)
 								{
@@ -585,14 +576,12 @@ namespace repositories.azure
 									var relationParams = new { CommentID = commentId, AssetID = r.ID };
 									connection.Execute(insertCommentRelation, relationParams);
 								}
-
-								SendCommentNotification(taggedAssets, dbComment);
 							}
-
 							connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });
 						}
-
-						return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
+						var detail = await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
+						detail.TaggedAssets = taggedAssets;
+						return detail;
 					}
 					else
 					{
@@ -673,30 +662,52 @@ namespace repositories.azure
 
 		public async Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			var dbArgs = new DynamicParameters();
 			var count = 0;
 			var returnedComments = new List<CommentDetail>();
 			List<string> whereStatements = new List<string>();
-			var queryFieldOptions = new List<DefaultFilter>
+			var queryFieldOptions = new List<FilterColumnOption>
 			{
-				new DefaultFilter("Body", "C.Body", SqlFieldType.Text),
-				new DefaultFilter("Uid", "C.Uid", SqlFieldType.Guid),
-				new DefaultFilter("CreatedOn", "C.CreatedOn", SqlFieldType.DateTime),
-				new DefaultFilter("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
-				new DefaultFilter("Url", "AUrl.Url", SqlFieldType.Text),
-				new DefaultFilter("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
+				new FilterColumnOption("Body", "C.Body", SqlFieldType.Text),
+				new FilterColumnOption("Uid", "C.Uid", SqlFieldType.Guid),
+				new FilterColumnOption("CreatedOn", "C.CreatedOn", SqlFieldType.DateTime),
+				new FilterColumnOption("UpdatedOn", "C.UpdatedOn", SqlFieldType.DateTime),
+				new FilterColumnOption("Url", "AUrl.Url", SqlFieldType.Text),
+				new FilterColumnOption("AssetPath", "AP.DisplayPath", SqlFieldType.Text),
+				new FilterColumnOption("ResourceName", "R.FirstName + ' ' + R.LastName", SqlFieldType.Text)
 			};
 
-			//need to verify this
-			ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+			var validOrderFields = new List<SortColumnOption> {
+				new SortColumnOption("Body", "C.Body"),
+				new SortColumnOption("Uid", "C.Uid"),
+				new SortColumnOption("CreatedOn", "C.CreatedOn"),
+				new SortColumnOption("UpdatedOn","C.UpdatedOn"),
+				new SortColumnOption("Url",  "AUrl.Url"),
+				new SortColumnOption("AssetPath", "AP.DisplayPath"),
+				new SortColumnOption("ResourceName", "R.FirstName + ' ' + R.LastName")
+			};
 
-			if (advFilterArgs != null && advFilterStatements != null)
-			{
-				dbArgs.AddDynamicParams(advFilterArgs);
-				whereStatements.AddRange(advFilterStatements);
-			}
+			string sortColumn = queryParams.CheckForSortColumn(
+				[
+					new SortColumnOption("baseType", "S.BaseType"),
+					new SortColumnOption("description", "S.Description"),
+					new SortColumnOption("effectiveDate", "S.EffectiveDate"),
+					new SortColumnOption("headerRegExpConfidence", "S.HeaderFilterConfidence"),
+					new SortColumnOption("matchType", "S.MatchType"),
+					new SortColumnOption("maximum", "S.Maximum"),
+					new SortColumnOption("minimum", "S.Minimum"),
+					new SortColumnOption("minSamples", "S.MinimumSamples"),
+					new SortColumnOption("minMaxPresent", "S.MinMaxPresent"),
+					new SortColumnOption("name", "S.Name"),
+					new SortColumnOption("priority", "S.Priority"),
+					new SortColumnOption("qualifier", "S.Qualifier"),
+					new SortColumnOption("status", "StatusString"),
+					new SortColumnOption("threshold", "S.Threshold"),
+					new SortColumnOption("isDisabled", "case when S.EffectiveDate < S.UpdatedOn then 1 else 0 end")
+				], "S.Qualifier");
 
+			var advancefilters =  queryParams.ParseODataFilters();
+			var (dbArgs, wheres) = advancefilters.ConvertToSqlFilters(queryFieldOptions);
+			
 			Guid assetUid = Guid.Empty;
 			bool assetUidPresent = false;
 
@@ -767,14 +778,14 @@ namespace repositories.azure
 
 			#endregion
 
-			var orderColumn = ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
-			var orderDirection = ParseOrderDirection(queryParams, "desc");
+			var orderColumn = queryParams.CheckForSortColumn(validOrderFields, "C.CreatedOn");
+			string orderDirection = queryParams.CheckForSortDirection();
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
-			int pageNum = ParsePageNumber(queryParams, 1);
-			int pageSize = ParsePageSize(queryParams);
-			string offset = ParsePageOffsetSql(pageNum, pageSize);
-
+			// Parse page size and offset and load into arguments for SQL.
+			int pageNumber = queryParams.CheckForPageNumber();
+			int pageSize = queryParams.CheckForPageSize();
+			dbArgs.LoadOffsetDatabaseParameter(pageNumber, pageSize);
 			var baseCommentWheres = new List<string> { "C.ParentID is null" };
 
 			#region "Ng additional Filter : Apply"
@@ -886,8 +897,6 @@ namespace repositories.azure
 							)
 					) 
 				)");
-
-
 					}
 
 					int followerresourceID = -1;
@@ -898,7 +907,6 @@ namespace repositories.azure
 						var parameters = new { FollowerUid = followerUid };
 						var follower = connection.QueryFirstOrDefault<GlobalReportingResource>(selectQuery, parameters);
 
-						//var follower = connection.Filter<GlobalReportingResource>(o => o.Uid == followerUid).FirstOrDefault();
 						if (follower == null)
 						{
 							throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.UserUidNotFound);
@@ -969,7 +977,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 									R.FirstName + ' ' + R.LastName as ResourceName,
 									{TAGS_JSON_SQL},
 									{EMOJIS_JSON_SQL} 
-							{tableSql} {whereSql} {orderBySql} {offset}";
+							{tableSql} {whereSql} {orderBySql}";
 
 					var countRequest = await connection.QueryAsync<int>(countSql, dbArgs);
 
@@ -991,7 +999,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			return new CommentDetails
 			{
 				count = count,
-				page = pageNum,
+				page = pageNumber,
 				pageSize = pageSize,
 				comments = returnedComments
 			};
@@ -1005,13 +1013,15 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 						with P as (
 							select		ID,
 										ParentID,
-										AssetID
+										AssetID,
+										CreatedBy
 							from		Comment
 							where		Uid = @commentUid
 							union all
 							select		C.ID,
 										C.ParentID,
-										P.AssetID
+										P.AssetID,
+										C.CreatedBy
 							from		Comment C
 										inner join P on P.ID = C.ParentID
 						)
@@ -1135,7 +1145,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 		}
 
-		public void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
+		public bool ProcessWithQueue(List<Asset> taggedAssets, CommentApiPutModel comment)
 		{
 			if (taggedAssets.Any(a => a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Group.ToString()))
 			{
@@ -1144,119 +1154,17 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 					var commentCreator = connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
 					if (commentCreator != null)
 					{
-						Queue.CreateMessage(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyId, CompanyPrefix = CompanyPrefix, Payload = comment.ID });
-					}
-				}
-			}
-		}
-
-		public List<Asset> AddCommentRelation(List<Guid> tags,  int commentId)
-		{
-			using (var connection = ConnectionProvider.Connect(true))
-			{
-				connection.Open();
-				using (var transaction = connection.BeginTransaction())
-				{
-					var query1 = "SELECT * FROM Asset WHERE uid IN @Tags";
-
-					var taggedAssets = connection.Query<Asset>(query1, new { Tags = tags }, transaction).ToList();
-					foreach (var r in taggedAssets)
-					{
-						string commentReln = "INSERT INTO CommentRelation (CommentID, AssetID) VALUES (@CommentID, @AssetID)";
-
-						var parameters = new
-						{
-							CommentID = commentId,
-							AssetID = r.ID
-						};
-
-						connection.Execute(commentReln, parameters, transaction);
-					};
-					return taggedAssets;
-				}
-			}
-
-		}
-
-		public void DeleteCommentRelation(int commentId)
-		{
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				connection.Open();
-				using (var transaction = connection.BeginTransaction())
-				{
-					connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId }, transaction);
-					transaction.Commit();
-				}
-			}
-		}
-
-		public int UpdateComment(Guid commentUid, CommentApiPutModel comment)
-		{
-			using (var connection = ConnectionProvider.Connect())
-			{
-				try
-				{
-					var dbComment = GetCommentByCommentUid(commentUid);
-
-					if (dbComment == null)
-					{
-						throw new NotFoundException(Error.comment);
-					}
-
-					if (dbComment.CreatedBy != CurrentUserId)
-					{
-						throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermission, Error.CommentUpdatePermission);
-					}
-
-					dbComment.Body = comment.Body;
-					dbComment.UpdatedBy = CurrentUserId;
-					dbComment.UpdatedOn = DateTime.UtcNow;
-
-					var sql = @"UPDATE Comment SET Body = @Body,UpdatedBy = @UpdatedBy,UpdatedOn = @UpdatedOn WHERE Id = @Id";
-
-					var affectedRows = connection.Execute(sql, new
-					{
-						Body = dbComment.Body,
-						UpdatedBy = dbComment.UpdatedBy,
-						UpdatedOn = dbComment.UpdatedOn,
-						Id = dbComment.ID
-					});
-
-					var commentUpdated = affectedRows > 0;
-
-					if (commentUpdated)
-					{
-						return dbComment.ID;
+						return true;
 					}
 					else
 					{
-						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.CommentNotUpdated);
+						return false;
 					}
-					}
-				catch (Exception)
-				{
-
-					throw;
 				}
 			}
-		}
-
-		public void DeleteCommentRelationByCommentId(int commentId)
-		{
-			using (var connection = ConnectionProvider.Connect())
+			else
 			{
-				connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
-			}
-		}
-
-		public Comment GetCommentByCommentUid(Guid commentUid)
-		{
-			using (var connection = ConnectionProvider.Connect())
-			{
-				var selectQuery = "SELECT * FROM Comment WHERE Uid = @CommentUid";
-				var dbComment = connection.QuerySingleOrDefault<Comment>(selectQuery, new { CommentUid = commentUid });
-				return dbComment;
+				return false;
 			}
 		}
 	}

@@ -4,9 +4,9 @@ import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { SidePanelService } from '../../../services/side-panel.service';
+import { FeatureFlagsInitService } from '../../../services/feature-flags-init.service';
+import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
     selector: 'side-panel',
@@ -14,7 +14,6 @@ import { SidePanelService } from '../../../services/side-panel.service';
     styleUrls: ['./side-panel.component.less'],
     encapsulation: ViewEncapsulation.None
 })
-
 export class SidePanelComponent extends BaseComponent {
     @Input() height = 'calc(100vh - 270px)';
     @Input() isSecondarySidePanel: boolean = false
@@ -51,11 +50,13 @@ export class SidePanelComponent extends BaseComponent {
     @Input() minWidth = '400px';
     @Input() maxWidth = '400px';
 
+	dataProfileUi: boolean;
+
 	constructor(
 		private sidePanelService: SidePanelService,
 		private stateService: StateService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: LaunchDarklyService) {
+        private featureFlagService: FeatureFlagsInitService) {
 		super(settingsService);
 
 		this.sidePanelService.sidePanelStateChange$.subscribe((state) => {
@@ -65,6 +66,10 @@ export class SidePanelComponent extends BaseComponent {
 			else if (state.expanded === false) {
 				this.collapseSidePanel();
 			}
+		});
+
+		featureFlagService.getFlagValue(FeatureFlags.DataProfilingUiFlag).then((flag) => {
+			this.dataProfileUi = flag;
 		});
     }
 
@@ -198,7 +203,7 @@ export class SidePanelComponent extends BaseComponent {
             }));
         }
 
-        if (this.hasProfiling && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
+        if (this.hasProfiling && this.dataProfileUi) {
             this.buttons.push(new SidePanelButton({
                 label: $localize`Profiling`,
                 tooltip: $localize`Profiling`,

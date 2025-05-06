@@ -1,0 +1,40 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.dbo.UpsertCompanyFeatureFlag-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure dbo.UpsertCompanyFeatureFlag
+	@companyId int,
+	@slug varchar(100),
+	@value bit
+as
+begin
+	set nocount on;
+
+	declare @flagId smallint;
+	select @flagId = Id from FeatureFlag where Slug = @slug;
+
+	if @flagId is not null
+	begin
+		if exists (select 1 from CompanyFeatureFlag where CompanyID = @companyID and FeatureFlagId = @flagId)
+		begin
+			update CompanyFeatureFlag set [Value] = @value where CompanyID = @companyId and FeatureFlagId = @flagId;
+		end
+		else
+		begin 
+			insert into CompanyFeatureFlag (CompanyId, FeatureFlagId, [Value]) values (@companyId, @flagId, @value);
+		end
+	end
+
+	exec ReadFeatureFlagsForCompany	@companyId;
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

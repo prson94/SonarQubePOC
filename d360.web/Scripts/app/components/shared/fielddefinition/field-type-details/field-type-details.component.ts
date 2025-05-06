@@ -30,14 +30,14 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	}
 
 	hasPartOfKey() {
-		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'JsonElement', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'JsonElement', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag', 'ReferenceList'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
 		return true;
 	}
 	hasRequired() {
-		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag', 'ReferenceList'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}

@@ -3,8 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
-using repositories.resources;
+using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace repositories.azure
 {
-	public class Catalog : Repository, ICatalog
+	public partial class Catalog : Repository, ICatalog
 	{
-		readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
+		private readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
 
-		readonly string TAG_API_MODEL_SQL_WITHOUT_WHERE = @"
-select	t.uid, 
+		private readonly string TAG_API_MODEL_SQL_WITHOUT_WHERE = @"
+select	t.uid,
 		t.[Value],
 		cnt.UseCount,
 		c.Uid as CreatedByUid,
@@ -37,7 +36,9 @@ from	Tag t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
-		public Catalog(DapperConnectionProvider provider): base(provider) { }
+		public Catalog(DapperConnectionProvider provider) : base(provider)
+		{
+		}
 
 		public async Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge)
 		{
@@ -65,7 +66,7 @@ from	Tag t
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -90,11 +91,11 @@ insert into AssetTag ([uid], AssetID, TagID, CreatedOn, CreatedBy) values (@uid,
 declare @version int;
 select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
-insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 output inserted.ID, inserted.[Object], inserted.[ObjectID] into @audittable
 	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag assigned', @version
 	from	Asset a
-			left join AssetDisplayValue d on d.AssetID = a.ID 
+			left join AssetDisplayValue d on d.AssetID = a.ID
 			join Tag t on t.ID = @tagId
 	where	a.ID = @assetId;
 
@@ -103,12 +104,21 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName, 
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA 
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
+
 
 select	top 1
 @PreviousValue = [Value]
@@ -129,226 +139,10 @@ from	#tbl
 
 drop table if exists #tbl;
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow,tagTypeId });
 			}
 
 			return response;
-		}
-
-		public async Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model)
-		{
-			var userErrorMessages = new List<string>();
-
-			if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
-			{
-				userErrorMessages.Add(Xref.ModelNotContainFields); 
-			}
-
-			if (model?.DataSource.Length > 250)
-			{
-				userErrorMessages.Add(Xref.DataSourceLengthMax);
-			}
-
-			if (model?.Type.Length > 50)
-			{
-				userErrorMessages.Add(Xref.TypeLengthMax);
-			}
-
-			if (model?.ExternalID.Length > 250)
-			{
-				userErrorMessages.Add(Xref.ExternalIDLengthMax);
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(model, 0, false, "");
-
-			if (userErrorMessages.Count > 0)
-			{
-				response.Message = string.Join("; ", userErrorMessages);
-				response.StatusCode = 406; // Not Acceptable.
-
-				return response;
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				var exists = await connection.QuerySingleAsync<bool>(
-					"select iif(exists(select 1 from AssetCrossReference where uid = @uid and [type] = @Type and datasource = @DataSource and externalid = @ExternalID), 1, 0)",
-					model
-				);
-
-				if (exists)
-				{
-					response.Message = Xref.AlreadyExists;
-					response.StatusCode = 409; // Conflict.
-
-					return response;
-				}
-
-				// Insert into cross reference table.
-				await connection.InsertAsync(model);
-				response.IsSuccess = true;
-				response.StatusCode = 201;
-				response.Data = model;
-			}
-
-			return response;
-		}
-
-		public async Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600)
-		{
-			DataTable table = new DataTable();
-			
-			table.Columns.Add("ExecutionID", typeof(Guid));
-			table.Columns.Add("ItemNumber", typeof(int));
-			table.Columns.Add("Uid", typeof(Guid));
-			table.Columns.Add("DataSource", typeof(string));
-			table.Columns.Add("Type", typeof(string));
-			table.Columns.Add("ExternalID", typeof(string));
-			table.Columns.Add("FieldHash", typeof(string));
-			table.Columns.Add("Message", typeof(string));
-			table.Columns.Add("Success", typeof(bool));
-
-			int i = 0;
-			foreach (AssetCrossReference item in import)
-			{
-				DataRow row = table.NewRow();
-
-				row["ExecutionID"] = execution.ExecutionID;
-				row["ItemNumber"] = i++;
-				row["uid"] = item.uid;
-				row["DataSource"] = item.DataSource != null ? item.DataSource.Trim() : item.DataSource;
-				row["Type"] = item.Type != null ? item.Type.Trim() : item.Type;
-				row["ExternalID"] = item.ExternalID != null ? item.ExternalID.Trim() : item.ExternalID;
-				row["FieldHash"] = item.FieldHash;
-
-				table.Rows.Add(row);
-			}
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(
-					"update api.Execution set ProcessingStartedOn = getutcdate() where ExecutionId = @ExecutionID",
-					new { execution.ExecutionID }
-				);
-				
-				using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection)
-				{
-					BatchSize = 5000,
-					DestinationTableName = "api.ExecutionAssetCrossReference",
-					BulkCopyTimeout = 0
-				})
-				{
-					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-					bulkCopy.ColumnMappings.Add("uid", "uid");
-					bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
-					bulkCopy.ColumnMappings.Add("Type", "Type");
-					bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
-					bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
-
-					await connection.OpenAsync();
-					bulkCopy.WriteToServer(table);
-				}
-
-				string validationSql = @"
-update	api.ExecutionAssetCrossReference
-		set	Success = 0,
-		Message = 'Does not contain valid Uid.' 
-where	ExecutionID = @executionID 
-		and Success is null 
-		and (Uid is null or UID ='00000000-0000-0000-0000-000000000000'); 
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message='DataSource is required.' 
-where	ExecutionID = @executionID 
-		and Success is null 
-		and ( DataSource is null or Trim(DataSource) ='') ;
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message='Type is required.' 
-where	ExecutionID = @executionID 
-		and Success is null 
-		and ([Type] is null  or TRIM([Type]) = '' );
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message = 'ExternalID is required.' 
-where	ExecutionID = @executionID 
-		and Success is null 
-		and ( ExternalID is null or TRIM(ExternalID) ='');
-
-update	api.ExecutionAssetCrossReference
-set		Success = 0,
-		Message = 'Does not contain required fields.' 
-where	ExecutionID = @executionID 
-		and Success is null 
-		and (Uid is null 
-			or DataSource is null 
-			or [Type] is null 
-			or ExternalID is null
-			or UID ='00000000-0000-0000-0000-000000000000' 
-			or Trim(DataSource) ='' 
-			or TRIM([Type]) = '' 
-			or TRIM(ExternalID) =''
-		); 
-
-update	ECR
-set		Success = 0,
-		Message = 'Asset cross reference already exists'
-from	api.ExecutionAssetCrossReference ECR
-where	ECR.ExecutionID = @executionID 
-		and Success is null 
-		and exists (
-			select	1 
-			from	AssetCrossReference 
-			where	UID = ECR.UID 
-					and DataSource = ECR.DataSource 
-					and [Type] = ECR.[Type] 
-					and ExternalID = ECR.ExternalID
-		);
-
-update	ECR
-set		Success = 0,
-		Message = 'Duplicate asset cross reference;'
-from	api.ExecutionAssetCrossReference ECR
-		inner join (
-			select	Uid, DataSource, Type, ExternalID 
-			from	api.ExecutionAssetCrossReference
-			where	Success is null 
-					and ExecutionID = @executionID
-			group by Uid, DataSource, Type, ExternalID
-			having(count(*)>1)
-		) T on ECR.[Uid] = T.[UID] 
-			and ECR.DataSource = T.DataSource 
-			and ECR.[Type] = T.[Type] 
-			and ECR.ExternalID = T.ExternalID
-where	ECR.Success is null  
-		and ExecutionID=@executionID";
-
-				await connection.ExecuteAsync(
-					validationSql, 
-					new { executionID = execution.ExecutionID }, 
-					commandTimeout: timeout
-				);
-
-				// Insert into cross reference table.
-				await connection.ExecuteAsync(@"
-insert into AssetCrossReference (Uid, DataSource, Type, ExternalID, FieldHash)
-	select	Uid, DataSource, Type, ExternalID, FieldHash 
-	from	api.ExecutionAssetCrossReference
-	where	ExecutionID=@executionID 
-			and Success is null;
-
-update	api.ExecutionAssetCrossReference
-set		Success = 1,
-		Message = 'Added Successfully'
-where	ExecutionID = @executionID 
-		and Success is null;",
-					new { executionID = execution.ExecutionID }, commandTimeout: timeout
-				);
-			}
 		}
 
 		public Task CreateSemanticType()
@@ -389,7 +183,7 @@ where	ExecutionID = @executionID
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
 						"select cast(iif(count(1) > 0, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and [Value] = @value and state = @state",
-						new { tagTypeId, value , state = State.Active}
+						new { tagTypeId, value, state = State.Active }
 					);
 
 					if (tagExists)
@@ -408,14 +202,14 @@ insert into Tag ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [Updated
 values (@uid, @value, @dt, @u, @dt, @u, @State, @tagTypeId);
 select @tagId = SCOPE_IDENTITY();
 
-insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 values ('Tag', @tagId, @Value, @u, @dt, 'Created', 'Tag', @tagId, 'Tags', @Value, 'Tag created', 1);
 select @auditID = SCOPE_IDENTITY();
 
 insert into reporting.Global_FieldAudit ( AuditID, FieldTypeID, FieldName, Value, PreviousValue )
 values (@auditID,0,'Name',@Value,Null)
 
-{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.ID = @tagId;", 
+{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.ID = @tagId;",
 							new { tagTypeId, value, uid = Guid.NewGuid(), state = (int)State.Active, u = CurrentUserId, dt = DateTime.UtcNow });
 					}
 				}
@@ -431,7 +225,7 @@ values (@auditID,0,'Name',@Value,Null)
 		public async Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value)
 		{
 			RepositoryResponse<TagTypeApiModel> response;
-			
+
 			value = (value ?? "").Trim();
 			if (string.IsNullOrEmpty(value))
 			{
@@ -471,7 +265,7 @@ insert into TagType ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [Upd
 values (@uid, @value, @dt, @CurrentUserId, @dt, @CurrentUserId, @state);
 select @id = SCOPE_IDENTITY();
 
-select	t.uid, 
+select	t.uid,
 		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -490,17 +284,17 @@ where	t.ID = @id;", new { uid = Guid.NewGuid(), value, CurrentUserId, dt = DateT
 		public async Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			const string sql = @"
-WITH cte AS (  
-	select	*, 
+WITH cte AS (
+	select	*,
 			0 as lvl
 	from	AssetType
 	where	[uid] = @assetUid
 	union all
 	select	a.*,
-			cte.lvl - 1 
+			cte.lvl - 1
 	from	IntersectType it
-            inner join [Predicate] p on it.PredicateID = p.ID and p.Type IN (3) 
-			inner join cte on cte.ID = it.ObjectAssetTypeID 
+            inner join [Predicate] p on it.PredicateID = p.ID and p.Type IN (3)
+			inner join cte on cte.ID = it.ObjectAssetTypeID
             inner join AssetType a on a.ID = it.SubjectAssetTypeID
 )
 select		*
@@ -508,19 +302,19 @@ from		cte
 order by	lvl";
 
 			IEnumerable<AssetType> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				results = await connection.QueryAsync<AssetType>(sql, new { assetUid });
 			}
 			return results.ToList();
 		}
 
-
 		public async Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			string value = "";
 			var response = new RepositoryResponse<List<dynamic>>(null, 200, true, "");
 
+			Guid tagTypeUID = Guid.Empty;
 			Guid exceptUid = Guid.Empty;
 			int maxNumberOfResults = 200;
 			bool ignoreCounts = false;
@@ -538,15 +332,18 @@ order by	lvl";
 							exceptUid = Guid.Empty;
 						}
 						break;
+
 					case "ignorecounts":
 						if (queryitem.Value.ToLowerInvariant() == "true")
 						{
 							ignoreCounts = true;
 						}
 						break;
+
 					case "value":
 						value = $"%{queryitem.Value.ToLowerInvariant()}%";
 						break;
+
 					case "maxnumberofresults":
 						int size;
 						if (int.TryParse(queryitem.Value, out size))
@@ -558,11 +355,35 @@ order by	lvl";
 							throw new ArgumentNullException(Error.InvalidPageSize);
 						}
 						break;
+						case "tagtypeuid":
+						Guid tagType;
+						if (Guid.TryParse(queryitem.Value, out tagType))
+						{
+							tagTypeUID = tagType;
+						}
+						else
+						{
+							throw new ArgumentNullException(Error.InvalidParameter);
+						}
+						break;
 				}
 			}
 
-			string sql;
+			string query = $@"SELECT ID FROM TagType WHERE uid = @tagTypeUID";
+			if (tagTypeUID == Guid.Empty)
+			{
+				query = $@"SELECT top 1 ID FROM TagType order by CreatedOn asc";
+			}
 
+			dynamic tagTypeId;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				tagTypeId = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new {tagTypeUID });
+			}
+
+			tagTypeId = tagTypeId?.ID;
+
+			string sql;
 
 			if (!ignoreCounts)
 			{
@@ -572,7 +393,7 @@ order by	lvl";
 				select top {maxNumberOfResults} T.ID, T.Value as name, T.uid as code , cast(0 as bigint) [count]
 				into #temptagdata
 				from Tag T 
-				where State = 1 and T.Value like @value and T.uid != @exceptUid;
+				where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId;
 
 				update t
 				set [count] = (select count(1) from AssetTag atg where atg.TagID = t.ID)
@@ -586,13 +407,13 @@ order by	lvl";
 			else
 			{
 				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
-						where State = 1 and T.Value like @value and T.uid != @exceptUid
+						where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeId = @tagTypeId
 						order by name";
 			}
 			IEnumerable<dynamic> results;
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
-				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid });
+				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid, tagTypeId });
 			}
 			response.Data = results.ToList();
 			return response;
@@ -614,7 +435,7 @@ from	Tag T
 		inner join AssetDisplayValue D on D.AssetID = A.ID
 where	t.uid = @uid";
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				var result = await connection.QueryAsync<dynamic>(sql, new { uid = tagUid });
 
@@ -629,18 +450,23 @@ where	t.uid = @uid";
 						case AssetTypeClass.TechnicalAsset:
 							breadcrumb = Label.AssetTypeClass_Technical;
 							break;
+
 						case AssetTypeClass.Policy:
 							breadcrumb = Label.AssetTypeClass_Policy;
 							break;
+
 						case AssetTypeClass.Model:
 							breadcrumb = Label.AssetTypeClass_Model;
 							break;
+
 						case AssetTypeClass.Rule:
 							breadcrumb = Label.AssetTypeClass_Rule;
 							break;
+
 						case AssetTypeClass.Diagram:
 							breadcrumb = Label.AssetTypeClass_Task;
 							break;
+
 						default:
 							breadcrumb = Label.AssetTypeClass_Business;
 							break;
@@ -659,112 +485,6 @@ where	t.uid = @uid";
 			}
 
 			return response;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(long id)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@id", id);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName,
-		Type,
-		TypeID,
-		uid
-from	AssetDetail
-where   ID = @id";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetDetail> ReadAssetDetail(string @object, int objectId)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@o", @object);
-			dbArgs.Add("@oid", objectId);
-
-			var sql = @"
-select	ID,
-		DisplayValue,
-		AssetTypeID,
-		State,
-		Object,
-		ObjectID,
-		TypeName as AssetTypeName,
-		Type,
-		TypeID,
-		uid,
-		assetTypeUid
-from	AssetDetail
-where   [ObjectID] = @oid and [Object] = @o";
-
-			AssetDetail model = null;
-			using (var connection = ConnectionProvider.Connect())
-			{
-				model = (
-					await connection.QueryAsync<AssetDetail>(sql, dbArgs)
-					).SingleOrDefault();
-			}
-			return model;
-		}
-
-		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
-		{
-			var dbArgs = new DynamicParameters();
-
-			dbArgs.Add("@assetTypeId", assetTypeId);
-			dbArgs.Add("@pageNum", pageNum);
-			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * (pageNum - 1));
-
-			var sql = $@"
-
-				DROP TABLE IF EXISTS #tempassetPath;
-				create table #tempassetPath (id int identity(1,1), AssetId bigint);
-				create index ix_tempassetPath on #tempassetPath	(AssetId);
-
-				insert into #tempassetPath
-				select a.ID
-				from Asset A
-				where A.assetTypeId = @assetTypeId
-				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
-				option (recompile);
-
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from #tempassetPath TempPA
-				inner join Asset A on A.ID = TempPA.AssetId
-				inner join AssetPath AP on a.ID=ap.ID
-				order by TempPA.ID
-				option (recompile);";
-
-			var model = new AssetPathResults();
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				var countSql = "select count(1) from Asset where AssetTypeId = @assetTypeId";
-				if (includeTotal) 
-				{
-					model.total = await connection.QueryFirstAsync<int>(countSql, dbArgs);
-				}
-				model.items = await connection.QueryAsync<AssetPathResult>(sql, dbArgs);
-			}
-
-			return model;
 		}
 
 		public async Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000)
@@ -801,60 +521,17 @@ order by    P.[Path];";
 
 			IEnumerable<AssetTypeApiViewModel> model;
 
-			using (var connection = ConnectionProvider.Connect())
+			using (var connection = ConnectionProvider.Connect(true))
 			{
 				model = await connection.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
 			}
 
 			return model;
 		}
-		
+
 		public Task ReadAssetTypeDefinition()
 		{
 			throw new NotImplementedException();
-		}
-
-		public async Task<IEnumerable<AssetCrossReferenceResult>> ReadCrossReferenceResultsAsync(Guid executionId)
-		{
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("executionId", executionId);
-
-			string sql = "select ItemNumber, Uid, Message, Success from [api].[ExecutionAssetCrossReference] where ExecutionID = @executionId";
-
-			IEnumerable<AssetCrossReferenceResult> models = null;
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				models = await connection.QueryAsync<AssetCrossReferenceResult>(sql, dbArgs);
-			}
-
-			return models;
-		}
-		
-		public async Task<IEnumerable<AssetCrossReference>> ReadCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-			var sql = "select uid, DataSource, Type, ExternalID, FieldHash from AssetCrossReference";
-			var queryFilters = new List<string>();
-
-			queryParams.CheckForQueryParameter<Guid>("_assetuid", "[UID]", "@assetUid", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_externalid", "[ExternalID]", "@externalid", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_datasource", "[DataSource]", "@datasource", ref dbArgs, ref queryFilters);
-			queryParams.CheckForQueryParameter<string>("_type", "[type]", "@type", ref dbArgs, ref queryFilters);
-
-			if (queryFilters.Count > 0)
-			{
-				sql += " where " + string.Join(" and ", queryFilters);
-			}
-
-			IEnumerable<AssetCrossReference> models = null;
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				models = await connection.QueryAsync<AssetCrossReference>(sql, dbArgs);
-			}
-
-			return models;
 		}
 
 		public Task ReadProfiles()
@@ -867,16 +544,11 @@ order by    P.[Path];";
 			throw new NotImplementedException();
 		}
 
-		public Task ReadSemanticTypes()
-		{
-			throw new NotImplementedException();
-		}
-
 		public async Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid)
 		{
 			var response = new RepositoryResponse<TagApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagApiModel>($@"{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.Uid = @uid", new { uid });
 				if (response.Data != null)
@@ -901,7 +573,7 @@ order by    P.[Path];";
 			string parameterValue = "";
 			var dbArgs = new DynamicParameters();
 			var queryFilters = new List<string>();
-			var validOrderFields = new List<SortColumnOption> { 
+			var validOrderFields = new List<SortColumnOption> {
 				new SortColumnOption("uid", "t.[uid]"),
 				new SortColumnOption("value", "t.[Value]"),
 				new SortColumnOption("usecount", "cnt.UseCount"),
@@ -913,12 +585,12 @@ order by    P.[Path];";
 			};
 
 			#region Validate Parameter
-			
-			if (!queryParams.ValidateForQueryParameter<Guid>("uid",ref parameterValue))
+
+			if (!queryParams.ValidateForQueryParameter<Guid>("uid", ref parameterValue))
 			{
 				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(Error.InvalidTagUid, parameterValue));
 			}
-				
+
 			var validOrderFieldsList = validOrderFields.Select(x => x.QueryStringPropertyName).ToList();
 
 			if (!queryParams.ValidateForQueryParameterFromList("_order", validOrderFieldsList, ref parameterValue))
@@ -931,17 +603,17 @@ order by    P.[Path];";
 				return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(Error.InvalidDirection, parameterValue));
 			}
 
-			#endregion
+			#endregion Validate Parameter
 
-			var countSql = $@"select count(1) 
+			var countSql = $@"select count(1)
 from	Tag t
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
 			var sql = $@"
-select	t.uid, 
-		t.[Value], 
+select	t.uid,
+		t.[Value],
 		cnt.UseCount,
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -949,6 +621,7 @@ select	t.uid,
 		t.UpdatedOn,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
+		u.FirstName + ' ' + u.LastName as UpdatedBy,
 		tt.Uid as TagTypeUID,
 		tt.Value as TagTypeValue
 from	Tag t
@@ -998,7 +671,7 @@ from	Tag t
 				sql += $" offset {response.Data.pageSize * (response.Data.pageNum - 1)} rows fetch next {response.Data.pageSize} rows only";
 			}
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				if (includeTotal)
 				{
@@ -1019,11 +692,11 @@ from	Tag t
 		{
 			var response = new RepositoryResponse<TagTypeApiModel>(null, 404, false, "");
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagTypeApiModel>(
 					@"
-select	t.uid, 
+select	t.uid,
 		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -1054,12 +727,12 @@ where	t.Uid = @uid
 		{
 			IEnumerable<TagTypeApiModel> models = null;
 
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				models = await connection.QueryAsync<TagTypeApiModel>(
-					
+
 					$@"
-select	t.uid, 
+select	t.uid,
 		t.ID,
 		t.[Value],
 		c.Uid as CreatedByUid,
@@ -1069,7 +742,7 @@ select	t.uid,
 from	TagType t
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
-where	t.State = {(int)State.Active}
+where	t.State = {(int)State.Active} AND Lower(t.Value) != 'general'
 order by	t.[value]");
 			}
 
@@ -1079,42 +752,42 @@ order by	t.[value]");
 		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(Guid assetTypeUid, string name)
 		{
 			IEnumerable<TagTypeApiModel> models = null;
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 			{
 				string sql = $@"
 DECLARE @assetTypeId INT;
 
 SET @assetTypeId = (SELECT ID FROM AssetType WHERE uid = @assetTypeUid);
 
-SELECT 
-    t.uid, 
+SELECT
+    t.uid,
     t.ID,
     t.[Value],
     c.Uid AS CreatedByUid,
     t.CreatedOn,
     u.Uid AS UpdatedByUid,
     t.UpdatedOn
-FROM 
+FROM
     TagType t
-INNER JOIN 
+INNER JOIN
     reporting.Global_Resource c ON c.ResourceID = t.CreatedBy
-INNER JOIN 
+INNER JOIN
     reporting.Global_Resource u ON u.ResourceID = t.UpdatedBy
-LEFT JOIN 
+LEFT JOIN
     FieldType f ON f.TagTypeID = t.ID AND f.AssetTypeID = @assetTypeId AND f.Name != ISNULL(@name, '')
-WHERE 
-    t.State = {(int)State.Active} 
-    AND f.TagTypeID IS NULL 
-ORDER BY 
+WHERE
+    t.State = {(int)State.Active}
+    AND f.TagTypeID IS NULL
+ORDER BY
     t.[Value]";
 
-				models = await connection.QueryAsync<TagTypeApiModel>(sql, new { assetTypeUid,name });
+				models = await connection.QueryAsync<TagTypeApiModel>(sql, new { assetTypeUid, name });
 			}
 
 			return models;
 		}
 
-		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId)
 		{
 			RepositoryResponse<bool> response;
 
@@ -1139,11 +812,11 @@ delete AssetTag where AssetID = @assetId and TagID = @tagId;
 declare @version int;
 select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
-insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 output inserted.ID, inserted.[Object], inserted.[ObjectID] into @audittable
 	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Unassigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag unassigned', @version
 	from	Asset a
-			left join AssetDisplayValue d on d.AssetID = a.ID 
+			left join AssetDisplayValue d on d.AssetID = a.ID
 			join Tag t on t.ID = @tagId
 	where	a.ID = @assetId;
 
@@ -1152,12 +825,20 @@ select @auditID = auditID,
 @Object = Object
 from @audittable;
 
-select	'Tags' FieldName, 
-string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
-into #tbl
-from	AssetTag TA 
-inner join Tag T on T.ID = TA.TagID
-where TA.AssetID = @assetId;
+SELECT 
+    'Tags' AS FieldName, 
+    STRING_AGG(T.Value, ', ') WITHIN GROUP (ORDER BY TA.ID ASC) AS NewValue
+INTO #tbl
+FROM 
+    AssetTag TA
+INNER JOIN 
+    Tag T ON T.ID = TA.TagID
+INNER JOIN 
+    TagType TT ON TT.ID = T.TagTypeID AND TT.ID = @tagTypeId
+WHERE 
+    TA.AssetID = @assetId
+GROUP BY 
+    TA.AssetID;
 
 select	top 1
 @PreviousValue = [Value]
@@ -1179,70 +860,7 @@ from	#tbl
 drop table if exists #tbl;
 
 ",
-					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
-			}
-
-			return response;
-		}
-
-		public async Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			var dbArgs = new DynamicParameters();
-			var sql = "delete AssetCrossReference";
-			List<string> queryFilters = new List<string>();
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
-			{
-				Guid assetUid = new Guid();
-
-				var assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
-				if (Guid.TryParse(assetUidString, out assetUid))
-				{
-					dbArgs.Add("@assetuid", assetUid);
-					queryFilters.Add($"[UID] = @assetuid");
-				}
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_externalid"))
-			{
-				var externalId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_externalid").Value;
-				dbArgs.Add("@externalid", externalId);
-				queryFilters.Add($"[ExternalID] = @externalid");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_datasource"))
-			{
-				var ds = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_datasource").Value;
-				dbArgs.Add("@datasource", ds);
-				queryFilters.Add($"[DataSource] = @datasource");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_type"))
-			{
-				var ty = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_type").Value;
-				dbArgs.Add("@type", ty);
-				queryFilters.Add($"[type] = @type");
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(null, 0, false, "");
-
-			if (queryFilters.Count > 0)
-			{
-				sql += " where " + string.Join(" and ", queryFilters);
-			}
-			else
-			{
-				response.StatusCode = 400;
-				response.IsSuccess = false;
-				response.Message = Xref.SpecifyDeleteCriteria;
-			}
-
-			using (var connection = ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(sql, dbArgs);
-				response.IsSuccess = true;
-				response.StatusCode = 200;
-				response.Data = null;
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow, tagTypeId });
 			}
 
 			return response;
@@ -1313,53 +931,6 @@ drop table if exists #tbl;
 			return response;
 		}
 
-		public async Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model)
-		{
-			var userErrorMessages = new List<string>();
-
-			if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
-			{
-				userErrorMessages.Add(Xref.ModelNotContainFields);
-			}
-
-			if (model?.DataSource.Length > 250)
-			{
-				userErrorMessages.Add(Xref.DataSourceLengthMax);
-			}
-
-			if (model?.Type.Length > 50)
-			{
-				userErrorMessages.Add(Xref.TypeLengthMax);
-			}
-
-			if (model?.ExternalID.Length > 250)
-			{
-				userErrorMessages.Add(Xref.ExternalIDLengthMax);
-			}
-
-			var response = new RepositoryResponse<AssetCrossReference>(model, 0, false, "");
-
-			if (userErrorMessages.Count > 0)
-			{
-				response.Message = string.Join("; ", userErrorMessages);
-				response.StatusCode = 406; // Not Acceptable.
-
-				return response;
-			}
-
-			var sql = "update AssetCrossReference set ExternalID = @ExternalID, Fieldhash = @FieldHash where [uid] = @uid and [DataSource] = @DataSource and [Type] = @Type";
-
-			using (var connection = (SqlConnection)ConnectionProvider.Connect())
-			{
-				await connection.ExecuteAsync(sql, model);
-				response.IsSuccess = true;
-				response.StatusCode = 200;
-				response.Data = model;
-			}
-
-			return response;
-		}
-
 		public async Task<RepositoryResponse<Semantic>> UpdateSemanticType()
 		{
 			throw new NotImplementedException();
@@ -1382,10 +953,9 @@ drop table if exists #tbl;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-
 				var (tagId, tagTypeId) = await connection.QuerySingleOrDefaultAsync<(int, int)>(
 					"select id, tagTypeId from Tag where Uid = @uid", new { uid });
-				
+
 				if (tagId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
@@ -1416,7 +986,7 @@ where	ID = @tagId;
 declare @version int;
 select @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
 
-insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);
 
 select @auditID = SCOPE_IDENTITY();
@@ -1439,8 +1009,6 @@ drop table if exists #TempTagValues;
 create table #TempTagValues(AssetId bigint,Object varchar(50), ObjectID int);
 create clustered index cx_TempTagValues on #TempTagValues (Object,ObjectID);
 
-
-
 insert into #TempTagValues(AssetId, Object, ObjectID)
 select distinct atg.AssetID,A.Object,A.ObjectID
 from AssetTag atg
@@ -1450,12 +1018,12 @@ where tagid = @tagId
 create table #tbl (ID bigint, Object varchar(50), ObjectID int);
 create clustered index cx_tbl on #tbl (Object,ObjectID);
 
-insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 output inserted.ID, inserted.Object, inserted.ObjectID into #tbl
 select tta.Object,tta.ObjectID,substring(adv.DisplayValue,1,250),@userId,@dt,'Updated','Tag',@tagId,'Tags',@value,'Tag Updated',mv.[Version]
 from #TempTagValues tta
 inner join AssetDisplayValue adv on adv.AssetId = tta.Assetid
-cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version] 
+cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version]
 			from reporting.Global_Audit ga
 			where ga.Object =  tta.Object and ga.ObjectID =  tta.ObjectID) mv;
 
@@ -1465,7 +1033,7 @@ from #tbl t;
 
 drop table if exists #tbl;
 drop table if exists #TempTagValues;
-", 
+",
 							new { tagId, value, userId = CurrentUserId });
 
 						response = new RepositoryResponse<bool>(true, 200, true, "Tag updated.");
@@ -1543,6 +1111,125 @@ where	ID = @id;",
 			}
 
 			return response;
+		}
+
+		public async Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					var parameters = new
+					{
+						ChildrenUids = childrenUids
+					};
+					var assetUids = await connection.QueryAsync<long>($@"select a.id from processexpandeddata ped
+                                            inner join asset a on a.uid = ped.diagramassetuid
+                                            where labeluid in @ChildrenUids ", parameters, commandTimeout: CommandTimeout);
+
+					return assetUids;
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		public async Task<Asset> GetAsset(Guid? assetUid)
+		{
+			try
+			{
+				if (assetUid.HasValue)
+				{
+					using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+					{
+						var asset = await connection.QueryFirstOrDefaultAsync<Asset>(@"
+					 SELECT * FROM dbo.Asset a
+					 WHERE a.uid = @assetUid
+					", new { assetUid }, commandTimeout: CommandTimeout);
+
+						return asset;
+					}
+				}
+				return null;
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		public async Task<dynamic> GetAssetCopyOption(Guid uid, int assetTypeId)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					var result = await connection.QueryAsync<dynamic>($@"
+						select a.uid,
+						an.DisplayPath as assetPath,
+						P.Path as typePath
+						from asset a
+						inner join AssetProcessDiagram apd on a.ID = apd.AssetID and a.AssetTypeID = @assettypeid
+						inner join AssetPath an on an.ID = a.ID
+						cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
+						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
+						order by an.DisplayPath",
+						new { currentAssetUid = uid, assetTypeId });
+
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		public async Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				{
+					var result = await connection.QueryAsync<dynamic>($@";with assets as (
+					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
+					union
+					select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
+					select	assets.uid,
+							adv.DisplayValue as 'FlowObject',
+							adv2.DisplayValue as 'RelatedAsset'
+					 from	assets
+							inner join asset a on a.uid = assets.duid
+							inner join AssetDisplayValue adv on adv.AssetID = a.ID
+							inner join [intersect] i on i.SubjectAssetID = a.ID
+							inner join intersecttype it on i.intersecttypeid = it.id
+							inner join asset a2 on a2.ID = i.ObjectAssetID
+							inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
+					where	it.objectcardinality = 1 or it.SubjectCardinality = 1
+					union
+					select
+						assets.uid,
+						adv.DisplayValue as 'FlowObject',
+						adv2.DisplayValue as 'RelatedAsset'
+					 from assets
+						inner join asset a on a.uid = assets.duid
+						inner join AssetDisplayValue adv on adv.AssetID = a.ID
+						inner join [intersect] i on i.ObjectAssetID = a.ID
+						inner join intersecttype it on i.intersecttypeid = it.id
+						inner join asset a2 on a2.ID = i.SubjectAssetID
+						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
+					where it.objectcardinality = 1 or it.SubjectCardinality = 1
+					", new { targetAssetUid });
+
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 	}
 }

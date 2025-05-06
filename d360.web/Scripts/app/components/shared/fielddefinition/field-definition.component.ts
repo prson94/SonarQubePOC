@@ -349,9 +349,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
 			const isReferenceListTypePage = this.assetTypeClass === AssetTypeClass.Reference;
-			const isResourceTypePage = this.assetTypeClass === AssetTypeClass.User;
+			const isFirstFieldDelete = this.assetTypeClass === AssetTypeClass.User || this.assetTypeClass === AssetTypeClass.Group;
 
-			if (isResourceTypePage && this.fieldDisplayModel.length === 1)
+			if (isFirstFieldDelete && this.fieldDisplayModel.length === 1)
 			{
 				menuItems.push({ title: $localize`Delete`, action: 'delete' });
 			}
@@ -448,7 +448,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "OwnershipLookup": return $localize`Ownership Lookup`;
 			case "Path": return $localize`Asset Path`;
 			case "ComputedRelationshipReferenceList":
-			case "RefListRelationship": return $localize`Reference Item List from Relationship`;
+			case "ReferenceList": return $localize`Reference List`;
 			case "Relationship": return $localize`Relationship`;
 			case "Score": return $localize`Score`;
 			case "Tag": return $localize`Tag`;

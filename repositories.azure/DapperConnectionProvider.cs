@@ -8,6 +8,8 @@ namespace repositories.azure
 		public string ReadWriteConnectionString { get; set; }
 		public string ReadOnlyConnectionString { get; set; }
 
+		public string CommandTimeOut { get; set; }
+
 		public IDbConnection Connect(bool isReadOnly = false)
 			=> new SqlConnection(isReadOnly ? ReadOnlyConnectionString : ReadWriteConnectionString);
 	}

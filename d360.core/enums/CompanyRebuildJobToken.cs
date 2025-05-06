@@ -11,12 +11,7 @@ namespace d360.core.enums
         [
             QueueSettingName("DisplayValueQueue")
         ]
-        DisplayValues = 2,
-
-        [
-            QueueSettingName("SearchIndexQueue")
-        ]
-        SearchIndex
+        DisplayValues = 2
     }
 
     public class CompanyRebuildJobTokenInfo
@@ -91,7 +86,6 @@ namespace d360.core.enums
             switch (type)
             {
                 case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues_Desc;
-                case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex_Desc;
                 default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
             }
         }
@@ -101,7 +95,6 @@ namespace d360.core.enums
             switch (type)
             {
                 case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues;
-                case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex;
                 default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
             }
         }

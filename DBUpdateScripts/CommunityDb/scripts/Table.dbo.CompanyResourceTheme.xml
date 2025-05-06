@@ -1,0 +1,58 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyResourceTheme-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyResourceTheme')
+BEGIN
+	CREATE TABLE [dbo].[CompanyResourceTheme](
+		[CompanyID] [int] NOT NULL,
+		ResourceID int not null,
+		ThemeID int not null,
+		CONSTRAINT [PK_ResourceTheme] PRIMARY KEY CLUSTERED ( CompanyID, ResourceID ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyResourceTheme')
+BEGIN
+	drop table dbo.CompanyResourceTheme
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.CompanyResourceTheme-Constraints-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_CompanyResourceTheme_Theme')
+BEGIN
+	ALTER TABLE [dbo].[CompanyResourceTheme] WITH CHECK ADD CONSTRAINT [FK_CompanyResourceTheme_Theme] FOREIGN KEY(CompanyID,[ThemeID]) REFERENCES [dbo].[CompanyTheme] (CompanyID,[ID]) on delete cascade
+	ALTER TABLE [dbo].[CompanyResourceTheme] CHECK CONSTRAINT [FK_CompanyResourceTheme_Theme]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_CompanyResourceTheme_Theme')
+BEGIN
+	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [FK_CompanyResourceTheme_Theme]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

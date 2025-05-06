@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
-
 using Dapper;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -29,7 +23,7 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IQueueSource Queue;
 
-		public TagRepository(ICompanyContext company, ISecurityContextProvider securityContext, IFeatureFlagService ff, IQueueSource queue) : base(company, securityContext, ff)
+		public TagRepository(ICompanyContext company, ISecurityContextProvider securityContext, IQueueSource queue) : base(company, securityContext)
 		{
 			Queue = queue;
 		}
@@ -201,7 +195,6 @@ where t.uid in @uids
 			var tagTypeId = GetTagTypeByUid(tagTypeUid).ID;
 			return CompanyContext.Tags.Any(x => x.Value == value && x.TagTypeID == tagTypeId && x.State == State.Active);
 		}
-
 		public bool DoesAssetTagExists(int tagId, long assetId)
 		{
 			return CompanyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
@@ -217,16 +210,17 @@ where t.uid in @uids
 			return CompanyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
 		}
 
-		public IEnumerable<Tag> GetTagsForAsset(long assetId)
+		public IEnumerable<Tag> GetTagsForAsset(long assetId, int ?tagTypeId)
 		{
 
 			string sql = $@"
 							select t.*
 							from AssetTag atg
 							inner join tag t on atg.TagID = t.ID
+							inner join TagType tt on tt.ID = t.TagTypeID and tt.ID = @tagTypeId
 							where atg.assetid = @assetId
 							";
-			List<Tag> tags = CompanyContext.Query<Tag>(sql, new { assetId }, ApiTimeout).ToList();
+			List<Tag> tags = CompanyContext.Query<Tag>(sql, new { assetId, tagTypeId }, ApiTimeout).ToList();
 			return tags;
 		}
 
@@ -549,6 +543,8 @@ where t.uid in @uids
 						END + AST.Name AS AssetType, 
 						A.Object,
 						A.ObjectID,
+						A.CreatedOn as AssetCreatedDate,
+						grc.FirstName + ' ' + grc.LastName as AssetCreatedBy,
 						AssetTags.Tags as Tags
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
@@ -581,29 +577,37 @@ where t.uid in @uids
 
 			if (assetUid.HasValue)
 			{
-				sql = @"select	T.Value, 
+				sql = @"
+							declare @AssetID bigint;
+
+							select @AssetID = id 
+							from asset 
+							where uid = @assetUid;
+
+							select	T.Value, T.TagTypeId,TT.uid as TagTypeUID,
 									TA.CreatedOn, 
 									ADV.DisplayValue as CreatedBy,
 									T.Uid as TagUid
 							from	AssetTag TA
 									inner join Tag T on T.ID = TA.TagID
+									inner join TagType TT on T.TagTypeId = TT.ID
 									inner join Asset A on A.ID = TA.AssetID
 									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
 									inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 							where	T.[Uid] = @tagUid 
-									and A.[Uid] = @assetUid";
+									and A.[id] = @AssetID";
 			}
 			else
 			{
-				sql = @"select  T.Value, 
+				sql = @"select  T.Value, T.TagTypeId,TT.uid as TagTypeUID, 
 								T.CreatedOn, 
 								ADV.DisplayValue as CreatedBy 
 						from    Tag T 
+								inner join TagType TT on T.TagTypeId = TT.ID
 								inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
 								inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 						where   T.[Uid] = @tagUid";
 			}
-
 
 			var result = CompanyContext.Query<dynamic>(sql, new { tagUid, assetUid }, ApiTimeout);
 			
@@ -741,6 +745,12 @@ where t.uid in @uids
 				uid = new Guid("00000001-0000-0000-0000-b00000000011");
 			}
 			return CompanyContext.TagTypes.FirstOrDefault(x => x.uid == uid);
+		}
+
+		public Tag GetTagDetailIfExists(string value, Guid? tagTypeUid)
+		{
+			var tagTypeId = GetTagTypeByUid(tagTypeUid).ID;
+			return CompanyContext.Tags.FirstOrDefault(x => x.Value == value && x.TagTypeID == tagTypeId && x.State == State.Active);
 		}
 	}
 }

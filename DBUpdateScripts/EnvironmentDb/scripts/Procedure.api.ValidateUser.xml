@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.api.ValidateUser-v1.1">
+  <changeSet author="PuneetGupta" id="Procedure.api.ValidateUser-v1.2">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.ValidateUser
@@ -34,10 +34,11 @@ begin
 
 	update  U
 	set U.Success = 0,
-		U.Message = coalesce(U.Message,'') + 'Missing required fields. '
+		U.Message = coalesce(U.Message,'') + coalesce(C.MissingField,'') + ' is a required field.'
 	from #TempUser U
 	cross apply (
-			select  count(*) as MissingCount
+			select  count(*) as MissingCount,
+					STRING_AGG(F.Name, ',') MissingField
 			from    FieldType F
 			where   Assettypeid = @UserAssetTypeID and F.IsRequired = 1
 					and not exists (

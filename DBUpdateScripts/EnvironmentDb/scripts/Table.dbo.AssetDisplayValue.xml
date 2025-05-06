@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.AssetDisplayValue-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.AssetDisplayValue-v3">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDisplayValue')
 BEGIN
 	CREATE TABLE [dbo].[AssetDisplayValue](
@@ -19,34 +16,42 @@ BEGIN
 		[DisplayValueHash] [nvarchar](50) NULL,
 		[DisplayValuePrefix] [nvarchar](250) NOT NULL,
 		[UpdatedOn] [datetime] CONSTRAINT [DF_AssetDisplayValue_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
-		CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY NONCLUSTERED ( [AssetID] ASC )
+		CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY CLUSTERED ( [AssetID] ASC )
 	)
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDisplayValue_DisplayValuePrefix_AssetID')
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetDisplayValue_AssetID')
 BEGIN
-	CREATE CLUSTERED INDEX [IX_AssetDisplayValue_DisplayValuePrefix_AssetID] ON [dbo].[AssetDisplayValue] ( [DisplayValuePrefix] ASC, [AssetID] ASC )
+	DROP INDEX [IX_AssetDisplayValue_AssetID] ON [dbo].[AssetDisplayValue];
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-  
-  <changeSet author="Andrii Kunetskyi" id="Table.dbo.AssetDisplayValue-v2">
-	<preConditions onFail="MARK_RAN">
-        <indexExists indexName="IX_AssetDisplayValue_DisplayValuePrefix_AssetID" />
-    </preConditions>
-    <dropIndex tableName="AssetDisplayValue" indexName="IX_AssetDisplayValue_DisplayValuePrefix_AssetID" />
-  </changeSet>
-  
-  <changeSet author="Andrii Kunetskyi" id="Table.dbo.AssetDisplayValue-v3">
-	<createIndex clustered="true" indexName="IX_AssetDisplayValue_AssetID" tableName="AssetDisplayValue">
-      <column name="AssetID"/>
-	</createIndex>
-  </changeSet>
+IF EXISTS (select 1 from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where Table_Name = 'AssetDisplayValue' and constraint_name = 'PK_AssetDisplayValue')
+AND EXISTS (select 1 from sys.indexes where name = 'PK_AssetDisplayValue' and type_desc = 'NONCLUSTERED')
+BEGIN
+	ALTER TABLE [dbo].[AssetDisplayValue] DROP CONSTRAINT [PK_AssetDisplayValue];
+END
+
+IF NOT EXISTS (select 1 from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where Table_Name = 'AssetDisplayValue' and constraint_name = 'PK_AssetDisplayValue')
+BEGIN
+	ALTER TABLE [dbo].[AssetDisplayValue] ADD CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY CLUSTERED ( [AssetID] ASC )
+END
+]]>
+  </sql>
+ </changeSet>
+
+	<changeSet author="Pappas" id="Table.dbo.AssetDisplayValue.FTI-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
+IF NOT EXISTS (
+	select	1
+	from	[sys].[fulltext_indexes] i 
+				inner join [sys].[objects] o on o.object_id = i.object_id and o.Name = 'AssetDisplayValue'
+		)
+BEGIN
+	CREATE FULLTEXT INDEX ON dbo.AssetDisplayValue(DisplayValue) KEY INDEX PK_AssetDisplayValue ON fullTextCatalog
+END
+]]>
+		</sql>
+	</changeSet>
 
 </databaseChangeLog>

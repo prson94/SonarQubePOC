@@ -1,0 +1,22 @@
+﻿<ul class="shortcutlist">
+    @for (s of shortcuts | async; track s) {
+	<li (click)="navigate(s)" class="shortcut" [style.background-color]="s.BackgroundColor">
+		@if (s.Icon != null) {
+		<div class="icon" [style.color]="s.IconColor">
+			<i [class]="'fa ' + s.Icon" style="display: block;"></i>
+		</div>
+		}
+		@if (s.IconUrl != null) {
+		<div class="custom-icon">
+			<img [src]="s.FullURL" style="max-width: 34px; max-height: 34px; " />
+		</div>
+		}
+		<div class="shortcut-name" [title]="s.Name" [style.color]="s.TitleColor">
+			{{s.Name}}
+		</div>
+		<p class="shortcut-desc" [title]="s.Description">
+			{{s.Description}}
+		</p>
+	</li>
+    }
+</ul>

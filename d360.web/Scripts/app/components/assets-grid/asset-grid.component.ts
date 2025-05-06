@@ -38,16 +38,14 @@ import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from "../../services/feature-flags.enum";
 import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { LinkClickInterceptor } from "../../services/href-click-service";
 import { AssetTypeApiModel } from "../../models/asset.model";
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
 import { StringConstants } from '../../static/string-constants';
-
-/*global $localize*/
+import { FeatureFlagsInitService } from "../../services/feature-flags-init.service";
+import { FeatureFlags } from "../../_shared/models/feature-flags";
 
 @Component({
 	selector: "d3s-asset-grid",
@@ -59,7 +57,6 @@ import { StringConstants } from '../../static/string-constants';
 		"(document:click)": "clickedOutside()",
 	},
 })
-
 export class AssetGridComponent extends BaseComponent implements OnChanges, OnDestroy {
 	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() rowID: string = 'ObjectID';
@@ -178,7 +175,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		private changeDetectorRef: ChangeDetectorRef,
 		private assetService: AssetService,
 		private route: ActivatedRoute,
-		private featureFlagService: LaunchDarklyService,
+		private featureFlagService: FeatureFlagsInitService,
 		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
@@ -201,7 +198,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 			this.doSimpleSearch(me.dt, me.isLoading);
 		});
 
-		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
+		featureFlagService.getFlagValue(FeatureFlags.ContainsSearchDefaultUi).then((flag) => {
+			this.isContainsSearchDefault = flag;
+		});
 
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
@@ -380,7 +379,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 				this.fields = result.Fields;
 				this.topLevelFilters = result.TopLevelFilterColumns;
 				this.scoreAllocations = result.ScoreAllocations;
-				if (this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
+				if (this.isContainsSearchDefault) {
 					this.hasProfiling = result.HasProfiling;
 					this.hasProfilingChange.emit(this.hasProfiling);
 				}
@@ -414,7 +413,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	_oldParamsJSON: string = '';
 	getParams() {
 		const autoDisplayParentSetting = this.assetTypeApiModel.AutoDisplayParent === null || (typeof this.assetTypeApiModel.AutoDisplayParent === 'undefined') ? true : this.assetTypeApiModel.AutoDisplayParent;
-		var params = new V2ApiFilters();
+		const params = new V2ApiFilters();
 		params._includeParent = this.assetTypeApiModel.ParentUid ? autoDisplayParentSetting : true;
 		params._loadPermissionDetails = true;
 		params._pageSize = this.rowsPerPage;
@@ -481,7 +480,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		}
 
 		if (this.stateService.artifactTypeFilters.owners) {
-			var filter = this.stateService.artifactTypeFilters.owners.getAsV2ApiFilter();
+			const filter = this.stateService.artifactTypeFilters.owners.getAsV2ApiFilter();
 			if (filter.length > 0) {
 				params._ownedBy = filter;
 			}
@@ -652,7 +651,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	downloadCustomExcel(option: AssetTypeExportTemplate) {
-		var params = JSON.parse(JSON.stringify(this.getParams()));
+		const params = JSON.parse(JSON.stringify(this.getParams()));
 		params['_exporttemplateuid'] = option.Uid;
 
 		this.gridCustomExport.setExportState(option, true);
@@ -672,7 +671,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 			this.getData(false);
 		}
 		else if ($event && $event.action === 'new') {
-			var newUrl = '/asset/' + $event.assetUid;
+			const newUrl = '/asset/' + $event.assetUid;
 			this.router.navigateByUrl(this.federateUrl(newUrl));
 		}
 		else {
@@ -745,8 +744,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	protected onRightClick(event, rightMenu, artifact, grid) {
-		var gridRect = grid.el.nativeElement.getBoundingClientRect();
-		var itemRect = event.srcElement.getBoundingClientRect();
+		const gridRect = grid.el.nativeElement.getBoundingClientRect();
 
 		this.isMenuOpen = true;
 

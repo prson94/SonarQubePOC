@@ -23,7 +23,6 @@ import { Subscription } from 'rxjs';
 import { sortBy, startsWith } from "lodash-es";
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
-import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -36,7 +35,6 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
-import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
@@ -59,7 +57,6 @@ import { TabsModule } from '../tabs/tabs.module';
 		TagUsageInfoModule,
 		SharedDeleteFormModule,
 		SiteModalModule,
-		TakeSurveyModule,
 		PipesModule,
 		ScoreBadgeModule,
 		InfoTooltipModule,
@@ -68,7 +65,7 @@ import { TabsModule } from '../tabs/tabs.module';
 		DirectivesModule,
 		TabsModule
 	],
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
+    providers: [ObjectStatisticsService, ArtifactService, WorkflowService],
     styleUrls: ['./right-sidebar.component.less'],
 })
 
@@ -124,7 +121,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     constructor(
         private secondaryNavService: SecondaryNavService,
         protected objectStatisticsService: ObjectStatisticsService,
-        private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
@@ -298,7 +294,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showOnlyMainTab = true;
             }
             if (this.assetAction && this.assetAction.type === "TAG") {
-                var AssetActionwidthCalc = 0;
+                let AssetActionwidthCalc = 0;
                 if (this.assetAction.showBack) {
                     AssetActionwidthCalc = AssetActionwidthCalc + 110;
                 }
