@@ -6,6 +6,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="ThemeRepository.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <PackageReference Include="Dapper" Version="2.1.21" />
 	  <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
 	  <PackageReference Include="Dapper.ParameterExtensions" Version="2022.7.7.1" />

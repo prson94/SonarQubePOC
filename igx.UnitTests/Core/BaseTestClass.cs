@@ -30,6 +30,7 @@ using Moq.Language;
 using repositories;
 using d360.core.validators;
 using d360.web.Services;
+using d360.web.Models.Theme;
 
 namespace igx.UnitTests
 {
@@ -665,9 +666,9 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public IThemeRepository GetThemeRepository()
+        public IThemeManager GetThemeRepository()
         {
-            var mockRepo = new Mock<IThemeRepository>();
+            var mockRepo = new Mock<IThemeManager>();
             return mockRepo.Object;
         }
 

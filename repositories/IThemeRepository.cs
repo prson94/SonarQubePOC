@@ -8,17 +8,17 @@ using d360.core.entities;
 
 namespace repositories
 {
-    public interface IThemeRepository
-    {
-		Task<HttpStatusCode> Delete(Guid uid, Theme theme);
+	public interface IThemeRepository
+	{
+		Task<HttpStatusCode> Delete(Guid uid, Theme theme, int CurrentCompanyId);
 
-        Task<GetTheme> GetCurrentThemeByUserAsync(ThemewithResource dbTheme);
-        
-        Task<bool> MarkThemeAsCurrentAsync(Theme theme, Guid uid);
+		Task<GetTheme> GetCurrentThemeByUserAsync(ThemewithResource dbTheme, int CurrentCompanyId);
 
-		Task<HttpStatusCode> PostThemeAsync(Theme theme, bool validationOnly = false);
+		Task<bool> MarkThemeAsCurrentAsync(Theme theme, Guid uid);
 
-		Task<HttpStatusCode> PutThemeAsync(Theme existingTheme, Theme nowPreviousTheme);
+		Task<HttpStatusCode> PostThemeAsync(Theme theme, int CurrentCompanyId, bool validationOnly = false);
+
+		Task<HttpStatusCode> PutThemeAsync(Theme existingTheme, Theme nowPreviousTheme, int CurrentCompanyId);
 
 		Task<Uri> GetBaseUriTheme();
 	}

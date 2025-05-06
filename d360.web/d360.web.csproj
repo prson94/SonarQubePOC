@@ -472,6 +472,8 @@
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Models\Theme\IThemeManager.cs" />
+    <Compile Include="Models\Theme\ThemeManager.cs" />
     <Compile Include="Models\Usage\UsageAction.cs" />
     <Compile Include="Models\Usage\UsageBrowser.cs" />
     <Compile Include="Models\Usage\UsageEntry.cs" />

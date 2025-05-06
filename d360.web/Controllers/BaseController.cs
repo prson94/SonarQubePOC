@@ -11,6 +11,7 @@ using d360.model;
 using d360.utils.excel;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
+using d360.web.Models.Theme;
 using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
@@ -104,7 +105,7 @@ namespace d360.web.Controllers
 
 		IMailProvider Mail { get; set; }
 
-		IThemeRepository ThemeRepository { get; set; }
+		IThemeManager ThemeManager { get; set; }
 
 		IRuntimeInfo RuntimeInfo { get; set; }
 
@@ -127,7 +128,7 @@ namespace d360.web.Controllers
 
 		public IMailProvider Mail { get; set; }
 
-		public IThemeRepository ThemeRepository { get; set; }
+		public IThemeManager ThemeManager { get; set; }
 
 		public CommunityFeatureFlagService CommunityFlags { get; set; }
 
@@ -144,7 +145,7 @@ namespace d360.web.Controllers
 			IEnumerable<ICatalog> catalogs,
 			ILogger log,
 			IMailProvider mail,
-			IThemeRepository themeRepository,
+			IThemeManager themeManager,
 			IRuntimeInfo runtimeInfo,
 			IWorkspaces workspace
 			)
@@ -156,7 +157,7 @@ namespace d360.web.Controllers
 			Catalogs = catalogs;
 			Log = log;
 			Mail = mail;
-			ThemeRepository = themeRepository;
+			ThemeManager = themeManager;
 			RuntimeInfo = runtimeInfo;
 			Workspace = workspace;
 			SecurityContext = securityContext;
@@ -653,7 +654,7 @@ namespace d360.web.Controllers
 		private CommunityFeatureFlagService CommunityFlags;
 		internal ILogger Log;
 		internal IMailProvider Mail;
-		internal IThemeRepository ThemeRepository;
+		internal IThemeManager ThemeManager;
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
 		internal ISecurityContextProvider SecurityContext;
@@ -688,7 +689,7 @@ namespace d360.web.Controllers
 			Company = set.Company;
 			Log = set.Log;
 			Mail = set.Mail;
-			ThemeRepository = set.ThemeRepository;
+			ThemeManager = set.ThemeManager;
 			Workspace = set.Workspace;
 			SecurityContext = set.SecurityContext;
 			Cache = set.Cache;
@@ -2323,7 +2324,7 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 			settings["CompanyIcon"] = "";
 			settings["CompanyLogo"] = "";
 			ThemewithResource themerec = await Community.ReadCurrentThemesByUsersAsync(SecurityContext.CompanyID, SecurityContext.ResourceID);
-			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync(themerec);
+			var currentTheme = await this.ThemeManager.GetCurrentThemeByUserAsync(themerec, SecurityContext.CompanyID);
 			if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
 			{
 				settings["CompanyIcon"] = currentTheme.IconUri;
