@@ -9,7 +9,6 @@
     Output,
     SimpleChange
 } from '@angular/core';
-import { Router } from '@angular/router';
 
 export enum LABEL_STYLE {
     ANGLE = "angle",
@@ -172,15 +171,15 @@ export class Paginator implements OnChanges, OnInit {
         this.pageOptions = paging;
     }
 
-    get fromDisplayValue() {
-		return Math.min((this.page * this.rows) + 1, this.totalRecords);
+	get fromDisplayValue() {
+		return Math.min(((this.page - 1) * this.rows) + 1, this.totalRecords);
     }
 
     get toDisplayValue() {
 		if (this.totalRecords <= this.rows) {
             return this.totalRecords;
         } else {
-			return Math.min((this.page * this.rows) + this.rows, this.totalRecords);
+			return Math.min(((this.page - 1) * this.rows) + this.rows, this.totalRecords);
         }
     }
 }
