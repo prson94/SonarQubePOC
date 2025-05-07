@@ -23,14 +23,14 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using AutoFixture;
 using d360.model.helpers.filters;
-using d360.web.Controllers;
-using d360.web.Utilities;
 using FluentAssertions;
 using Moq.Language;
 using repositories;
 using d360.core.validators;
-using d360.web.Services;
 using d360.web.Models.Theme;
+using d360.web.Utilities;
+using d360.web.Controllers;
+using d360.web.Services;
 
 namespace igx.UnitTests
 {

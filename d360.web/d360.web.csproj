@@ -474,10 +474,6 @@
     <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
     <Compile Include="Models\Theme\IThemeManager.cs" />
     <Compile Include="Models\Theme\ThemeManager.cs" />
-    <Compile Include="Models\Usage\UsageAction.cs" />
-    <Compile Include="Models\Usage\UsageBrowser.cs" />
-    <Compile Include="Models\Usage\UsageEntry.cs" />
-    <Compile Include="Models\Usage\UsageEntryDetail.cs" />
     <Compile Include="Services\CommunityFeatureFlagService.cs" />
     <Compile Include="Services\FlagList.cs" />
     <Compile Include="Utilities\IRuntimeInfo.cs" />

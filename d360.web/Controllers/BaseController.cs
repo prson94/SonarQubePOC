@@ -110,6 +110,8 @@ namespace d360.web.Controllers
 		IRuntimeInfo RuntimeInfo { get; set; }
 
 		CommunityFeatureFlagService CommunityFlags { get; set; }
+
+		IUsage Usage { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
@@ -136,6 +138,8 @@ namespace d360.web.Controllers
 
 		public IWorkspaces Workspace { get; set; }
 
+		public IUsage Usage { get; set; }
+
 		public CoreComponentSet(
 			ICachingProvider cache,
 			ICommunity community,
@@ -147,7 +151,8 @@ namespace d360.web.Controllers
 			IMailProvider mail,
 			IThemeManager themeManager,
 			IRuntimeInfo runtimeInfo,
-			IWorkspaces workspace
+			IWorkspaces workspace,
+			IUsage usage
 			)
 		{
 			Cache = cache;
@@ -160,6 +165,7 @@ namespace d360.web.Controllers
 			ThemeManager = themeManager;
 			RuntimeInfo = runtimeInfo;
 			Workspace = workspace;
+			Usage = usage;
 			SecurityContext = securityContext;
 		}
 	}
@@ -175,6 +181,7 @@ namespace d360.web.Controllers
 		internal IWorkspaces Workspace;
 		internal ISecurityContextProvider SecurityContext;
 		internal ICachingProvider Cache;
+		internal IUsage Usage;
 
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
@@ -216,6 +223,7 @@ namespace d360.web.Controllers
 			Workspace = set.Workspace;
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
+			Usage = set.Usage;
 		}
 
 		internal async Task<bool> GetFeatureFlagValue(string flag)
@@ -658,6 +666,7 @@ namespace d360.web.Controllers
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
 		internal ISecurityContextProvider SecurityContext;
+		internal IUsage Usage;
 
 		internal List<string> limitedFieldTypes = new List<string> {
 			DataType.Path.ToString(),
@@ -693,6 +702,7 @@ namespace d360.web.Controllers
 			Workspace = set.Workspace;
 			SecurityContext = set.SecurityContext;
 			Cache = set.Cache;
+			Usage = set.Usage;
 		}
 
 		internal async Task<bool> GetFeatureFlagValue(string flag)

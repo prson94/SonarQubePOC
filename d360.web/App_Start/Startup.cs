@@ -293,6 +293,15 @@ namespace d360.web
 						i.Instance.WorkspaceId = "";
 					});
 
+				builder.RegisterType<Usage>().As<IUsage>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
+						i.Instance.CurrentUserId = sec.ResourceID;
+						i.Instance.CompanyId = sec.CompanyID;
+						i.Instance.WorkspaceId = "";
+					});
+				
 				#endregion
 
 				#region Controller DI
