@@ -368,5 +368,69 @@ namespace repositories.azure
 				throw;
 			}
 		}
+
+		public async Task<IEnumerable<dynamic>> GetIssuesByUser(int? CurrentUserId)
+		{
+			try
+			{
+				var sql = string.Format(@"
+									select		distinct
+												null as WorkflowID
+												,wi.ID as WorkflowItemID
+												,c.Body
+												,I.CommentID as CommentID
+												,I.CreatedBy as RaisedByResourceID
+												,wi.StartedOn as DateStarted
+												,wi.CompletedOn as DateCompleted
+												,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
+												,'' as Step
+												,coalesce(D.ObjectID, T.ObjectID) as ObjectID
+												,coalesce(D.DisplayValue, T.[Name]) as [Name]
+												,coalesce(D.[Object], T.[Object]) as [Object]
+												,coalesce(DUrl.[Url], TUrl.[Url]) as [Url]
+												,R.FirstName + ' ' + R.LastName as RaisedBy			
+												,'' as Notes					
+												,IT.ID as IssueType
+												,IT.Name as IssueTypeName
+												,I.ID as IssueID
+												,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
+												,case 
+													when wi.CompletedOn is not null then 'Closed'
+													else
+														case cast(coalesce(IA.ResourceObjectID, 0) as bit)
+
+															when 1 then 'Pending'
+															else 'Waiting on user(s)'
+
+														end
+
+												end as ActivityName
+									from	    Issue I
+												inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
+												inner join workflow.itemstep si on si.itemid = wi.id
+												inner join IssueType IT on (I.IssueTypeID = IT.ID)							
+												left join AssetDetail D on D.[ID] = I.AssetID
+												outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
+												left join AssetType T on T.ID = I.AssetTypeID
+												outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+												left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
+												left outer join Comment C on C.ID = I.CommentID
+												left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
+									order by wi.StartedOn desc",
+												CurrentUserId > 0 ? $"and IA.ResourceObjectID = {CurrentUserId}" : "");
+
+
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var result = await connection.QueryAsync<IEnumerable<dynamic>>(sql);
+					return result;
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
 	}
 }

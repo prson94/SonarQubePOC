@@ -14,5 +14,8 @@ namespace repositories
         Task<IssueType> GetIssueTypeByUID(Guid issueTypeUid);
 
         Task<Issue> GetIssueByUID(Guid issueUid);
-    }
+
+		Task<IEnumerable<dynamic>> GetIssuesByUser(int? CurrentUserId);
+
+	}
 }

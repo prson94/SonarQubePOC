@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -38,76 +39,29 @@ namespace d360.web.Controllers.Services
 {
 	[ApiVersionNeutral, RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
 	public class WorkflowController : BaseV2ApiController
-	{		
-		public WorkflowController(CoreComponentSet set) : base(set) { }
-
-		private IEnumerable<dynamic> getIssues(int? resourceID)
+	{
+		private readonly IWorkflow Workflow;
+		public WorkflowController(CoreComponentSet set, IWorkflow workflow) : base(set) 
 		{
-			var sql = string.Format(@"
-									select		distinct
-												null as WorkflowID
-												,wi.ID as WorkflowItemID
-												,c.Body
-												,I.CommentID as CommentID
-												,I.CreatedBy as RaisedByResourceID
-												,wi.StartedOn as DateStarted
-												,wi.CompletedOn as DateCompleted
-												,case when wi.CompletedOn is null then cast(0 as bit) else cast(1 as bit) end as IsCompleted
-												,'' as Step
-												,coalesce(D.ObjectID, T.ObjectID) as ObjectID
-												,coalesce(D.DisplayValue, T.[Name]) as [Name]
-												,coalesce(D.[Object], T.[Object]) as [Object]
-												,coalesce(DUrl.[Url], TUrl.[Url]) as [Url]
-												,R.FirstName + ' ' + R.LastName as RaisedBy			
-												,'' as Notes					
-												,IT.ID as IssueType
-												,IT.Name as IssueTypeName
-												,I.ID as IssueID
-												,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
-												,case 
-													when wi.CompletedOn is not null then 'Closed'
-													else
-														case cast(coalesce(IA.ResourceObjectID, 0) as bit)
-
-															when 1 then 'Pending'
-															else 'Waiting on user(s)'
-
-														end
-
-												end as ActivityName
-									from	    Issue I
-												inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
-												inner join workflow.itemstep si on si.itemid = wi.id
-												inner join IssueType IT on (I.IssueTypeID = IT.ID)							
-												left join AssetDetail D on D.[ID] = I.AssetID
-												outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
-												left join AssetType T on T.ID = I.AssetTypeID
-												outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
-												left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
-												left outer join Comment C on C.ID = I.CommentID
-												left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
-									order by wi.StartedOn desc",
-												resourceID.HasValue ? $"and IA.ResourceObjectID = {resourceID.Value}" : "");
-
-			return Company.Query<dynamic>(sql);
+			Workflow = workflow;
 		}
 
 		[Route("all/issues"), HttpGet]
 		public HttpResponseMessage GetIssuesForAllUsers()
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, getIssues(null));
+			return Request.CreateResponse(HttpStatusCode.OK, Workflow.GetIssuesByUser(null));
 		}
 
 		[Route("my/issues"), HttpGet]
 		public HttpResponseMessage GetIssuesForMyUser()
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, getIssues(SecurityContext.ResourceID));
+			return Request.CreateResponse(HttpStatusCode.OK, Workflow.GetIssuesByUser(SecurityContext.ResourceID));
 		}
 
 		[Route("all/issues/excel/excel.xls"), HttpGet]
-		public HttpResponseMessage GetIssuesForAllUsersExcel(bool all = true)
+		public async Task<HttpResponseMessage> GetIssuesForAllUsersExcel(bool all = true)
 		{
-			var results = all ? getIssues(null) : getIssues(SecurityContext.ResourceID);
+			var results = all ? await Workflow.GetIssuesByUser(null) : await Workflow.GetIssuesByUser(SecurityContext.ResourceID);
 
 			var document = new SLDocument();
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
