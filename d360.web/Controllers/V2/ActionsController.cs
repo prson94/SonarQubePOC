@@ -850,15 +850,12 @@ namespace d360.web.Controllers.V2
 					{
 						if (dtl.Data.Tags.Count > 0)
 						{
-							foreach (var item in dtl.Data.Tags)
-							{
 								await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 								{
 									CompanyId = SecurityContext.CompanyID,
 									CompanyPrefix = SecurityContext.CompanyPrefix,
 									Payload = dtl.Data.ID
 								});
-							}
 						}
 					}
 

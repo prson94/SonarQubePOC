@@ -64,15 +64,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (commentData.Data.Tags.Count > 0)
 				{
-					foreach (var item in commentData.Data.Tags)
-					{
 						await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 						{
 							CompanyId = SecurityContext.CompanyID,
 							CompanyPrefix = SecurityContext.CompanyPrefix,
 							Payload = commentData.Data.ID
 						});
-					}
 				}
 			}
 			return Created("", commentData.Data);
