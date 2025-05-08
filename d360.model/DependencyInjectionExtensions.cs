@@ -1,13 +1,14 @@
 ﻿using Autofac;
-
+using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.validators;
 using repositories;
 
+
 namespace d360.model
 {
-    public static class DependencyInjectionExtensions
+	public static class DependencyInjectionExtensions
     {
         public static void RegisterModelModule(this ContainerBuilder builder)
         {
@@ -29,7 +30,6 @@ namespace d360.model
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
-            builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
             builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();
 			builder.RegisterType<ResourceSettingRepository>().As<IResourceSettingRepository>().InstancePerRequest();
 			builder.RegisterType<NavigationRepository>().AsImplementedInterfaces().InstancePerRequest();

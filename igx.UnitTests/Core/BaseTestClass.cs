@@ -1,4 +1,4 @@
-﻿using AutoFixture;
+using AutoFixture;
 using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
@@ -12,6 +12,7 @@ using d360.model.DataAccessLayer;
 using d360.model.helpers.filters;
 using d360.web.Controllers;
 using d360.web.Services;
+using d360.web.Models.Theme;
 using d360.web.Utilities;
 using d360.web.validators;
 using FluentAssertions;
@@ -665,9 +666,9 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public IThemeRepository GetThemeRepository()
+        public IThemeManager GetThemeRepository()
         {
-            var mockRepo = new Mock<IThemeRepository>();
+            var mockRepo = new Mock<IThemeManager>();
             return mockRepo.Object;
         }
 

@@ -8,6 +8,7 @@ using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.core.entities.Usage;
+using d360.web.Models.Theme;
 using d360.web.Services;
 using d360.web.Utilities;
 using Dapper;
@@ -21,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.IO.Packaging;
@@ -47,7 +49,7 @@ namespace d360.web.Controllers.V2
 	]
 	public class EnvironmentController : BaseV2ApiController
 	{
-		readonly IThemeRepository ThemeRepository;
+		readonly IThemeManager ThemeManager;
 		readonly IDashboardRepository DashboardRepository;
 		readonly IResourceSettingRepository ResourceSettingRepository;
 		readonly IStorageProvider _storage;
@@ -61,13 +63,13 @@ namespace d360.web.Controllers.V2
 		private string SettingsCacheKey => $"Settings_{SecurityContext.CompanyID}";
 
 		public EnvironmentController(
-			ICoreComponentSet set, 
-			IThemeRepository themeRepository, 
+			ICoreComponentSet set,
+			IThemeManager themeManager, 
 			IDashboardRepository dashboardRepository, 
 			IStorageProvider storage, 
 			IResourceSettingRepository resourceSettingRepository) : base(set)
 		{
-			ThemeRepository = themeRepository;
+			ThemeManager = themeManager;
 			DashboardRepository = dashboardRepository;
 			ResourceSettingRepository = resourceSettingRepository;
 			_storage = storage;
@@ -1058,7 +1060,7 @@ namespace d360.web.Controllers.V2
 
 			List<ThemewithResource> dbModels = await Community.ReadThemesAsync(SecurityContext.CompanyID, themeUid);
 
-			var baseUri = await ThemeRepository.GetBaseUriTheme();
+			var baseUri = await ThemeManager.GetBaseUriTheme();
 
 			var apiModels = dbModels
 				   .ToList()
@@ -1088,7 +1090,7 @@ namespace d360.web.Controllers.V2
 			{
 				throw new GenericException(HttpStatusCode.NotFound, Error.ErrorOnGet, Error.NoCurrentThemes);
 			}
-			var theme = await ThemeRepository.GetCurrentThemeByUserAsync(themerec);
+			var theme = await ThemeManager.GetCurrentThemeByUserAsync(themerec, SecurityContext.CompanyID);
 
 			string textColorFromBackground(string backgroundColor)
 			{
@@ -1484,7 +1486,7 @@ namespace d360.web.Controllers.V2
 					return errorMessageArgumentResponse(Error.ErrorUpsertTheme);
 				}
 
-				var baseUri = await ThemeRepository.GetBaseUriTheme();
+				var baseUri = await ThemeManager.GetBaseUriTheme();
 				var repoThemewithres = repoTheme.ToGetThemeResource(resource, resource);
 				responseModel = repoThemewithres.ToGetModel(baseUri, SecurityContext.CompanyID);
 
@@ -1585,7 +1587,7 @@ namespace d360.web.Controllers.V2
 			await addStorageFile(existingTheme.Uid, "logo", existingTheme.HeaderLogo, existingTheme.HeaderLogoExtension);
 			await addStorageFile(existingTheme.Uid, "background", existingTheme.HomePageBackground, existingTheme.HomePageBackgroundExtension);
 
-			var baseUri = await ThemeRepository.GetBaseUriTheme();
+			var baseUri = await ThemeManager.GetBaseUriTheme();
 			var reponseModelRes = existingTheme.ToGetThemeResource(createdBy, updatedBy);
 			var reponseModel = reponseModelRes.ToGetModel(baseUri, SecurityContext.CompanyID);
 
@@ -2589,5 +2591,64 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+
+		private Audit addChangeLog(Theme current, string action, Theme previous = null)
+		{
+			switch (action)
+			{
+				case "C":
+					action = "Created";
+					break;
+
+				case "U":
+					action = "Updated";
+					break;
+
+				case "D":
+				case "R":
+					action = "Removed";
+					break;
+
+				default:
+					// No action, leave the value as is.
+					break;
+			}
+			var audit = new Audit
+			{
+				AuditFields = new List<AuditField>(),
+				Date = current.UpdatedOn,
+				ActionDescription = $"Theme {action.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.",
+				Action = action,
+				ActionObjectID = current.ID,
+				ActionObject = "Theme",
+				ActionObjectName = current.Name,
+				ActionObjectTypeName = "Theme",
+				Object = "Theme",
+				ObjectID = current.ID,
+				ObjectName = current.Name,
+				ResourceID = current.UpdatedBy,
+				Version = 0
+			};
+
+			audit.AuditFields.Add(new AuditField { FieldName = "Name", PreviousValue = previous != null ? previous.Name : null, Value = current.Name, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "IsCurrent", PreviousValue = previous != null ? previous.IsCurrent ? "Yes" : "No" : null, Value = current.IsCurrent ? "Yes" : "No", FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "HeaderLogoExtension", PreviousValue = previous != null ? previous.HeaderLogoExtension : null, Value = current.HeaderLogoExtension, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "HomePageBackgroundExtension", PreviousValue = previous != null ? previous.HomePageBackgroundExtension : null, Value = current.HomePageBackgroundExtension, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "BrowserIconExtension", PreviousValue = previous != null ? previous.BrowserIconExtension : null, Value = current.BrowserIconExtension, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "BackColor", PreviousValue = previous != null ? previous.BackColor : null, Value = current.BackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "BreadcrumbLinkColor", PreviousValue = previous != null ? previous.BreadcrumbLinkColor : null, Value = current.BreadcrumbLinkColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "ButtonBackColor", PreviousValue = previous != null ? previous.ButtonBackColor : null, Value = current.ButtonBackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "PrimaryButtonBackColor", PreviousValue = previous != null ? previous.PrimaryButtonBackColor : null, Value = current.PrimaryButtonBackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "HeaderBackColor", PreviousValue = previous != null ? previous.HeaderBackColor : null, Value = current.HeaderBackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackColor", PreviousValue = previous != null ? previous.NavBarBackColor : null, Value = current.NavBarBackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackSelectedColor", PreviousValue = previous != null ? previous.NavBarBackSelectedColor : null, Value = current.NavBarBackSelectedColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "TabLinkColor", PreviousValue = previous != null ? previous.TabLinkColor : null, Value = current.TabLinkColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "TableHeaderBackColor", PreviousValue = previous != null ? previous.TableHeaderBackColor : null, Value = current.TableHeaderBackColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "TableRowBackSelectedColor", PreviousValue = previous != null ? previous.TableRowBackSelectedColor : null, Value = current.TableRowBackSelectedColor, FieldTypeID = 0 });
+			audit.AuditFields.Add(new AuditField { FieldName = "CustomCss", PreviousValue = previous != null ? previous.CustomCss : null, Value = current.CustomCss, FieldTypeID = 0 });
+
+			return audit;
+		}
 	}
 }

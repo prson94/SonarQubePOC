@@ -18,6 +18,7 @@
     <Compile Remove="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
     <Compile Remove="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Remove="DataAccessLayer\repositories\ProcessRepository.cs" />
+    <Compile Remove="DataAccessLayer\repositories\ThemeRepository.cs" />
   </ItemGroup>
 	
   <ItemGroup>	  

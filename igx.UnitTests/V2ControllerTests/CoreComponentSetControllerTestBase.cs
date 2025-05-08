@@ -1,6 +1,7 @@
 ﻿using d360.extensions;
 using d360.model;
 using d360.web.Controllers;
+using d360.web.Models.Theme;
 using d360.web.Services;
 using d360.web.Utilities;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ namespace igx.UnitTests.V2ControllerTests
 		protected readonly Mock<ILogger> MockLog;
 		protected readonly Mock<IMailProvider> MockMailProvider;
 		protected readonly Mock<IWorkspaces> MockWorkspace;
-		protected readonly Mock<IThemeRepository> MockThemeRepository;
+		protected readonly Mock<IThemeManager> MockThemeRepository;
 		protected readonly Mock<IRuntimeInfo> RuntimeInfo;
 		protected readonly ICoreComponentSet CoreComponentSet;
 		protected readonly Mock<ICachingProvider> MockCache;
@@ -37,7 +38,7 @@ namespace igx.UnitTests.V2ControllerTests
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
-			MockThemeRepository = new Mock<IThemeRepository>();
+			MockThemeRepository = new Mock<IThemeManager>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();
 			CommunityFlags = new CommunityFeatureFlagService(MockCache.Object, MockCommunity.Object, MockSecurityContext.Object);
