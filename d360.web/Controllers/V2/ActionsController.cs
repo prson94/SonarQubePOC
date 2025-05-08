@@ -850,21 +850,21 @@ namespace d360.web.Controllers.V2
 
 					if (comment.Tags != null && comment.Tags.Count > 0)
 					{
-						if (dtl.Tags.Count > 0)
+						if (dtl.Data.Tags.Count > 0)
 						{
-							foreach (var item in dtl.Tags)
+							foreach (var item in dtl.Data.Tags)
 							{
 								await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 								{
 									CompanyId = SecurityContext.CompanyID,
 									CompanyPrefix = SecurityContext.CompanyPrefix,
-									Payload = dtl.ID
+									Payload = dtl.Data.ID
 								});
 							}
 						}
 					}
 
-					issueModel.Issue.CommentID = dtl.ID;
+					issueModel.Issue.CommentID = dtl.Data.ID;
 				}
 
 				var insertSQL = $@"INSERT INTO [dbo].[Issue]

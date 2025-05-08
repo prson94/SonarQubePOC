@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
@@ -49,7 +51,7 @@ namespace repositories.azure
 
 		#endregion
 
-		public async Task<CommentDetail> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
+		public async Task<RepositoryResponse<CommentDetail>> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -58,9 +60,13 @@ namespace repositories.azure
 				{
 					try
 					{
-						validateComment(comment);
+						var validInput = ValidateComment(comment);
+						if (!validInput.IsSuccess)
+						{
+							return new RepositoryResponse<CommentDetail>(null, validInput.StatusCode, false, validInput.Message);
+						}
 
-						long? commentedOnAssetId = null;
+						long? commentedOnAssetId;
 						int? parentId = null;
 						long? assetId = null;
 						Asset commentAsset = null;
@@ -84,7 +90,7 @@ namespace repositories.azure
 
 							if (parentComment == null)
 							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.ParentCommentNotFound);
+								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.ParentCommentNotFound);
 							}
 							else
 							{
@@ -100,7 +106,7 @@ namespace repositories.azure
 
 						if (comment.AssetUid == Guid.Empty)
 						{
-							throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetUid);
+							return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.BadRequest, false, Error.InvalidAssetUid);
 						}
 
 						if (!assetId.HasValue)
@@ -123,12 +129,12 @@ namespace repositories.azure
 
 							if (commentAsset == null)
 							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.AssetUidNotFound);
 							}
 
 							if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
 							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.RestrictedAssetUid);
+								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.RestrictedAssetUid);
 							}
 							assetId = commentAsset.ID;
 						}
@@ -137,7 +143,7 @@ namespace repositories.azure
 						{
 							if (!HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
 							{
-								throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.Forbidden, Error.CommentAddPermission);
+								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.Forbidden, false, Error.CommentAddPermission);
 							}
 						}
 
@@ -190,145 +196,19 @@ namespace repositories.azure
 						}
 						else
 						{
-							throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.UnableCreateComment);
+							return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.UnableCreateComment);
 						}
 					}
 					catch (Exception ex)
 					{
-
 						transaction.Rollback();
-						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.UnableCreateComment);
-					}
-				}
-			}
-		}
-		public (int CommentId, Guid CommentUid, IDbTransaction Transaction) InsertComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social)
-		{
-			using (var connection = ConnectionProvider.Connect(true))
-			{
-				connection.Open();
-				using (var transaction = connection.BeginTransaction())
-				{
-					try
-					{
-						validateComment(comment);
-
-						long? commentedOnAssetId = null;
-						int? parentId = null;
-						long? assetId = null;
-						Asset commentAsset = null;
-
-						if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
-						{
-							var sqlQuery = @"SELECT c.*, a.* FROM Comment c
-												LEFT JOIN Asset a ON c.AssetId = a.Id
-												WHERE c.Uid = @ParentUid";
-
-							var parentComment = connection.Query<Comment, Asset, Comment>(
-								sqlQuery,
-								(comment, asset) =>
-								{
-									comment.Asset = asset;
-									return comment;
-								},
-								new { ParentUid = comment.ParentUid.Value }, transaction,
-								splitOn: "Id"
-							).SingleOrDefault();
-
-							if (parentComment == null)
-							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.ParentCommentNotFound);
-							}
-							else
-							{
-								commentedOnAssetId = connection.Query<Asset>("SELECT ID FROM Asset WHERE Uid = @AssetUid", new { comment.AssetUid }, transaction).FirstOrDefault()?.ID;
-
-								parentId = parentComment.ID;
-								comment.AssetUid = parentComment.Asset.uid;
-								assetId = parentComment.Asset.ID;
-
-								commentAsset = parentComment.Asset;
-							}
-						}
-
-						if (comment.AssetUid == Guid.Empty)
-						{
-							throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidAssetUid);
-						}
-
-						if (!assetId.HasValue)
-						{
-							var assetQuery = @"
-						SELECT a.*, t.*
-						FROM Asset a
-						JOIN AssetType t ON a.AssetTypeId = t.Id
-						WHERE a.uid = @AssetUid";
-							commentAsset = connection.Query<Asset, AssetType, Asset>(
-								assetQuery,
-								(asset, assetType) =>
-								{
-									asset.AssetType = assetType;
-									return asset;
-								},
-								new { comment.AssetUid }, transaction,
-								splitOn: "AssetTypeId"
-							).FirstOrDefault();
-
-							if (commentAsset == null)
-							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
-							}
-
-							if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
-							{
-								throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.RestrictedAssetUid);
-							}
-							assetId = commentAsset.ID;
-						}
-
-						if (commentAsset != null)
-						{
-							if (!HasAssetPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
-							{
-								throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.Forbidden, Error.CommentAddPermission);
-							}
-						}
-
-						// Define query with OUTPUT to return CommentId and CommentUid directly
-						string query = @"
-    INSERT INTO Comment (CommentType, CreatedBy, CreatedOn, IsDeleted, AssetID, Body, ParentID, Uid, UpdatedBy, UpdatedOn) 
-    OUTPUT INSERTED.ID, INSERTED.Uid
-    VALUES (@CommentType, @CreatedBy , @CreatedOn, @IsDeleted, @AssetID, @Body, @ParentID, @Uid, @UpdatedBy, @UpdatedOn);";
-
-						var dbComment = new Comment
-						{
-							CommentType = commentType,
-							CreatedBy = CurrentUserId,
-							CreatedOn = DateTime.UtcNow,
-							IsDeleted = false,
-							AssetID = assetId.Value,
-							Body = comment.Body,
-							ParentID = parentId,
-							Uid = Guid.NewGuid(),  // Generates a unique identifier before insertion
-							UpdatedBy = CurrentUserId,
-							UpdatedOn = DateTime.UtcNow
-						};
-
-						// Use a tuple to return both CommentId and CommentUid
-						var commentAdded = connection.QuerySingle<(int CommentId, Guid CommentUid)>(query, dbComment, transaction);
-						return (commentAdded.CommentId, commentAdded.CommentUid, transaction);
-
-					}
-					catch (Exception ex)
-					{
-						transaction.Rollback();
-						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.UnableCreateComment);
+						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.UnableCreateComment);
 					}
 				}
 			}
 		}
 
-		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
+		public RepositoryResponse<bool> AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
 		{
 			var emojiGroup = emoji.GetGroupName();
 			var groupedEmojis = new List<int>();
@@ -368,18 +248,12 @@ namespace repositories.azure
 
 						if (newId > 0)
 						{
-							return true;
+							return new RepositoryResponse<bool>(true, (int)HttpStatusCode.OK, true, "");
 						}
 					}
 					else if (commentVote.Emoji != emoji)
 					{
 						commentVote.Emoji = emoji;
-						var updatedCommentVote = new
-						{
-							CommentID = comment.ID,
-							ResourceID = resourceId,
-							Emoji = (int)emoji
-						};
 						string updateQuery = "";
 
 						updateQuery = $"UPDATE CommentVote SET Emoji = @emoji WHERE ID = @ID";
@@ -389,23 +263,23 @@ namespace repositories.azure
 							int count = connection.Execute(updateQuery, commentVote, transaction);
 							transaction.Commit();
 						}
-						return true;
+						return new RepositoryResponse<bool>(true, (int)HttpStatusCode.OK, true, ""); ;
 					}
 					else if (toggle == true)
 					{
 						DeleteVote(commentUid, resourceId, emoji);
 					}
 
-					return false;
+					return new RepositoryResponse<bool>(false, (int)HttpStatusCode.OK, true, ""); 
 				}
 				else
 				{
-					throw new NotFoundException(Error.comment);
+					return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, Error.comment);
 				}
 			}
 		}
 
-		public bool DeleteComment(Guid commentUid)
+		public RepositoryResponse<bool> DeleteComment(Guid commentUid)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -420,12 +294,12 @@ namespace repositories.azure
 
 						if (dbComment == null)
 						{
-							throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, Error.CommentNotFound);
 						}
 
 						if (dbComment.CreatedBy != CurrentUserId && !IsAdministrator)
 						{
-							throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermissionAdmin, Error.CommentUpdatePermissionAdmin);
+							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.Forbidden, false, Error.CommentUpdatePermissionAdmin);
 						}
 
 						bool commentUpdated = false;
@@ -441,6 +315,7 @@ namespace repositories.azure
 							var sqlUpdate = @" UPDATE Comment SET IsDeleted = @IsDeleted, UpdatedBy = @UpdatedBy, UpdatedOn = @UpdatedOn WHERE Id = @ID";
 							var affectedRows = connection.Execute(sqlUpdate, new { dbComment.IsDeleted, dbComment.UpdatedBy, dbComment.UpdatedOn, dbComment.ID }, transaction);
 							commentUpdated = affectedRows > 0;
+							transaction.Commit();
 						}
 						else
 						{
@@ -462,24 +337,24 @@ namespace repositories.azure
 
 						if (commentUpdated)
 						{
-							return true;
+							return new RepositoryResponse<bool>(true, (int)HttpStatusCode.OK, true, "");
 						}
 						else
 						{
-							throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.CommentNotRemoved);
+							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.InternalServerError, false,Error.CommentNotRemoved);
 						}
 					}
 					catch (Exception)
 					{
 						transaction.Rollback();
 						connection.Close();
-						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.CommentNotRemoved);
+						return new RepositoryResponse<bool>(false, (int)HttpStatusCode.InternalServerError, true, Error.CommentNotRemoved);
 					}
 				}
 			}
 		}
 
-		public bool DeleteVote(Guid commentUid, int resourceId, Emoji emoji)
+		public RepositoryResponse<bool> DeleteVote(Guid commentUid, int resourceId, Emoji emoji)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -510,20 +385,25 @@ namespace repositories.azure
 
 						if (commentVoteDeleted)
 						{
-							return true;
+							return new RepositoryResponse<bool>(true,(int)HttpStatusCode.OK,true, ""); 
 						}
 					}
-					return false;
+					return new RepositoryResponse<bool>(false,(int)HttpStatusCode.OK,false, Error.NotFound); 
 				}
 				else
 				{
-					throw new NotFoundException(Error.comment);
+					return new RepositoryResponse<bool>(false,(int)HttpStatusCode.NotFound,false, Error.NotFound);
 				}
 			}
 		}
-		public async Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment)
+		public async Task<RepositoryResponse<CommentDetail>> EditComment(Guid commentUid, CommentApiPutModel comment)
 		{
-			validateComment(comment);
+			var validateInput = ValidateComment(comment);
+
+			if (!validateInput.IsSuccess)
+			{
+				return new RepositoryResponse<CommentDetail>(null, validateInput.StatusCode, false, validateInput.Message);
+			}
 
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -534,12 +414,12 @@ namespace repositories.azure
 
 					if (dbComment == null)
 					{
-						throw new NotFoundException(Error.comment);
+						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.comment);
 					}
 
 					if (dbComment.CreatedBy != CurrentUserId)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.CommentUpdatePermission, Error.CommentUpdatePermission);
+						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.Forbidden, false, Error.CommentUpdatePermission);
 					}
 
 					dbComment.Body = comment.Body;
@@ -580,17 +460,17 @@ namespace repositories.azure
 							connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });
 						}
 						var detail = await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
-						detail.TaggedAssets = taggedAssets;
+						detail.Data.TaggedAssets = taggedAssets;
 						return detail;
 					}
 					else
 					{
-						throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.CommentNotUpdated);
+						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated);
 					}
 				}
 				catch (Exception)
 				{
-					throw new GenericException(System.Net.HttpStatusCode.InternalServerError, Error.InternalServerError, Error.CommentNotUpdated);
+					return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated);
 				}
 			}
 		}
@@ -660,7 +540,7 @@ namespace repositories.azure
 			}
 		}
 
-		public async Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<RepositoryResponse<CommentDetails>> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			var count = 0;
 			var returnedComments = new List<CommentDetail>();
@@ -686,28 +566,9 @@ namespace repositories.azure
 				new SortColumnOption("ResourceName", "R.FirstName + ' ' + R.LastName")
 			};
 
-			string sortColumn = queryParams.CheckForSortColumn(
-				[
-					new SortColumnOption("baseType", "S.BaseType"),
-					new SortColumnOption("description", "S.Description"),
-					new SortColumnOption("effectiveDate", "S.EffectiveDate"),
-					new SortColumnOption("headerRegExpConfidence", "S.HeaderFilterConfidence"),
-					new SortColumnOption("matchType", "S.MatchType"),
-					new SortColumnOption("maximum", "S.Maximum"),
-					new SortColumnOption("minimum", "S.Minimum"),
-					new SortColumnOption("minSamples", "S.MinimumSamples"),
-					new SortColumnOption("minMaxPresent", "S.MinMaxPresent"),
-					new SortColumnOption("name", "S.Name"),
-					new SortColumnOption("priority", "S.Priority"),
-					new SortColumnOption("qualifier", "S.Qualifier"),
-					new SortColumnOption("status", "StatusString"),
-					new SortColumnOption("threshold", "S.Threshold"),
-					new SortColumnOption("isDisabled", "case when S.EffectiveDate < S.UpdatedOn then 1 else 0 end")
-				], "S.Qualifier");
-
-			var advancefilters =  queryParams.ParseODataFilters();
+			var advancefilters = queryParams.ParseODataFilters();
 			var (dbArgs, wheres) = advancefilters.ConvertToSqlFilters(queryFieldOptions);
-			
+
 			Guid assetUid = Guid.Empty;
 			bool assetUidPresent = false;
 
@@ -849,7 +710,7 @@ namespace repositories.azure
 
 					if (asset == null)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+						return new RepositoryResponse<CommentDetails>(null, (int)HttpStatusCode.NotFound, false, Error.AssetUidNotFound);
 					}
 
 					if (
@@ -857,12 +718,11 @@ namespace repositories.azure
 						!HasAssetTypePermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)
 						)
 					{
-						throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.InvalidRequestHttpErrorTitle, Error.RestrictReadAssettype);
+						return new RepositoryResponse<CommentDetails>(null, (int)HttpStatusCode.Forbidden, false, Error.RestrictReadAssettype);
 					}
 
 					dbArgs.Add("@assetId", asset.ID);
 					baseCommentWheres.Add(@"( (C.AssetID = @assetId) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetID = @assetId)) )");
-
 
 					if (assetTypeUidPresent)
 					{
@@ -871,12 +731,12 @@ namespace repositories.azure
 
 						if (assetType == null)
 						{
-							throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.AssetUidNotFound);
+							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.NotFound, Error.AssetUidNotFound);
 						}
 
 						if (!HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
 						{
-							throw new GenericException(System.Net.HttpStatusCode.Forbidden, Error.InvalidRequestHttpErrorTitle, Error.RestrictReadAssettype);
+							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.Forbidden, Error.RestrictReadAssettype);
 						}
 
 						dbArgs.Add("@assetTypeId", assetType.ID);
@@ -909,7 +769,7 @@ namespace repositories.azure
 
 						if (follower == null)
 						{
-							throw new GenericException(System.Net.HttpStatusCode.NotFound, Error.NotFound, Error.UserUidNotFound);
+							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.NotFound,Error.UserUidNotFound);
 						}
 						else
 						{
@@ -987,7 +847,6 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 					var flatComments = request.ToList();
 					var rootComments = flatComments.Where(c => !c.ParentID.HasValue);
 
-
 					foreach (var commentDetail in rootComments)
 					{
 						loadCommentDetailDescendants(flatComments, commentDetail);
@@ -996,16 +855,20 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 				}
 			}
 
-			return new CommentDetails
+			return new RepositoryResponse<CommentDetails>(
+			new CommentDetails
 			{
 				count = count,
 				page = pageNumber,
 				pageSize = pageSize,
 				comments = returnedComments
-			};
+			},
+			(int)HttpStatusCode.OK,
+			true,
+			"Comments retrieved successfully");
 		}
 
-		public async Task<CommentDetail> GetCommentDetailByUid(Guid commentUid)
+		public async Task<RepositoryResponse<CommentDetail>> GetCommentDetailByUid(Guid commentUid)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -1050,16 +913,16 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 				if (commentDetail != null)
 				{
 					loadCommentDetailDescendants(flatComments, commentDetail);
-					return commentDetail;
+					return new RepositoryResponse<CommentDetail>(commentDetail, (int)HttpStatusCode.OK, true);
 				}
 				else
 				{
-					throw new NotFoundException(Error.comment);
+					return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false);
 				}
 			}
 		}
 
-		public async Task<List<CommentVoteDetail>> GetCommentVotesByCommentUid(Guid commentUid)
+		public async Task<RepositoryResponse<List<CommentVoteDetail>>> GetCommentVotesByCommentUid(Guid commentUid)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -1078,16 +941,16 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 							order by V.Emoji";
 
 					var request = await connection.QueryAsync<CommentVoteDetail>(sql, new { commentUid });
-					return request.ToList();
+					return new RepositoryResponse<List<CommentVoteDetail>>(request.ToList(), (int)HttpStatusCode.OK, true, "");
 				}
 				else
 				{
-					throw new NotFoundException(Error.comment);
+					return new RepositoryResponse<List<CommentVoteDetail>>(null,(int)HttpStatusCode.NotFound,false,Error.NotFound);
 				}
 			}
 		}
 
-		public async Task<List<CommentVoterDetail>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji)
+		public async Task<RepositoryResponse<List<CommentVoteDetail>>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -1106,11 +969,11 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 							order by V.Emoji";
 
 					var request = await connection.QueryAsync<CommentVoterDetail>(sql, new { commentUid, emoji = (int)emoji });
-					return request.ToList();
+					return new RepositoryResponse<List<CommentVoteDetail>>((List<CommentVoteDetail>)request, (int)HttpStatusCode.OK, true, "");
 				}
 				else
 				{
-					throw new NotFoundException(Error.comment);
+					return new RepositoryResponse<List<CommentVoteDetail>>(null, (int)HttpStatusCode.NotFound, false, Error.comment);
 				}
 			}
 		}
@@ -1128,30 +991,34 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 		}
 
-		private void validateComment(IApiComment comment)
+		public RepositoryResponse<bool> ValidateComment(IApiComment comment)
 		{
 			if (comment == null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.NoContentProvided);
+				return new RepositoryResponse<bool>(false, (int)HttpStatusCode.BadRequest, false, Error.NoContentProvided);
 			}
+
 			if (string.IsNullOrEmpty(comment.Body))
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.BodyNotEmpty);
+				return new RepositoryResponse<bool>(false, (int)HttpStatusCode.BadRequest, false, Error.BodyNotEmpty);
 			}
 
 			if (comment.Tags != null && comment.Tags.Count > 50)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.BadRequest, Error.BadRequest, Error.CommentTagMaxLimit);
+				return new RepositoryResponse<bool>(false, (int)HttpStatusCode.BadRequest, false, Error.CommentTagMaxLimit);
 			}
+
+			return new RepositoryResponse<bool>(true, (int)HttpStatusCode.OK, true, "Validation successful");
 		}
 
-		public bool ProcessWithQueue(List<Asset> taggedAssets, CommentApiPutModel comment)
+
+		public bool ProcessWithQueue(List<Asset> taggedAssets)
 		{
 			if (taggedAssets.Any(a => a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Group.ToString()))
 			{
 				using (var connection = ConnectionProvider.Connect(true))
 				{
-					var commentCreator = connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
+					var commentCreator = connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = CurrentUserId }).FirstOrDefault();
 					if (commentCreator != null)
 					{
 						return true;
@@ -1169,4 +1036,3 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 		}
 	}
 }
-		

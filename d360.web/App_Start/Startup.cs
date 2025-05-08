@@ -231,7 +231,6 @@ namespace d360.web
 				builder.RegisterType<CommunityFeatureFlagService>().AsSelf().InstancePerRequest();
 
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
-				//builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
 				builder.RegisterType<Catalog>().As<ICatalog>()
@@ -274,9 +273,6 @@ namespace d360.web
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
 						i.Instance.CurrentUserId = sec.ResourceID;
-						i.Instance.CompanyId = sec.CompanyID;
-						i.Instance.CompanyPrefix = sec.PrimaryCompanyPrefix;
-						i.Instance.IsAdministrator = sec.IsAdministrator;
 					});
 
 				builder.RegisterType<Workflow>().As<IWorkflow>()

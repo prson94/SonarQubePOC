@@ -137,14 +137,8 @@ namespace d360.core.entities
 
     public class CommentApiPutModel : IApiComment
     {
-		public int ID { get; set; }
-		public Guid Uid { get; set; }
-
         public string Body { get; set; }
-
         public List<Guid> Tags { get; set; }
-		public int CreatedBy { get; set; }
-
 	}
 
     public class CommentNotification

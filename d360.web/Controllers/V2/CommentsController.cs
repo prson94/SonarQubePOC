@@ -44,40 +44,46 @@ namespace d360.web.Controllers.V2
 			bool commentsDiabled = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.DisableCommunityPosting);
 			return commentsDiabled;
 		}
-        
-        /// <summary>
-        /// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
-        /// </summary>
-        /// <param name="comment">The body of the comment to add.</param>
-        /// <returns>An enriched comment, containing the text of the comment as well as information about the asset you attached the comment to.</returns>
-        [
-            HttpPost,
-            Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
-        ]
+
+		/// <summary>
+		/// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
+		/// </summary>
+		/// <param name="comment">The body of the comment to add.</param>
+		/// <returns>An enriched comment, containing the text of the comment as well as information about the asset you attached the comment to.</returns>
+		[
+			HttpPost,
+			Route(""),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
+		]
 		public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
 		{
 			var commentData = await Comments.AddComment(comment);
+
+			if (!commentData.IsSuccess)
+			{
+				return errorMessageResponse((HttpStatusCode)commentData.StatusCode, commentData.Message);
+			}
+
 			if (comment.Tags != null && comment.Tags.Count > 0)
+			{
+				if (commentData.Data.Tags.Count > 0)
 				{
-				if (commentData.Tags.Count > 0)
-				{
-					foreach (var item in commentData.Tags)
+					foreach (var item in commentData.Data.Tags)
 					{
 						await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 						{
 							CompanyId = SecurityContext.CompanyID,
 							CompanyPrefix = SecurityContext.CompanyPrefix,
-							Payload = commentData.ID
+							Payload = commentData.Data.ID
 						});
 					}
 				}
 			}
-			return Created("", commentData);
+			return Created("", commentData.Data);
 		}
 
 		/// <summary>
@@ -114,7 +120,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
-				if (created)
+				if (created.IsSuccess)
 				{
 					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
 				}
@@ -147,7 +153,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				if (Comments.DeleteComment(commentUid))
+				if (Comments.DeleteComment(commentUid).IsSuccess)
 				{
 					return Ok();
 				}
@@ -179,8 +185,15 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
-				return Ok();
+				var delete = Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
+				if(delete.IsSuccess)
+				{
+					return Ok(); 
+				}
+				else
+				{
+					return errorMessageResponse((HttpStatusCode)delete.StatusCode, delete.Message);
+				}
 			}
 		}
 
@@ -206,23 +219,29 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				var detail = await Comments.EditComment(commentUid, comment);
-				if (detail.Tags.Count > 0)
+
+				if (!detail.IsSuccess)
 				{
-					await SendCommentNotificationAsync(detail.TaggedAssets,comment);
+					return errorMessageResponse((HttpStatusCode)detail.StatusCode, detail.Message);
 				}
-					return Ok(detail);
+
+				if (detail.Data?.Tags.Count > 0)
+				{
+					await SendCommentNotificationAsync(detail.Data.TaggedAssets,detail.Data.ID);
+				}
+					return Ok(detail.Data);
 			}
 		}
 
-		private async Task SendCommentNotificationAsync(List<Asset> taggedAssets, CommentApiPutModel comment)
+		private async Task SendCommentNotificationAsync(List<Asset> taggedAssets, int commentId)
 		{
-			if(Comments.ProcessWithQueue(taggedAssets, comment))
+			if(Comments.ProcessWithQueue(taggedAssets))
 			{
 						await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 						{
 							CompanyId = SecurityContext.CompanyID,
 							CompanyPrefix = SecurityContext.CompanyPrefix,
-							Payload = comment.ID
+							Payload = commentId
 						});
 			}
 		}
@@ -275,7 +294,7 @@ namespace d360.web.Controllers.V2
             var queryParams = Request.GetQueryNameValuePairs();
             var comments = await Comments.GetCommentDetails(queryParams);
 
-            return Ok(comments);
+            return Ok(comments.Data);
         }
 
         /// <summary>

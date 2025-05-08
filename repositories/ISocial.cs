@@ -8,26 +8,26 @@ namespace repositories
 {
 	public interface ISocial
 	{
-		Task<CommentDetail> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social);
+		Task<RepositoryResponse<CommentDetail>> AddComment(CommentApiPostModel comment, CommentType commentType = CommentType.Social);
 
-		bool ProcessWithQueue(List<Asset> taggedAssets, CommentApiPutModel comment);
+		bool ProcessWithQueue(List<Asset> taggedAssets);
 
-		bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true);
+		RepositoryResponse<bool> AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true);
 
-		bool DeleteComment(Guid commentUid);
+		RepositoryResponse<bool> DeleteComment(Guid commentUid);
 
-		bool DeleteVote(Guid commentUid, int resourceId, Emoji emoji);
+		RepositoryResponse<bool> DeleteVote(Guid commentUid, int resourceId, Emoji emoji);
 
-		Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment);
+		Task<RepositoryResponse<CommentDetail>> EditComment(Guid commentUid, CommentApiPutModel comment);
 
 		Task<List<CommentCount>> GetCommentCountsByFollower(int resourceId, string searchPhrase = null, DateTime? rangeStart = null, DateTime? rangeEnd = null);
 
-		Task<CommentDetail> GetCommentDetailByUid(Guid commentUid);
+		Task <RepositoryResponse<CommentDetail>> GetCommentDetailByUid(Guid commentUid);
 
-		Task<List<CommentVoteDetail>> GetCommentVotesByCommentUid(Guid commentUid);
+		Task<RepositoryResponse<List<CommentVoteDetail>>> GetCommentVotesByCommentUid(Guid commentUid);
 
-		Task<List<CommentVoterDetail>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji);
+		Task<RepositoryResponse<List<CommentVoteDetail>>> GetCommentVotersByCommentAndEmoji(Guid commentUid, Emoji emoji);
 
-		Task<CommentDetails> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<CommentDetails>> GetCommentDetails(IEnumerable<KeyValuePair<string, string>> queryParams);
 	}
 }

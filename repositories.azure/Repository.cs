@@ -21,8 +21,6 @@ namespace repositories.azure
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 
 		public int CurrentUserId { get; set; }
-		public int CompanyId { get; set; }
-		public string CompanyPrefix { get; set; }
 		public bool IsAdministrator { get; set; }
 
 		internal readonly int MAX_PERMISSIONS_MASK = 15854;
@@ -459,7 +457,7 @@ namespace repositories.azure
 			}
 		}
 
-		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
+		private bool HasPermission(int objectId, int assetTypeId, Permission permission)
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -512,7 +510,7 @@ namespace repositories.azure
 
 						if (assetTypeID.HasValue)
 						{
-							hasPermission = HasPermission(type, id, assetTypeID.Value, permission);
+							hasPermission = HasPermission(id, assetTypeID.Value, permission);
 						}
 					}
 				}
