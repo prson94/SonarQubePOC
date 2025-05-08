@@ -59,10 +59,7 @@ namespace igx.UnitTests.V2ControllerTests
 				RuntimeInfo.Object,
 				MockWorkspace.Object,
 				MockQueue.Object,
-				MockUsage.Object)
-			{
-
-			};
+				MockUsage.Object);
 
 		}
 	}
