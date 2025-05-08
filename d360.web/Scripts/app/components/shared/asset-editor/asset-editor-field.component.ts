@@ -859,7 +859,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			}
 			this.showLookupSearchField = (res.count > 10);
 			this.hadInitialLazyLoad = true;
-			this.lazyLoadValues({ first: 0, last: Math.min(res.count - 1, this.lazyLoadSize), filter: '' });
+			this.lazyLoadValues({ first: 0, last: Math.min(res.count, this.lazyLoadSize), filter: '' });
 		});
 	}
 
