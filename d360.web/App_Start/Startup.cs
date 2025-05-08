@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using d360.core;
@@ -11,9 +11,11 @@ using d360.web.Controllers;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Models.Theme;
 using d360.web.Services;
 using d360.web.Services.Favorites;
 using d360.web.Utilities;
+using d360.web.validators;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -106,7 +108,8 @@ namespace d360.web
 				builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
 				builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
 				builder.RegisterType<RequestValidator>().As<IRequestValidator>().InstancePerRequest();
-
+				builder.RegisterType<ThemeManager>().As<IThemeManager>().InstancePerRequest();
+				builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
 				builder.RegisterControllers(typeof(MvcApplication).Assembly);
 				builder.RegisterMediatR(typeof(MvcApplication).Assembly);
 
@@ -291,6 +294,15 @@ namespace d360.web
 						i.Instance.WorkspaceId = "";
 					});
 
+				builder.RegisterType<Usage>().As<IUsage>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserIsAdmin = sec.IsAdministrator;
+						i.Instance.CurrentUserId = sec.ResourceID;
+						i.Instance.CompanyId = sec.CompanyID;
+						i.Instance.WorkspaceId = "";
+					});
+				
 				#endregion
 
 				#region Controller DI

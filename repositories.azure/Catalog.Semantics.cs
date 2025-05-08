@@ -149,7 +149,12 @@ namespace repositories.azure
 				statusSql = statusBuilder.ToString() + " " + sortDirection;
 			}
 
-			string whereSql = "where " + string.Join(" and ", wheres);
+			string whereSql = "";
+
+			wheres.Add($"S.RowNum = 1");
+
+			whereSql = "where " + string.Join(" and ", wheres);
+
 			string orderBySql = $"{sortColumn} {sortDirection}";
 
 			var tableQuery = $"select ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSql} from Semantic where EffectiveDate <= @asOfEffectiveDate";

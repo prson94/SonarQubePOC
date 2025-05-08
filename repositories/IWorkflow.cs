@@ -1,6 +1,6 @@
 ﻿namespace repositories
 {
-	public interface IWorkflow
+	public interface IWorkflow : IIssueRepository
 	{
 
 	}

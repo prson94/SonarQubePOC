@@ -196,7 +196,7 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
         });
     }
 
-	loadResults(includeAggregations: boolean) {
+	loadResults(includeAggregations: boolean, recountResult: boolean = false) {
 		this.isLoading = true;
 
 		const searchQuery: SearchQuery = {
@@ -246,12 +246,19 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 						this.selectedFilters.push(c);
 					}
 				});
-				this.resultCount = results.Matches;
-
-				this.canExport = this.resultCount <= this.exportLimit;
-				this.searchExportTooltip = (this.resultCount <= this.exportLimit) ? $localize`Export to Excel` : $localize`No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
+				this.setResultCount(results.Matches);
+			} else if (recountResult) {
+				const total = this.selectedFilters.filter((f) => f.type === "AssetType").reduce((s, f) => s + f.count, 0);
+				this.setResultCount(total);
 			}
 		});
+	}
+
+	setResultCount(count: number) {
+		this.resultCount = count;
+
+		this.canExport = this.resultCount <= this.exportLimit;
+		this.searchExportTooltip = (this.resultCount <= this.exportLimit) ? $localize`Export to Excel` : $localize`No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
 	}
 
     ngOnDestroy() {
@@ -360,7 +367,7 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
     //Class/assettype selection changed
     public filterCheckTree(selectedNodes: CheckTreeNode[]) {
 		this.pageNumber = 1;
-		this.loadResults(false);
+		this.loadResults(false, true);
     }
 
     public isExportEnabled(): boolean {

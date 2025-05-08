@@ -7,12 +7,15 @@ namespace repositories
 {
 	public interface IIssueRepository
     {
-        Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<IEnumerable<IssueTypeApiModel>> GetIssueTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
-        Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid assetTypeUid);
+        Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetTypeAsync(Guid assetTypeUid);
 
-        IssueType GetIssueTypeByUID(Guid issueTypeUid);
+        Task<IssueType> GetIssueTypeByUIDAsync(Guid issueTypeUid);
 
-        Issue GetIssueByUID(Guid issueUid);
-    }
+        Task<Issue> GetIssueByUIDAsync(Guid issueUid);
+
+		Task<IEnumerable<dynamic>> GetIssuesByUserAsync(int? CurrentUserId);
+
+	}
 }

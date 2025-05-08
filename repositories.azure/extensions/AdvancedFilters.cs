@@ -58,12 +58,12 @@ namespace repositories.azure.extensions
 	{
 		internal static Dictionary<SqlFieldType, string[]> FieldTypeOperators = new Dictionary<SqlFieldType, string[]>
 		{
-			{ SqlFieldType.Date, new string[] { "eq", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
-			{ SqlFieldType.DateTime, new string[] { "eq", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
-			{ SqlFieldType.Decimal, new string[] { "eq", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
-			{ SqlFieldType.Guid, new string[] { "eq", "neq" } },
-			{ SqlFieldType.Number, new string[] { "eq", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
-			{ SqlFieldType.Text, new string[] { "ct", "nct", "eq", "neq", "sw", "ew" } }
+			{ SqlFieldType.Date, new string[] { "eq", "ne", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
+			{ SqlFieldType.DateTime, new string[] { "eq", "ne", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
+			{ SqlFieldType.Decimal, new string[] { "eq", "ne", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
+			{ SqlFieldType.Guid, new string[] { "eq", "ne", "neq" } },
+			{ SqlFieldType.Number, new string[] { "eq", "ne", "neq", "gt", "gte", "ge", "le", "lt", "lte" } },
+			{ SqlFieldType.Text, new string[] { "ct", "nct", "eq", "ne", "neq", "sw", "ew" } }
 		};
 
 		public FilterColumnOption(string propertyName, string columnName, SqlFieldType type)

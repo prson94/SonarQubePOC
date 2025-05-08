@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace d360.web.Models.Usage
+namespace d360.core.entities.Usage
 {
 	public class UsageEntryDetail: UsageEntry
 	{
