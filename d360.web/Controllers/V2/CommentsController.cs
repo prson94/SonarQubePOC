@@ -1,12 +1,4 @@
-﻿using d360.core.entities;
-using d360.core.enums;
-using d360.core.resources;
-using d360.web.Filters;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using repositories;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,60 +6,83 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using repositories;
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
 	[ApiVersion("2.0"), RoutePrefix("api/v{version:apiVersion}/comments"), Authorize]
     public class CommentsController : BaseV2ApiController
     {
-        private readonly ICommentRepository Comments;
+        #region DI
 
-        public CommentsController(ICoreComponentSet set, ICommentRepository comments) : base(set)
+        private readonly ISocial Comments;
+		
+		public CommentsController(ICoreComponentSet set, ISocial comments) : base(set)
         {
             Comments = comments;
         }
-
+		#endregion
 		private async Task<bool> commentsDisabled()
 		{
 			bool commentsDiabled = await Community.ReadSettingValueAsync<bool>(SecurityContext.CompanyID, Setting.DisableCommunityPosting);
 			return commentsDiabled;
 		}
-        
-        /// <summary>
-        /// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
-        /// </summary>
-        /// <param name="comment">The body of the comment to add.</param>
-        /// <returns>An enriched comment, containing the text of the comment as well as information about the asset you attached the comment to.</returns>
-        [
-            HttpPost,
-            Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
-        {
-			if (await commentsDisabled())
-			{
-				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
-			}
-			else
-			{
-				var detail = await Comments.AddComment(comment);
-				return Created("", detail);
-			}
-        }
 
-        /// <summary>
-        /// Use this endpoint to register your vote for a particular comment using one of the available emoji.
-        /// </summary>
-        /// <param name="commentUid">The Uid of the comment to vote on.</param>
-        /// <param name="emoji">The emoji to vote with.</param>
-        /// <returns>An HTTP status code : Created / OK</returns>
-        [
-            HttpPost,
+		/// <summary>
+		/// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
+		/// </summary>
+		/// <param name="comment">The body of the comment to add.</param>
+		/// <returns>An enriched comment, containing the text of the comment as well as information about the asset you attached the comment to.</returns>
+		[
+			HttpPost,
+			Route(""),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
+		{
+			var commentData = await Comments.AddComment(comment);
+
+			if (!commentData.IsSuccess)
+			{
+				return errorMessageResponse((HttpStatusCode)commentData.StatusCode, commentData.Message);
+			}
+
+			if (comment.Tags != null && comment.Tags.Count > 0)
+			{
+				if (commentData.Data.Tags.Count > 0)
+				{
+						await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+						{
+							CompanyId = SecurityContext.CompanyID,
+							CompanyPrefix = SecurityContext.CompanyPrefix,
+							Payload = commentData.Data.ID
+						});
+				}
+			}
+			return Created("", commentData.Data);
+		}
+
+		/// <summary>
+		/// Use this endpoint to register your vote for a particular comment using one of the available emoji.
+		/// </summary>
+		/// <param name="commentUid">The Uid of the comment to vote on.</param>
+		/// <param name="emoji">The emoji to vote with.</param>
+		/// <returns>An HTTP status code : Created / OK</returns>
+		[
+			HttpPost,
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("toggle", "If true the vote will be removed if it already exists.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -94,7 +109,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var created = Comments.AddVote(commentUid, SecurityContext.ResourceID, emoji, toggle);
-				if (created)
+				if (created.IsSuccess)
 				{
 					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
 				}
@@ -127,7 +142,7 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				if (Comments.DeleteComment(commentUid))
+				if (Comments.DeleteComment(commentUid).IsSuccess)
 				{
 					return Ok();
 				}
@@ -159,26 +174,33 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
-				return Ok();
+				var delete = Comments.DeleteVote(commentUid, SecurityContext.ResourceID, emoji);
+				if(delete.IsSuccess)
+				{
+					return Ok(); 
+				}
+				else
+				{
+					return errorMessageResponse((HttpStatusCode)delete.StatusCode, delete.Message);
+				}
 			}
-        }
+		}
 
-        /// <summary>
-        /// Provides support for updating a comment on an asset. You must have created the comment to begin with in order to successfully call this endpoint.
-        /// </summary>
-        /// <param name="commentUid">The Uid of the comment.</param>
-        /// <param name="comment">The comment body to use when updating.</param>
-        /// <returns>An enriched comment, containing the text of the comment as well as information about the asset.</returns>
-        [
-            HttpPut,
-            Route("{commentUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(object)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
-        {
+		/// <summary>
+		/// Provides support for updating a comment on an asset. You must have created the comment to begin with in order to successfully call this endpoint.
+		/// </summary>
+		/// <param name="commentUid">The Uid of the comment.</param>
+		/// <param name="comment">The comment body to use when updating.</param>
+		/// <returns>An enriched comment, containing the text of the comment as well as information about the asset.</returns>
+		[
+			HttpPut,
+			Route("{commentUid:Guid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(object)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
+		{
 			if (await commentsDisabled())
 			{
 				return errorMessageArgumentResponse(string.Format(Error.DisabledByEnvironmentSetting, Setting.DisableCommunityPosting));
@@ -186,15 +208,38 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				var detail = await Comments.EditComment(commentUid, comment);
-				return Ok(detail);
-			}
-        }
 
-        /// <summary>
-        /// Returns an array of comments along with the total number and the current page number and size.
-        /// </summary>
-        /// <remarks>
-        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+				if (!detail.Item1.IsSuccess)
+				{
+					return errorMessageResponse((HttpStatusCode)detail.Item1.StatusCode, detail.Item1.Message);
+				}
+
+				if (detail.Item1.Data?.Tags.Count > 0)
+				{
+					await SendCommentNotificationAsync(detail.Item2,detail.Item1.Data.ID);
+				}
+					return Ok(detail.Item1.Data);
+			}
+		}
+
+		private async Task SendCommentNotificationAsync(List<Asset> taggedAssets, int commentId)
+		{
+			if(Comments.ProcessWithQueue(taggedAssets))
+			{
+						await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+						{
+							CompanyId = SecurityContext.CompanyID,
+							CompanyPrefix = SecurityContext.CompanyPrefix,
+							Payload = commentId
+						});
+			}
+		}
+
+		/// <summary>
+		/// Returns an array of comments along with the total number and the current page number and size.
+		/// </summary>
+		/// <remarks>
+		/// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
 		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
 		///     
 		///     Example :
@@ -213,11 +258,11 @@ namespace d360.web.Controllers.V2
 		///     - **Logical Operators**
 		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
 		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
-        /// 
-        /// </remarks>
-        /// <returns>The object containing comments.</returns>
-        [
-            HttpGet,
+		/// 
+		/// </remarks>
+		/// <returns>The object containing comments.</returns>
+		[
+			HttpGet,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("assetUid", "The asset unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
@@ -238,7 +283,7 @@ namespace d360.web.Controllers.V2
             var queryParams = Request.GetQueryNameValuePairs();
             var comments = await Comments.GetCommentDetails(queryParams);
 
-            return Ok(comments);
+            return Ok(comments.Data);
         }
 
         /// <summary>

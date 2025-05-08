@@ -502,9 +502,9 @@ namespace igx.UnitTests
 			return new List<ICatalog> { mock.Object };
 		}
 
-		public ICommentRepository GetCommentRepository()
+		public ISocial GetCommentRepository()
         {
-            var mock = new Mock<ICommentRepository>();
+            var mock = new Mock<ISocial>();
 
             return mock.Object;
         }

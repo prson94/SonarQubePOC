@@ -22,6 +22,9 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
+using repositories.azure;
+using d360.extensions;
+using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,11 +39,11 @@ namespace d360.web.Controllers.V2
 	public class ActionsController : BaseV2ApiController
 	{
 		private readonly IAssetRepository assetRepository;
-		private readonly ICommentRepository commentRepository;
+		private readonly ISocial commentRepository;
 		private readonly IWorkflow Workflow;
 		private readonly IResponsibilityRepository responsibilityRepository;
 
-		public ActionsController(ICoreComponentSet set, ICommentRepository comments, IWorkflow workflow, IAssetRepository assets, IResponsibilityRepository responsibilities)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets, IResponsibilityRepository responsibilities)
 			: base(set)
 		{
 			assetRepository = assets;
@@ -841,7 +844,21 @@ namespace d360.web.Controllers.V2
 						Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
 					};
 					var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
-					issueModel.Issue.CommentID = dtl.ID;
+
+					if (comment.Tags != null && comment.Tags.Count > 0)
+					{
+						if (dtl.Data.Tags.Count > 0)
+						{
+								await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+								{
+									CompanyId = SecurityContext.CompanyID,
+									CompanyPrefix = SecurityContext.CompanyPrefix,
+									Payload = dtl.Data.ID
+								});
+						}
+					}
+
+					issueModel.Issue.CommentID = dtl.Data.ID;
 				}
 
 				var insertSQL = $@"INSERT INTO [dbo].[Issue]

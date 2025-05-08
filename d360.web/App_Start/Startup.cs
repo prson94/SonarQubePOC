@@ -234,7 +234,6 @@ namespace d360.web
 				builder.RegisterType<CommunityFeatureFlagService>().AsSelf().InstancePerRequest();
 
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
-				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
 				builder.RegisterType<Catalog>().As<ICatalog>()

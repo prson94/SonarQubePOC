@@ -113,7 +113,7 @@ namespace d360.core.entities
 
         [DataMember, NotMapped]
         public ICollection<CommentDetail> Comments { get; set; }
-    }
+	}
 
     public interface IApiComment
     {
@@ -134,12 +134,9 @@ namespace d360.core.entities
 
     public class CommentApiPutModel : IApiComment
     {
-        public Guid Uid { get; set; }
-
         public string Body { get; set; }
-
         public List<Guid> Tags { get; set; }
-    }
+	}
 
     public class CommentNotification
     {

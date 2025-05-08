@@ -111,7 +111,9 @@ namespace d360.web.Controllers
 
 		CommunityFeatureFlagService CommunityFlags { get; set; }
 
-		IUsage Usage { get; set; }
+		IQueueSource Queue { get; set; }
+
+    IUsage Usage { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
@@ -137,6 +139,7 @@ namespace d360.web.Controllers
 		public IRuntimeInfo RuntimeInfo { get; set; }
 
 		public IWorkspaces Workspace { get; set; }
+		public IQueueSource Queue { get; set; }
 
 		public IUsage Usage { get; set; }
 
@@ -152,6 +155,7 @@ namespace d360.web.Controllers
 			IThemeManager themeManager,
 			IRuntimeInfo runtimeInfo,
 			IWorkspaces workspace,
+			IQueueSource queue,
 			IUsage usage
 			)
 		{
@@ -167,6 +171,7 @@ namespace d360.web.Controllers
 			Workspace = workspace;
 			Usage = usage;
 			SecurityContext = securityContext;
+			Queue = queue;
 		}
 	}
 
@@ -181,6 +186,7 @@ namespace d360.web.Controllers
 		internal IWorkspaces Workspace;
 		internal ISecurityContextProvider SecurityContext;
 		internal ICachingProvider Cache;
+		internal IQueueSource Queue;
 		internal IUsage Usage;
 
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
@@ -223,6 +229,7 @@ namespace d360.web.Controllers
 			Workspace = set.Workspace;
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
+			Queue = set.Queue;
 			Usage = set.Usage;
 		}
 
