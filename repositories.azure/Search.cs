@@ -75,7 +75,7 @@ namespace repositories.azure
 				{
 					sql += $@"
 ;with cte{id} as (
-	select		1000 as [Rank],
+	select		2000 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
 				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1 and a.DisplayValue = @sqlPhrase
@@ -134,7 +134,7 @@ insert into #results ([Rank], [Id])
 	select	ir.[Rank], ir.Id
 	from	(
 			select	row_number() over (partition by Id order by [Rank] desc) as RowNum, [Rank], Id
-			from	(select sum(rank) as rank, id from cte2 group by id) ctesummed
+			from	cte2
 			) ir 
 	where	ir.RowNum = 1
 	order by [Rank] desc offset @offset rows fetch next @take rows only;";
