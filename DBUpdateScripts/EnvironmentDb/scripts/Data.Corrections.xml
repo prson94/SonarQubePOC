@@ -1311,7 +1311,7 @@ GROUP BY tt.ID, n.Name;
 	</rollback>
   </changeSet>
 
-<changeSet author="TKlok" id="Data.Corrections.GOV-29079.Lookups.v1.1">
+<changeSet author="TKlok" id="Data.Corrections.GOV-29079.Lookups.v1.2">
   <comment>Convert Lookup fields where lookup is "ReferenceItemType" to new ReferenceList Type</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1339,16 +1339,8 @@ AND (value is null OR value = '');
 UPDATE f
 SET    f.ReferenceListID = at.ID 
 FROM dbo.[Field] f
---SET    ReferenceListID = [Value] 
 INNER JOIN AssetType at on at.ObjectID = try_cast(f.[Value] as int) and at.[Object] = 'ReferenceItemType'
 WHERE  f.FieldTypeID in (
-          SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
-       );
-
-
-UPDATE dbo.[Field] 
-SET    ReferenceListID = [Value] 
-WHERE  FieldTypeID in (
           SELECT ID from dbo.[FieldType] where Type = 'Lookup' and LookupObjectType = 'ReferenceItemType'
        );
 
@@ -1446,5 +1438,30 @@ AND	NOT EXISTS (SELECT 1 FROM dbo.[IntersectType] it WHERE it.ID = LookupObjectI
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-38107">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+
+update f
+set ReferenceListID = at2.ID
+from field f
+inner join fieldtype ft on f.FieldTypeID = ft.id
+left outer join assettype at1 on f.ReferenceListID = at1.id
+inner join assettype at2 on f.ReferenceListID = at2.objectid and at2.[class] = 9
+where ft.Type = 'ReferenceList'
+and at1.Name is null
+and at2.Name = f.FormattedValue
+
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
+
+

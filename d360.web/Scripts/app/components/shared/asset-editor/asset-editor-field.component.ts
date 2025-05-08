@@ -930,6 +930,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 			this.lazyMap.set(filter, lookupValues)
 			this.lazyLookupValues = [...lookupValues];
+
+			const val = this.field.Value;
+			if (val && !lookupValues.some((i) => i.value === val) && filter === '') {
+				window.setTimeout(() => {
+					this.lazyLoadValues({ first: event.last + 1, last: lookupValues.length, filter: '' });
+				}, 10);
+			}
+
 			this.lazyLoading = false;
 
 			this.ref.detectChanges();
