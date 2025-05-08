@@ -297,7 +297,7 @@ namespace repositories.azure
 							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, Error.CommentNotFound);
 						}
 
-						if (dbComment.CreatedBy != CurrentUserId && !IsAdministrator)
+						if (dbComment.CreatedBy != CurrentUserId && !CurrentUserIsAdmin)
 						{
 							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.Forbidden, false, Error.CommentUpdatePermissionAdmin);
 						}
