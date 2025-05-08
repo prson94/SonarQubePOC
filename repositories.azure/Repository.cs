@@ -16,18 +16,13 @@ namespace repositories.azure
 	public abstract class Repository
 	{
 		public bool CurrentUserIsAdmin { get; set; }
-
+		public int CurrentUserId { get; set; }
+		public Platform Platform { get { return Platform.Azure; } }	
+		public DapperConnectionProvider ConnectionProvider { get; set; }
+		
 		// Commonly used sql expressions in thr repositories.
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
-
-		public int CurrentUserId { get; set; }
-		public bool IsAdministrator { get; set; }
-
 		internal readonly int MAX_PERMISSIONS_MASK = 15854;
-
-		public Platform Platform { get { return Platform.Azure; } }
-
-		public DapperConnectionProvider ConnectionProvider { get; set; }
 
 		protected Repository(DapperConnectionProvider provider)
 		{
@@ -111,7 +106,7 @@ namespace repositories.azure
 					var user = await connection.QueryFirstOrDefaultAsync<GlobalReportingResource>(
 					 @"SELECT 
 						g.ResourceID, g.uid as Uid,
-						g.LastLoggedInOn,g.State, g.IsAdministrator,
+						g.LastLoggedInOn,g.State, g.,
 						g.FirstName, g.LastName, g.Email,
 						g.CreatedOn, g.UpdatedOn
 						from reporting.Global_Resource g
@@ -418,7 +413,7 @@ namespace repositories.azure
 		{
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				bool hasPermission = IsAdministrator;
+				bool hasPermission = CurrentUserIsAdmin;
 				if (!hasPermission)
 				{
 					int assetTypeID = connection.Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
@@ -484,7 +479,7 @@ namespace repositories.azure
 
 		public bool HasAssetPermission(string type, int id, Permission permission)
 		{
-			bool hasPermission = IsAdministrator;
+			bool hasPermission = CurrentUserIsAdmin;
 
 			if (!hasPermission)
 			{
@@ -523,7 +518,7 @@ namespace repositories.azure
 		{
 			using (var connection = ConnectionProvider.Connect())
 			{
-				bool hasPermission = IsAdministrator;
+				bool hasPermission = CurrentUserIsAdmin;
 				bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
 
 
