@@ -37,15 +37,15 @@ namespace d360.web.Controllers.V2
 	{
 		private readonly IAssetRepository assetRepository;
 		private readonly ICommentRepository commentRepository;
-		private readonly IIssueRepository issueRepository;
+		private readonly IWorkflow Workflow;
 		private readonly IResponsibilityRepository responsibilityRepository;
 
-		public ActionsController(ICoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
+		public ActionsController(ICoreComponentSet set, ICommentRepository comments, IWorkflow workflow, IAssetRepository assets, IResponsibilityRepository responsibilities)
 			: base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
-			issueRepository = issues;
+			Workflow = workflow;
 			responsibilityRepository = responsibilities;
 		}
 
@@ -186,7 +186,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (Guid.TryParse(actionUid, out actionGuid))
 				{
-					Issue issue = issueRepository.GetIssueByUID(actionGuid);
+					Issue issue = await Workflow.GetIssueByUIDAsync(actionGuid);
 
 					if (issue == null)
 					{
@@ -209,7 +209,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 				{
-					IssueType issueType = issueRepository.GetIssueTypeByUID(atGuid);
+					IssueType issueType = await Workflow.GetIssueTypeByUIDAsync(atGuid);
 
 					if (issueType == null)
 					{
@@ -392,7 +392,7 @@ namespace d360.web.Controllers.V2
 
 			#region validate Parameters
 
-			var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
+			var actionTypeUidParam = queryParams.FirstOrDefault(x => string.Equals(x.Key.Trim(), "_actiontypeuid", StringComparison.OrdinalIgnoreCase));
 
 			if (actionTypeUidParam.Key != null)
 			{
@@ -522,7 +522,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			var issueTypes = await issueRepository.GetIssueTypes(queryParams);
+			var issueTypes = await Workflow.GetIssueTypesAsync(queryParams);
 
 			return Ok(issueTypes);
 		}
@@ -547,7 +547,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
 
-			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
+			var allocations = await Workflow.GetAllocationByAssetTypeAsync(AssetTypeUid);
 
 			return Ok(allocations);
 		}

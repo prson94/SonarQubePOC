@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using d360.core;
@@ -15,6 +15,7 @@ using d360.web.Models.Theme;
 using d360.web.Services;
 using d360.web.Services.Favorites;
 using d360.web.Utilities;
+using d360.web.validators;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -108,6 +109,7 @@ namespace d360.web
 				builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
 				builder.RegisterType<RequestValidator>().As<IRequestValidator>().InstancePerRequest();
 				builder.RegisterType<ThemeManager>().As<IThemeManager>().InstancePerRequest();
+				builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
 				builder.RegisterControllers(typeof(MvcApplication).Assembly);
 				builder.RegisterMediatR(typeof(MvcApplication).Assembly);
 
