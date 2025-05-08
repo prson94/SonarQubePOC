@@ -24,6 +24,7 @@ namespace igx.UnitTests.V2ControllerTests
 		protected readonly Mock<IRuntimeInfo> RuntimeInfo;
 		protected readonly ICoreComponentSet CoreComponentSet;
 		protected readonly Mock<ICachingProvider> MockCache;
+		protected readonly Mock<IQueueSource> MockQueue;
 
 		protected CoreComponentSetControllerTestBase()
 		{
@@ -40,6 +41,7 @@ namespace igx.UnitTests.V2ControllerTests
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();
 			CommunityFlags = new CommunityFeatureFlagService(MockCache.Object, MockCommunity.Object, MockSecurityContext.Object);
+			MockQueue = new Mock<IQueueSource>();
 
 			CoreComponentSet = new CoreComponentSet(
 				MockCache.Object,
@@ -49,10 +51,14 @@ namespace igx.UnitTests.V2ControllerTests
 				MockSecurityContext.Object,
 				MockCatalogs.Object,
 				MockLog.Object,
-				MockMailProvider.Object, 
+				MockMailProvider.Object,
 				MockThemeRepository.Object,
-				RuntimeInfo.Object, 
-				MockWorkspace.Object);
+				RuntimeInfo.Object,
+				MockWorkspace.Object,
+				MockQueue.Object)
+			{
+
+			};
 		}
 	}
 }

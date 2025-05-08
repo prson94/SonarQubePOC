@@ -1,26 +1,21 @@
-﻿using d360.core.entities;
-using d360.core.enums;
-using d360.core.queue;
-using d360.core.resources;
-using d360.extensions;
-using d360.web.Filters;
-using d360.web.Models;
-using DocumentFormat.OpenXml.Office2019.Word.Cid;
-using Microsoft.Web.Http;
-using repositories;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Web.UI.WebControls.WebParts;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using repositories;
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -30,13 +25,10 @@ namespace d360.web.Controllers.V2
         #region DI
 
         private readonly ISocial Comments;
-		private readonly IQueueSource QueueSource;
-
-
-		public CommentsController(ICoreComponentSet set, ISocial comments, IQueueSource queue) : base(set)
+		
+		public CommentsController(ICoreComponentSet set, ISocial comments) : base(set)
         {
             Comments = comments;
-			QueueSource = queue;
         }
 		#endregion
 		private async Task<bool> commentsDisabled()
@@ -74,7 +66,7 @@ namespace d360.web.Controllers.V2
 				{
 					foreach (var item in commentData.Data.Tags)
 					{
-						await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+						await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 						{
 							CompanyId = SecurityContext.CompanyID,
 							CompanyPrefix = SecurityContext.CompanyPrefix,
@@ -237,7 +229,7 @@ namespace d360.web.Controllers.V2
 		{
 			if(Comments.ProcessWithQueue(taggedAssets))
 			{
-						await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+						await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 						{
 							CompanyId = SecurityContext.CompanyID,
 							CompanyPrefix = SecurityContext.CompanyPrefix,

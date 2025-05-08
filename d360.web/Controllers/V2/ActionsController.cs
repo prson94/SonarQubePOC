@@ -38,21 +38,19 @@ namespace d360.web.Controllers.V2
 	]
 	public class ActionsController : BaseV2ApiController
 	{
-		private readonly IQueueSource QueueSource;
 		private readonly IAssetRepository assetRepository;
 		private readonly ISocial commentRepository;
 		private readonly IIssueRepository issueRepository;
 		private readonly IResponsibilityRepository responsibilityRepository;
 
 
-		public ActionsController(ICoreComponentSet set, ISocial comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities, IQueueSource queueSource)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IIssueRepository issues, IAssetRepository assets, IResponsibilityRepository responsibilities)
 			: base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
 			issueRepository = issues;
 			responsibilityRepository = responsibilities;
-			QueueSource = queueSource;
 		}
 
 		/// <summary>
@@ -854,7 +852,7 @@ namespace d360.web.Controllers.V2
 						{
 							foreach (var item in dtl.Data.Tags)
 							{
-								await QueueSource.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+								await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
 								{
 									CompanyId = SecurityContext.CompanyID,
 									CompanyPrefix = SecurityContext.CompanyPrefix,
