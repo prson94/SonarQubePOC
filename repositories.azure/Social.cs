@@ -396,13 +396,14 @@ namespace repositories.azure
 				}
 			}
 		}
-		public async Task<RepositoryResponse<CommentDetail>> EditComment(Guid commentUid, CommentApiPutModel comment)
+		public async Task<(RepositoryResponse<CommentDetail>, List<Asset>)> EditComment(Guid commentUid, CommentApiPutModel comment)
+
 		{
 			var validateInput = ValidateComment(comment);
 
 			if (!validateInput.IsSuccess)
 			{
-				return new RepositoryResponse<CommentDetail>(null, validateInput.StatusCode, false, validateInput.Message);
+				return (new RepositoryResponse<CommentDetail>(null, validateInput.StatusCode, false, validateInput.Message), null);
 			}
 
 			using (var connection = ConnectionProvider.Connect(true))
@@ -414,12 +415,13 @@ namespace repositories.azure
 
 					if (dbComment == null)
 					{
-						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.comment);
+						return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.comment), null);
+
 					}
 
 					if (dbComment.CreatedBy != CurrentUserId)
 					{
-						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.Forbidden, false, Error.CommentUpdatePermission);
+						return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.Forbidden, false, Error.CommentUpdatePermission), null);
 					}
 
 					dbComment.Body = comment.Body;
@@ -443,14 +445,14 @@ namespace repositories.azure
 						var commentId = dbComment.ID;
 
 						connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
-						var taggedAssets = new List<Asset>();
+						var taggedAssetsList = new List<Asset>();
 						if (comment.Tags != null)
 						{
 							if (comment.Tags.Count > 0)
 							{
-								taggedAssets = connection.Query<Asset>("SELECT * FROM Asset WHERE Uid IN @Tags", new { Tags = comment.Tags }).ToList();
+								taggedAssetsList = connection.Query<Asset>("SELECT * FROM Asset WHERE Uid IN @Tags", new { Tags = comment.Tags }).ToList();
 
-								foreach (var r in taggedAssets)
+								foreach (var r in taggedAssetsList)
 								{
 									var insertCommentRelation = @"INSERT INTO CommentRelation (CommentID, AssetID) VALUES (@CommentID, @AssetID)";
 									var relationParams = new { CommentID = commentId, AssetID = r.ID };
@@ -460,17 +462,17 @@ namespace repositories.azure
 							connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });
 						}
 						var detail = await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
-						detail.Data.TaggedAssets = taggedAssets;
-						return detail;
+						List<Asset> taggedAssets = taggedAssetsList;
+						return (detail,taggedAssets);
 					}
 					else
 					{
-						return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated);
+						return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated), null);
 					}
 				}
 				catch (Exception)
 				{
-					return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated);
+					return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.InternalServerError, false, Error.CommentNotUpdated), null);
 				}
 			}
 		}

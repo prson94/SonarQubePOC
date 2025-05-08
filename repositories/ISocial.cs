@@ -18,7 +18,7 @@ namespace repositories
 
 		RepositoryResponse<bool> DeleteVote(Guid commentUid, int resourceId, Emoji emoji);
 
-		Task<RepositoryResponse<CommentDetail>> EditComment(Guid commentUid, CommentApiPutModel comment);
+		Task<(RepositoryResponse<CommentDetail>, List<Asset>)> EditComment(Guid commentUid, CommentApiPutModel comment);
 
 		Task<List<CommentCount>> GetCommentCountsByFollower(int resourceId, string searchPhrase = null, DateTime? rangeStart = null, DateTime? rangeEnd = null);
 

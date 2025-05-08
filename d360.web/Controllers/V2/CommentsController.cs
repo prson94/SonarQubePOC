@@ -220,16 +220,16 @@ namespace d360.web.Controllers.V2
 			{
 				var detail = await Comments.EditComment(commentUid, comment);
 
-				if (!detail.IsSuccess)
+				if (!detail.Item1.IsSuccess)
 				{
-					return errorMessageResponse((HttpStatusCode)detail.StatusCode, detail.Message);
+					return errorMessageResponse((HttpStatusCode)detail.Item1.StatusCode, detail.Item1.Message);
 				}
 
-				if (detail.Data?.Tags.Count > 0)
+				if (detail.Item1.Data?.Tags.Count > 0)
 				{
-					await SendCommentNotificationAsync(detail.Data.TaggedAssets,detail.Data.ID);
+					await SendCommentNotificationAsync(detail.Item2,detail.Item1.Data.ID);
 				}
-					return Ok(detail.Data);
+					return Ok(detail.Item1.Data);
 			}
 		}
 

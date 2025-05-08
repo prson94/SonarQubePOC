@@ -113,9 +113,6 @@ namespace d360.core.entities
 
         [DataMember, NotMapped]
         public ICollection<CommentDetail> Comments { get; set; }
-
-		[DataMember, NotMapped]
-		public List<Asset> TaggedAssets { get; set; }
 	}
 
     public interface IApiComment
