@@ -586,6 +586,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'ReferenceList' then FT.DisplayDescription else null end as 'Type.ReferenceList.Description.Display',
 										case when FT.Type = 'ReferenceList' then FT.IsDisplayable else null end as 'Type.ReferenceList.IsDisplayable',
 										case when FT.Type = 'ReferenceList' then FT.IsListable else null end as 'Type.ReferenceList.IsListable',
+										case when FT.Type = 'ReferenceList' then FT.IsEditable else null end as 'Type.ReferenceList.IsEditable',
 										case when FT.Type = 'ReferenceList' then FT.SortOrder else null end as 'Type.ReferenceList.SortOrder',
 										case when FT.Type = 'ReferenceList' then FT.SortByAscending else null end as 'Type.ReferenceList.SortByAscending',
 										case when FT.Type = 'ReferenceList' then FT.ShowIfEmpty else null end as 'Type.ReferenceList.ShowIfEmpty',
