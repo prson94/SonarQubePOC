@@ -387,6 +387,13 @@ namespace repositories.azure.extensions
 						root = AddNode(root, term, termForm, termExclude, conjunction);
 						resetState = true;
 					}
+
+					// Skip hyphen when used as word separator and not negation operator
+					if(parser.Peek() == '-' && char.IsLetterOrDigit(parser.Peek(1)))
+					{
+						parser.MoveAhead();
+					}
+
 					continue;
 				}
 				else if (parser.Peek() == '"')
@@ -684,6 +691,7 @@ namespace repositories.azure.extensions
 			fts.StopWords.Add("an");
 			fts.StopWords.Add("the");
 			fts.StopWords.Add("is");
+			fts.StopWords.Add("in");
 			fts.StopWords.Add("are");
 			fts.StopWords.Add("was");
 			fts.StopWords.Add("were");

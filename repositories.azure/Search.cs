@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using Dapper;
 using repositories.azure.extensions;
@@ -74,6 +75,12 @@ namespace repositories.azure
 				{
 					sql += $@"
 ;with cte{id} as (
+	select		2000 as [Rank],
+				a.AssetId as Id
+	from		AssetDisplayValue a
+				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1 and a.DisplayValue = @sqlPhrase
+				{appliedFilter} {permissionJoin}
+	union
 	select		s.[Rank]*4 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
@@ -248,6 +255,19 @@ order by r.[Rank] desc;";
 				}
 			}
 
+			//If filtering both on Class and AssetType, convert Class to AssetTypes to simplify filter
+			if (classes != null && types != null && classes.Any() && types.Any())
+			{
+				List<int> classTypes = null;
+				using (var connection = ConnectionProvider.Connect(true))
+				{
+					classTypes = (await connection.QueryAsync<int>("select ID from AssetType where [Class] in @classes", new { classes })).ToList();
+				}
+				types.AddRange(classTypes);
+				types = types.Distinct().ToList();
+				classes = null;
+			}
+
 			// If user passed in a Uid, pass it into the sql to NOT bother performing a full-text search and instead, return the asset directly. In same format as search.
 			bool searchByUid = false;
 			if (Guid.TryParse(phrase, out Guid uid))
@@ -257,6 +277,7 @@ order by r.[Rank] desc;";
 			}
 
 			bool isFreeText = false;
+			var sqlPhrase = phrase.CleanForSql();
 			phrase = phrase.ConvertPhraseToFullTextSearch();
 
 
@@ -264,6 +285,7 @@ order by r.[Rank] desc;";
 			var sql = buildFullTextSql(searchByUid, includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);
 
 			parameters.Add("@phrase", phrase);
+			parameters.Add("@sqlPhrase", sqlPhrase);
 
 			using (var connection = ConnectionProvider.Connect(true))
 			{
@@ -273,7 +295,10 @@ order by r.[Rank] desc;";
 				var results = (await dbResponse.ReadAsync<SearchResult>()).ToList();
 
 				int total = (includeAggregations) ? 
-					aggregations.Sum(a => a.ResultCount) : 
+					aggregations.Where(a => (
+						(_classes == null || _classes.Count == 0) && (_types == null || _types.Count == 0) ||
+						(_classes != null &&_classes.Contains(a.Class))) || (_types != null && _types.Contains((Guid)a.Uid))
+					).Sum(a => a.ResultCount) : 
 					results.Count;
 
 				var classAggregations = aggregations
