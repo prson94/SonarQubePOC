@@ -18,7 +18,6 @@ namespace d360.model
             builder.RegisterType<AuditRepository>().As<IAuditRepository>().InstancePerRequest();
             builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
-            builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
 			builder.RegisterType<ExecutionsRepository>().As<IExecutionsRepository>().InstancePerRequest();
 			builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();

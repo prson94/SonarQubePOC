@@ -11,7 +11,7 @@ namespace repositories.azure
 {
 	public partial class Workflow
 	{
-		public async Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid uid)
+		public async Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetTypeAsync(Guid uid)
 		{
 			try
 			{
@@ -37,7 +37,7 @@ namespace repositories.azure
 			}
 		}
 
-		public async Task<Issue> GetIssueByUID(Guid issueUid)
+		public async Task<Issue> GetIssueByUIDAsync(Guid issueUid)
 		{
 			try
 			{
@@ -57,7 +57,7 @@ namespace repositories.azure
 			}
 		}
 
-		public async Task<IssueType> GetIssueTypeByUID(Guid issueTypeUid)
+		public async Task<IssueType> GetIssueTypeByUIDAsync(Guid issueTypeUid)
 		{
 			try
 			{
@@ -77,7 +77,7 @@ namespace repositories.azure
 			}
 		}
 
-		public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			try
 			{
@@ -369,7 +369,7 @@ namespace repositories.azure
 			}
 		}
 
-		public async Task<IEnumerable<dynamic>> GetIssuesByUser(int? CurrentUserId)
+		public async Task<IEnumerable<dynamic>> GetIssuesByUserAsync(int? CurrentUserId)
 		{
 			try
 			{

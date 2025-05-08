@@ -47,21 +47,23 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("all/issues"), HttpGet]
-		public HttpResponseMessage GetIssuesForAllUsers()
+		public async Task<IHttpActionResult> GetIssuesForAllUsers()
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, Workflow.GetIssuesByUser(null));
+			var result = await Workflow.GetIssuesByUserAsync(null);
+			return Ok(result);
 		}
 
 		[Route("my/issues"), HttpGet]
-		public HttpResponseMessage GetIssuesForMyUser()
+		public async Task<IHttpActionResult> GetIssuesForMyUser()
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, Workflow.GetIssuesByUser(SecurityContext.ResourceID));
+			var result = await Workflow.GetIssuesByUserAsync(SecurityContext.ResourceID);
+			return Ok(result);
 		}
 
 		[Route("all/issues/excel/excel.xls"), HttpGet]
 		public async Task<HttpResponseMessage> GetIssuesForAllUsersExcel(bool all = true)
 		{
-			var results = all ? await Workflow.GetIssuesByUser(null) : await Workflow.GetIssuesByUser(SecurityContext.ResourceID);
+			var results = all ? await Workflow.GetIssuesByUserAsync(null) : await Workflow.GetIssuesByUserAsync(SecurityContext.ResourceID);
 
 			var document = new SLDocument();
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");

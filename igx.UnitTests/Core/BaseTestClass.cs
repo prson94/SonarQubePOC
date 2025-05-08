@@ -1,35 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using d360.model;
-using Xunit;
-using Moq;
-using d360.extensions;
-using System.Data.Entity;
-using d360.core.entities;
-using igx.UnitTests.Core;
-using d360.model.DataAccessLayer;
-using System.Linq.Expressions;
-using d360.core.enums;
-using Newtonsoft.Json;
-using d360.core.queue;
-using System.Net;
-using d360.core.entities.Workflow;
-using d360.model.validators;
-using d360.core.entities.Metric;
+﻿using AutoFixture;
 using d360.core;
-using Newtonsoft.Json.Linq;
-using System.Threading;
-using AutoFixture;
+using d360.core.entities;
+using d360.core.entities.Metric;
+using d360.core.entities.Workflow;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.validators;
+using d360.extensions;
+using d360.model;
+using d360.model.DataAccessLayer;
 using d360.model.helpers.filters;
 using d360.web.Controllers;
-using d360.web.Utilities;
-using FluentAssertions;
-using Moq.Language;
-using repositories;
-using d360.core.validators;
 using d360.web.Services;
+using d360.web.Utilities;
+using d360.web.validators;
+using FluentAssertions;
+using igx.UnitTests.Core;
+using Moq;
+using Moq.Language;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using repositories;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace igx.UnitTests
 {
@@ -546,14 +546,14 @@ namespace igx.UnitTests
         public IWorkflow GetIssueRepository()
         {
             var mock = new Mock<IWorkflow>();
-            mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetIssueTypeByUIDAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(new IssueType());
 
-            mock.Setup(x => x.GetAllocationByAssetType(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetAllocationByAssetTypeAsync(It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new List<IssueTypeApiModel>() { new IssueTypeApiModel(), new IssueTypeApiModel() } as IEnumerable<IssueTypeApiModel>));
 
 
-            mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetIssueByUIDAsync(It.IsAny<Guid>()))
                 .ReturnsAsync((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
 
             return mock.Object;
