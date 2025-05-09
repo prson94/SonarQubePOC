@@ -546,55 +546,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			#endregion
 
-			#region Delete owner tables
-
-			Connection.Execute($@"
-								declare @count bigint = 0;
-
-								drop table if exists #temprestable;
-								create table #temprestable (id bigint);
-								create nonclustered index cix_temprestable on #temprestable ([ID] asc);
-
-								insert into #temprestable
-								select T.ID
-								from ResponsibilityTypeRelationOverrideItem T
-								where exists (select 1 from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix});
-
-								select @count = count(1) from #temprestable;
-
-								if(@count > 0)
-								begin
-									delete	T
-									from	ResponsibilityTypeRelationOverrideItem T
-											where exists (select 1 from #temprestable S where S.ID = T.ID);
-								end;
-								drop table if exists #temprestable;
-
-								drop table if exists #temprestable2;
-								create table #temprestable2 (RuleID bigint, AssetID bigint);
-								create nonclustered index [ix_temprestable2] on #temprestable2 ([RuleID] asc, [AssetID] asc);
-
-								insert into #temprestable2
-								select T.RuleID, T.AssetID
-								from	ResponsibilityRuleResultAsset T
-								where exists (select 1 from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix});
-
-								select @count = count(1) from #temprestable2;
-
-								if(@count > 0)
-								begin
-									delete	T
-									from	ResponsibilityRuleResultAsset T
-											where exists (select 1 from #temprestable2 S where S.RuleID = T.RuleID and S.AssetID = T.AssetID);
-								end;
-								drop table if exists #temprestable2;",
-			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-			addMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-			sw.Restart();
-
-			#endregion
-
 			#region Update/Delete fields used by lookup values
 
 			var query = $@"
@@ -909,7 +860,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			int step = 0;
 			bool hasDuplicateUids = false;
 			bool hasCounterField = false;
-			bool sendAssetGraphPostExecutionEvent = false;
 
 			FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
@@ -2176,12 +2126,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					Connection.Close();
 
 					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-
-					if (sendAssetGraphPostExecutionEvent)
-					{
-						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetPaths, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
-					}
+					QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID, IsDeleteAction = false });
 
 					if (!isInsert)
 					{
@@ -2812,6 +2757,8 @@ where	T.ExecutionID = @ExecutionID
 						}
 
 						Connection.Close();
+
+						QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID });
 					}
 				}
 			}

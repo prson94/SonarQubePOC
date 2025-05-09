@@ -24,10 +24,10 @@ namespace igx.UnitTests.V2ControllerTests
 		protected readonly Mock<IRuntimeInfo> RuntimeInfo;
 		protected readonly ICoreComponentSet CoreComponentSet;
 		protected readonly Mock<ICachingProvider> MockCache;
+		protected readonly Mock<IQueueSource> MockQueue;
 
 		protected CoreComponentSetControllerTestBase()
 		{
-			
 			MockCompanyContext = new Mock<ICompanyContext>();
 			MockCommunity = new Mock<ICommunity>();
 			MockSecurityContext = new Mock<ISecurityContextProvider>();
@@ -36,6 +36,7 @@ namespace igx.UnitTests.V2ControllerTests
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
+			MockQueue = new Mock<IQueueSource>();
 			MockThemeRepository = new Mock<IThemeRepository>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();
@@ -52,7 +53,8 @@ namespace igx.UnitTests.V2ControllerTests
 				MockMailProvider.Object, 
 				MockThemeRepository.Object,
 				RuntimeInfo.Object, 
-				MockWorkspace.Object);
+				MockWorkspace.Object, 
+				MockQueue.Object);
 		}
 	}
 }

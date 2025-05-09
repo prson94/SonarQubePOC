@@ -1,0 +1,197 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.security.RunRules-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure security.RunRules
+	@assetId bigint = null,
+	@ruleId bigint null,
+	@executionId bigint null
+as
+begin
+	set nocount on;
+
+	drop table if exists #tbl;
+	drop table if exists #assets;
+
+	create table #assets (Id bigint);
+	create clustered index cix_tempassets on #assets (Id asc);
+
+	if @assetId is not null
+	begin
+		insert into #assets values (@assetId);
+	end
+
+	if @executionId is not null
+	begin
+		insert into #assets
+			select	a.AssetId
+			from	api.ExecutionAsset a
+					inner join api.Execution e on e.Id = @executionId and e.ExecutionId = a.ExecutionId and e.CompletedOn is not null and a.Success = 1;
+	end
+
+	select	r.Id as RuleId,
+			a.AssetTypeId,
+			a.Id as AssetId
+	into	#tbl
+	from	security.[Rule] r
+			inner join security.[Role] ro on ro.Id = r.RoleId and ( (@ruleId is null) or (@ruleId is not null and r.Id = @ruleId) )
+			inner join Asset a on a.AssetTypeId = r.AssetTypeId 
+				and ( 
+					not exists(select 1 from #assets) or 
+					(
+						exists(select 1 from #assets) and 
+						a.Id in (select Id from #assets)
+					) 
+				)
+				and r.ApplyToType = 0
+			-- WHEN: Field Condition
+			cross apply (
+				select	count(1) as ConditionCount
+				from	security.[RuleWhen]
+				where	Id = r.Id and CheckType = 'F'
+			) as fc
+			cross apply (
+				select	count(1) as MatchCount
+				from	security.[RuleWhen] w
+						inner join FieldType ft on ft.Id = w.FieldTypeId and ft.[Type] <> 'Lookup'
+						inner join Field f on f.FieldTypeId = w.FieldTypeId and f.AssetId = a.Id
+				where	w.Id = r.Id 
+						and w.CheckType = 'F'
+						and case 
+								when w.[Operator] = 1 and f.FormattedValue = w.[Value] then 1
+								when w.[Operator] = 2 and f.FormattedValue <> w.[Value] then 1
+								when w.[Operator] = 3 and ft.[Type] = 'Text' and f.FormattedValue like '%' + w.[Value] + '%' then 1
+								when w.[Operator] = 4 and ft.[Type] = 'Text' and f.FormattedValue not like '%' + w.[Value] + '%' then 1
+								when w.[Operator] = 5 and ft.[Type] = 'Text' and f.FormattedValue like w.[Value] + '%' then 1
+								when w.[Operator] = 6 and ft.[Type] = 'Text' and f.FormattedValue like '%' + w.[Value] then 1
+								when w.[Operator] = 7 and ft.[Type] in ('Date', 'DateTime') and try_cast(f.FormattedValue as datetime) < try_cast(w.[Value] as datetime) then 1
+								when w.[Operator] = 8 and ft.[Type] in ('Date', 'DateTime') and try_cast(f.FormattedValue as datetime) > try_cast(w.[Value] as datetime) then 1
+								when w.[Operator] = 10 and f.FormattedValue is not null then 1 --populated
+								else 0
+							end = 1
+			) fv
+			cross apply (
+				select	count(1) as MatchCount
+				from	security.[RuleWhen] w
+						inner join FieldType ft on ft.Id = w.FieldTypeId and ft.[Type] = 'Lookup'
+						inner join AssetType lt on lt.Object = ft.LookupObjectType+'Type' and lt.ObjectID = ft.LookupObjectID
+						inner join Asset la on la.AssetTypeID = lt.ID and w.AssetId = la.Id
+						inner join Field f on f.FieldTypeId = w.FieldTypeId and f.AssetId = a.Id
+				where	w.Id = r.Id
+						and w.CheckType = 'F'
+						and case 
+								when w.[Operator] = 1 and f.Value = la.ObjectID then 1
+								when w.[Operator] = 2 and f.Value <> la.ObjectID then 1
+								else 0
+							end = 1
+			) flv
+		
+			-- WHEN: Relation Condition
+			cross apply (
+				select	count(1) as ConditionCount
+				from	security.[RuleWhen] w
+						inner join IntersectType it on it.Id = w.IntersectTypeId and it.SubjectAssetTypeId = a.AssetTypeId and w.Id = r.Id and CheckType = 'R' 
+			) as [rc]
+		
+			-- WHEN: Relation Condition: Checking Subject
+			cross apply (
+				select	count(1) as MatchCount
+				from	security.[RuleWhen] w
+						inner join IntersectType it on w.Id = r.Id and w.CheckType = 'R' and it.Id = w.IntersectTypeId
+						inner join [Intersect] i on i.IntersectTypeId = it.Id and w.[Operator] = 16 and i.SubjectAssetId = w.AssetId and i.ObjectAssetId = a.Id
+						-- 16 = 'In'
+			) srvIn
+			cross apply (
+				select	count(1) as MatchCount
+				from	security.[RuleWhen] w
+						inner join IntersectType it on w.Id = r.Id and w.CheckType = 'R' and it.Id = w.IntersectTypeId
+						inner join [Intersect] i on i.IntersectTypeId = it.Id and w.[Operator] = 17 and i.SubjectAssetId <> w.AssetId and i.ObjectAssetId = a.Id
+						-- 17 = NotIn
+			) srvNotIn
+		
+			-- WHEN: Relation Condition: Checking Object
+			cross apply (
+				select	coalesce(Cnt, 0) as MatchCount
+				from	(
+						select	count(1) as Cnt
+						from	security.[RuleWhen] w
+								inner join IntersectType it on w.Id = r.Id and w.CheckType = 'R' and it.Id = w.IntersectTypeId
+								inner join [Intersect] i on i.IntersectTypeId = it.Id and w.[Operator] = 16 and i.ObjectAssetId = w.AssetId and i.SubjectAssetId = a.Id
+								-- 16 = 'In'
+						) oo
+			) orvIn
+			cross apply (
+				select	coalesce(Cnt, 0) as MatchCount
+				from	(
+						select	count(1) as Cnt
+						from	security.[RuleWhen] w
+								inner join IntersectType it on w.Id = r.Id and w.CheckType = 'R' and it.Id = w.IntersectTypeId
+								inner join [Intersect] i on i.IntersectTypeId = it.Id and w.[Operator] = 17 and i.ObjectAssetId <> w.AssetId and i.SubjectAssetId = a.Id
+								-- 17 = NotIn
+						) oo
+			) orvNotIn
+
+	where	(fc.ConditionCount = fv.MatchCount+flv.MatchCount)
+			and ([rc].ConditionCount = orvIn.MatchCount+orvNotIn.MatchCount+srvIn.MatchCount+srvNotIn.MatchCount)
+
+	-- Type-level assignments.
+	if @ruleId is not null
+	begin
+		insert into #tbl
+			select	r.Id as RuleId,
+					r.AssetTypeId,
+					cast(0 as bigint) as AssetId
+			from	[security].[Rule] r
+					inner join [security].[Role] ro on ro.Id = r.RoleId and r.ApplyToType = 1 
+			where	r.Id = @ruleId;
+	end
+
+
+	-- Now that we have raw data, load into destination tables.
+	declare @dt datetime = getutcdate();
+
+	insert into [security].[RuleAssignment] (RuleId, AssetTypeId, AssetId, UpdatedBy, UpdatedOn)
+		select	s.RuleId, s.AssetTypeId, s.AssetId, 3, @dt
+		from	#tbl s
+				left join [security].[RuleAssignment] t on t.RuleId = s.RuleId and t.AssetTypeId = s.AssetTypeId and t.AssetId = s.AssetId
+		where	t.Id is null;
+
+
+	-- We need to perform very targeted deletes here.
+	if exists(select 1 from #assets)
+	begin
+		delete	t
+		from	[security].[RuleAssignment] t
+				left join #tbl s on s.RuleId = t.RuleId and s.AssetTypeId = t.AssetTypeId and s.AssetId = t.AssetId
+		where	s.RuleId is null
+				and t.AssetId in (select Id from #assets);
+	end
+
+	if @ruleId is not null
+	begin
+		delete	t
+		from	[security].[RuleAssignment] t
+				left join #tbl s on s.RuleId = t.RuleId and s.AssetTypeId = t.AssetTypeId and s.AssetId = t.AssetId
+		where	s.RuleId is null
+				and t.RuleId = @ruleId;
+	end
+
+	if not exists(select 1 from #assets) and @ruleId is null
+	begin
+		delete	t
+		from	[security].[RuleAssignment] t
+				left join #tbl s on s.RuleId = t.RuleId and s.AssetTypeId = t.AssetTypeId and s.AssetId = t.AssetId
+		where	s.RuleId is null;
+	end
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

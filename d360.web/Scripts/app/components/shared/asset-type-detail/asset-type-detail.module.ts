@@ -18,7 +18,6 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
 import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
-import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { AssetTypeDetailComponent } from "./asset-type-detail.component";
@@ -45,7 +44,6 @@ import { AssetDetailModule } from "../asset-detail/asset-detail.module";
         AdvancedFiltersModule,
         SearchFieldModule,
         ScoreBadgeModule,
-        PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
         PortalsModule,
         ReferenceModule,

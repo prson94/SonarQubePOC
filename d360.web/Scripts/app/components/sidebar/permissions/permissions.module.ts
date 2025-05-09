@@ -14,8 +14,6 @@ import { PermissionsRoutingModule } from './permissions.routes';
 import { PermissionsComponent } from './permissions.component';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { AdminModule } from '../../admin/admin.module';
-import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
-
 
 @NgModule({
     imports: [
@@ -34,7 +32,6 @@ import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shar
         CoreModule,
         TilesModule,
         SharedFieldDefinitionModule,
-        SharedResponsibilitiesModule,
         AdminModule,
     ],
     declarations: [

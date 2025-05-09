@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset')
 BEGIN
 	CREATE TABLE [dbo].[ResponsibilityRuleResultSecurityAsset](
@@ -27,27 +24,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResu
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ( [SecurityAsset] ASC, [SecurityAssetID] ASC )
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterDelete-v5">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop trigger if exists [dbo].[ResponsibilityRuleResultSecurityAsset_AfterDelete]
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterInsert-v5">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-drop trigger if exists [dbo].[ResponsibilityRuleResultSecurityAsset_AfterInsert]
 ]]>
   </sql>
  </changeSet>

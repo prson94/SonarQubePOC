@@ -8,6 +8,7 @@
 		public const string Notification = "notification";
 		public const string PostExecution = "post-execution";
 		public const string PostExecutionIndex = "post-execution-index";
+		public const string SecurityPolicy = "security-policy";
 		public const string Score = "score";
 		public const string Search = "search";
 		public const string Workflow = "workflow";

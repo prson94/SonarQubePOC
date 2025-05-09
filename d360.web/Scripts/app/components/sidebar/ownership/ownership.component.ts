@@ -10,8 +10,7 @@ import { FeatureFlags } from '../../../_shared/models/feature-flags';
 
 @Component({
 	selector: 'd3s-ownership',
-	template: `<owner-list *ngIf="newSecurityEnabledFeatureFlag" [assetUid]="uid"></owner-list>
-    <d3s-people-responsibilities-tile *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="uid"></d3s-people-responsibilities-tile>`
+	template: `<owner-list [assetUid]="uid"></owner-list>`
 })
 export class OwnershipComponent extends BaseComponent implements OnInit {
 	destroySubject$: Subject<void> = new Subject();

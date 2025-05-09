@@ -875,10 +875,10 @@ where	exists(
 			var assets = Query<Guid>(@"
 declare		@relevantAssetTypes table (Id int)
 insert into @relevantAssetTypes
-	select		t.Id
-	from		ResponsibilityTypeRelationRule p
-				inner join ResponsibilityType r on r.ID = p.ResponsibilityTypeID and p.ID in (select ObjectID from @ruleIds)
-				inner join AssetType t on t.Object = p.Object and t.ObjectID = p.ObjectID
+	select		p.AssetTypeId
+	from		security.[Rule] p
+				inner join security.[Role] r on r.Id = p.RoleId and p.Id in (select ObjectID from @ruleIds)
+				inner join AssetType t on t.Id = p.AssetTypeId
 				inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1
 				inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
 				inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
@@ -892,15 +892,8 @@ insert into @relevantAssetTypes
 	group by	t.Id;
 
 select		a.Uid
-from		ResponsibilityTypeRelationRule p
-			inner join ResponsibilityRuleResultAsset ra on ra.RuleID = p.ID and ra.AssetTypeID = 0 -- specific to asset
-			inner join Asset a on a.ID = ra.AssetID and a.AssetTypeID in (select Id from @relevantAssetTypes)
-group by	a.Uid
-union
-select		a.Uid
-from		ResponsibilityTypeRelationRule p
-			inner join ResponsibilityRuleResultAsset ra on ra.RuleID = p.ID and ra.AssetID = 0 and ra.AssetTypeID in (select Id from @relevantAssetTypes) -- specific to asset type
-			inner join Asset a on a.ID = ra.AssetTypeID
+from		ResponsibilitySummary p
+			inner join Asset a on a.ID = p.AssetID and a.AssetTypeID in (select Id from @relevantAssetTypes)
 group by	a.Uid",
 				new
 				{

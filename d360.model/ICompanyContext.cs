@@ -107,8 +107,6 @@ namespace d360.model
         
         void AddOrUpdateFields(List<Field> items);
 
-        void ClearInvalidRelationRuleResults();
-        
         void CompleteItemStepAssignments(long itemStepID);
         
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
@@ -129,8 +127,6 @@ namespace d360.model
         List<AllocationPossibility> GetAllocationOptions();
         
         Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null);
-        
-        IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id);
         
         Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90);
 

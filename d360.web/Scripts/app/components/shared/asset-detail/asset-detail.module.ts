@@ -22,14 +22,12 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
 import { LinkDisplayModule } from "../controls/link-display/link-display.component";
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
-import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
 import { GroupMembersModule } from '../group/group-members.module';
 import { UserAvatarModule } from '../small-widgets/user-avatar/user-avatar.module';
-import { SecurityModule } from '../security/security.module';
-
+import { OwnerList } from '../../../_shared/components/security/owner-list';
 
 @NgModule({
     imports: [
@@ -51,13 +49,12 @@ import { SecurityModule } from '../security/security.module';
 		SearchFieldModule,
 		LinkDisplayModule,
         ScoreBadgeModule,
-		PeopleResponsibilitiesModule,
-		SecurityModule,
         DynamicFieldNameModule,
         PortalsModule,
         SharedAssignmentsModule,
 		GroupMembersModule,
-		UserAvatarModule
+		UserAvatarModule,
+		OwnerList
     ],
     declarations: [
         AssetDetailFieldComponent,

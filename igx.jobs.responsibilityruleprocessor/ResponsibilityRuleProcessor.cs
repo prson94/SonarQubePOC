@@ -1,13 +1,8 @@
 ﻿using d360.extensions;
-using d360.extensions.info;
-using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
@@ -18,86 +13,39 @@ namespace igx.jobs.responsibilityruleprocessor
 		const string FUNCTION_NAME = "ResponsibilityRules_ProcessScheduled";
 		const string TIMER_SETTINGS = "0 */3 * * * *";
 
-		readonly ICachingProvider Cache;
-		readonly IMailProvider Mail;
-		readonly IQueueSource Queue;
 		readonly string Region;
 
 		public ResponsibilityRuleProcessor(IConfiguration config, ICommunity community, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(community, config)
 		{
-			Cache = cache;
-			Mail = mail;
-			Queue = queue;
-			
 			Region = config[constants.Setting.Region];
 		}
 
-		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+		[FunctionName(FUNCTION_NAME), Disable]
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)
 		{
-			try
-			{
-				// increase the default dapper timeout from 30 to 90 seconds
-				Dapper.SqlMapper.Settings.CommandTimeout = 90;
+			//try
+			//{
+			//	var slot = GetEnvironmentLevelCurrentSlot();
+			//	var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot, Region)).ToList();
 
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot, Region)).ToList();
+			//	foreach (var c in tenants)
+			//	{
+			//		var logProperties = new Dictionary<string, object> {
+			//			{ "Function", FUNCTION_NAME },
+			//			{ "CompanyID", c.CompanyID },
+			//			{ "UrlPrefix", c.UrlPrefix }
+			//		};
 
-				// Only want to log this to the app instance console, which can be seen on the KUDU console.  [sitename].scm.azurewebsites.net/DebugConsole
-				Console.WriteLine($"Running for {tenants.Count} environments in the {Region} region.");
-				
-				foreach (var c in tenants)
-				{
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", c.CompanyID },
-						{ "UrlPrefix", c.UrlPrefix }
-					};
-
-					using (log.BeginScope(logProperties))
-					{
-						try
-						{
-							var context = new UriSecurityContextProvider
-							{
-								CompanyID = c.CompanyID,
-								CompanyPrefix = "",
-								ResourceID = 0,
-								IsAdministrator = true
-							};
-
-							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
-							{
-								try
-								{
-									company.ClearInvalidRelationRuleResults();
-								}
-								catch (Exception dex)
-								{
-									log.LogError(dex, "Error while clearing relation rules results.");
-								}
-
-								try
-								{
-									await company.ProcessResponsibilityRelationRules();
-								}
-								catch (Exception ex)
-								{
-									log.LogError(ex, "Error while processing responsibility rules.");
-								}
-							}
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error occurred while processing tasks for this environment.");
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				log.LogCritical(ex, "Critical exception at root of web job");
-			}
+			//		using (log.BeginScope(logProperties))
+			//		{
+			//			// May end up calling "security.RunRules" new procedure here. Let's see first.
+			//		}
+			//	}
+			//}
+			//catch (Exception ex)
+			//{
+			//	log.LogCritical(ex, "Critical exception at root of web job");
+			//}
 		}
 	}
 }

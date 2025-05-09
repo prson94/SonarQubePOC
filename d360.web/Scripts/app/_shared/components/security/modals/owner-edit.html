@@ -1,0 +1,49 @@
+﻿<d3s-modal additionalClasses="modal-dyn-editor asset-editor medium-dialog modal-form"
+           [showTitle]="false"
+           (onClose)="cancel();"
+           [isVisible]="isModalVisible">
+    <div class="editor-container">
+        <div class="form-editor-container">
+            <div class="form-header-wrapper">
+                <div class="form-header">
+                    <h2 i18n>Update Owner Context</h2>
+                </div>
+                <ig-form-feedback-badges class="ig-form-feedback-badges" [igformGroup]="frm" [inputContainer]="formElement"></ig-form-feedback-badges>
+            </div>
+            <ig-message-box>
+                <span i18n>Alter the context of this role assignment:</span>
+                <br />
+                {{model.roleName}} :
+                @if (model.securityType == 1) {
+                {{model.groupName}}
+                }
+                @else {
+                {{model.resourceName}}
+                }
+            </ig-message-box>
+
+            <loading [isLoading]="isLoading"></loading>
+			<div class="form-wrapper">
+				@if (!isLoading) {
+				<form (ngSubmit)="onSubmit()" [formGroup]="frm">
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<label for="context" class="ig-label" i18n>Context</label>
+									<textarea formControlName="context" style="height:150px; width:100%" pTextarea></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+				}
+			</div>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button igButton [disabled]="isSaving" class="ig-button-secondary" type="button" (click)="cancel()" label="{{cancelLabel}}"></button>
+        <span class="grow"></span>
+        <button [disabled]="isSubmitDisabled || isSaving" [loading]="isSaving" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n label="{{saveLabel}}"></button>
+    </div>
+</d3s-modal>

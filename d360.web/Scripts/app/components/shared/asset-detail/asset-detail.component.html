@@ -132,8 +132,8 @@
                 <ng-container *ngSwitchCase="'ownership'">
                     <ng-container *ngIf="model?.HasResponsibilityReadAccess === true">
                         <div *ngIf="model?.AssetUid">
-                            <owner-list *ngIf="newSecurityEnabledFeatureFlag" [assetUid]="model.AssetUid" [showTitle]="false" [showRowTools]="false"></owner-list>
-                            <d3s-people-responsibilities-tile  *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="model.AssetUid" [showTitle]="false" [showRowTools]="false"></d3s-people-responsibilities-tile>
+                            <owner-list [assetUid]="model.AssetUid" [showTitle]="false" [showRowTools]="false"></owner-list>
+                            <!--<d3s-people-responsibilities-tile  *ngIf="!newSecurityEnabledFeatureFlag" [assetUid]="model.AssetUid" [showTitle]="false" [showRowTools]="false"></d3s-people-responsibilities-tile>-->
                         </div>
                     </ng-container>
                     <ng-container *ngIf="model?.HasResponsibilityReadAccess === false">

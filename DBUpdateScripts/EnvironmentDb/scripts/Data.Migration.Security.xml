@@ -10,7 +10,7 @@
 <![CDATA[
 set identity_insert [security].[Role] on;
 insert into [security].[Role] (ID, Uid, Name, Description, [Permissions], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-	select	ID, Uid, Name, Description, 0, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
+	select	ID, Uid, Name, Description, 1, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
 	from	ResponsibilityType
 set identity_insert [security].[Role] off;
 ]]>
@@ -99,7 +99,6 @@ insert into [security].RuleWhen
 			wi.CheckType,
 			iif(wi.FieldTypeID > 0, wi.FieldTypeId, null) as FieldTypeId,
 			iif(wi.IntersectTypeID > 0, wi.IntersectTypeID, null) as IntersectTypeId,
-			--wi.*,
 			iif(wi.IntersectTypeID > 0, 1, coalesce(wi.[Operator], 1)) as [Operator],
 			iif(wi.FieldTypeID > 0, wi.[Value], null) as [Value],
 			a.Id as AssetId
@@ -121,5 +120,56 @@ insert into [security].RuleWhen
 ]]>
     </sql>
   </changeSet>
+
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.OV">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+insert into [security].[Override] (RoleId, SecurityType, SecurityId, AssetId, Context, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+	select	ResponsibilityTypeID,
+			iif(SecurityAsset = 'G', 1, 2),
+			SecurityAssetID,
+			AssetID,
+			Context,
+			UpdatedBy,
+			UpdatedOn,
+			UpdatedBy,
+			UpdatedOn
+	from	ResponsibilityTypeRelationOverrideItem
+]]>
+    </sql>
+  </changeSet>
+
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-Rename">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset')
+BEGIN
+	EXEC sp_rename 'dbo.ResponsibilityRuleResultSecurityAsset', 'ResponsibilityRuleResultSecurityAsset_BAK';
+END
+]]>
+  </sql>
+ </changeSet>
+	
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Rename">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultAsset')
+BEGIN
+	EXEC sp_rename 'dbo.ResponsibilityRuleResultAsset', 'ResponsibilityRuleResultAsset_BAK';
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Synonym">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select 1 from sys.synonyms where name = 'ResponsibilityRuleResultAsset')
+BEGIN
+	create synonym [dbo].[ResponsibilityRuleResultAsset] for security.RuleAssignment
+END
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

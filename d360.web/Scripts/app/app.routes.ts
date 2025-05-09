@@ -31,9 +31,6 @@ const routes: Routes = [
 			{ path: "scoring/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'scoring', loadChildren: () => import('./components/admin/scoring/admin-scoring.module').then((m) => m.AdminScoringModule) },
 			{ path: 'dashboard', loadChildren: () => import('./components/admin/dashboards/admin-dashboards.module').then((m) => m.AdminDashboardsModule), canActivate: [FeatureFlagGuard] },
-			{ path: 'security', loadChildren: () => import('./components/admin/security/security.module').then((m) => m.AdminSecurityModule) }, //, canActivate: [FeatureFlagGuard]
-			{ path: 'responsibilities', loadChildren: () => import('./components/admin/responsibilities/admin-responsibilities.module').then((m) => m.AdminResponsibilitiesModule) },
-			{ path: "responsibilities/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'resources', loadChildren: () => import('./components/admin/resources/admin-resources.module').then((m) => m.AdminResourcesModule) },
 			{ path: "resources/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'groups', loadChildren: () => import('./components/admin/groups/_module').then((m) => m.AdminGroupsModule) },
@@ -46,12 +43,14 @@ const routes: Routes = [
 			{ path: 'branding', loadChildren: () => import('./components/admin/branding/admin-branding.module').then((m) => m.AdminBrandingModule) },
 		]
 	},
+	{ path: 'admin/security/policies', loadComponent: () => import('./pages/security/policies').then((m) => m.Policies), canActivate: [AdminUserGuard] },
+	{ path: 'admin/security/roles', loadComponent: () => import('./pages/security/roles').then((m) => m.Roles), canActivate: [AdminUserGuard] },
+
 	{ path: "assettype", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/assets-base/assets-base.module").then((m) => m.AssetsBaseModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/reference/reference.module").then((m) => m.ReferenceModule) },
 	{ path: "community", loadComponent: () => import("./pages/community/index").then((c) => c.CommunityIndex) },
 	{ path: "help", loadChildren: () => import("./components/help/help.module").then((m) => m.HelpModule) },
-	//{ path: "admin", loadChildren: () => import("./components/admin/admin.module").then((m) => m.AdminModule) },
 	{ path: "monitor", loadChildren: () => import("./components/monitor/monitor.module").then((m) => m.MonitorModule), canActivate: [FeatureFlagGuard] },
 	{ path: "reference", loadChildren: () => import("./components/reference-v2/reference-v2.module").then((m) => m.ReferenceV2Module), canActivate: [FeatureFlagGuard] },
 	{ path: "quality/rule", loadChildren: () => import("./components/rule/rule.module").then((m) => m.RuleModule) },

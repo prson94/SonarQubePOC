@@ -4,10 +4,10 @@
 	{
 		Self = 1,
 		Relation = 2,
-		Responsibility = 3,
+		RoleAssignment = 3,
 		Tag = 4,
 		RelationType = 5,
-		ResponsibilityType = 6,
+		Role = 6,
 		Request = 7
 	}
 }

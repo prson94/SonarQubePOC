@@ -38,7 +38,7 @@ namespace d360.core.entities
     [DataContract]
     public class ResponsibilityTypeViewModel : BaseObject
     {
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DataMember]
         public Guid uid { get; set; }
 
         [DataMember]

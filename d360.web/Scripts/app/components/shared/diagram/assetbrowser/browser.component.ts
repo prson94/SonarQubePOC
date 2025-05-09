@@ -46,7 +46,6 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { TreeNode } from 'primeng/api';
 import { Observable, Subscription } from 'rxjs';
-import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -56,7 +55,6 @@ import { AssetBrowserOverviewComponent } from './tools/overview.component';
 import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { AssetService } from '../../../../services/asset.service';
-import { ResponsibilityService } from '../../../../services/responsibility.service';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { CompanySettingEnum } from '../../../../models/settings.model';
@@ -66,20 +64,10 @@ import { concatMap } from "rxjs/operators";
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 
-declare var window: any;
+declare const window: any;
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [
-        BrowserService,
-        PermissionsService,
-        PredicatesService,
-        ProcessService,
-        FieldsObservableService,
-        AssetService,
-        ResponsibilityService,
-        ObjectStatisticsService,
-    ],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	styles: [`.as-split-gutter { height: calc(100vh - 264px) !important; }`],
 	encapsulation: ViewEncapsulation.None
@@ -244,7 +232,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private processService: ProcessService,
         private fieldsService: FieldsObservableService,
         private assetService: AssetService,
-        private responsibilityService: ResponsibilityService,
         private objectStatisticsService: ObjectStatisticsService,
         protected settingsService: CompanySettingsService,
         private linkClickInterceptor: LinkClickInterceptor

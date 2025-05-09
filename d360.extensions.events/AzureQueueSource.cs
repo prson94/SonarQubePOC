@@ -24,7 +24,7 @@ namespace d360.extensions.events
 		QueueClient getQueue(string name)
 		{
 			var queue = cloudClient.GetQueueClient(name);
-			queue.CreateIfNotExists();
+			//queue.CreateIfNotExists();
 			return queue;
 		}
 

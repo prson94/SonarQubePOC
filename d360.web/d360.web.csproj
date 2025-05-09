@@ -388,6 +388,7 @@
     <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="Controllers\V2\AssetController_Simplified.cs" />
     <Compile Include="Controllers\V2\NavigationController.cs" />
+    <Compile Include="Controllers\V2\SecurityController.cs" />
     <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
@@ -407,7 +408,6 @@
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
-    <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\DataProfilesController.cs" />
@@ -696,27 +696,28 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Scripts\app\components\admin\groups\log.html" />
     <Content Include="Scripts\app\components\admin\groups\fields.html" />
-    <Content Include="Scripts\app\components\admin\security\policies.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-delete.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-editor.html" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-list.html" />
-    <Content Include="Scripts\app\components\admin\security\roles.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-delete.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-detail.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-editor.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-list.html" />
-    <Content Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\pages\security\policies.html" />
+    <Content Include="Scripts\app\pages\security\policies\policies-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\pages\security\policies\policy-delete.html" />
+    <Content Include="Scripts\app\pages\security\policies\policy-detail.html" />
+    <Content Include="Scripts\app\pages\security\policies\policy-editor.html" />
+    <Content Include="Scripts\app\pages\security\policies\policy-list.html" />
+    <Content Include="Scripts\app\pages\security\roles.html" />
+    <Content Include="Scripts\app\pages\security\roles\role-delete.html" />
+    <Content Include="Scripts\app\pages\security\roles\role-detail.html" />
+    <Content Include="Scripts\app\pages\security\roles\role-editor.html" />
+    <Content Include="Scripts\app\pages\security\roles\role-list.html" />
+    <Content Include="Scripts\app\pages\security\roles\roles-sidepanel-wrapper.html" />
     <Content Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.html" />
     <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.html" />
-    <Content Include="Scripts\app\components\shared\security\owner-list.html" />
-    <Content Include="Scripts\app\components\shared\security\modals\owner-form.html" />
-    <Content Include="Scripts\app\components\shared\security\modals\owner-delete.html" />
-    <Content Include="Scripts\app\components\shared\security\components\owner-detail.html" />
-    <Content Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.html" />
+    <Content Include="Scripts\app\_shared\components\security\modals\owner-edit.html" />
+    <Content Include="Scripts\app\_shared\components\security\owner-list.html" />
+    <Content Include="Scripts\app\_shared\components\security\modals\owner-create.html" />
+    <Content Include="Scripts\app\_shared\components\security\modals\owner-delete.html" />
+    <Content Include="Scripts\app\_shared\components\security\components\owner-detail.html" />
+    <Content Include="Scripts\app\_shared\components\security\components\owners-sidepanel-wrapper.html" />
     <Content Include="Scripts\app\pages\community\index.html" />
     <Content Include="Scripts\app\pages\home\components\activity-details-tile.html" />
     <Content Include="Scripts\app\pages\home\components\activity-tile.html" />
@@ -948,16 +949,16 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
-    <Content Include="Scripts\app\components\shared\security\components\owner-detail.less" />
+    <Content Include="Scripts\app\_shared\components\security\components\owner-detail.less" />
     <Content Include="Scripts\app\components\session-timeout-modal\session-timeout-modal.component.less" />
     <Content Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.less" />
     <Content Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.less" />
     <Content Include="Scripts\app\components\admin\tags\tags-headers\tags-header.component.less" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-detail.less" />
-    <Content Include="Scripts\app\components\admin\security\policies\policy-list.less" />
-    <Content Include="Scripts\app\components\admin\security\policy.less" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-detail.less" />
-    <Content Include="Scripts\app\components\admin\security\roles\role-list.less" />
+    <Content Include="Scripts\app\pages\security\policies\policy-detail.less" />
+    <Content Include="Scripts\app\pages\security\policies\policy-list.less" />
+    <Content Include="Scripts\app\pages\security\policy.less" />
+    <Content Include="Scripts\app\pages\security\roles\role-detail.less" />
+    <Content Include="Scripts\app\pages\security\roles\role-list.less" />
     <Content Include="Scripts\app\pages\settings\components\site-menu-folder-edit.less" />
     <Content Include="Scripts\app\pages\settings\components\site-menu-configuration.less" />
     <Content Include="Scripts\app\pages\search\index.less" />
@@ -974,20 +975,18 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\_base.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\log.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\fields.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policies-sidepanel-wrapper.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-delete.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-detail.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\policies\policy-list.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-delete.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-detail.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\role-list.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\roles\roles-sidepanel-wrapper.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\security\security.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies\policies-sidepanel-wrapper.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies\policy-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies\policy-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies\policy-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\policies\policy-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles\role-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles\role-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles\role-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles\role-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\pages\security\roles\roles-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-details\tag-detail.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tag-types\tag-types.component.ts" />
@@ -1000,12 +999,12 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-dropdown\lazy-dropdown.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.interface.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\lazy-multiselect\lazy-multiselect.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\owner-list.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\modals\owner-delete.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owner-detail.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\components\owners-sidepanel-wrapper.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\security\security.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\modals\owner-edit.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\owner-list.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\modals\owner-create.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\modals\owner-delete.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\components\owner-detail.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\components\security\components\owners-sidepanel-wrapper.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\community\index.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-details-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\pages\home\components\activity-tile.ts" />
@@ -1040,6 +1039,7 @@
     <TypeScriptCompile Include="Scripts\app\_shared\components\social-tag-input.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\components\sort-icon.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\models\feature-flags.ts" />
+    <TypeScriptCompile Include="Scripts\app\_shared\models\ReadOwnerOption.ts" />
     <TypeScriptCompile Include="Scripts\app\_shared\models\user-variables.ts" />
     <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
@@ -1086,7 +1086,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\fields\configuration-asset-type-fields-page.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\levels\configuration-asset-type-levels-page.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\log\configuration-asset-type-log-page.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\owners\configuration-asset-type-owners-page.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\relationships\configuration-asset-type-relationships-page.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\shared\configuration-asset-type-breadcrumbs\configuration-asset-type-breadcrumbs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-configuration\tabs\shared\configuration-asset-type-header\asset-type-header.component.ts" />
@@ -1148,12 +1147,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-governance.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-rule.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-rules.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-scoring.module.ts" />
@@ -1325,7 +1318,6 @@
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\items\referrence-item-type-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\log\reference-item-type-log.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\relationships\referemce-item-type-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\responsibilities\reference-item-type-responsibilities.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\shared\reference-header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\shared\reference-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\workflow\reference-item-type-workflow.component.ts" />
@@ -1564,11 +1556,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\shared-responsibilities.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.module.ts" />
@@ -1886,7 +1873,6 @@
     <TypeScriptCompile Include="Scripts\app\services\relationships.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\resources.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\responsibility.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\score.service.ts" />
@@ -1952,7 +1938,6 @@
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\fields\configuration-asset-type-fields-page.component.html" />
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\levels\configuration-asset-type-levels-page.component.html" />
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\log\configuration-asset-type-log-page.component.html" />
-    <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\owners\configuration-asset-type-owners-page.component.html" />
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\relationships\configuration-asset-type-relationships-page.component.html" />
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\shared\configuration-asset-type-breadcrumbs\configuration-asset-type-breadcrumbs.component.html" />
     <None Include="Scripts\app\components\admin\asset-type-configuration\tabs\shared\configuration-asset-type-header\asset-type-header.component.html" />
@@ -1989,10 +1974,6 @@
     <None Include="Scripts\app\components\admin\relationships\relationship-type-detail\relationship-type-detail.component.html" />
     <None Include="Scripts\app\components\admin\relationships\sidepanel-wrapper\admin-relationships-sidepanel-wrapper.component.html" />
     <None Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
-    <None Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
-    <None Include="Scripts\app\components\admin\responsibilities\responsibility-rule.form.html" />
-    <None Include="Scripts\app\components\admin\responsibilities\responsibility-rules.component.html" />
-    <None Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <None Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.html" />
     <None Include="Scripts\app\components\admin\scoring\allocation-editor.component.html" />
     <None Include="Scripts\app\components\admin\scoring\detail.component.html" />
@@ -2114,7 +2095,6 @@
     <None Include="Scripts\app\components\reference-v2\tabs\items\reference-item-type-items.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\log\reference-item-type-log.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\relationships\reference-item-type-relationships.component.html" />
-    <None Include="Scripts\app\components\reference-v2\tabs\responsibilities\reference-item-type-responsibilities.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\shared\reference-header.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\shared\reference-tabs.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\workflow\reference-item-type-workflow.component.html" />
@@ -2260,10 +2240,6 @@
     <None Include="Scripts\app\components\shared\relationship-grid\relationship-grid.component.html" />
     <None Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
     <None Include="Scripts\app\components\shared\resource-multiselect-grid.component.html" />
-    <None Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.html" />
-    <None Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.html" />
-    <None Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.html" />
-    <None Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.html" />
     <None Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
     <None Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <None Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.html" />
@@ -2336,7 +2312,6 @@
     <None Include="Scripts\app\components\admin\relationships\list\admin-relationships-list.component.less" />
     <None Include="Scripts\app\components\admin\relationships\relationship-type-detail\relationship-type-detail.component.less" />
     <None Include="Scripts\app\components\admin\relationships\sidepanel-wrapper\admin-relationships-sidepanel-wrapper.component.less" />
-    <None Include="Scripts\app\components\admin\responsibilities\responsibility-rule.less" />
     <None Include="Scripts\app\components\admin\scoring\measure-editor.less" />
     <None Include="Scripts\app\components\assets-grid\advanced-filtering\advanced-filtering.component.less" />
     <None Include="Scripts\app\components\assets-grid\asset-grid.less" />
@@ -2501,10 +2476,6 @@
     <ProjectReference Include="..\repositories.azure\repositories.azure.csproj">
       <Project>{b11ec76e-2791-4ee9-85e4-55c79241163d}</Project>
       <Name>repositories.azure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\repositories.dis\repositories.dis.csproj">
-      <Project>{63a7c554-f096-44d0-8684-5acdfa62d050}</Project>
-      <Name>repositories.dis</Name>
     </ProjectReference>
     <ProjectReference Include="..\repositories\repositories.csproj">
       <Project>{c2b66b7d-01ff-4c90-8b3d-5472af1aab9e}</Project>

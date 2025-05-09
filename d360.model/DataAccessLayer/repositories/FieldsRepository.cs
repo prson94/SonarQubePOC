@@ -2320,34 +2320,18 @@ namespace d360.model.DataAccessLayer
 
 		public bool hasResponsibilityUsingField(TypeIdentifierInfoModel typeIdentifierInfoModel, List<FieldType> fieldTypes)
 		{
-			var anyResponsibilityUsingField = false;
+			var ids = fieldTypes.Select(o => o.ID).ToList();
+			var objId = typeIdentifierInfoModel.ObjectID;
+			var obj = typeIdentifierInfoModel.Object;
 
-			var rules = CompanyContext.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
-			foreach (var rule in rules)
-			{
-				rule.SetDefinitionFromRaw();
-				anyResponsibilityUsingField = rule.StructuredDefinition?.When != null && rule.StructuredDefinition.When.Any(x => fieldTypes.Any(f => f.ID == x.FieldTypeID));
-				if (anyResponsibilityUsingField)
-				{
-					break;
-				}
-			}
+			bool fieldsInUse = CompanyContext.Connection.QuerySingle<bool>(
+				"select	cast(1 as bit) " +
+				"from	dbo.AssetType a " +
+				"		inner join security.[Rule] r on r.AssetTypeId = a.Id and a.Object = @obj and a.ObjectId = @objId " +
+				"		inner join security.RuleWhen w on w.Id = r.Id and w.FieldTypeId in @ids", 
+			new { obj, objId, ids });
 
-			if (typeIdentifierInfoModel.Object == "GroupType")
-			{
-				var usageInThenCondition = CompanyContext.Query<int>(@"select count(*) from ResponsibilityTypeRelationRule rtrr
-					 cross apply (select * from OpenJson(rtrr.Definition,'$.Then.Conditions'))Data
-					 where rtrr.Definition is not null
-					 and JSON_VALUE(rtrr.Definition,'$.Then.Object') = 'GroupType' 
-					 and json_value(data.[value],'$.FieldTypeID') in @fieldTypeIds", new { fieldTypeIds = fieldTypes.Select(x => x.ID).ToList() }).FirstOrDefault();
-
-				if (usageInThenCondition > 0)
-				{
-					return true;
-				}
-			}
-
-			return anyResponsibilityUsingField;
+			return fieldsInUse;
 		}
 
 		public int DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
@@ -2965,23 +2949,6 @@ namespace d360.model.DataAccessLayer
 			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs).ConfigureAwait(false);
 
 			wheres.Add("A.AssetTypeID = @assetTypeId");
-			wheres.Add(@"not exists(select 1
-									from [dbo].[AssetType] Ast
-									inner join [dbo].[responsibilitytyperelationrule] R on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)	
-									inner join [dbo].[ResponsibilityTypeRelation] RR on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)
-									inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = 0 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
-									where Ast.ID = A.AssetTypeID and RR.PermissionsBitMask & 1 = 0
-									and 
-									( exists( select 1 
-											from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource 
-											where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' 
-											and rresource.SecurityAssetID = @resourceid )
-									or exists( select 1 
-												from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource 
-												inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' 
-												inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  
-												where rresource.RuleID = R.ID and RG.ResourceID =  @resourceid ) 
-									))");
 			dbArgs.Add("assetTypeId", assetTypeId);
 
 			string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false, sortFields);

@@ -731,68 +731,6 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public Mock<IResponsibilityRepository> GetResponsibilityRepository()
-        {
-            var mock = new Mock<IResponsibilityRepository>();
-
-            mock.Setup(x => x.GetResponsibilities(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(new AssetResponsibilitiesApiModel() { items = new List<AssetResponsibilityItemModel>() { new AssetResponsibilityItemModel(), new AssetResponsibilityItemModel() } });
-
-            mock.Setup(x => x.GetResponsibilityRules(It.IsAny<Guid>()))
-                .ReturnsAsync(new List<ResponsibilityTypeRuleViewModel>() { new ResponsibilityTypeRuleViewModel(), new ResponsibilityTypeRuleViewModel() }.AsEnumerable());
-
-            mock.Setup(x => x.GetResponsibilityRuleStats(It.IsAny<Guid>()))
-                .ReturnsAsync(new ResponsibilityTypeRuleStatsViewModel());
-
-            mock.Setup(x => x.GetResponsibilityTypeAllocations(It.IsAny<Guid>()))
-                .ReturnsAsync(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable());
-
-            mock.Setup(x => x.GetResponsibilityTypeAllocationsByAsset(It.IsAny<Guid>()))
-                .ReturnsAsync(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable());
-
-            mock.Setup(x => x.GetResponsibilityTypes())
-                .ReturnsAsync(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable());
-
-			mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
-				 .ReturnsAsync(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable());
-
-			mock.Setup(x => x.GetResponsibilityType(It.IsAny<Guid>()))
-				.ReturnsAsync(new ResponsibilityType());
-
-			mock.Setup(x => x.GetResponsibilityTypeByUID(It.IsAny<Guid>()))
-				.Returns((Guid uid) => new ResponsibilityType() { UID = uid });
-
-			mock.Setup(x => x.GetResponsibilityRuleTestResults(It.IsAny<ResponsibilityRuleUpsertModel>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
-				.ReturnsAsync(new ResponsibilityRuleTestResponseModel());
-
-			mock.Setup(x => x.PostBatchResponsibilityOverride(It.IsAny<List<BulkResponsibilityOverridePostModel>>(), It.IsAny<ApiExecution>()))
-				.ReturnsAsync(new ApiExecutionInfo());
-
-			mock.Setup(x => x.UpsertResponsibilityRules(It.IsAny<Guid>(), It.IsAny<List<ResponsibilityRuleUpsertModel>>(), It.IsAny<ApiExecution>()))
-				.ReturnsAsync(new List<ResponsibilityRuleUpsertResponseModel>() { new ResponsibilityRuleUpsertResponseModel() });
-
-			mock.Setup(x => x.UpsertResponsibilityTypes(It.IsAny<List<ResponsibilityTypeUpsertModel>>(), It.IsAny<ApiExecution>()))
-				.Returns(new List<ResponsibilityTypeUpsertResult>() { new ResponsibilityTypeUpsertResult() });
-
-			mock.Setup(x => x.DeleteAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<bool>()))
-				.ReturnsAsync((ResponsibilityType responsibilityType, AssetType assetType, bool cascade) =>
-					new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid }
-				);
-
-			mock.Setup(x => x.GetResponsibilityTypeUsedInOwnershipLookupMessage(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>()))
-				.Returns(string.Empty);
-
-			mock.Setup(x => x.AddAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<List<int>>()))
-				.Returns((ResponsibilityType responsibilityType, AssetType assetType, List<int> permissionaBitMask) => 
-					new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid }
-				);
-
-			mock.Setup(x => x.IsValidResponsibilityForAsset(It.IsAny<Guid>(), It.IsAny<Guid>()))
-				.Returns(true);
-
-			return mock;
-		}
-
         public IWorkspaces GetWorkspacesRepository()
         {
             var mock = new Mock<IWorkspaces>();
@@ -843,17 +781,6 @@ namespace igx.UnitTests
                     return value == "validlookupvalue" ? 2 : 0;
                 }
                 );
-
-            return mock.Object;
-        }
-
-        public IResourceRepository GetResourceRepository()
-        {
-            var mock = new Mock<IResourceRepository>();
-
-            mock.Setup(x => x.GetResouceByUID(It.IsAny<Guid>()))
-                .Returns((Guid uid) =>
-                uid == Guid.Parse(DataConstants.ValidGUID) ? new GlobalReportingResource() : null);
 
             return mock.Object;
         }

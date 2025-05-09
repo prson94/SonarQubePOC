@@ -2,24 +2,20 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.resources;
 using d360.core.security;
+using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.web.Services;
-using d360.web.Utilities;
 using Microsoft.Web.Http;
 using repositories;
-using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Web.Http.Results;
 
 namespace d360.web.Controllers.V2
 {
@@ -87,7 +83,11 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
 			var result = await Security.CreatePolicyAsync(model);
-			return sendRepositoryResponse(result);
+			if (result.IsSuccess)
+			{
+				RecalculateSecurityPolicy(new SecurityPolicyArgs { PolicyUid = result.Data.Uid });
+			}
+			return sendRepositoryCreatedResponse(result);
 		}
 
 		/// <summary>
@@ -107,8 +107,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreatePolicyOverrideAsync(CreateSecurityPolicyOverride model)
 		{
-			var result = await Security.CreatePolicyOverrideAsync(model);
-			return sendRepositoryResponse(result);
+			var result = await Security.CreateOverrideAsync(model);
+			return sendRepositoryCreatedResponse(result);
 		}
 
 		/// <summary>
@@ -131,11 +131,11 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			var result = await Security.CreateRoleAsync(model);
-			return sendRepositoryResponse(result);
+			return sendRepositoryCreatedResponse(result);
 		}
 
 
@@ -159,8 +159,12 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeletePolicyAsync(Guid uid)
 		{
-			var result = await Security.RemovePolicyAsync(uid);
-			return sendRepositoryResponse(result);
+			var result = await Security.RemovePolicyAsync(uid, true);
+			if (result.IsSuccess)
+			{
+				RecalculateSecurityPolicy(new SecurityPolicyArgs { PolicyUid = uid, IsDeleteAction = true });
+			}
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -183,8 +187,8 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeletePolicyOverrideAsync(Guid uid)
 		{
-			var result = await Security.RemovePolicyOverrideAsync(uid);
-			return sendRepositoryResponse(result);
+			var result = await Security.RemoveOverrideAsync(uid);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -207,11 +211,13 @@ namespace d360.web.Controllers.V2
 		{
 			if (uid == Guid.Empty)
 			{
-				return errorMessageArgumentResponse(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				return errorMessageArgumentResponse(Error.InvalidResponsibilityUid);
 			}
 
+			
+
 			var result = await Security.RemoveRoleAsync(uid);
-			return sendRepositoryResponse(result);
+			return sendRepositoryOkResponse(result);
 		}
 
 
@@ -232,9 +238,26 @@ namespace d360.web.Controllers.V2
 		{
 			// TODO: Put permission check in here.
 			var result = await Security.ReadVisibleOwnersByAssetAsync(assetUid);
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
+		/// <summary>
+		/// BFF endpoint that retrieves a list of all options for owner overrides (groups and users)
+		/// </summary>
+		/// <returns>A list of owner options.</returns>
+		[
+			HttpGet,
+			Route("owner-options"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of owners.", typeof(IEnumerable<dynamic>)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public async Task<IHttpActionResult> ReadOwnerOptionsAsync(Guid assetUid)
+		{
+			var hide = await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
+			var result = await Security.ReadGroupsAndUsersAsSecurityAsync(assetUid, !hide);
+			return sendRepositoryOkResponse(result);
+		}
 
 		/// <summary>
 		/// Retrieves a list of all policies.
@@ -252,7 +275,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPoliciesAsync()
 		{
 			var result = await Security.ReadPoliciesAsync();
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -263,7 +286,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditOptionsAsync()
 		{
 			var result = await Security.ReadPolicyEditOptionsAsync();
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -274,7 +297,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditAssetTypeOptionsAsync(Guid assetTypeUid)
 		{
 			var result = await Security.ReadPolicyEditAssetTypeOptionsAsync(assetTypeUid);
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -285,7 +308,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditGroupOptionsAsync()
 		{
 			var result = await Security.ReadPolicyEditGroupOptionsAsync();
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -296,7 +319,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditUserOptionsAsync()
 		{
 			var result = await Security.ReadPolicyEditUserOptionsAsync();
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -307,7 +330,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditFieldLookupOptionsAsync(Guid assetTypeUid, string fieldName)
 		{
 			var result = await Security.ReadPolicyEditFieldLookupOptionsAsync(assetTypeUid, fieldName);
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -318,7 +341,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadPolicyEditRelationLookupOptionsAsync(Guid intersectTypeUid, Guid assetTypeUid)
 		{
 			var result = await Security.ReadPolicyEditRelationLookupOptionsAsync(intersectTypeUid, assetTypeUid);
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -336,7 +359,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> ReadRolesAsync()
 		{
 			var result = await Security.ReadRolesAsync();
-			return Ok(result.Data);
+			return sendRepositoryOkResponse(result);
 		}
 
 
@@ -383,7 +406,11 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model)
 		{
 			var result = await Security.UpdatePolicyAsync(uid, model);
-			return sendRepositoryResponse(result);
+			if (result.IsSuccess)
+			{
+				RecalculateSecurityPolicy(new SecurityPolicyArgs { PolicyUid = uid });
+			}
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -403,10 +430,10 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> UpdatePolicyOverrideAsync(Guid uid, CreateSecurityPolicyOverride model)
+		public async Task<IHttpActionResult> UpdatePolicyOverrideAsync(Guid uid, UpdateSecurityPolicyOverride model)
 		{
-			var result = await Security.UpdatePolicyOverrideAsync(uid, model);
-			return sendRepositoryResponse(result);
+			var result = await Security.UpdateOverrideAsync(uid, model);
+			return sendRepositoryOkResponse(result);
 		}
 
 		/// <summary>
@@ -428,11 +455,11 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
+				return errorMessageArgumentResponse(Error.JSONValidMessage);
 			}
 
 			var result = await Security.UpdateRoleAsync(uid, model);
-			return sendRepositoryResponse(result);
+			return sendRepositoryOkResponse(result);
 		}
 
 

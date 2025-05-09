@@ -2,7 +2,6 @@
 using repositories;
 using System;
 using System.Data.Entity;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -14,11 +13,6 @@ namespace d360.model.DataAccessLayer
         public ResourceRepository(ICompanyContext companyContext)
         {
             CompanyContext = companyContext;
-        }
-
-        public GlobalReportingResource GetResouceByUID(Guid uid)
-        {
-            return CompanyContext.Filter<GlobalReportingResource>(i => i.Uid == uid).SingleOrDefault();
         }
 
         public Task<GlobalReportingResource> GetByUidAsync(Guid uid)

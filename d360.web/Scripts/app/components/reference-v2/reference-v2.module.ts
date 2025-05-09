@@ -15,7 +15,6 @@ import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-as
 import { HeaderModule } from '../shared/header/header.module';
 import { PageHeaderModule } from '../shared/page-header/page-header.module';
 import { TabsModule } from '../shared/tabs/tabs.module';
-import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { RelationshipGridModule } from '../shared/relationship-grid/relationship-grid.module';
 
 import { ReferenceV2RoutingModule } from './reference-v2.routes';
@@ -27,7 +26,6 @@ import { ReferenceItemTypeFieldsComponent } from './tabs/fields/reference-item-t
 import { ReferenceItemTypeItemsComponent } from './tabs/items/referrence-item-type-items.component';
 import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-log.component';
 import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
-import { ReferenceItemTypeResponsibilitiesComponent } from './tabs/responsibilities/reference-item-type-responsibilities.component';
 
 import { ReferenceItemTypeHeaderComponent } from './tabs/shared/reference-header.component';
 import { ReferenceItemTypeTabsComponent } from './tabs/shared/reference-tabs.component';
@@ -96,7 +94,6 @@ import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-it
 		PageHeaderModule,
 		TabsModule,
 		AuditModule,
-		SharedResponsibilitiesModule,
 		RelationshipGridModule,
 		MonitorModule,
 		AssetPreviewModule,
@@ -119,7 +116,6 @@ import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-it
 		ReferenceItemTypeItemsComponent,
 		ReferenceItemTypeLogComponent,
 		ReferenceItemTypeRelationshipsComponent,
-		ReferenceItemTypeResponsibilitiesComponent,
 		ReferenceItemTypeHeaderComponent,
 		ReferenceItemTypeAssignmentsComponent,
 		ReferenceItemTypeWorkflowComponent,
@@ -133,7 +129,6 @@ import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-it
 		ReferenceItemTypeItemsComponent,
 		ReferenceItemTypeLogComponent,
 		ReferenceItemTypeRelationshipsComponent,
-		ReferenceItemTypeResponsibilitiesComponent,
 		ReferenceItemTypeAssignmentsComponent,
 		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeHeaderComponent,

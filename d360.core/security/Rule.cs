@@ -24,6 +24,21 @@ namespace d360.core.security
 		public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
 	}
 
+	// Maps to the security.Override table.
+	public class SecurityPolicyOverride
+	{
+		public Guid Id { get; set; }
+		public int RoleId { get; set; }
+		public RuleSecurityType SecurityType { get; set; }
+		public int SecurityId { get; set; }
+		public long AssetId { get; set; }
+		public string? Context { get; set; }
+		public int CreatedBy { get; set; }
+		public DateTime CreatedOn { get; set; }
+		public int UpdatedBy { get; set; }
+		public DateTime UpdatedOn { get; set; }
+	}
+
 	public interface ISecurityPolicy
 	{
 		string Name { get; set; }
@@ -82,6 +97,9 @@ namespace d360.core.security
 
 		[JsonProperty("securityUid")]
 		public Guid SecurityUid { get; set; }
+
+		[JsonProperty("context")]
+		public string Context { get; set; }
 	}
 
 	/// <summary>
@@ -106,5 +124,14 @@ namespace d360.core.security
 	{
 		[JsonProperty("uid")]
 		public Guid Uid { get; set; }
+	}
+
+	/// <summary>
+	/// The public facing model to update a policy override.
+	/// </summary>
+	public class UpdateSecurityPolicyOverride
+	{
+		[JsonProperty("context")]
+		public string Context { get; set; }
 	}
 }

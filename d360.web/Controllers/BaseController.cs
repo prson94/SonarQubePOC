@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -109,6 +110,8 @@ namespace d360.web.Controllers
 		IRuntimeInfo RuntimeInfo { get; set; }
 
 		CommunityFeatureFlagService CommunityFlags { get; set; }
+
+		IQueueSource Queue { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
@@ -135,6 +138,8 @@ namespace d360.web.Controllers
 
 		public IWorkspaces Workspace { get; set; }
 
+		public IQueueSource Queue { get; set; }
+
 		public CoreComponentSet(
 			ICachingProvider cache,
 			ICommunity community,
@@ -146,7 +151,8 @@ namespace d360.web.Controllers
 			IMailProvider mail,
 			IThemeRepository themeRepository,
 			IRuntimeInfo runtimeInfo,
-			IWorkspaces workspace
+			IWorkspaces workspace,
+			IQueueSource queue
 			)
 		{
 			Cache = cache;
@@ -160,6 +166,7 @@ namespace d360.web.Controllers
 			RuntimeInfo = runtimeInfo;
 			Workspace = workspace;
 			SecurityContext = securityContext;
+			Queue = queue;
 		}
 	}
 
@@ -174,6 +181,7 @@ namespace d360.web.Controllers
 		internal IWorkspaces Workspace;
 		internal ISecurityContextProvider SecurityContext;
 		internal ICachingProvider Cache;
+		internal IQueueSource Queue;
 
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
@@ -215,6 +223,21 @@ namespace d360.web.Controllers
 			Workspace = set.Workspace;
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
+			Queue = set.Queue;
+		}
+
+		internal void RecalculateSecurityPolicy(SecurityPolicyArgs e)
+		{
+			Queue.CreateMessage(
+				constants.Queue.SecurityPolicy, 
+				new SecurityPolicyQueueMessage { 
+					CompanyID = SecurityContext.CompanyID, 
+					AssetUid = e.AssetUid, 
+					ExecutionUid = e.ExecutionUid, 
+					PolicyUid = e.PolicyUid, 
+					IsDeleteAction = e.IsDeleteAction 
+				}
+			);
 		}
 
 		internal async Task<bool> GetFeatureFlagValue(string flag)
