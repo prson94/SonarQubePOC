@@ -12,6 +12,7 @@ using d360.web.Controllers.V2;
 using d360.core.entities;
 using igx.UnitTests.Core;
 using System.Linq;
+using d360.web.Controllers;
 
 namespace igx.UnitTests.V2ControllerTests
 {

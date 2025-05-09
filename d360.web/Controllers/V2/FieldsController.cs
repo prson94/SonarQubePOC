@@ -2747,7 +2747,7 @@ namespace d360.web.Controllers.V2
 					select count(1)
 					from AssetType att
 					where att.Class = {(int)AssetTypeClass.Reference}
-					{whereQuery};";
+					{whereQuery.Replace("text like @filter", "name like @filter")};";
 
 					if(!onlyCount)
 					{
@@ -2757,7 +2757,7 @@ namespace d360.web.Controllers.V2
 							into #tempResults
 							from AssetType Att 
 							where att.Class = {(int)AssetTypeClass.Reference}
-							{whereQuery}
+							{whereQuery.Replace("text like @filter", "name like @filter")}
 							order by text asc
 							{pagingQuery};
 
@@ -3130,7 +3130,7 @@ namespace d360.web.Controllers.V2
 					response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
 				}
 
-				if (fieldType != null && (fieldType.Type == DataType.ComplexRelationLookup.ToString()))
+				if (fieldType != null && (fieldType.Type == DataType.ComplexRelationLookup.ToString() || fieldType.Type == DataType.ReferenceList.ToString()))
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();

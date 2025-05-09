@@ -4354,7 +4354,7 @@ where ProcessUid = @ProcessUid;
 							EA.FieldTypeID AS Id 
 					from    #tempexecution EA 
 							inner join Field F on F.FieldTypeId = EA.FieldTypeID and F.AssetID = EA.AssetID 
-							{(!isInsert ? "inner join AssetType att on att.uid = cast(EA.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0" : "")}
+							{(!isInsert ? "inner join AssetType att on att.uid = try_cast(EA.FieldValue as uniqueidentifier) and att.class = 9 and att.objectid > 0" : "")}
 					where   EA.IsNew <> 1 and EA.Type = 'ReferenceList'
 							{(!isInsert ? "and coalesce(F.ReferenceListID,0) <> att.ID" : "")}
 

@@ -4021,7 +4021,7 @@ drop table if exists #tempAssetsIds;
 												when AL.ScoreType = 2 then 'DataQuality'
 											end as ScoreType,
 											ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
-											S.Value, 
+											cast(S.Value * 100 as decimal(18,1))/100 as Value, 
 											AL.LowerThreshold, 
 											AL.UpperThreshold 
 									from    metrics.Score S

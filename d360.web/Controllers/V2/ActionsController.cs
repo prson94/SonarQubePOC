@@ -22,6 +22,9 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using static d360.core.entities.Resource;
+using repositories.azure;
+using d360.extensions;
+using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
@@ -36,15 +39,14 @@ namespace d360.web.Controllers.V2
 	public class ActionsController : BaseV2ApiController
 	{
 		private readonly IAssetRepository assetRepository;
-		private readonly ICommentRepository commentRepository;
-		private readonly IIssueRepository issueRepository;
+		private readonly ISocial commentRepository;
+		private readonly IWorkflow Workflow;
 
-		public ActionsController(ICoreComponentSet set, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets)
-			: base(set)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets): base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
-			issueRepository = issues;
+			Workflow = workflow;
 		}
 
 		/// <summary>
@@ -184,7 +186,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (Guid.TryParse(actionUid, out actionGuid))
 				{
-					Issue issue = issueRepository.GetIssueByUID(actionGuid);
+					Issue issue = await Workflow.GetIssueByUIDAsync(actionGuid);
 
 					if (issue == null)
 					{
@@ -207,7 +209,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 				{
-					IssueType issueType = issueRepository.GetIssueTypeByUID(atGuid);
+					IssueType issueType = await Workflow.GetIssueTypeByUIDAsync(atGuid);
 
 					if (issueType == null)
 					{
@@ -390,7 +392,7 @@ namespace d360.web.Controllers.V2
 
 			#region validate Parameters
 
-			var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
+			var actionTypeUidParam = queryParams.FirstOrDefault(x => string.Equals(x.Key.Trim(), "_actiontypeuid", StringComparison.OrdinalIgnoreCase));
 
 			if (actionTypeUidParam.Key != null)
 			{
@@ -520,7 +522,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			var issueTypes = await issueRepository.GetIssueTypes(queryParams);
+			var issueTypes = await Workflow.GetIssueTypesAsync(queryParams);
 
 			return Ok(issueTypes);
 		}
@@ -545,7 +547,7 @@ namespace d360.web.Controllers.V2
 				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
 
-			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
+			var allocations = await Workflow.GetAllocationByAssetTypeAsync(AssetTypeUid);
 
 			return Ok(allocations);
 		}
@@ -839,7 +841,21 @@ namespace d360.web.Controllers.V2
 						Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
 					};
 					var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
-					issueModel.Issue.CommentID = dtl.ID;
+
+					if (comment.Tags != null && comment.Tags.Count > 0)
+					{
+						if (dtl.Data.Tags.Count > 0)
+						{
+								await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int>
+								{
+									CompanyId = SecurityContext.CompanyID,
+									CompanyPrefix = SecurityContext.CompanyPrefix,
+									Payload = dtl.Data.ID
+								});
+						}
+					}
+
+					issueModel.Issue.CommentID = dtl.Data.ID;
 				}
 
 				var insertSQL = $@"INSERT INTO [dbo].[Issue]

@@ -1,32 +1,28 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using Dapper;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using Dapper;
+using Newtonsoft.Json.Linq;
 
 namespace repositories.azure
 {
 	public abstract class Repository
 	{
 		public bool CurrentUserIsAdmin { get; set; }
-
+		public int CurrentUserId { get; set; }
+		public Platform Platform { get { return Platform.Azure; } }	
+		public DapperConnectionProvider ConnectionProvider { get; set; }
+		
 		// Commonly used sql expressions in thr repositories.
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
-
-		public int CurrentUserId { get; set; }
-
 		internal readonly int MAX_PERMISSIONS_MASK = 15854;
-
-		public Platform Platform { get { return Platform.Azure; } }
-
-		public DapperConnectionProvider ConnectionProvider { get; set; }
 
 		protected Repository(DapperConnectionProvider provider)
 		{
@@ -45,7 +41,7 @@ namespace repositories.azure
 				return commandTimeout;
 			}
 		}
-		
+
 		private string GetFullExceptionData(Exception ex, bool includeStacktrace = true, int characterLimit = 2000)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -96,7 +92,7 @@ namespace repositories.azure
 				return message;
 			}
 		}
-		
+
 		protected async Task<GlobalReportingResource> GetUser(int? resId)
 		{
 			try
@@ -110,7 +106,7 @@ namespace repositories.azure
 					var user = await connection.QueryFirstOrDefaultAsync<GlobalReportingResource>(
 					 @"SELECT 
 						g.ResourceID, g.uid as Uid,
-						g.LastLoggedInOn,g.State, g.IsAdministrator,
+						g.LastLoggedInOn,g.State, g.,
 						g.FirstName, g.LastName, g.Email,
 						g.CreatedOn, g.UpdatedOn
 						from reporting.Global_Resource g
@@ -129,7 +125,6 @@ namespace repositories.azure
 			}
 		}
 
-		
 		public bool PermissionInMask(Permission p, int mask)
 		{
 			Permission pMask = (Permission)mask;
@@ -144,12 +139,12 @@ namespace repositories.azure
 			{
 				permissions = MAX_PERMISSIONS_MASK;
 			}
-			else 
+			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetId(@id, @currentUserId)", new { id, CurrentUserId });
-				}			
+				}
 			}
 			return permissions;
 		}
@@ -162,7 +157,7 @@ namespace repositories.azure
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
 				}
@@ -178,7 +173,7 @@ namespace repositories.azure
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetUid(@uid, @currentUserId)", new { uid, CurrentUserId });
 				}
@@ -195,7 +190,7 @@ namespace repositories.azure
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeId(@id, @currentUserId)", new { id, CurrentUserId });
 				}
@@ -211,7 +206,7 @@ namespace repositories.azure
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@object, @id, @currentUserId)", new { @object, id, CurrentUserId });
 				}
@@ -227,7 +222,7 @@ namespace repositories.azure
 			}
 			else
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+				using (var connection = ConnectionProvider.Connect(true))
 				{
 					permissions = await connection.QueryFirstAsync<int>(@"select dbo.GetCombinedPermissionsForUserByAssetTypeUid(@uid, @currentUserId)", new { uid, CurrentUserId });
 				}
@@ -327,7 +322,7 @@ namespace repositories.azure
 				string message = GetFullExceptionData(ex, false);
 				execution.ErrorMessage = message;
 				execution.CompletedOn = DateTime.UtcNow;
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = ConnectionProvider.Connect())
 				{
 					await connection.ExecuteAsync($@"
 					update api.execution
@@ -384,9 +379,10 @@ namespace repositories.azure
 					end
 				";
 
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = ConnectionProvider.Connect())
 				{
-					await connection.ExecuteAsync(sql, new {
+					await connection.ExecuteAsync(sql, new
+					{
 						execution.Id,
 						execution.ExecutionID,
 						execution.ResourceID,
@@ -412,5 +408,147 @@ namespace repositories.azure
 				throw;
 			}
 		}
+
+		private bool HasAssetDefaultReadPermission(string type, int id)
+		{
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				bool hasPermission = CurrentUserIsAdmin;
+				if (!hasPermission)
+				{
+					int assetTypeID = connection.Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
+
+
+					if (assetTypeID <= 0)
+					{
+						return true; // objects not in asset table we grant permission               
+					}
+
+					hasPermission = HasUserReadPermission(type, id, assetTypeID, CurrentUserId);
+				}
+
+				return hasPermission;
+			}
+		}
+
+		public bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId)
+		{
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				Permission permission = Permission.ReadAsset;
+
+				return connection.QuerySingle<bool>($@"	if exists(select 1 
+																		 from asset a
+																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
+																		 where a.Object = @type and a.ObjectID = @id 
+																		 and ua.PermissionsBitMask & {(int)permission} = 0)
+																	begin
+																		select 0;
+																		end
+																	else
+																	begin
+																		select 1;
+																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
+			}
+		}
+
+		private bool HasPermission(int objectId, int assetTypeId, Permission permission)
+		{
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				return connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t");
+			}
+		}
+
+		private bool HasAssetTypeReadPermission(int assetTypeId)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				Permission permission = Permission.ReadAsset;
+
+				return connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,0) ua where ua.PermissionsBitMask & {(int)permission} = 0)
+																						begin
+																							select 0;
+																						end				                                                                        
+																						else
+																						begin
+																							select 1;
+																						end", new { t = assetTypeId, r = CurrentUserId });
+			}
+		}
+
+		public bool HasAssetPermission(string type, int id, Permission permission)
+		{
+			bool hasPermission = CurrentUserIsAdmin;
+
+			if (!hasPermission)
+			{
+
+				if (permission == Permission.ReadAsset)
+				{
+					hasPermission = HasAssetDefaultReadPermission(type, id);
+				}
+				else
+				{
+					int? assetTypeID = null;
+					using (var connection = ConnectionProvider.Connect(true))
+					{
+						if (type.EndsWith("Type"))
+						{
+							assetTypeID = connection.Query<int>("select ID from AssetType where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+
+						}
+						else
+						{
+							assetTypeID = connection.Query<int?>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).SingleOrDefault();
+						}
+
+						if (assetTypeID.HasValue)
+						{
+							hasPermission = HasPermission(id, assetTypeID.Value, permission);
+						}
+					}
+				}
+			}
+
+			return hasPermission;
+		}
+
+		public bool HasAssetTypePermission(string type, int id, Permission permission)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				bool hasPermission = CurrentUserIsAdmin;
+				bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
+
+
+				if (!hasPermission)
+				{
+					if (isReadPermission)
+					{
+						hasPermission = HasAssetTypeReadPermission(id);
+					}
+					else
+					{
+						hasPermission = connection.QuerySingle<bool>($@"
+																			declare @t int;
+																			select @t = ID from AssetType where [Object] = @type and [ObjectID] = @id;
+
+																			if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+																				begin
+																					select 1;
+																				end				                                                                        
+																			else
+																				begin
+																					select 0;
+																				end", new { id, type, r = CurrentUserId });
+					}
+				}
+
+				return hasPermission;
+			}
+
+		}
 	}
 }
+

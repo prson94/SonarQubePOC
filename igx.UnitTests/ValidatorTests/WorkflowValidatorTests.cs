@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using d360.model.validators;
+﻿using d360.web.validators;
 using igx.UnitTests.Core;
+using System.Collections.Generic;
 using Xunit;
 
 namespace igx.UnitTests.ValidatorTests
 {
-    [Trait("Unit tests", "Workflow Validator")]
+	[Trait("Unit tests", "Workflow Validator")]
 
     public class WorkflowValidatorTests : BaseTest
     {

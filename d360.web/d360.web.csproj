@@ -472,10 +472,8 @@
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
-    <Compile Include="Models\Usage\UsageAction.cs" />
-    <Compile Include="Models\Usage\UsageBrowser.cs" />
-    <Compile Include="Models\Usage\UsageEntry.cs" />
-    <Compile Include="Models\Usage\UsageEntryDetail.cs" />
+    <Compile Include="Models\Theme\IThemeManager.cs" />
+    <Compile Include="Models\Theme\ThemeManager.cs" />
     <Compile Include="Services\CommunityFeatureFlagService.cs" />
     <Compile Include="Services\FlagList.cs" />
     <Compile Include="Utilities\IRuntimeInfo.cs" />
@@ -530,6 +528,8 @@
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
     <Compile Include="Utilities\IRequestValidator.cs" />
     <Compile Include="Utilities\RequestValidator.cs" />
+    <Compile Include="Validators\IWorkflowApiModelValidator.cs" />
+    <Compile Include="Validators\WorkflowApiModelValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML">

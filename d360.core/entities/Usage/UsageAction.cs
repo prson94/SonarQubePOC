@@ -1,4 +1,4 @@
-﻿namespace d360.web.Models.Usage
+﻿namespace d360.core.entities.Usage
 {
 	public enum UsageAction
 	{
