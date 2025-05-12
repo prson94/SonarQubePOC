@@ -106,7 +106,7 @@ namespace repositories.azure
 					var user = await connection.QueryFirstOrDefaultAsync<GlobalReportingResource>(
 					 @"SELECT 
 						g.ResourceID, g.uid as Uid,
-						g.LastLoggedInOn,g.State, g.,
+						g.LastLoggedInOn,g.State, g.IsAdministrator,
 						g.FirstName, g.LastName, g.Email,
 						g.CreatedOn, g.UpdatedOn
 						from reporting.Global_Resource g
