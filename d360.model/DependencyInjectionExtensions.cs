@@ -15,7 +15,6 @@ namespace d360.model
             builder.RegisterType<CompanyDbConnectionProvider>().As<ICompanyDbConnectionProvider>().InstancePerRequest();
             builder.RegisterType<ResponsibilityDapperRepository>().As<IResponsibilityDapperRepository>().InstancePerRequest();
             builder.RegisterType<FavoritesRepository>().AsImplementedInterfaces().InstancePerRequest();
-            builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
             builder.RegisterType<AuditRepository>().As<IAuditRepository>().InstancePerRequest();
             builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
@@ -27,7 +26,6 @@ namespace d360.model
             builder.RegisterType<ResourceRepository>().As<IResourceRepository>().InstancePerRequest();
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
-            builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
             builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();

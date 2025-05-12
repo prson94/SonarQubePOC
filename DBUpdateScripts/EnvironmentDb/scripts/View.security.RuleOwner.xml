@@ -1,0 +1,31 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="View.security.RuleOwner-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter view [security].[RuleOwner] with schemabinding
+as
+select	r.Id as RuleId,
+		r.SecurityType,
+		r_then.SecurityId
+from	security.[Rule] r
+		inner join security.[Role] ro on ro.Id = r.RoleId
+		inner join security.RuleThen r_then on r_then.Id = r.Id
+GO
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Security_RuleOwner')
+BEGIN
+	create unique clustered index [IX_Security_RuleOwner] ON [security].[RuleOwner] (
+		RuleId asc, SecurityType asc, SecurityId asc
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

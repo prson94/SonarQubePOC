@@ -1,0 +1,60 @@
+<div class="asset-detail side-panel-detail no-padding">
+	<div class="asset-detail-header">
+		<div class="asset-name">{{item.name}}</div>
+		<div class="class-name" i18n>Policy</div>
+	</div>
+
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Name</label>
+						<span>
+							{{item.name}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Asset Type</label>
+						<span>
+							{{item.assetTypeName}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Role</label>
+						<span>
+							{{item.roleName}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>When Does This Apply?</label>
+						@if (item.applyToType) {
+						All assets of this type
+						}
+						@if (!item.applyToType && item.whenConditions) {
+						{{item.whenConditions.length}} {{item.whenConditions.length > 1 ? 'conditions' : 'condition'}}.
+						}
+					</div>
+
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="item.uid"></i>
+						</label>
+						<div>
+							{{item.uid}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+
+</div>

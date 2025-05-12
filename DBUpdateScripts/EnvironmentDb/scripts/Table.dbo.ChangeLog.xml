@@ -1,0 +1,45 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.ChangeLog-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ChangeLog')
+BEGIN
+	create table dbo.ChangeLog (
+		Id bigint identity not null,
+		AssetTypeId int sparse,
+		IntersectTypeId int sparse,
+		PredicateId int sparse,
+		AssetId bigint sparse,
+		GroupId int sparse,
+		ResourceId int sparse,
+		TagId int sparse,
+		ChangedBy int not null,
+		ChangedOn datetime constraint DF_ChangeLog_ChangedOn default(getutcdate()) not null,
+		ChangeObject int not null,
+		ChangeAction int not null,
+		[Changes] json not null,
+		[Version] int not null,
+		constraint [PK_ChangeLog] primary key clustered ( Id asc )
+	);
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ChangeLog_Asset')
+BEGIN
+	create index IX_ChangeLog_Asset on dbo.ChangeLog ( AssetId ) include (ChangedOn, [Version])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ChangeLog_AssetType')
+BEGIN
+	create index IX_ChangeLog_AssetType on dbo.ChangeLog ( AssetTypeId ) include (ChangedOn, [Version])
+END
+]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

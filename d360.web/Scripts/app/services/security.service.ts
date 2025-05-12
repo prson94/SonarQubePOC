@@ -4,7 +4,8 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { AssetOwnerModel, CreateRole, CreateSecurityPolicy, CreateSecurityPolicyOverride, PolicyEditAssetTypeOptionsModel, PolicyEditOptionsModel, ReadRole, ReadSecurityPolicy, ReadSecurityPolicyOverride } from '../models/security.model';
+import { AssetOwnerModel, CreateRole, CreateSecurityPolicy, CreateSecurityPolicyOverride, PolicyEditAssetTypeOptionsModel, PolicyEditOptionsModel, ReadRole, ReadSecurityPolicy, ReadSecurityPolicyOverride, UpdateSecurityPolicyOverride } from '../models/security.model';
+import { ReadOwnerOption } from '../_shared/models/ReadOwnerOption';
 
 @Injectable({
     providedIn: 'root'
@@ -76,6 +77,14 @@ export class SecurityService extends BaseObservableService {
 		return this.http.get(`${this.baseUri}/${assetUid}/owners`)
 			.pipe(
 				map((response) => <AssetOwnerModel[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	public getOwnerOptions(assetUid: string): Observable<ReadOwnerOption[]> {
+		return this.http.get(`${this.baseUri}/owner-options?assetUid=${assetUid}`)
+			.pipe(
+				map((response) => <ReadOwnerOption[]>response),
 				catchError((err) => this.handleError(err))
 			);
 	}
@@ -160,7 +169,7 @@ export class SecurityService extends BaseObservableService {
 			);
 	}
 
-	updatePolicyOverride(override: ReadSecurityPolicyOverride): Observable<any> {
+	updatePolicyOverride(override: UpdateSecurityPolicyOverride): Observable<any> {
 		return this.http.put(`${this.baseUri}/policy-overrides/${override.uid}`, override)
 			.pipe(
 				map((response) => response),

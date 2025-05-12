@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.security.Rule-v1">
+ <changeSet author="Pappas" id="Table.security.Rule-v2.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'Rule')
@@ -19,7 +19,8 @@ BEGIN
 		AssetTypeId int not null,
 		ApplyToType bit not null,
 		IsVisible bit not null,
-		IsOverride bit not null,
+		[State] int constraint DF_Security_Rule_State default(1) not null,
+		Context nvarchar(max) sparse,
 		CreatedBy int not null,
 		CreatedOn datetime not null,
 		UpdatedBy int not null,
@@ -38,6 +39,21 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Security_Rule_AssetTyp
 BEGIN
 	create nonclustered index [IX_Security_Rule_AssetTypeId_Include] on [security].[Rule] ( [Uid] ) include (RoleId)
 END
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'security' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'IsOverride')
+begin
+	alter table [security].[Rule] drop column IsOverride;
+end
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'security' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Context')
+begin
+	alter table [security].[Rule] add Context nvarchar(max) sparse;
+end
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'security' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'State')
+begin
+	alter table [security].[Rule] add [State] int constraint DF_Security_Rule_State default(1) not null;
+end
 ]]>
   </sql>
  </changeSet>

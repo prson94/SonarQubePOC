@@ -28,6 +28,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -119,28 +120,17 @@ namespace d360.web.Controllers
 	public class CoreComponentSet : ICoreComponentSet
 	{
 		public ICachingProvider Cache { get; set; }
-
 		public IEnumerable<ICatalog> Catalogs { get; set; }
-
 		public ICompanyContext Company { get; set; }
-
 		public ICommunity Community { get; set; }
-
 		public ISecurityContextProvider SecurityContext { get; set; }
-
 		public ILogger Log { get; set; }
-
 		public IMailProvider Mail { get; set; }
-
 		public IThemeManager ThemeManager { get; set; }
-
 		public CommunityFeatureFlagService CommunityFlags { get; set; }
-
 		public IRuntimeInfo RuntimeInfo { get; set; }
-
 		public IWorkspaces Workspace { get; set; }
 		public IQueueSource Queue { get; set; }
-
 		public IUsage Usage { get; set; }
 
 		public CoreComponentSet(
@@ -230,7 +220,21 @@ namespace d360.web.Controllers
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
 			Queue = set.Queue;
-			Usage = set.Usage;
+      Usage = set.Usage;
+		}
+
+		internal void RecalculateSecurityPolicy(SecurityPolicyArgs e)
+		{
+			Queue.CreateMessage(
+				constants.Queue.SecurityPolicy, 
+				new SecurityPolicyQueueMessage { 
+					CompanyID = SecurityContext.CompanyID, 
+					AssetUid = e.AssetUid, 
+					ExecutionUid = e.ExecutionUid, 
+					PolicyUid = e.PolicyUid, 
+					IsDeleteAction = e.IsDeleteAction 
+				}
+			);
 		}
 
 		internal async Task<bool> GetFeatureFlagValue(string flag)

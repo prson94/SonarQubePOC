@@ -35,18 +35,12 @@ namespace d360.web.Controllers
 		#region DI
 
 		private readonly IStorageProvider Storage;
-		private readonly IResponsibilityRepository ResponsibilityRepository;
-		private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
 
 		readonly int MAX_NUMBER_OF_COLUMNS = 16384;
 
-		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
-			GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
-			: base(set)
+		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage) : base(set)
 		{
 			Storage = storage;
-			ResponsibilityRepository = responsibilityRepository;
-			this.getResponsibilityTypeRelationRule = getResponsibilityTypeRelationRule;
 #if DEBUG
 			Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif

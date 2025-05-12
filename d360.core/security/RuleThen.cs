@@ -31,6 +31,9 @@ namespace d360.core.security
 		[JsonProperty("value")]
 		public string? Value { get; set; }
 
+		[JsonProperty("securityType")]
+		public RuleSecurityType SecurityType { get; set; }
+
 		[JsonProperty("securityUid")]
 		public Guid? SecurityUid { get; set; }
 	}

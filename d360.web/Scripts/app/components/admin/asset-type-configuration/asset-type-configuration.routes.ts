@@ -6,7 +6,6 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
 import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
-import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configuration-asset-type-owners-page.component';
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
@@ -124,11 +123,6 @@ export const assetTypeConfigurationRoutes: Routes = [
         path: ':typeClass/:uid/fields',
         component: ConfigurationAssetTypeFieldsPageComponent,
         canActivate: [WhenCanSeeFieldDefinitionsGuard]
-    },
-    {
-        path: ':typeClass/:uid/owners',
-        component: ConfigurationAssetTypeOwnersPageComponent,
-        canActivate: [WhenCanSeeOwnersGuard]
     },
     {
         path: ':typeClass/:uid/allocations',

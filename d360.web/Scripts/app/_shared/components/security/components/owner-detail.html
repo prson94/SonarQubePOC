@@ -1,0 +1,38 @@
+<div class="asset-detail side-panel-detail no-padding">
+	<div class="asset-detail-header">
+		<div class="asset-name">Assignment</div>
+		<div class="class-name" i18n>Owner</div>
+	</div>
+
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Owner</label>
+						<span>
+							<a [routerLink]="'/users/' + item.resourceUid">{{item.resourceName}}</a> @if (item.groupName) { (via <a [routerLink]="'/groups/' + item.groupUid">{{item.groupName}}</a> ) }
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Role</label>
+						<span>{{item.roleName}}</span>
+					</div>
+					@if (item.context && item.context !== "") {
+					<div class="row">
+						<label class="ig-label" i18n>Context</label>
+						<span>{{item.context}}</span>
+					</div>
+					}
+					@if (item.ruleName && item.ruleName !== "") {
+					<div class="row">
+						<label class="ig-label" i18n>Security Policy</label>
+						<span>{{item.ruleName}}</span>
+					</div>
+					}
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+
+</div>

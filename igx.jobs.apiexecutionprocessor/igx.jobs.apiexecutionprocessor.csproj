@@ -85,12 +85,13 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="jobs\BaseTaskWebJob.cs" />
     <Compile Include="jobs\DisplayValueChecker.cs" />
     <Compile Include="jobs\DisplayValueUpdateProcessor.cs" />
     <Compile Include="jobs\ExecutionPostProcessor.cs" />
-    <Compile Include="jobs\NotificationHandler.cs" />
     <Compile Include="jobs\ExecutionProcessor.cs" />
-    <Compile Include="jobs\BaseTaskWebJob.cs" />
+    <Compile Include="jobs\NotificationHandler.cs" />
+    <Compile Include="jobs\SecurityPolicyProcessor.cs" />
     <Compile Include="jobs\UserProcessor.cs" />
     <Compile Include="models\ObjectIndexCollectionModel.cs" />
     <Compile Include="Program.cs" />

@@ -33,7 +33,6 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FileUploadModule } from 'primeng/fileupload';
 
-import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 import { AdminExportTemplateStylesComponent } from './admin-export-template-styles.component';
 import { AdminExportTemplateStyleFormComponent } from './admin-export-template-style-form.component';
 
@@ -69,8 +68,6 @@ import { AdminExportTemplateStyleFormComponent } from './admin-export-template-s
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAssetTypeEditorModule,
-
-        AdminResponsibilitiesModule,
 
         SharedObjectDetailsModule,
         SharedFieldDefinitionModule,

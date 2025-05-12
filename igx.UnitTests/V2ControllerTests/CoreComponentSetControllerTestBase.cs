@@ -30,7 +30,6 @@ namespace igx.UnitTests.V2ControllerTests
 
 		protected CoreComponentSetControllerTestBase()
 		{
-			
 			MockCompanyContext = new Mock<ICompanyContext>();
 			MockCommunity = new Mock<ICommunity>();
 			MockSecurityContext = new Mock<ISecurityContextProvider>();
@@ -39,6 +38,7 @@ namespace igx.UnitTests.V2ControllerTests
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
+			MockQueue = new Mock<IQueueSource>();
 			MockThemeRepository = new Mock<IThemeManager>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();

@@ -1052,17 +1052,23 @@ namespace d360.web.Controllers.V2
 			return ResponseMessage(result);
 		}
 
+		internal IHttpActionResult sendRepositoryCreatedResponse<T>(RepositoryResponse<T> result)
+		{
+			if (result.IsSuccess)
+			{
+				return Created("", result.Data);
+			}
+			else
+			{
+				return errorMessageResponse((HttpStatusCode)result.StatusCode, result.Message);
+			}
+		}
+
 		internal IHttpActionResult sendRepositoryOkResponse<T>(RepositoryResponse<T> result) 
 		{
 			if (result.IsSuccess)
 			{
 				return Ok(result.Data);
-				//var message = new ResponseMessageResult(Request.CreateResponse((HttpStatusCode)result.StatusCode));
-				//message.Response.ReasonPhrase = result.Message;
-				//message.Response.Content = new StringContent(
-				//	JsonConvert.SerializeObject(result.Data), encoding: Encoding.UTF8, "application/json"
-				//	);
-				//return message;
 			}
 			else
 			{

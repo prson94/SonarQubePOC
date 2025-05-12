@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.security.RuleAssignment-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'security' AND TABLE_NAME = 'RuleAssignment')
+BEGIN
+	create table security.RuleAssignment (
+		Id uniqueidentifier constraint DF_Security_RuleAssignment_Id default(newsequentialid()) not null,
+		RuleId bigint not null,
+		AssetTypeId int not null,
+		AssetId bigint sparse,
+		UpdatedBy int not null,
+		UpdatedOn datetime not null,
+		constraint PK_Security_RuleAssignment primary key clustered ( Id asc )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Security_RuleAssignment')
+BEGIN
+	create nonclustered index [IX_Security_RuleAssignment] ON [security].[RuleAssignment] (
+		RuleId asc, AssetTypeId asc, AssetId asc
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

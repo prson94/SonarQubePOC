@@ -14,30 +14,22 @@ namespace repositories
 		Platform Platform { get; }
 
 		Task<RepositoryResponse<bool>> AddMembersToGroupAsync(Guid groupUid, List<Guid> userUids);
-
 		Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadGroupsAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
-
+		Task<Group> ReadRawGroupByUidAsync(Guid uid);
+		Task<GlobalReportingResource> ReadRawResourceByUidAsync(Guid uid);
 		Task<IEnumerable<CompanyRebuildJobStatus>> ReadRebuildStatusesAsync();
-
 		Task<bool> RemoveFavoritesAsync(int resourceId, List<int> favoriteIds);
-
 		Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids);
-		
 		Task<bool> RemoveMemberFromGroupAsync(Guid groupUid, Guid userUid);
-
 		Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids);
-
 		Task<RepositoryResponse<List<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false);
-
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
 		/// <summary>
 		/// Add or updated a user to the local reporting.Global_Resources table as well as relevant Asset tables.
 		/// </summary>
 		Task<RepositoryResponse<long?>> UpsertSingleUserAsync(Resource user);
-
 		Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false);
-
 		Task<List<UserUpsertValidateModel>> ValidateUserData(List<UserApiModel> users, bool isNew, bool IsAdministrator, bool lookupFieldsPassedByValue);
 	}
 }

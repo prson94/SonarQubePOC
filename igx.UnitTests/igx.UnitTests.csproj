@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -102,7 +102,6 @@
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
     <Compile Include="V2ControllerTests\CoreComponentSetControllerTestBase.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
-    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTestBase.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SemanticValidationTests.cs" />
     <Compile Include="WebControllerTests\NavigationControllerTest.cs" />
@@ -114,7 +113,6 @@
     <Compile Include="V2ControllerTests\MetricsControllerTest.cs" />
     <Compile Include="V2ControllerTests\RelationshipControllerTest.cs" />
     <Compile Include="V2ControllerTests\TagsControllerTest.cs" />
-    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTest.cs" />
     <Compile Include="V2ControllerTests\WorkflowControllerTest.cs" />
     <Compile Include="ValidatorTests\FieldValidatorTagTests.cs" />
     <Compile Include="ValidatorTests\TagValidatorTests.cs" />
@@ -151,7 +149,7 @@
       <Name>d360.model</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.web\d360.web.csproj">
-      <Project>{DF57BE56-958B-4C4D-B82C-6B61297434AB}</Project>
+      <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
       <Name>d360.web</Name>
     </ProjectReference>
     <ProjectReference Include="..\repositories\repositories.csproj">

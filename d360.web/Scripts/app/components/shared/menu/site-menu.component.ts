@@ -419,12 +419,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         securityMenu.Items.push({ Name: $localize`Groups`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, count: null });
 
-		if (this.newSecurityEnabledFeatureFlag) {
-			securityMenu.Items.push({ Name: $localize`Roles and Policies`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SECURITY}`, Items: null, IsLink: false, count: null });
-		}
-		else {
-			securityMenu.Items.push({ Name: $localize`Responsibilities`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, count: null });
-		}		
+		//if (this.newSecurityEnabledFeatureFlag) {
+			securityMenu.Items.push({ Name: $localize`Roles and Policies`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SECURITY}/roles`, Items: null, IsLink: false, count: null });
+		//}
+		//else {
+		//	securityMenu.Items.push({ Name: $localize`Responsibilities`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, count: null });
+		//}		
 		securityMenu.Items.push({ Name: $localize`Users`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, count: null });
 
         this.adminMenu.NavigationItems.push(securityMenu);

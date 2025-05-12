@@ -41,15 +41,12 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository assetRepository;
 		private readonly ISocial commentRepository;
 		private readonly IWorkflow Workflow;
-		private readonly IResponsibilityRepository responsibilityRepository;
 
-		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets, IResponsibilityRepository responsibilities)
-			: base(set)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets): base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
 			Workflow = workflow;
-			responsibilityRepository = responsibilities;
 		}
 
 		/// <summary>
@@ -1379,19 +1376,6 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.UniqueAllocation);
 			}
 
-			if (model.responsibilityTypeUid.Count() > 0)
-			{
-				IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await responsibilityRepository.GetResponsibilityTypesByAssetUid(model.assetTypeUid);
-
-				foreach (var uid in model.responsibilityTypeUid)
-				{
-					if (!responsibilityTypes.Any(rt => rt.uid == uid))
-					{
-						return errorMessageArgumentResponse(string.Format(Error.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
-					}
-				}
-			}
-
 			string allocationSQL = $@"INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) 
 											OUTPUT INSERTED.ID
 											VALUES (@assetTypeID, @issueTypeID)";
@@ -1401,7 +1385,7 @@ namespace d360.web.Controllers.V2
 			foreach (var rUid in model.responsibilityTypeUid)
 			{
 				string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
-															SELECT @allocationId, ID FROM ResponsibilityType where Uid = @responsibilityTypeUid";
+															SELECT @allocationId, ID FROM security.[Role] where Uid = @responsibilityTypeUid";
 
 				var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
 			}

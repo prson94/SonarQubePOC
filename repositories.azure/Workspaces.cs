@@ -413,6 +413,28 @@ from	[Group] G
 			return response;
 		}
 
+		public async Task<d360.core.entities.Group> ReadRawGroupByUidAsync(Guid uid)
+		{
+			d360.core.entities.Group response = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				response = await connection.QueryFirstOrDefaultAsync<d360.core.entities.Group>("select * from [Group] where Uid = @uid", new { uid });
+			}
+
+			return response;
+		}
+
+		public async Task<GlobalReportingResource> ReadRawResourceByUidAsync(Guid uid)
+		{
+			GlobalReportingResource response = null;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				response = await connection.QueryFirstOrDefaultAsync<GlobalReportingResource>("select * from reporting.Global_Resource where Uid = @uid", new { uid });
+			}
+
+			return response;
+		}
+
 		public async Task<IEnumerable<CompanyRebuildJobStatus>> ReadRebuildStatusesAsync()
 		{
 			IEnumerable<CompanyRebuildJobStatus> response = null;

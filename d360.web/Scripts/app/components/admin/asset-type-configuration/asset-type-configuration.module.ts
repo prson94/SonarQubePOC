@@ -25,8 +25,6 @@ import { ConfigurationAssetTypeHeaderComponent } from './tabs/shared/configurati
 import { PageHeaderModule } from '../../shared/page-header/page-header.module';
 import { TabsModule } from '../../shared/tabs/tabs.module';
 import { ConfigurationAssetTypeTabsComponent } from './tabs/shared/configuration-asset-type-tabs/asset-type-tabs.component';
-import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configuration-asset-type-owners-page.component';
-import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { AdminModule } from '../admin.module';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
@@ -83,7 +81,6 @@ import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/confi
 		FieldTypeDetailModule,
         PageHeaderModule,
         TabsModule,
-        SharedResponsibilitiesModule,
         AdminModule,
         AdminRelationshipEditorModule,
         AuditModule,
@@ -115,7 +112,6 @@ import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/confi
         ConfigurationAssetTypeFieldsPageComponent,
         ConfigurationAssetTypeHeaderComponent,
         ConfigurationAssetTypeTabsComponent,
-        ConfigurationAssetTypeOwnersPageComponent,
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
         ConfigurationAssetTypeLogPageComponent,

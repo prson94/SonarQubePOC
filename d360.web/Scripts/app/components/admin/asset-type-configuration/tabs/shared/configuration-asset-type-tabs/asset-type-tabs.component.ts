@@ -27,11 +27,6 @@ export class ConfigurationAssetTypeTabsComponent {
 				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
             },
             {
-                url: `${baseUrl}/owners`,
-                title: $localize`Responsibility Type Assignment`,
-				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule].includes(this.assetTypeClass),
-            },
-            {
                 url: `${baseUrl}/allocations`,
                 title: $localize`Allocations`,
 				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),

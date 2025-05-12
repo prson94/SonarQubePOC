@@ -7,9 +7,6 @@ namespace repositories
 {
     public interface IResourceRepository
     {
-        [Obsolete]
-        GlobalReportingResource GetResouceByUID(Guid uid);
-
         Task<GlobalReportingResource> GetByUidAsync(Guid uid);
     }
 }

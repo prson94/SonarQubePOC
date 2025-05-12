@@ -1,7 +1,5 @@
-﻿using d360.core.entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace repositories
@@ -10,6 +8,7 @@ namespace repositories
 	{
 		Platform Platform { get; }
 
-
+		Task<RepositoryResponse<List<Guid>>> ReadAssetUidsAssociatedToPolicyAsync(Guid uid);
+		Task<RepositoryResponse<List<Guid>>> ReadAssetUidsAssociatedToRoleAsync(Guid uid);
 	}
 }

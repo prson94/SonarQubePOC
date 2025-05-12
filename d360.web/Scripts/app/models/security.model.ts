@@ -8,13 +8,18 @@ export type PolicySecurityType = 'Group' | 'User';
 //}
 
 export class AssetOwnerModel {
-	ruleUid: string;
+	uid: string;
+	isOverride: boolean;
+
 	roleUid: string;
 	roleName: string;
-	securityType: PolicySecurityType;
-	securityUid: string;
-	securityName: string;
-	isOverride: boolean;
+	groupUid: string;
+	groupName: string;
+	resourceUid: string;
+    resourceName: string;
+	securityType: number;
+	context: string;
+	ruleName: string;
 
 	// Used by UI.
 	MenuItems: MenuItem[];
@@ -50,6 +55,7 @@ export class SecurityPolicyThen {
 	fieldName?: string;
 	operator: Operator;
 	value?: string;
+	securityType: string;
 	securityUid?: string;
 }
 
@@ -68,8 +74,7 @@ abstract class SecurityPolicy {
 	roleUid: string;
 	securityType: PolicySecurityType;
 	applyToType: boolean;
-	visible: boolean;
-	 
+	visible: boolean;	 
 	thenConditions: SecurityPolicyThen[];
 	whenConditions: SecurityPolicyWhen[];
 }
@@ -89,8 +94,9 @@ export class ReadSecurityPolicy extends SecurityPolicy {
 abstract class SecurityPolicyOverride {
 	assetUid: string;
 	roleUid: string;
-	securityType: PolicySecurityType;
+	securityType: number;
 	securityUid: string;
+	context: string;
 }
 
 export class CreateSecurityPolicyOverride extends SecurityPolicyOverride {
@@ -98,4 +104,9 @@ export class CreateSecurityPolicyOverride extends SecurityPolicyOverride {
 
 export class ReadSecurityPolicyOverride extends SecurityPolicyOverride {
 	uid: string;
+}
+
+export class UpdateSecurityPolicyOverride {
+	uid: string;
+	context: string;
 }

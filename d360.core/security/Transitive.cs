@@ -8,8 +8,8 @@ namespace d360.core.security
 	/// </summary>
 	public class AssetOwnerModel
 	{
-		[JsonProperty("ruleUid")]
-		public Guid RuleUid { get; set; }
+		[JsonProperty("uid")]
+		public Guid Uid { get; set; }
 
 		[JsonProperty("roleUid")]
 		public Guid RoleUid { get; set; }
@@ -17,19 +17,25 @@ namespace d360.core.security
 		[JsonProperty("roleName")]
 		public string RoleName { get; set; }
 
-		[JsonProperty("securityType")]
-		public RuleSecurityType SecurityType { get; set; }
+		[JsonProperty("groupUid")]
+		public Guid GroupUid { get; set; }
 
-		[JsonProperty("securityUid")]
-		public Guid SecurityUid { get; set; }
+		[JsonProperty("groupName")]
+		public string GroupName { get; set; }
 
-		[JsonProperty("securityName")]
-		public string SecurityName { get; set; }
+		[JsonProperty("resourceUid")]
+		public Guid ResourceUid { get; set; }
+
+		[JsonProperty("resourceName")]
+		public string ResourceName { get; set; }
+
+        [JsonProperty("context")]
+        public string Context { get; set; }
+
+		[JsonProperty("ruleName")]
+		public string RuleName { get; set; }
 
 		[JsonProperty("isOverride")]
 		public bool IsOverride { get; set; }
-
-		[JsonIgnore]
-		public bool IsVisible { get; set; }
 	}
 }
