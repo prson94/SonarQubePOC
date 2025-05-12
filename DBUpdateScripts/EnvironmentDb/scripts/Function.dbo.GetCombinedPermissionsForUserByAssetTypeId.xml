@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,PuneetGupta" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1.4">
+ <changeSet author="Pappas,PuneetGupta" id="Function.dbo.GetCombinedPermissionsForUserByAssetTypeId-v1.5">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissionsForUserByAssetTypeId] 
@@ -59,7 +59,14 @@ begin
 
 	if not exists (select 1 from @permissions) and @defaultPermissions is not null
 	begin
-		insert into @permissions values(1057)
+		if (@defaultPermissions = 1)
+		begin
+		 insert into @permissions values(1057);
+		end
+		else
+		begin
+		 insert into @permissions values(@defaultPermissions);
+		end
 	end
 
 	if not exists (select Id from @permissions where Id & 1 = 1)
