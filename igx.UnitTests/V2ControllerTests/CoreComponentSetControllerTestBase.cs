@@ -39,7 +39,7 @@ namespace igx.UnitTests.V2ControllerTests
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
 			MockQueue = new Mock<IQueueSource>();
-			MockThemeRepository = new Mock<IThemeRepository>();
+			MockThemeRepository = new Mock<IThemeManager>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockCache = new Mock<ICachingProvider>();
 			CommunityFlags = new CommunityFeatureFlagService(MockCache.Object, MockCommunity.Object, MockSecurityContext.Object);
