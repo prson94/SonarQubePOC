@@ -154,7 +154,7 @@ namespace repositories.azure
 							int reccount = 0;
 							using (var connection = ConnectionProvider.Connect(true))
 							{
-								reccount = connection.QuerySingleOrDefault<int>("select count(1) from reporting.Global_Resource where Uid = @ruid and ruid != @emptyuid", new { ruid, emptyuid =  Guid.Empty});
+								reccount = connection.QuerySingleOrDefault<int>("select count(1) from reporting.Global_Resource where Uid = @ruid and uid != @emptyuid", new { ruid, emptyuid =  Guid.Empty});
 
 							}
 							if (reccount > 0)
@@ -182,7 +182,7 @@ namespace repositories.azure
 							int reccount = 0;
 							using (var connection = ConnectionProvider.Connect(true))
 							{
-								reccount = connection.QuerySingleOrDefault<int>("select count(1) from asset where Uid = @auid and ruid != @emptyuid", new { auid, emptyuid = Guid.Empty });
+								reccount = connection.QuerySingleOrDefault<int>("select count(1) from asset where Uid = @auid and Uid != @emptyuid", new { auid, emptyuid = Guid.Empty });
 
 							}
 
@@ -212,7 +212,7 @@ namespace repositories.azure
 							int reccount = 0;
 							using (var connection = ConnectionProvider.Connect(true))
 							{
-								reccount = connection.QuerySingleOrDefault<int>("select count(1) from AssetType where Uid = @atuid and ruid != @emptyuid", new { atuid, emptyuid = Guid.Empty });
+								reccount = connection.QuerySingleOrDefault<int>("select count(1) from AssetType where Uid = @atuid and Uid != @emptyuid", new { atuid, emptyuid = Guid.Empty });
 
 							}
 
