@@ -29,14 +29,6 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
-
-	<include file="scripts/Function.dbo.GetCombinedPermissions.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetId.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetLegacy.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetUid.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeId.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeLegacy.xml"/>
-	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeUid.xml"/>
 	
 	<include file="scripts/Function.dbo.GetDisplayPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPath.xml"/>
@@ -297,6 +289,14 @@
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
 
+	<include file="scripts/Function.dbo.GetCombinedPermissions.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetId.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetLegacy.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetUid.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeId.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeLegacy.xml"/>
+	<include file="scripts/Function.dbo.GetCombinedPermissionsForUserByAssetTypeUid.xml"/>
+	
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Function.metrics.BuildConditionJson.xml"/>
 	<include file="scripts/Function.metrics.ConditionsFiltering.xml"/>
