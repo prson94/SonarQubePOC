@@ -143,11 +143,14 @@
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>
 	<include file="scripts/Table.reporting.Global_Resource.xml"/>
 
+	<include file="scripts/Table.security.Override.xml"/>
 	<include file="scripts/Table.security.Role.xml"/>
 	<include file="scripts/Table.security.Rule.xml"/>
 	<include file="scripts/Table.security.RuleThen.xml"/>	
 	<include file="scripts/Table.security.RuleWhen.xml"/>
-
+	<include file="scripts/Table.security.RuleAssignment.xml"/>
+	<include file="scripts/View.security.RuleOwner.xml"/>
+	
 	<include file="scripts/Data.Migration.Security.xml"/> <!-- DATA MIGRATION -->
 
 	<include file="scripts/Table.usage.Analytic.xml"/>
@@ -238,9 +241,9 @@
 	<include file="scripts/Function.dbo.GetAssetTypeChildrenByID.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
+	<include file="scripts/View.dbo.ResponsibilitySummary.xml"/>
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.ResponsibilityOwnershipField.xml"/>
-	<include file="scripts/View.dbo.ResponsibilitySummary.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
@@ -249,8 +252,6 @@
 	
 	<include file="scripts/View.dbo.CatalogBrowseSubject.xml"/>
 	<include file="scripts/View.dbo.CatalogBrowseObject.xml"/>
-
-	<include file="scripts/View.security.RuleOwner.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> <!--dependency-->
@@ -395,7 +396,7 @@
 	<include file="scripts/Procedure.dbo.GetRulesForRerun.xml"/>
 	
 	<!-- Object Removal -->	
-  <include file="scripts/Function.Deletions.xml"/>
+	<include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
 	<include file="scripts/View.Deletions.xml"/>
 	<include file="scripts/Table.Deletions.xml"/>
