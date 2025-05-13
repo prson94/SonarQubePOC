@@ -916,7 +916,7 @@ namespace d360.web.Controllers
 			
 			var response = await client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
             {
-                Address = tokenUri,//$"{baseUri}/token",
+                Address = tokenUri,
 				ClientId = oidc.clientId,
                 ClientSecret = oidc.clientSecret,
                 ClientCredentialStyle = ClientCredentialStyle.PostBody,
@@ -929,8 +929,12 @@ namespace d360.web.Controllers
             {
 				Log.LogTrace($"Token Response: {response.Raw}");
 				Log.LogCritical(response.Exception, $"Got error from RequestAuthorizationCodeTokenAsync.");
-				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
-            }
+				return new ContentResult
+				{
+					Content = $"We were unable to authenticate your user account, due to the following reason: {response.HttpErrorReason}",
+					ContentType = "text/html"
+				};
+			}
 
 			var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
@@ -944,8 +948,12 @@ namespace d360.web.Controllers
             if (openIdRequest.Nonce != incomingNonce)
             {
 				Log.LogTrace($"Nonces do not match: Incoming: {incomingNonce}; Valid: {openIdRequest.Nonce}");
-				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.FailedAuthenticationNonces);
-            }
+				return new ContentResult
+				{
+					Content = $"We were unable to authenticate your user account, due to the following reason: {core.resources.Error.FailedAuthenticationNonces}",
+					ContentType = "text/html"
+				};
+			}
 
 			var combinedClaims = new List<System.Security.Claims.Claim>();
 			combinedClaims.AddRange(token.Claims); // ID token claims.
@@ -967,6 +975,7 @@ namespace d360.web.Controllers
             {
 				Log.LogError(ex, $"Error while trying to remove state ({openIdRequest.State}) for OIDC request.");
             }
+
 
             try
             {
@@ -1005,8 +1014,11 @@ namespace d360.web.Controllers
 			}
 
             // If you got this far, then something was invalid.
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
+			return new ContentResult { 
+				Content = "We were unable to authenticate your user account.", 
+				ContentType = "text/html" 
+			};
+		}
 
 		[AllowAnonymous, Route("sso/openid"), HttpGet]
 		public ActionResult HandleOpenIdGetResponse()

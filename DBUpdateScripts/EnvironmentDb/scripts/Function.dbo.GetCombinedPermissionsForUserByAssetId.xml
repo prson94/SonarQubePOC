@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissionsForUserByAssetId-v1.1">
+ <changeSet author="Pappas" id="Function.dbo.GetCombinedPermissionsForUserByAssetId-v2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[GetCombinedPermissionsForUserByAssetId] 
@@ -17,14 +17,10 @@ returns int
 as
 begin
 	declare @assetTypeId int,
-			@object varchar(50),
-			@objectId int,
 			@defaultPermissions int,
 			@combinedPermissionMask int = 0;
 
 	select	@assetTypeId = a.AssetTypeID,
-			@object = [at].Object,
-			@objectId = [at].ObjectID,
 			@defaultPermissions = [at].[DefaultPermissions]
 	from	Asset a 
 			inner join AssetType [at] on [at].ID = a.AssetTypeID and a.ID = @assetId;
@@ -32,28 +28,9 @@ begin
 	declare @permissions dbo.Ids;
 
 	insert into @permissions
-		select	relation.[PermissionsBitMask]
-		from	ResponsibilityTypeRelation relation
-				inner join (
-							select	rr.ResponsibilityTypeID
-							from	ResponsibilityRuleResultAsset ra
-									inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID and ((ra.AssetTypeID = @assetTypeID and ra.AssetID = 0) or ra.AssetID = @assetId)
-									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.ID and rs.SecurityAsset = 'R' and rs.SecurityAssetID = @userId
-							union
-							select	rr.ResponsibilityTypeID
-							from	ResponsibilityRuleResultAsset ra
-									inner join ResponsibilityTypeRelationRule rr on rr.ID = ra.RuleID and ((ra.AssetTypeID = @assetTypeID and ra.AssetID = 0) or ra.AssetID = @assetId)
-									inner join ResponsibilityRuleResultSecurityAsset rs on rs.RuleID = rr.ID and rs.SecurityAsset = 'G' 
-									inner join ResourceGroup rg on rg.GroupID = rs.SecurityAssetID and rg.ResourceID = @userId
-							union
-							select	ResponsibilityTypeID
-							from	ResponsibilityTypeRelationOverrideItem
-							where	AssetID = @assetId and SecurityAsset = 'R' and SecurityAssetID = @userId
-							union
-							select	ra.ResponsibilityTypeID
-							from	ResponsibilityTypeRelationOverrideItem ra
-									inner join ResourceGroup rg on ra.SecurityAsset = 'G' and rg.GroupID = ra.SecurityAssetID and rg.ResourceID = @userId
-							) p on p.ResponsibilityTypeID = relation.ResponsibilityTypeID and relation.ObjectType = @object and relation.ObjectID = @objectId;
+		select	[Permissions]
+		from	ResponsibilitySummary
+		where	( (AssetTypeId = @assetTypeId and ApplyToType = 1) or (AssetId = @assetId and ApplyToType = 0) ) and ResourceID = @userId
 
 	if not exists (select 1 from @permissions) and @defaultPermissions is not null
 	begin

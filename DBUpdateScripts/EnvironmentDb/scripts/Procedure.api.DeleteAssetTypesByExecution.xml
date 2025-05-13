@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v7">
+ <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v8">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[DeleteAssetTypesByExecution]
@@ -225,32 +225,6 @@ begin
 			begin catch
 				update	api.Execution
 				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Data Profiles. '
-				where	ExecutionID = @ExecutionID
-			end catch
-
-			--Remove asset display values.
-			begin try
-				delete	R
-				from	AssetDisplayValue R
-						inner join Asset A on A.ID = R.AssetID
-						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
-			end try
-			begin catch
-				update	api.Execution
-				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove display values. '
-				where	ExecutionID = @ExecutionID
-			end catch
-
-			--Remove asset path.
-			begin try
-				delete	R
-				from	AssetPath R
-						inner join Asset A on A.ID = R.ID
-						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
-			end try
-			begin catch
-				update	api.Execution
-				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset paths. '
 				where	ExecutionID = @ExecutionID
 			end catch
 
@@ -548,30 +522,36 @@ begin
 			-- Remove security data.
 			begin try
 				delete	R
-				from	ResponsibilityTypeRelationOverrideItem R
+				from	[security].[Override] R
 						inner join Asset A on A.ID = R.AssetID
 						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 				delete	R
-				from	ResponsibilityRuleResultAsset R
-						inner join ResponsibilityTypeRelationRule T on T.ID = R.RuleID
-						inner join AssetType A on A.Object = T.Object and A.ObjectID = T.ObjectID
-						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null;
-
-				delete	R
-				from	ResponsibilityRuleResultSecurityAsset R
-						inner join ResponsibilityTypeRelationRule T on T.ID = R.RuleID
-						inner join AssetType A on A.Object = T.Object and A.ObjectID = T.ObjectID
+				from	[security].[RuleAssignment] R
+						inner join AssetType A on A.ID = R.AssetTypeId
 						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
 
 				delete	R
-				from	ResponsibilityTypeRelationRule R
-						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+				from	[security].[RuleAssignment] R
+						inner join [security].[Rule] T on T.ID = R.RuleID
+						inner join AssetType A on A.ID = T.AssetTypeId
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	T
+				from	[security].[RuleThen] T
+						inner join [security].[Rule] R on R.Id = T.Id
+						inner join AssetType A on A.ID = R.AssetTypeId
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	W
+				from	[security].[RuleWhen] W
+						inner join [security].[Rule] R on R.Id = W.Id
+						inner join AssetType A on A.ID = R.AssetTypeId
 						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
 
 				delete	R
-				from	ResponsibilityTypeRelation R
-						inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID
+				from	[security].[Rule] R
+						inner join AssetType A on A.ID = R.AssetTypeId
 						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
 			end try
 			begin catch
