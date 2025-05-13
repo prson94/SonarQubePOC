@@ -27,5 +27,38 @@ GO
 ]]>
   </sql>
  </changeSet>
+
+	 <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-Rename">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset')
+BEGIN
+	EXEC sp_rename 'dbo.ResponsibilityRuleResultSecurityAsset', 'ResponsibilityRuleResultSecurityAsset_BAK';
+END
+]]>
+  </sql>
+ </changeSet>
+	
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Rename">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultAsset')
+BEGIN
+	EXEC sp_rename 'dbo.ResponsibilityRuleResultAsset', 'ResponsibilityRuleResultAsset_BAK';
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Synonym">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select 1 from sys.synonyms where name = 'ResponsibilityRuleResultAsset')
+BEGIN
+	create synonym [dbo].[ResponsibilityRuleResultAsset] for security.RuleAssignment
+END
+]]>
+  </sql>
+ </changeSet>
 	
 </databaseChangeLog>

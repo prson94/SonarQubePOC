@@ -21,7 +21,7 @@ set identity_insert [security].[Role] off;
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 set identity_insert [security].[Rule] on;
-insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, IsOverride, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 	select	r.ID,
 			r.Uid,
 			r.Name,
@@ -30,7 +30,6 @@ insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId,
 			a.ID as AssetTypeId,
 			r.ApplyToType,
 			r.IsVisible,
-			0 as IsOverride,
 			r.CreatedBy,
 			r.CreatedOn,
 			r.UpdatedBy,
@@ -138,38 +137,5 @@ insert into [security].[Override] (RoleId, SecurityType, SecurityId, AssetId, Co
 ]]>
     </sql>
   </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-Rename">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset')
-BEGIN
-	EXEC sp_rename 'dbo.ResponsibilityRuleResultSecurityAsset', 'ResponsibilityRuleResultSecurityAsset_BAK';
-END
-]]>
-  </sql>
- </changeSet>
-	
- <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Rename">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultAsset')
-BEGIN
-	EXEC sp_rename 'dbo.ResponsibilityRuleResultAsset', 'ResponsibilityRuleResultAsset_BAK';
-END
-]]>
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.ResponsibilityRuleResultAsset-Synonym">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-IF NOT EXISTS (select 1 from sys.synonyms where name = 'ResponsibilityRuleResultAsset')
-BEGIN
-	create synonym [dbo].[ResponsibilityRuleResultAsset] for security.RuleAssignment
-END
-]]>
-  </sql>
- </changeSet>
 
 </databaseChangeLog>

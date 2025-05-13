@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.21">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.22">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -335,38 +335,33 @@ begin
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated')
 	begin
-		drop table if exists #tempobjectids;
-		drop table if exists #tempobjectidsPresent;
+		declare @tempobjectids table (FieldTypeId int, AssetId bigint, ObjectID int, AssetTypeID int);
+		declare @tempobjectidsPresent table (FieldTypeId int, AssetId bigint);
 		
-		select m.FieldTypeId,m.AssetId,vals.ObjectID,lt.ID AssetTypeID
-		into #tempobjectids
-		from	@tbl m
-				inner join dbo.FieldType ft on ft.ID = m.FieldTypeId
-				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-		left join dbo.AssetType lt on lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId
-		cross apply (select	try_parse(value as int) as ObjectID
-					 from	string_split(coalesce(f.Value, ft.DefaultValue, '-1'), ',')
-							) vals
-		where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
-		group by m.FieldTypeId,m.AssetId,vals.ObjectID,lt.ID;
+		insert into @tempobjectids
+			select	m.FieldTypeId,m.AssetId,vals.ObjectID,lt.ID AssetTypeID
+			from	@tbl m
+					inner join dbo.FieldType ft on ft.ID = m.FieldTypeId
+					left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+					left join dbo.AssetType lt on lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId
+					cross apply (select	try_parse(value as int) as ObjectID
+								 from	string_split(coalesce(f.Value, ft.DefaultValue, '-1'), ',')
+										) vals
+			where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
+			group by m.FieldTypeId,m.AssetId,vals.ObjectID,lt.ID;
 		
-		select m.FieldTypeId,m.AssetId
-		into #tempobjectidsPresent
-		from #tempobjectids m
-		inner join dbo.Asset la on la.AssetTypeID = m.AssetTypeID and la.ObjectID = m.ObjectID
-		where m.AssetTypeID is not null
-		group by  m.FieldTypeId,m.AssetId;
-		
-		create clustered index cx_tempobjectidsPresent on #tempobjectidsPresent(FieldTypeId,AssetId)
+		insert into @tempobjectidsPresent
+			select	m.FieldTypeId,m.AssetId
+			from	@tempobjectids m
+					inner join dbo.Asset la on la.AssetTypeID = m.AssetTypeID and la.ObjectID = m.ObjectID
+			where	m.AssetTypeID is not null
+			group by  m.FieldTypeId,m.AssetId;
 		
 		update	m
 		set		m.[Value] = iif(a.FieldTypeId is not null, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
 		from	@tbl m
-		left join #tempobjectidsPresent a on m.FieldTypeId = a.FieldTypeId and m.AssetId = a.AssetId
+				left join @tempobjectidsPresent a on m.FieldTypeId = a.FieldTypeId and m.AssetId = a.AssetId
 		where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
-
-		drop table if exists #tempobjectids;
-		drop table if exists #tempobjectidsPresent;
 	end
 
 	---- Perform Lookup NotPopulated check
