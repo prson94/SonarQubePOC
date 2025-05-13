@@ -125,8 +125,7 @@ namespace d360.web.Controllers.V2
 			HttpGet,
 			Route(""),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A list of matching search items.", typeof(IQueryable<IndexResult>)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE),
+			SwaggerResponse(HttpStatusCode.OK, "A list of matching search items.", typeof(SearchModel))
 		]
 		public async Task<IHttpActionResult> GetSearchResults(string phrase)
 		{
@@ -171,9 +170,8 @@ namespace d360.web.Controllers.V2
 			Route("results"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json", "application/octet-stream"),
-			SwaggerResponse(HttpStatusCode.OK, "Search results matching the query.", typeof(IndexResults)),
+			SwaggerResponse(HttpStatusCode.OK, "Search results matching the query.", typeof(SearchModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your search request is invalid"),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = false)
 		]
 		public async Task<IHttpActionResult> ReadResultsAsync(QueryRequest queryRequest)
@@ -267,7 +265,7 @@ namespace d360.web.Controllers.V2
 			HttpGet,
 			Route("typeahead"),
 			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "Search result suggestions based on query.", typeof(IList<TypeaheadResult>)),
+			SwaggerResponse(HttpStatusCode.OK, "Search result suggestions based on query.", typeof(IList<SearchResult>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your search request is invalid"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = false)

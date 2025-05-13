@@ -78,21 +78,6 @@ namespace d360.core.entities
     }
 
     [Serializable, DataContract]
-    public abstract class BaseCreatedIntObject : BaseIntObject
-    {
-        public int? CreatedBy { get; set; }
-
-        public DateTime CreatedOn
-        {
-            get => createdon ?? DateTime.UtcNow;
-
-            set { createdon = value; }
-        }
-
-        private DateTime? createdon = null;
-    }
-
-    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject, IUpdatedMetadata, ICreatedMetadata
     {
         public int? CreatedBy { get; set; }

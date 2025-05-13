@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v8">
+ <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v9">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [dbo].[DeleteObject]
@@ -269,38 +269,6 @@ create or alter procedure [dbo].[DeleteObject]
 
 			  delete [Intersect] where IntersectTypeID = @ObjectID
 			  delete IntersectType where ID = @ObjectID
-		  end;
-
-		  if @Object = 'ResponsibilityType'
-		  begin
-			  set @ClearComments = 0
-			  set @ClearIntersects = 0
-			  set @ClearFields = 0
-			  set @ClearFollows = 0
-			  set @ClearIssues = 0
-			  set @ClearNyms = 0
-			  set @ClearResponsibilities = 0
-			  set @ClearAssets = 0
-
-			  delete	ResponsibilityTypeRelationOverrideItem 
-			  where	ResponsibilityTypeID = @ObjectID;
-			
-			  delete	O 
-			  from	[dbo].[ResponsibilityRuleResultSecurityAsset] O 
-					  inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID;
-			
-			  delete	O 
-			  from	[dbo].[ResponsibilityRuleResultAsset] O 
-					  inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID;
-			
-			  delete	ResponsibilityTypeRelationRule 
-			  where	ResponsibilityTypeID = @ObjectID;
-			
-			  delete	ResponsibilityTypeRelation 
-			  where	ResponsibilityTypeID = @ObjectID;
-			
-			  delete	ResponsibilityType 
-			  where	ID = @ObjectID;
 		  end;
 
 		  -- Now, start deleting some stuff.
@@ -583,28 +551,37 @@ create or alter procedure [dbo].[DeleteObject]
 			  if @IsType = 1
 			  begin
 				  delete	T
-				  from	ResponsibilityTypeRelationOverrideItem T
-						  inner join Asset A on A.ID = T.AssetID
-						  inner join #types I on I.ID = A.AssetTypeID;
+				  from		[security].[Override] T
+							inner join dbo.Asset A on A.ID = T.AssetID
+							inner join #types I on I.ID = A.AssetTypeID;
 
 				  delete	T
-				  from	[ResponsibilityRuleResultAsset] T
-						  inner join Asset A on A.ID = T.AssetID
-						  inner join #types I on I.ID = A.AssetTypeID;
+				  from		[security].RuleAssignment T
+							inner join #types I on I.ID = T.AssetTypeID;
+
+				  delete	W
+				  from		security.RuleWhen W
+							inner join security.[Rule] O on O.Id = W.Id
+							inner join #types I on O.ID = O.AssetTypeId;
+
+				  delete	T
+				  from		security.RuleThen T
+							inner join security.[Rule] O on O.Id = T.Id
+							inner join #types I on O.ID = O.AssetTypeId;
 
 				  delete	O
-				  from	ResponsibilityTypeRelation O
-						  inner join #types I on O.ObjectType = I.Object and I.ObjectID = O.ObjectID
+				  from		security.[Rule] O
+							inner join #types I on O.ID = O.AssetTypeId;
 			  end
 			  else
 			  begin
 				  delete	T
-				  from	ResponsibilityTypeRelationOverrideItem T
-						  inner join #items I on I.ID = T.AssetID;
+				  from		[security].[Override] T
+							inner join #items I on I.ID = T.AssetID;
 
 				  delete	T
-				  from	[ResponsibilityRuleResultAsset] T
-						  inner join #items I on I.ID = T.AssetID;
+				  from		[security].RuleAssignment T
+							inner join #items I on I.ID = T.AssetID;
 			  end
 		  end;
  
