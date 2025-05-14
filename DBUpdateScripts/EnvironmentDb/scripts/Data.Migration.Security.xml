@@ -158,6 +158,20 @@ begin
 
 	if exists(select 1 from #TempRuleThen_0506)
 	begin
+	
+		drop table if exists #tempduplicate_0506;
+	
+		select r.id,r.SecurityId,MIN([Position]) minposition
+		into #tempduplicate_0506
+		from #TempRuleThen_0506 r
+		group by r.id,r.SecurityId
+		having COUNT(1)>1
+
+		delete r
+		from #TempRuleThen_0506 r
+		inner join #tempduplicate_0506 d on r.ID = d.ID and r.SecurityId = d.SecurityId
+		where r.Position > d.minposition;
+	
 		delete from [security].RuleThen;
 
 		insert into [security].RuleThen
@@ -239,7 +253,7 @@ begin
 		insert into [security].RuleWhen
 			select	r.Id,
 					r.[Position],
-					r..CheckType,
+					r.CheckType,
 					r.FieldTypeId,
 					r.IntersectTypeId,
 					r.[Operator],
