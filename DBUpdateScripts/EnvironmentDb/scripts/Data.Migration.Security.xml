@@ -98,7 +98,34 @@ insert into [security].RuleWhen
 			wi.CheckType,
 			iif(wi.FieldTypeID > 0, wi.FieldTypeId, null) as FieldTypeId,
 			iif(wi.IntersectTypeID > 0, wi.IntersectTypeID, null) as IntersectTypeId,
-			iif(wi.IntersectTypeID > 0, 1, coalesce(wi.[Operator], 1)) as [Operator],
+			iif(
+				wi.IntersectTypeID > 0, 
+				1, 
+				case wi.[Operator]
+					when 'NotEquals' then 2
+					when 'Contains' then 3
+					when 'NotContains' then 4
+					when 'StartsWith' then 5
+					when 'EndsWith' then 6
+					when 'Before' then 7
+					when 'After' then 8
+					when 'Between' then 9
+					when 'Populated' then 10
+					when 'NotPopulated' then 11
+					when 'GreaterThan' then 12
+					when 'LessThanOrEquals' then 13
+					when 'LessThan' then 14
+					when 'GreaterThanOrEquals' then 15
+					when 'In' then 16
+					when 'NotIn' then 17
+					when 'IsTrue' then 18
+					when 'IsFalse' then 19
+					when 'OnOrBefore' then 20
+					when 'OnOrAfter' then 21
+					when 'IsInBand' then 22
+					else 1
+				end
+			) as [Operator],
 			iif(wi.FieldTypeID > 0, wi.[Value], null) as [Value],
 			a.Id as AssetId
 	from	ResponsibilityTypeRelationRule r
