@@ -227,11 +227,9 @@ OFFSET @offset ROWS FETCH NEXT @size ROWS ONLY";
 			using (var connection = ConnectionProvider.Connect())
 			{
 
-				var anyProfilesQuery = await connection.QuerySingleAsync(query, new { qualifier });
+				var anyProfilesQuery = await connection.ExecuteScalarAsync<int>(query, new { qualifier });
 
-				var profileRecordCount = anyProfilesQuery.Single();
-
-				if (profileRecordCount > 0)
+				if (anyProfilesQuery > 0)
 				{
 					throw new GenericException(
 						HttpStatusCode.Conflict,
@@ -857,10 +855,10 @@ USING (VALUES (
     MinMaxPresent, JsonPayload, CreatedBy, CreatedOn, UpdatedBy, 
     UpdatedOn, TransactionId, Uid
 )
-ON Target.Qualifier = Source.Qualifier -- Match based on Qualifier
+ON Target.Qualifier = Source.Qualifier AND Target.EffectiveDate = Source.EffectiveDate -- Match based on Qualifier
 WHEN MATCHED THEN
     UPDATE SET 
-        EffectiveDate = Source.EffectiveDate,
+        --EffectiveDate = Source.EffectiveDate,
         Name = Source.Name,
         Description = Source.Description,
         Threshold = Source.Threshold,
