@@ -107,6 +107,7 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 	resourceUid: string;
 
 	hrefSub: Subscription;
+	resultsSub: Subscription;
 	selectedAsset: Record<string, unknown>;
 	selectedReferenceItem: Record<string, unknown>;
 	selectedTag: Record<string, unknown>;
@@ -232,7 +233,11 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 
 		searchQuery.From = (this.pageNumber - 1) * this.resultsPerPage;
 
-		this.searchService.getSearchResultsByQuery(searchQuery).subscribe((results) => {
+		if (this.resultsSub) {
+			this.resultsSub.unsubscribe();
+		}
+
+		this.resultsSub = this.searchService.getSearchResultsByQuery(searchQuery).subscribe((results) => {
 			this.isLoading = false;
 			this.sidePanelLoading = false;
 			this.treeLoading = false;
@@ -270,6 +275,9 @@ export class SearchIndex extends BaseComponent implements OnInit, OnDestroy {
 		}
 		if (this.hrefSub) {
 			this.hrefSub.unsubscribe();
+		}
+		if (this.resultsSub) {
+			this.resultsSub.unsubscribe();
 		}
     }
 
