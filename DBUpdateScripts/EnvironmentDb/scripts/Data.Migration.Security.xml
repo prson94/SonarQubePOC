@@ -5,68 +5,138 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.A">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.A.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-set identity_insert [security].[Role] on;
-insert into [security].[Role] (ID, Uid, Name, Description, [Permissions], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-	select	ID, Uid, Name, Description, 1, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
-	from	ResponsibilityType
-set identity_insert [security].[Role] off;
+if (OBJECT_ID('[security].[Role]') > 0 and OBJECT_ID('dbo.ResponsibilityType') > 0)
+begin
+	IF exists(select 1 from [security].[Role])
+		begin
+			set identity_insert [security].[Role] on;
+				merge into [security].[Role] as r
+				using (select	ID, Uid, Name, Description, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
+					from ResponsibilityType) rt
+				on (r.id = rt.id)
+				when matched Then
+				update set
+				Name = rt.Name,
+				Description = rt.Description,
+				[Permissions] = 1,
+				[UpdatedBy] = rt.UpdatedBy,
+				UpdatedOn = rt.UpdatedOn
+				when not matched then
+				insert (ID, Uid, Name, Description, [Permissions], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+				values (rt.ID, rt.Uid, rt.Name, rt.Description, 1, rt.CreatedBy, rt.CreatedOn, rt.UpdatedBy, rt.UpdatedOn);
+			set identity_insert [security].[Role] off;
+		end
+	else
+		begin
+			set identity_insert [security].[Role] on;
+			insert into [security].[Role] (ID, Uid, Name, Description, [Permissions], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+				select	ID, Uid, Name, Description, 1, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn
+				from	ResponsibilityType;
+			set identity_insert [security].[Role] off;
+		end
+end
 ]]>
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.B">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.B.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-set identity_insert [security].[Rule] on;
-insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-	select	r.ID,
-			r.Uid,
-			r.Name,
-			r.ResponsibilityTypeID,
-			2 as SecurityType,
-			a.ID as AssetTypeId,
-			r.ApplyToType,
-			r.IsVisible,
-			r.CreatedBy,
-			r.CreatedOn,
-			r.UpdatedBy,
-			r.UpdatedOn
-	from	ResponsibilityTypeRelationRule r
-			left join AssetType a on a.Object = r.Object and a.ObjectID = r.ObjectID
-set identity_insert [security].[Rule] off;
+if (OBJECT_ID('[security].[Rule]') > 0 and OBJECT_ID('dbo.ResponsibilityTypeRelationRule') > 0)
+begin
+	if exists (select 1 from ResponsibilityTypeRelationRule)
+	begin
+		set identity_insert [security].[Rule] on;
+		merge into [security].[Rule] as r
+		using (		select	r.ID,
+					r.Uid,
+					r.Name,
+					r.ResponsibilityTypeID,
+					2 as SecurityType,
+					a.ID as AssetTypeId,
+					r.ApplyToType,
+					r.IsVisible,
+					r.CreatedBy,
+					r.CreatedOn,
+					r.UpdatedBy,
+					r.UpdatedOn
+			from	ResponsibilityTypeRelationRule r
+					left join AssetType a on a.Object = r.Object and a.ObjectID = r.ObjectID
+			) rtr
+		on (r.id = rtr.id)
+		when matched Then
+		update set
+		Name = rtr.Name,
+		RoleID = rtr.ResponsibilityTypeID,
+		[SecurityType] = 2,
+		AssetTypeId = rtr.AssetTypeId,
+		ApplyToType = rtr.ApplyToType,
+		IsVisible = rtr.IsVisible,
+		[UpdatedBy] = rtr.UpdatedBy,
+		UpdatedOn = rtr.UpdatedOn
+		when not matched then
+		insert (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+		values (rtr.ID, rtr.Uid, rtr.Name, rtr.ResponsibilityTypeID, 2, rtr.AssetTypeId, rtr.ApplyToType, rtr.IsVisible, rtr.CreatedBy, rtr.CreatedOn, rtr.UpdatedBy, rtr.UpdatedOn);
+		set identity_insert [security].[Rule] off;
+	end
+	else
+	begin
+		set identity_insert [security].[Rule] on;
+		insert into [security].[Rule] (ID, Uid, Name, RoleID, SecurityType, AssetTypeId, ApplyToType, IsVisible, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	r.ID,
+					r.Uid,
+					r.Name,
+					r.ResponsibilityTypeID,
+					2 as SecurityType,
+					a.ID as AssetTypeId,
+					r.ApplyToType,
+					r.IsVisible,
+					r.CreatedBy,
+					r.CreatedOn,
+					r.UpdatedBy,
+					r.UpdatedOn
+			from	ResponsibilityTypeRelationRule r
+					left join AssetType a on a.Object = r.Object and a.ObjectID = r.ObjectID;
+		set identity_insert [security].[Rule] off;
+	end
 
--- Set the security type ( [G]roup OR [U]ser )
-update	t
-set		t.SecurityType = s.SecurityType
-from	[security].[Rule] t
-		inner join (
-					select	r.ID,
-							iif(sec.[Object] = 'GroupType', 1, 2) as SecurityType
-					from	ResponsibilityTypeRelationRule r
-							cross apply openjson(r.Definition) with (
-								[Then] nvarchar(max) as json
-							) d
-							cross apply openjson(d.[Then]) with (
-								Object varchar(50)
-							) sec
-					) s on s.ID = t.Id;
+	-- Set the security type ( [G]roup OR [U]ser )
+	update	t
+	set		t.SecurityType = s.SecurityType
+	from	[security].[Rule] t
+			inner join (
+						select	r.ID,
+								iif(sec.[Object] = 'GroupType', 1, 2) as SecurityType
+						from	ResponsibilityTypeRelationRule r
+								cross apply openjson(r.Definition) with (
+									[Then] nvarchar(max) as json
+								) d
+								cross apply openjson(d.[Then]) with (
+									Object varchar(50)
+								) sec
+						) s on s.ID = t.Id;
+end
 ]]>
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.C">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.C.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-insert into [security].RuleThen
-	select	r.ID,
+if (OBJECT_ID('[security].[RuleThen]') > 0 and OBJECT_ID('dbo.ResponsibilityTypeRelationRule') > 0)
+begin
+	drop table if exists #TempRuleThen_0506;
+
+	select	cast(r.ID as int) ID,
 			row_number() over(partition by r.Id order by r.Id) as [Position],
 			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', 1, ti.[Operator]) as Operator,
 			iif(ti.FieldTypeID > 0, ti.FieldTypeID, null) as FieldTypeId,
 			iif(ti.FieldTypeID > 0, ti.[Value], null) as [Value],
 			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', ti.[Value], null) as SecurityId
+	into #TempRuleThen_0506
 	from	ResponsibilityTypeRelationRule r
 			cross apply openjson(r.Definition) with (
 				[Then] nvarchar(max) as json
@@ -85,15 +155,47 @@ insert into [security].RuleThen
 				--TargetObject varchar(50),
 				--TargetObjectID int
 			) ti;
+
+	if exists(select 1 from #TempRuleThen_0506)
+	begin
+	
+		drop table if exists #tempduplicate_0506;
+	
+		select r.id,r.SecurityId,MIN([Position]) minposition
+		into #tempduplicate_0506
+		from #TempRuleThen_0506 r
+		group by r.id,r.SecurityId
+		having COUNT(1)>1
+
+		delete r
+		from #TempRuleThen_0506 r
+		inner join #tempduplicate_0506 d on r.ID = d.ID and r.SecurityId = d.SecurityId
+		where r.Position > d.minposition;
+	
+		delete from [security].RuleThen;
+
+		insert into [security].RuleThen
+			select	r.ID,
+					r.[Position],
+					r.Operator,
+					r.FieldTypeId,
+					r.[Value],
+					r.SecurityId
+			from	#TempRuleThen_0506 r;
+	end
+end
 ]]>
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.D">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.D.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-insert into [security].RuleWhen
-	select	r.Id,
+if (OBJECT_ID('[security].[RuleWhen]') > 0 and OBJECT_ID('dbo.ResponsibilityTypeRelationRule') > 0)
+begin
+	drop table if exists #TempRuleWhen_0506;
+
+	select	cast(r.Id as int) Id,
 			row_number() over(partition by r.Id order by r.Id) as [Position],
 			wi.CheckType,
 			iif(wi.FieldTypeID > 0, wi.FieldTypeId, null) as FieldTypeId,
@@ -128,6 +230,7 @@ insert into [security].RuleWhen
 			) as [Operator],
 			iif(wi.FieldTypeID > 0, wi.[Value], null) as [Value],
 			a.Id as AssetId
+	into #TempRuleWhen_0506
 	from	ResponsibilityTypeRelationRule r
 			cross apply openjson(r.Definition) with (
 				[When] nvarchar(max) as json
@@ -143,24 +246,48 @@ insert into [security].RuleWhen
 				TargetObjectID int
 			) wi
 			left join Asset a on a.Object = wi.TargetObject and a.ObjectID = wi.TargetObjectID;
+
+	if exists(select 1 from #TempRuleWhen_0506)
+	begin
+		truncate table [security].RuleWhen;
+		insert into [security].RuleWhen
+			select	r.Id,
+					r.[Position],
+					r.CheckType,
+					r.FieldTypeId,
+					r.IntersectTypeId,
+					r.[Operator],
+					r.[Value],
+					r.AssetId
+			from #TempRuleWhen_0506 r;
+	end
+end
 ]]>
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.OV">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.OV.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-insert into [security].[Override] (RoleId, SecurityType, SecurityId, AssetId, Context, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-	select	ResponsibilityTypeID,
-			iif(SecurityAsset = 'G', 1, 2),
-			SecurityAssetID,
-			AssetID,
-			Context,
-			UpdatedBy,
-			UpdatedOn,
-			UpdatedBy,
-			UpdatedOn
-	from	ResponsibilityTypeRelationOverrideItem
+if (OBJECT_ID('[security].[Override]') > 0 and OBJECT_ID('dbo.ResponsibilityTypeRelationOverrideItem') > 0)
+begin
+	if exists(select 1 from ResponsibilityTypeRelationOverrideItem)
+	begin
+		truncate table [security].[Override];
+
+		insert into [security].[Override] (RoleId, SecurityType, SecurityId, AssetId, Context, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	ResponsibilityTypeID,
+					iif(SecurityAsset = 'G', 1, 2),
+					SecurityAssetID,
+					AssetID,
+					Context,
+					UpdatedBy,
+					UpdatedOn,
+					UpdatedBy,
+					UpdatedOn
+			from	ResponsibilityTypeRelationOverrideItem;
+	end
+end
 ]]>
     </sql>
   </changeSet>
