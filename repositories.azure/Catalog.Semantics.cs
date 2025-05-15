@@ -162,7 +162,7 @@ namespace repositories.azure
 select	count(1) as [Count] from ({tableQuery}) S {whereSql}
 select	S.*, 
 		case
-			when exists(select 1 from AssetDataProfile where Qualifier = S.Qualifier) then 1
+			when exists(select 1 from AssetDataProfile where TypeQualifier = S.Qualifier) then 1
 			else 0
 		end as hasQualifiedAssets,
 		(
