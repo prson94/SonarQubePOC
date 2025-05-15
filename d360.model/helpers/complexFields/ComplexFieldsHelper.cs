@@ -725,6 +725,7 @@ namespace d360.model.helpers
 				joins.Clear();
 				selects.Clear();
 			}
+
 			selects.Add("A.[uid] as [Uid]");
 			foreach (var ft in fields)
 			{
@@ -767,6 +768,12 @@ namespace d360.model.helpers
 							string cnt_prefix = "cntprefix_" + ft.ID;
 							dbArgs.Add(cnt_prefix, ft.CounterPrefix);
 							selectField = $"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20)))";
+							break;
+						case "path":
+							selectField = "Node.DisplayPath";
+							if(!joins.Any(j => j.Contains("AssetPath Node"))) {
+								joins.Add("left outer join AssetPath Node on Node.ID = A.ID");
+							}
 							break;
 						default:
 							selectField = $"{fieldSelector}.FormattedValue";

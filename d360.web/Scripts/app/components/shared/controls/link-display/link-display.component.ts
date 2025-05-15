@@ -50,6 +50,10 @@ export class LinkDisplayComponent {
 	get isRoute(): boolean {
 		return this.routeUrl !== null;
 	}
+
+	get hasValue(): boolean {
+		return this.linkName !== null;
+	}
 }
 
 @NgModule({
