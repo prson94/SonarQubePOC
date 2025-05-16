@@ -66,21 +66,21 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includetotal"))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue("_includetotal");
-				var result = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			bool includeSamples = true;
 			if (queryParams.IsQueryParameterPresent("_includesamples"))
 			{
 				string includesamplesStringValue = queryParams.ReadQueryParameterValue("_includesamples");
-				var result = bool.TryParse(includesamplesStringValue, out includeSamples);
+				bool.TryParse(includesamplesStringValue, out includeSamples);
 			}
 
 			bool includeChildAssets = false;
 			if (queryParams.IsQueryParameterPresent("_includechildassets"))
 			{
 				string includeChildAssetsStringValue = queryParams.ReadQueryParameterValue("_includechildassets");
-				var result = bool.TryParse(includeChildAssetsStringValue, out includeChildAssets);
+				bool.TryParse(includeChildAssetsStringValue, out includeChildAssets);
 			}
 
 			var descendantsSQL = $@"with descendants as (select @assetID as ID)";
@@ -227,7 +227,7 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includetotal"))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue("_includetotal");
-				var result = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			bool includeChildAssets = false;
@@ -241,7 +241,7 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includesamples"))
 			{
 				string includesamplesStringValue = queryParams.ReadQueryParameterValue("_includesamples");
-				var result = bool.TryParse(includesamplesStringValue, out includeSamples);
+				bool.TryParse(includesamplesStringValue, out includeSamples);
 			}
 
 			DateTime startDate = DateTime.UtcNow;
@@ -457,14 +457,14 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includetotal"))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue("_includetotal");
-				var result = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			bool includeSamples = true;
 			if (queryParams.IsQueryParameterPresent("_includesamples"))
 			{
 				string includesamplesStringValue = queryParams.ReadQueryParameterValue("_includesamples");
-				var result = bool.TryParse(includesamplesStringValue, out includeSamples);
+				bool.TryParse(includesamplesStringValue, out includeSamples);
 			}
 
 			var dataProfileIdsSql = $@"
@@ -587,7 +587,7 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includetotal"))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue("_includetotal");
-				var result = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			var responsequery = await BuildMatchAssetsSQL(assetUid, similarType, queryParams, dbArgs, onlyTotal);
@@ -755,14 +755,6 @@ namespace repositories.azure
 				response.Message = String.Format(Error.TypeQualifierNotFound, typeQualifier);
 				return response;
 			}
-
-			if (minConfidence <= 0 || minConfidence > 1)
-			{
-				response.IsSuccess = false;
-				response.StatusCode = 400;
-				response.Message = Error.MinConfidenceInvalid;
-				return response;
-		}
 
 			if (minConfidence <= 0 || minConfidence > 1)
 			{
@@ -3459,7 +3451,7 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent("_includetotal"))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue("_includetotal");
-				var result = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			if (queryParams.IsQueryParameterPresent("_filter"))
