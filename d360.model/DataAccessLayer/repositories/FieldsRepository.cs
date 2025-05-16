@@ -2325,14 +2325,14 @@ namespace d360.model.DataAccessLayer
 			var objId = typeIdentifierInfoModel.ObjectID;
 			var obj = typeIdentifierInfoModel.Object;
 
-			bool fieldsInUse = CompanyContext.Connection.QuerySingle<bool>(
-				"select	cast(1 as bit) " +
+			bool? fieldsInUse = CompanyContext.Connection.QueryFirstOrDefault<bool?>(
+				"select	top 1 cast(1 as bit) " +
 				"from	dbo.AssetType a " +
 				"		inner join security.[Rule] r on r.AssetTypeId = a.Id and a.Object = @obj and a.ObjectId = @objId " +
 				"		inner join security.RuleWhen w on w.Id = r.Id and w.FieldTypeId in @ids", 
 			new { obj, objId, ids });
 
-			return fieldsInUse;
+			return fieldsInUse ?? false;
 		}
 
 		public int DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
