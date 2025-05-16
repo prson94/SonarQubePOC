@@ -3607,6 +3607,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [_cascade] provided.
+        /// </summary>
+        public static string InvalidCascade {
+            get {
+                return ResourceManager.GetString("InvalidCascade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} provided..
         /// </summary>
         public static string InvalidClass {

@@ -9,33 +9,11 @@ namespace repositories
 {
     public interface IDataProfileRepository
     {
-        Task<List<DataProfileUpsertResponse>> UpsertAsync(List<DataProfileUpsertModel> DataProfileModels, ApiExecution execution, bool isInsert);
-
-        Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
-
-        Task<List<ProfilesSeriesApiViewModel>> GetDataProfilesSeries(IEnumerable<KeyValuePair<string, string>> queryParams);
-
-        Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams);
-
-        Task<AssetDataProfilesApiViewModel> GetDataProfiles(IEnumerable<KeyValuePair<string, string>> queryParams);
-
-        Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
-
-        Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
-
         Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 
         Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 
         Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution);
-
-        Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams, bool onlyTotal = false);
-
-        Task<IEnumerable<DataProfileExportModel>> GetMatchedAssetsForExport(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
-
-        Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
-        Task<bool> DoesTypeQualifierExist(string typeQualifier);
-		Task<bool> DoesSemanticTypeExist(string qualifier);
 
 	}
 }

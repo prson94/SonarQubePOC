@@ -2,6 +2,8 @@
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
+using DocumentFormat.OpenXml.EMMA;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories.azure.extensions;
 using System;
@@ -117,6 +119,30 @@ where   [ObjectID] = @oid and [Object] = @o";
 			return model;
 		}
 
+		public async Task<List<string[]>> ReadAssetPathsAssetUID(Guid assetUId)
+		{
+			List<string[]> retvalue = new List<string[]>();
+			using (var connection = ConnectionProvider.Connect((true)))
+			{
+				string sql = $@"declare @assetid bigint;
+								select @assetid = id from asset where uid = @assetUId;
+
+								select graph.GetPathAsJson(ap.Segments)
+								from assetpath 
+								where id = @@assetid;";
+				string results = await connection.QueryFirstOrDefaultAsync<string>(sql, new { assetUId });
+
+				if (results != null)
+				{
+					if (results != "[ERROR:KEY_FIELDS_NULL]")
+					{
+						var x = JsonConvert.DeserializeObject<List<string[]>>(results);
+						retvalue = x;
+					}
+				}
+			}
+			return retvalue;
+		}
 		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
 		{
 			var dbArgs = new DynamicParameters();

@@ -293,6 +293,15 @@ namespace d360.core.entities
 		public Guid uid { get; set; }
 	}
 
+	public class AssetWithAssetTypeResult
+	{
+		public long ID { get; set; }
+		public AssetTypeClass assetTypeClass { get; set; }
+		public string Object { get; set; }
+		public int ObjectID { get; set; }
+		public Guid uid { get; set; }
+	}
+
 	public class AssetPathResults
 	{
 		public IEnumerable<AssetPathResult> items { get; set; }

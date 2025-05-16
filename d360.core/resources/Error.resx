@@ -3309,4 +3309,7 @@
   <data name="ReferenceListNotSupported" xml:space="preserve">
     <value>[ReferenceList] fields are not allowed for current Asset Type!</value>
   </data>
+  <data name="InvalidCascade" xml:space="preserve">
+    <value>Invalid [_cascade] provided</value>
+  </data>
 </root>

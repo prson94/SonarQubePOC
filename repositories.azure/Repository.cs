@@ -24,6 +24,12 @@ namespace repositories.azure
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 		internal readonly int MAX_PERMISSIONS_MASK = 15854;
 
+		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
+		internal const int API_V2_RETRY_LIMIT = 10;
+		internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
+
+		public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
+
 		protected Repository(DapperConnectionProvider provider)
 		{
 			ConnectionProvider = provider;
@@ -336,6 +342,59 @@ namespace repositories.azure
 			}
 		}
 
+		protected string ReadExceptionMessage(Exception ex, int maxsize = 2000)
+		{
+			string message = GetFullExceptionData(ex, false);
+			if (message == null)
+			{
+				return string.Empty;
+			}
+			else if (message.Length > maxsize)
+			{
+				return message.Substring(0, maxsize);
+			}
+			else
+			{
+				return message;
+			}
+		}
+
+		protected async Task UpdateExecutionWithErrorFromExceptionCount(ApiExecution execution, Exception ex, int processed, int error)
+		{
+			try
+			{
+				string message = GetFullExceptionData(ex, false);
+				execution.ErrorMessage = message;
+				execution.CompletedOn = DateTime.UtcNow;
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					await connection.ExecuteAsync($@"
+					update api.execution
+					set ErrorMessage = @message, Processed = @processed, Error = @error
+					where executionid = @ExecutionID", new { execution.ExecutionID, message, processed, error });
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		protected async Task SetApiExecutionProcessingStartTime(Guid ExecutionId)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				string sql = "update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null";
+
+				await connection.ExecuteAsync(sql, new
+				{
+					startedOn = DateTime.UtcNow,
+					ExecutionId
+				});
+
+			}
+		}
+
 		protected async Task UpsertApiExecution(ApiExecution execution)
 		{
 			try
@@ -549,6 +608,95 @@ namespace repositories.azure
 			}
 
 		}
+		protected void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
+		{
+			int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Execute($@"
+								update	api.Execution
+								set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
+								where	ExecutionID = @executionID; 
+
+								update	{targetTable} 
+								set		Success = 0,
+										[Message] = LEFT(@msg,@characterLimit)
+								where	ExecutionID = @executionID 
+										 and ItemNumber between @beginItemNumber and @endItemNumber;",
+				new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
+			}
+		}
+
+		protected async Task<CurrentExecutionLocationModel> GetCurrentExecutionLocation(Guid executionID, string targetTable)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				return await connection.QueryFirstOrDefaultAsync<CurrentExecutionLocationModel>($@"select E.ExecutionID,
+																coalesce(T.HighestItemNumber, 0) as HighestItemNumber,
+																coalesce(T.HighestItemNumberProcessed, 0) as HighestItemNumberProcessed
+														from	api.Execution E
+																outer apply (
+																	select	max(ItemNumber) as HighestItemNumber,
+																		max(case when Success is not null then ItemNumber else 0 end) as HighestItemNumberProcessed
+																	from	{targetTable} A
+																	where	ExecutionID = E.ExecutionID
+																) T
+														where	E.ExecutionID = @executionID;", new { executionID });
+			}
+		}
+
+
+
+		protected void addMeasurement(Dictionary<string, double> metrics, string key, double value, int stepNumber)
+		{
+			metrics[$"{stepNumber}-{key}"] = value;
+		}
+
+		protected class CurrentExecutionLocationModel
+		{
+			public Guid ExecutionID { get; set; }
+			public int HighestItemNumber { get; set; }
+
+			public int HighestItemNumberProcessed { get; set; }
+		}
+
+		protected async Task<AssetWithAssetTypeResult> ReadAssetwithAssetTypeAsync(Guid assetUid)
+		{
+			var sql = $@"Select a.ID, att.Class AssetTypeClass,a.Object,a.ObjectID, a.uid from Asset a inner join AssetType att on a.assettypeid = att.id where a.uid = @assetUid";
+
+			var model = new AssetWithAssetTypeResult();
+
+			using (var connection = ConnectionProvider.Connect((true)))
+			{
+				model = await connection.QueryFirstOrDefaultAsync<AssetWithAssetTypeResult>(sql, new { assetUid });
+			}
+			return model;
+		}
+
+		public string GetEscapedFilterString(string filter, bool isContains = false)
+		{
+
+			char[] escapeChars = new char[] { '%', '_', '^', '[' };
+			string escapedValue = "";
+
+			foreach (char c in filter)
+			{
+				if (escapeChars.Contains(c))
+				{
+					escapedValue += $"[{c}]";
+				}
+				else
+				{
+					escapedValue += c;
+				}
+			}
+
+			escapedValue = escapedValue.Replace("*", "%").Replace("?", "_");
+			escapedValue = isContains ? $"%{escapedValue}%" : $"{escapedValue}%";
+
+			return escapedValue;
+		}
+
 	}
 }
 
