@@ -270,6 +270,7 @@ export class WorkflowTypeEdit extends BaseComponent implements OnInit, OnDestroy
 			return; //selecting the current value, nothing changed.
 		}
 
+		this.model.Event.ScoreType = null;
 		this.selectedObjectType = e;
         this.showAddCondition = false;
         this.conditions = [];
@@ -309,7 +310,12 @@ export class WorkflowTypeEdit extends BaseComponent implements OnInit, OnDestroy
     selectIssueObjectType(e: any) {
         this.model.Event.IssueObject = e;
         this.loadContextualFields();
-    }
+	}
+
+	selectScoreType(e: any) {
+		this.model.Event.ScoreType = e;
+		this.loadContextualFields();
+	}
 
     loadResponsibilities() {
         if (this.objectType == null || this.objectID == null) {
