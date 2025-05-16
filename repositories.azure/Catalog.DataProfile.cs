@@ -56,7 +56,7 @@ namespace repositories.azure
 						};
 
 				// Parse and get back any advanced filters, and load dbArguments and where clauses.
-				var advancedFilters = queryParams.ParseODataFilters();//.ParseAdvancedFilters();
+				var advancedFilters = queryParams.ParseODataFilters();
 				(dbArgs, whereClauses) = advancedFilters.ConvertToSqlFilters(fieldList);
 			}
 
@@ -974,7 +974,6 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<Exception>> RemoveDataProfilesAsync(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600)
 		{
 			RepositoryResponse<Exception> response = new RepositoryResponse<Exception>(null, 200, true);
-			Stopwatch swBegin = Stopwatch.StartNew();
 
 			bool generalChecksCompleted = false;
 			int itemNumber = 1;
@@ -1841,8 +1840,6 @@ namespace repositories.azure
 
 		public async Task<RepositoryResponse<Exception>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600)
 		{
-			Stopwatch swBegin = Stopwatch.StartNew();
-
 			RepositoryResponse<Exception> response = new RepositoryResponse<Exception>(null, 200, true);
 
 			bool generalChecksCompleted = false;
