@@ -429,7 +429,6 @@ namespace repositories.azure
 
 
 			Guid assetUid;
-			Asset asset;
 			if (queryParams.IsQueryParameterPresent("_assetuid"))
 			{
 				string assetUidstring = queryParams.ReadQueryParameterValue("_assetuid");
@@ -563,10 +562,9 @@ namespace repositories.azure
 							{additionalWhereClause}
 							order by 1";
 
-			List< ProfilesSeriesApiViewModel> results = new List< ProfilesSeriesApiViewModel>();
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				results = (await connection.QueryAsync<ProfilesSeriesApiViewModel>(sql, dbArgs, commandTimeout: CommandTimeout)).ToList();
+				List<ProfilesSeriesApiViewModel>  results = (await connection.QueryAsync<ProfilesSeriesApiViewModel>(sql, dbArgs, commandTimeout: CommandTimeout)).ToList();
 
 				response.Data =  results;
 
@@ -779,7 +777,7 @@ namespace repositories.azure
 			if (queryParams.IsQueryParameterPresent(parameterName))
 			{
 				string includeTotalStringValue = queryParams.ReadQueryParameterValue(parameterName);
-				var resultbool = bool.TryParse(includeTotalStringValue, out includeTotal);
+				bool.TryParse(includeTotalStringValue, out includeTotal);
 			}
 
 			if (queryParams.IsQueryParameterPresent("_filter"))
@@ -1617,9 +1615,6 @@ namespace repositories.azure
 			DateTime? endDate = null;
 			bool cascade = false;
 
-			bool hasStartDate = false;
-			bool hasEndDate = false;
-
 			string parametername = "_startdate";
 			if (queryParams.IsQueryParameterPresent(parametername))
 			{
@@ -1632,7 +1627,6 @@ namespace repositories.azure
 				}
 				else
 				{
-					hasStartDate = true;
 					startDate = outStartDate;
 				}
 			}
@@ -1649,7 +1643,6 @@ namespace repositories.azure
 				}
 				else
 				{
-					hasEndDate = true;
 					endDate = outEndDate;
 				}
 			}
@@ -1724,131 +1717,129 @@ namespace repositories.azure
 				response.IsSuccess = false;
 				response.StatusCode = 400;
 				response.Message = Error.JSONValidMessage;
+				return response;
 			}
 
 			//Key Field Validation
-			if (response.IsSuccess && models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
+			if (models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
 			{
 				response.IsSuccess = false;
 				response.StatusCode = 400;
 				response.Message = "Error while processing request.";
+				return response;
 			}
 
-			if (response.IsSuccess)
+			var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+
+			if (dupRecords.Any())
 			{
-				var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
+				var ErrorMessage = string.Format(Error.DuplicateRecordBatchProfile, string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})")));
 
-				if (dupRecords.Any())
+				response.IsSuccess = false;
+				response.StatusCode = 400;
+				response.Message = ErrorMessage;
+				return response;
+			}
+
+			List<ValidationResult> validationResults = new List<ValidationResult>();
+			foreach (var model in models)
+			{
+				validationResults.Clear();
+				var asset = await ReadAssetwithAssetTypeAsync(model.assetUid);
+
+				if (asset == null)
 				{
-					var ErrorMessage = string.Format(Error.DuplicateRecordBatchProfile, string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})")));
-
 					response.IsSuccess = false;
 					response.StatusCode = 400;
-					response.Message = ErrorMessage;
+					response.Message = string.Format(Error.InvalidAssetUid, model.assetUid.ToString());
+					return response;
 				}
-			}
 
-			if (response.IsSuccess)
-			{
-				List<ValidationResult> validationResults = new List<ValidationResult>();
-				foreach (var model in models)
+				if (asset.assetTypeClass != AssetTypeClass.BusinessAsset && asset.assetTypeClass != AssetTypeClass.TechnicalAsset)
 				{
-					validationResults.Clear();
-					var asset = await ReadAssetwithAssetTypeAsync(model.assetUid);
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = string.Format(Error.ProfilingNotSupportAssetClass, asset.assetTypeClass.ToString());
+					return response;
+				}
 
-					if (asset == null)
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = string.Format(Error.InvalidAssetUid, model.assetUid.ToString());
-					}
+				bool success = Enum.IsDefined(typeof(ProfileType), model.ProfileType);
+				if (!success)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = string.Format(Error.ValidProfiletype, (int)model.ProfileType);
+					return response;
+				}
 
-					if (response.IsSuccess && asset.assetTypeClass != AssetTypeClass.BusinessAsset && asset.assetTypeClass != AssetTypeClass.TechnicalAsset)
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = string.Format(Error.ProfilingNotSupportAssetClass, asset.assetTypeClass.ToString());
-					}
+				bool recordExists = false;
 
-					if (response.IsSuccess)
-					{
-						bool success = Enum.IsDefined(typeof(ProfileType), model.ProfileType);
-						if (!success)
-						{
-							response.IsSuccess = false;
-							response.StatusCode = 400;
-							response.Message = string.Format(Error.ValidProfiletype, (int)model.ProfileType);
-						}
-					}
+				using (var connection = ConnectionProvider.Connect(true))
+				{
+					var dtoffset = 	(DateTimeOffset)model.profileSetDate;
+					recordExists = await connection.QueryFirstOrDefaultAsync<bool>("select cast(1 as bit) from AssetDataProfile where AssetId = @assetID and ProfileSetDate = @ProfileSetDate", new { assetID = asset.ID, ProfileSetDate = dtoffset });
+				}
 
-					bool recordExists = false;
-
-					if (response.IsSuccess)
-					{
-						using (var connection = ConnectionProvider.Connect(true))
-						{
-						    var dtoffset = 	(DateTimeOffset)model.profileSetDate;
-							recordExists = await connection.QueryFirstOrDefaultAsync<bool>("select cast(1 as bit) from AssetDataProfile where AssetId = @assetID and ProfileSetDate = @ProfileSetDate", new { assetID = asset.ID, ProfileSetDate = dtoffset });
-						}
-
-						//check insert
-						if (recordExists && IsInsert)
-						{
-							response.IsSuccess = false;
-							response.StatusCode = 400;
-							response.Message = string.Format(Error.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"));
-						}
-					}
+				//check insert
+				if (recordExists && IsInsert)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = string.Format(Error.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"));
+					return response;
+				}
 
 
-					//check update
-					if (response.IsSuccess && !recordExists && !IsInsert)
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = string.Format(Error.AssetUidProfileSetDateRecordNotfound, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"));
-					}
+				//check update
+				if (!recordExists && !IsInsert)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = string.Format(Error.AssetUidProfileSetDateRecordNotfound, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"));
+					return response;
+				}
 
-					if (response.IsSuccess && model.topK != null && model.topK.Any(x => x.Trim() == string.Empty))
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = Error.ElementTopKNotEmpty;
-					}
+				if (model.topK != null && model.topK.Any(x => x.Trim() == string.Empty))
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = Error.ElementTopKNotEmpty;
+					return response;
+				}
 
-					if (response.IsSuccess && model.topK != null &&  model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = Error.ElementBottomKNotEmpty;
-					}
+				if (model.topK != null &&  model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = Error.ElementBottomKNotEmpty;
+					return response;
+				}
 
-					if (response.IsSuccess)
-					{
-						bool isValid =  Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+				bool isValid =  Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
 
-						if (!isValid)
-						{
-							response.IsSuccess = false;
-							response.StatusCode = 400;
-							response.Message = validationResults.First().ErrorMessage;
-						}
-					}
+				if (!isValid)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = validationResults.First().ErrorMessage;
+					return response;
+				}
 
 
-					if (response.IsSuccess && model.ProfileSource != null && model.ProfileSource?.Length > 100)
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = Error.InvalidProfileSourceLength;
-					}
+				if (model.ProfileSource != null && model.ProfileSource?.Length > 100)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = Error.InvalidProfileSourceLength;
+					return response;
+				}
 
-					if (response.IsSuccess && model.ProfileSeries != null && model.ProfileSeries?.Length > 100)
-					{
-						response.IsSuccess = false;
-						response.StatusCode = 400;
-						response.Message = Error.InvalidProfileSeriesLength;
-					}
+				if (model.ProfileSeries != null && model.ProfileSeries?.Length > 100)
+				{
+					response.IsSuccess = false;
+					response.StatusCode = 400;
+					response.Message = Error.InvalidProfileSeriesLength;
+					return response;
 				}
 			}
 
