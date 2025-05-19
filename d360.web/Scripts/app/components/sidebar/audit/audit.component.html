@@ -58,9 +58,10 @@
                         </ng-container>
                         <ng-template #valueDisplay>
                             <ng-container *ngIf="item[column.datafield]">
-                                <span [ngSwitch]="(item.fieldType ? item.fieldType:'').toLowerCase()">
+                                <span [ngSwitch]="getValueDisplayType(item)">
                                     <div *ngSwitchCase="'date'" [innerHtml]="item[column.datafield] | date: 'shortDate'"></div>
                                     <div *ngSwitchCase="'datetime'" [innerHtml]="item[column.datafield] | date: 'medium'"></div>
+                                    <div *ngSwitchCase="'text'" [innerText]="item[column.datafield]"></div>
                                     <div *ngSwitchDefault [innerHtml]="item[column.datafield]"></div>
                                 </span>
                             </ng-container>
