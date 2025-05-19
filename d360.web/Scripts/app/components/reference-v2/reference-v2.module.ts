@@ -25,7 +25,6 @@ import { ReferenceItemTypeDefinitionComponent } from './tabs/definition/referenc
 import { ReferenceItemTypeFieldsComponent } from './tabs/fields/reference-item-type-fields.component';
 import { ReferenceItemTypeItemsComponent } from './tabs/items/referrence-item-type-items.component';
 import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-log.component';
-import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
 
 import { ReferenceItemTypeHeaderComponent } from './tabs/shared/reference-header.component';
 import { ReferenceItemTypeTabsComponent } from './tabs/shared/reference-tabs.component';
@@ -115,7 +114,6 @@ import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-it
 		ReferenceItemTypeFieldsComponent,
 		ReferenceItemTypeItemsComponent,
 		ReferenceItemTypeLogComponent,
-		ReferenceItemTypeRelationshipsComponent,
 		ReferenceItemTypeHeaderComponent,
 		ReferenceItemTypeAssignmentsComponent,
 		ReferenceItemTypeWorkflowComponent,
@@ -128,7 +126,6 @@ import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-it
 		ReferenceItemTypeFieldsComponent,
 		ReferenceItemTypeItemsComponent,
 		ReferenceItemTypeLogComponent,
-		ReferenceItemTypeRelationshipsComponent,
 		ReferenceItemTypeAssignmentsComponent,
 		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeHeaderComponent,

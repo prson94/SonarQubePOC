@@ -187,7 +187,7 @@ namespace d360.web.Controllers.V2
 		[HttpDelete, Route("types"), RequireAdminPermissions, Obsolete, ApiExplorerSettings(IgnoreApi = true)]
 		public IHttpActionResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
 		{
-			return Ok(new ResponsibilityTypeDeleteResult { Success = false, Message = "Not supported", Uid = Guid.Empty });
+			return Ok(new RoleDeleteResult { Success = false, Message = "Not supported", Uid = Guid.Empty });
 		}
 
 		[HttpPut, Route("{assetUid:guid}/{responsibilityUid:guid}"), Obsolete, ApiExplorerSettings(IgnoreApi = true)]

@@ -34,7 +34,7 @@ namespace repositories
 		Task<RepositoryResponse<bool>> RemoveOverridesByGroupAsync(int groupId);
 		Task<RepositoryResponse<bool>> RemoveOverridesByUserAsync(int userId);
 		Task<RepositoryResponse<bool>> RemoveOverridesByAssetRoleAndUsersAsync(long assetId, int roleId, List<Guid> users);
-		Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid);
+		Task<RepositoryResponse<RoleDeleteResult>> RemoveRoleAsync(Guid uid);
 		Task RunPolicyAsync(Guid? assetUid = null, Guid? executionUid = null, Guid? policyUid = null);
 		Task<RepositoryResponse<ReadSecurityPolicy>> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model);
 		Task<RepositoryResponse<bool>> UpdateOverrideAsync(Guid uid, UpdateSecurityPolicyOverride model);

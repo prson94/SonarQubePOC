@@ -904,7 +904,7 @@ namespace d360.core.entities
 	}
 
 	[DataContract]
-	public class ResponsibilityTypeDeleteResult
+	public class RoleDeleteResult
 	{
 		[DataMember]
 		public Guid Uid { get; set; }

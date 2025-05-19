@@ -201,7 +201,7 @@ namespace d360.web.Controllers.V2
 			MapToApiVersion("2.0"),
 			Route("roles/{uid:Guid}"),
 			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ResponsibilityTypeDeleteResult)),
+			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(RoleDeleteResult)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
@@ -213,8 +213,6 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageArgumentResponse(Error.InvalidResponsibilityUid);
 			}
-
-			
 
 			var result = await Security.RemoveRoleAsync(uid);
 			return sendRepositoryOkResponse(result);

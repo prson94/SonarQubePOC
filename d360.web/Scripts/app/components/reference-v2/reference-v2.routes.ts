@@ -6,7 +6,6 @@ import { ReferenceItemTypeDefinitionComponent } from './tabs/definition/referenc
 import { ReferenceItemTypeItemsComponent } from './tabs/items/referrence-item-type-items.component';
 import { ReferenceItemTypeFieldsComponent } from './tabs/fields/reference-item-type-fields.component';
 import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-log.component';
-import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
 import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/reference-item-type-assignments.component';
 import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
 import { FeatureFlagGuard } from '../../guards/feature-flag.guard';
@@ -21,7 +20,6 @@ const routes: Routes = [
 			{ path: ":uid/items", component: ReferenceItemTypeItemsComponent },
 			{ path: ":uid/fields", component: ReferenceItemTypeFieldsComponent },
 			{ path: ":uid/log", component: ReferenceItemTypeLogComponent },
-			{ path: ":uid/relationships", component: ReferenceItemTypeRelationshipsComponent },
 			{ path: ":uid/assignments", component: ReferenceItemTypeAssignmentsComponent, canActivate: [FeatureFlagGuard] },
 			{ path: ":uid/workflow", component: ReferenceItemTypeWorkflowComponent,canActivate: [FeatureFlagGuard] }
 		]
