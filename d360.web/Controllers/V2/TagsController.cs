@@ -729,7 +729,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null ||
 				string.IsNullOrWhiteSpace(model.Value) ||
-				!model.Value.IsValidForTag())
+				!model.Value.IsValidForTagType())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
@@ -774,7 +774,7 @@ namespace d360.web.Controllers.V2
 			Guid tagTypeId;
 			if (model == null ||
 				string.IsNullOrWhiteSpace(model.Value) ||
-				!model.Value.IsValidForTag())
+				!model.Value.IsValidForTagType())
 			{
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
