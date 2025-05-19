@@ -88,7 +88,6 @@ namespace igx.jobs.apiexecutionprocessor
 				catch (Exception ex)
 				{
 					log.LogError(ex, "Error while processing security policy.");
-					throw;
 				}
 			}
 		}

@@ -2,6 +2,7 @@
 {
     public static class Queue
     {
+		public const string AssetTypeChange = "asset-type-change";
 		public const string BulkLoad = "bulk-load";
 		public const string DisplayValue = "display-value";
 		public const string Execution = "execution";

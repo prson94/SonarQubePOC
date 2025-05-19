@@ -2754,83 +2754,70 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteSingleAssetTypesAsync(AssetTypeSingleDelete assetType)
 		{
-			var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
-			string errorMessage;
+			var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 
-			try
+			if (governanceRole == assetType.Uid)
 			{
-				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
-
-				if (governanceRole == assetType.Uid)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ReferenceUIDConfigureAsGovernRole, assetType.Uid.ToString())));
-				}
-
-				if (assetType == null)
-				{
-					assetType = readRequestJsonContent<AssetTypeSingleDelete>(Request).Result;
-				}
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
-				}
-
-				var type = AssetRepository.GetAssetTypeByUID(assetType.Uid);
-
-				if (type == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, assetType.Uid.ToString())));
-				}
-
-				string deletionInProgressQuery = @"SELECT count(1)
-									  FROM [api].[Execution]
-									  where Route = '/api/v2/assets/single'
-									  and completedon is null
-									  and Method = 'DELETE'
-									  and Fields = @fields
-									  and ErrorMessage is null";
-
-				var fieldObj = new ApiExecutionFields_DeleteAssetTypes { AssetTypeUid = assetType.Uid };
-
-				var res = Company.Query<int>(
-					deletionInProgressQuery,
-					new { fields = JsonConvert.SerializeObject(fieldObj) })
-					.FirstOrDefault();
-
-				if (res > 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeInProcessNotDelete, assetType.Uid.ToString())));
-				}
-
-				var execution = getApiExecution(1, fieldObj, action: ApiExecutionAction.DeleteAssetTypes);
-				var deletes = new AssetTypeDeletes
-				{
-					new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid }
-				};
-
-				var deleteAssetTypesResults = AssetRepository.DeleteAssetTypes(deletes, execution, false);
-				Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-						   deleteAssetTypesResults
-						)
-					)
-				);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.ReferenceUIDConfigureAsGovernRole, assetType.Uid.ToString())));
 			}
-			catch (Exception ex)
+
+			if (assetType == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix },
-					{ Label.AssetCount, $"{((assetType != null) ? 1 : 0)}" }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
+				assetType = readRequestJsonContent<AssetTypeSingleDelete>(Request).Result;
 			}
+
+			if (assetType == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, Error.JSONValidMessage));
+			}
+
+			var type = AssetRepository.GetAssetTypeByUID(assetType.Uid);
+
+			if (type == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeNotFound, assetType.Uid.ToString())));
+			}
+
+			string deletionInProgressQuery = @"SELECT count(1)
+									FROM [api].[Execution]
+									where Route = '/api/v2/assets/single'
+									and completedon is null
+									and Method = 'DELETE'
+									and Fields = @fields
+									and ErrorMessage is null";
+
+			var fieldObj = new ApiExecutionFields_DeleteAssetTypes { AssetTypeUid = assetType.Uid };
+
+			var res = Company.Query<int>(
+				deletionInProgressQuery,
+				new { fields = JsonConvert.SerializeObject(fieldObj) })
+				.FirstOrDefault();
+
+			if (res > 0)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.AssetTypeInProcessNotDelete, assetType.Uid.ToString())));
+			}
+
+			var execution = getApiExecution(1, fieldObj, action: ApiExecutionAction.DeleteAssetTypes);
+			var deletes = new AssetTypeDeletes
+			{
+				new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid }
+			};
+
+			// TODO: Does a logical delete.
+			var deleteAssetTypesResults = AssetRepository.DeleteAssetTypes(deletes, execution, false);
+
+			// This call below will deal with the actual deletion so as not to slow down the call from the UI.
+			await Queue.CreateMessageAsync(constants.Queue.AssetTypeChange, new AssetTypeChangeMessage
+			{
+				AssetTypeId = type.ID,
+				Action = AssetTypeChangeAction.Removal,
+				CompanyID = SecurityContext.CompanyID
+			});
+
+			Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
+
+			return Ok(deleteAssetTypesResults);
 		}
 
 		/// <summary>
