@@ -145,11 +145,6 @@ drop table if exists #tbl;
 			return response;
 		}
 
-		public Task CreateSemanticType()
-		{
-			throw new NotImplementedException();
-		}
-
 		public async Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid)
 		{
 			RepositoryResponse<TagApiModel> response;
@@ -866,11 +861,6 @@ drop table if exists #tbl;
 			return response;
 		}
 
-		public async Task<RepositoryResponse<string>> RemoveSemanticType()
-		{
-			throw new NotImplementedException();
-		}
-
 		public async Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags)
 		{
 			var response = new RepositoryResponse<bool>(false, 200, false);
@@ -929,11 +919,6 @@ drop table if exists #tbl;
 			}
 
 			return response;
-		}
-
-		public async Task<RepositoryResponse<Semantic>> UpdateSemanticType()
-		{
-			throw new NotImplementedException();
 		}
 
 		public async Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value)

@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Table.api.InProcessAuditField-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="PuneetGupta" id="Table.api.InProcessAuditField-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessAuditField')
 BEGIN
 	CREATE TABLE [api].[InProcessAuditField](
@@ -30,36 +27,24 @@ BEGIN
 		CONSTRAINT [PK_InProcessAuditField] PRIMARY KEY CLUSTERED ([ID] ASC )
 	)
 END
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="Puneet Gupta" id="Table.api.InProcessAuditField-Indices-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.api.InProcessAuditField-Indices-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessAuditField_ProcessUid')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_InProcessAuditField_ProcessUid ON [api].[InProcessAuditField] ([ProcessUid],ItemNumber,ProcessID) INCLUDE (ID)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_InProcessAuditField_ProcessUid')
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessAuditField_ProcessId-ProcessUid-FieldTypeId')
 BEGIN
-	DROP INDEX IX_InProcessAuditField_ProcessUid ON [api].[InProcessAuditField]
+	CREATE NONCLUSTERED INDEX [IX_InProcessAuditField_ProcessId-ProcessUid-FieldTypeId] ON [api].[InProcessAuditField] ([ProcessID], [ProcessUid], [FieldTypeID]) INCLUDE ([FieldName], [MaxAuditID], [ObjectId], [PreviousValue], [Value]) WITH (ONLINE = ON)
 END
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

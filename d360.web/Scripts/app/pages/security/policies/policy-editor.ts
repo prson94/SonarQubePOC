@@ -103,8 +103,8 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 	title: string = $localize`Edit`;
 	instructions: string = '';
-	newInstructions: string = $localize`Create a policy that will assign users or groups to a role on a set of assets based on attributes of those assets.`;
-	editInstructions: string = $localize`Updating this policy that may alter role assignments on assets.`;
+	newInstructions: string = $localize`Create a security policy that will assign users or groups to a role on a set of assets based on attributes of those assets.`;
+	editInstructions: string = $localize`Updating this security policy that may alter role assignments on assets.`;
 	addFieldCheckTitle = $localize`Add Field Condition`;
 	addRelationCheckTitle = $localize`Add Relation Condition`;
 
@@ -199,13 +199,12 @@ export class PolicyEditor implements OnChanges, OnInit {
     }
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (changes && changes.item && changes.item.currentValue !== changes.item.previousValue) {
-			this.loadForm();
-
-			if (this.item && this.item.uid) {
-				this.loadSelectedAssetTypeOptions(this.item.assetTypeUid);
-			}
-		}
+		this.securityService
+			.getPolicyEditAssetTypeOptions(this.item.assetTypeUid)
+			.subscribe((o) => {
+				this.selectedAssetTypeOptions = o;
+				this.loadForm();
+			});
 	}
 
 	get whenConditions(): FormArray {
@@ -305,11 +304,11 @@ export class PolicyEditor implements OnChanges, OnInit {
 			this.instructions = this.editInstructions;
 			this.saveLabel = $localize`Save Changes`;
 			this.cancelLabel = $localize`Close`;
-			this.title = $localize`Edit Policy`;
+			this.title = $localize`Edit Security Policy`;
 		}
 		else {
 			this.instructions = this.newInstructions;
-			this.title = $localize`Add Policy`;
+			this.title = $localize`Add Security Policy`;
 			this.saveLabel = this.title;
 			this.cancelLabel = $localize`Cancel`;
 		}
@@ -356,13 +355,6 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 	get isGroup(): boolean {
 		return (this.policyForm.get("securityType").value === "Group");
-	}
-
-	loadSelectedAssetTypeOptions(assetTypeUid: string) {
-		this.securityService.getPolicyEditAssetTypeOptions(assetTypeUid)
-			.subscribe((o) => {
-				this.selectedAssetTypeOptions = o;
-			});
 	}
 
 	loadWhenValues(item: FormGroup, type: string) {

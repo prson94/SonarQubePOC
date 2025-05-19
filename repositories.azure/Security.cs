@@ -5,6 +5,7 @@ using d360.core.enums;
 using d360.core.security;
 using Dapper;
 using DocumentFormat.OpenXml.EMMA;
+using MoreLinq;
 using Newtonsoft.Json;
 using repositories.azure.extensions;
 using System;
@@ -964,6 +965,8 @@ order by SecurityType asc, Name asc;
 					"select @roleId = Id from [security].[Role] where Uid = @RoleUid; " +
 					"select @assetTypeId; select @id; select @roleId; " +
 					"select count(1) from [security].[Rule] where Id <> @id and RoleId = @roleId and Name = @Name; " +
+					"select * from security.RuleThen where Id = @id;" +
+					"select * from security.RuleWhen where Id = @id;" +
 					"select f.* from FieldType f inner join AssetType a on a.ID = f.AssetTypeID and a.Uid = @AssetTypeUid; " +
 					"select i.* from IntersectType i inner join AssetType a on (a.ID = i.SubjectAssetTypeID or a.ID = i.ObjectAssetTypeID) and a.Uid = @AssetTypeUid and I.Uid in @IntersectTypeUids; " +
 					"select * from FieldType where Object in ('GroupType'); " +
@@ -976,6 +979,8 @@ order by SecurityType asc, Name asc;
 				int ruleId = await query.ReadSingleAsync<int>();
 				int roleId = await query.ReadSingleAsync<int>();
 				int matchingAlternateRuleCount = await query.ReadSingleAsync<int>();
+				var existingThens = await query.ReadAsync<RuleThen>();
+				var existingWhens = await query.ReadAsync<RuleWhen>();
 				var assetTypeFields = await query.ReadAsync<FieldType>();
 				var intersectTypes = await query.ReadAsync<IntersectType>();
 				var groupFields = await query.ReadAsync<FieldType>();
@@ -1032,8 +1037,45 @@ order by SecurityType asc, Name asc;
 							transaction: trans
 						);
 
+						#region When Processing
+
 						connection.Execute("delete [security].RuleWhen where Id = @ruleId; ", new { ruleId }, transaction: trans);
-						rawWhens.ForEach(w => {
+						//var uWhens = from e in existingWhens
+						//			 join r in rawWhens on e.CheckType equals r.CheckType
+						//			 where e.Position == r.Position && e.FieldTypeId == r.FieldTypeId && e.IntersectTypeId == r.IntersectTypeId
+						//			 select new { e.Position, r.Value, r.AssetId, r.Operator };
+						//var cWhens = (from r in rawWhens
+						//			  where !existingWhens.Any(e => e.Position == r.Position && e.CheckType == r.CheckType && e.FieldTypeId == r.FieldTypeId && e.IntersectTypeId == r.IntersectTypeId)
+						//			  select r).ToList();
+						//var dWhens = (from e in existingWhens
+						//			  where !rawWhens.Any(r => r.Position == e.Position && r.CheckType == e.CheckType && r.FieldTypeId == e.FieldTypeId && r.IntersectTypeId == e.IntersectTypeId)
+						//			  select e).ToList();
+						//// Update existing whens
+						//uWhens.ForEach(u => {
+						//	connection.Execute(
+						//		"update [security].RuleWhen " +
+						//		"set [Operator] = @Operator, [Value] = @Value, AssetId = @AssetId " +
+						//		"where Id = @ruleId and [Position] = @Position;",
+						//		new { ruleId, u.Position, Operator = (int)u.Operator, u.Value, u.AssetId },
+						//		transaction: trans);
+						//});
+						//// Create new whens
+						//cWhens.ForEach(c =>
+						//{
+						//	connection.Execute(
+						//		"insert into [security].RuleWhen (Id, [Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
+						//		"values (@ruleId, @Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)",
+						//		new { ruleId, c.Position, c.CheckType, c.FieldTypeId, c.IntersectTypeId, Operator = (int)c.Operator, c.Value, c.AssetId },
+						//		transaction: trans);
+						//});
+						//// Remove old whens
+						//dWhens.ForEach(d =>
+						//{
+						//	connection.Execute("delete [security].RuleWhen where Id = @ruleId and [Position] = @Position;", new { ruleId, d.Position }, transaction: trans);
+						//});
+
+						rawWhens.ForEach(w =>
+						{
 							w.Id = ruleId;
 							connection.Execute(
 								"insert into [security].RuleWhen (Id, [Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
@@ -1041,6 +1083,8 @@ order by SecurityType asc, Name asc;
 								new { w.Id, w.Position, w.CheckType, w.FieldTypeId, w.IntersectTypeId, Operator = (int)w.Operator, w.Value, w.AssetId },
 								transaction: trans);
 						});
+
+						#endregion When Processing
 
 						connection.Execute("delete [security].RuleThen where Id = @ruleId; ", new { ruleId }, transaction: trans);
 						rawThens.ForEach(t => {

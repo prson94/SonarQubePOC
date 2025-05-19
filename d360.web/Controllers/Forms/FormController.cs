@@ -1229,7 +1229,7 @@ order by Sort, title";
 					load.File = null;
 					Company.Add(load);
 					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{SecurityContext.CompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
-					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = SecurityContext.CompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = SecurityContext.CompanyID, LoadID = load.ID });
 
 					json = jsonSuccess(Information.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
 				}

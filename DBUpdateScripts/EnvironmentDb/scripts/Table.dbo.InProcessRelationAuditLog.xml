@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.InProcessRelationAuditLog-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Puneet Gupta" id="Table.dbo.InProcessRelationAuditLog-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'InProcessRelationAuditLog')
 BEGIN
 	CREATE TABLE [dbo].[InProcessRelationAuditLog](
@@ -45,36 +42,28 @@ BEGIN
 		CONSTRAINT [PK_InProcessRelationAuditLog] PRIMARY KEY CLUSTERED ([ID] ASC )
 	)
 END
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="Puneet Gupta" id="Table.dbo.InProcessRelationAuditLog-Indices-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.InProcessRelationAuditLog-Indices-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessRelationAuditLog_ProcessUid')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_InProcessRelationAuditLog_ProcessUid ON [dbo].[InProcessRelationAuditLog] ([ProcessUid])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_InProcessRelationAuditLog_ProcessUid')
+GO
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessRelationAuditLog_ProcessUid_Object_ObjectAssetID')
 BEGIN
-	DROP INDEX IX_InProcessRelationAuditLog_ProcessUid ON [dbo].[InProcessRelationAuditLog]
+	CREATE NONCLUSTERED INDEX IX_InProcessRelationAuditLog_ProcessUid_Object_ObjectAssetID ON [dbo].[InProcessRelationAuditLog] ([ProcessUid], [Object], [ObjectAssetID]) 
+	INCLUDE (
+		[IntersectID], [IntersectTypeID], [IsNew], [ObjActionObjectName], [ObjActionObjectTypeName], [ObjectAssetTypeID], [ObjectID], [ObjectName], [ObjectTypeName], [PredicateInverse], [PredicateName], [SubActionObjectName], [SubActionObjectTypeName], [Subject], [SubjectAssetID], [SubjectAssetTypeID], [SubjectID], [SubjectName], [SubjectTypeName]
+	)
 END
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
