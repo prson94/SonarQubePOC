@@ -5,12 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,Puneet, TKlok" id="Procedure.api.DeleteInProcessRecords-v1.0">
+  <changeSet author="Puneet" id="Procedure.api.DeleteInProcessRecords-v1.1">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[DeleteInProcessRecords] 
- @numberOfDaysOlderThan int = 2
+ @numberOfHoursOlderThan int = 20
 as
 begin
 	BEGIN TRANSACTION;
@@ -28,21 +28,21 @@ begin
 		select t.ProcessUid 
 		from api.InProcessAudit t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 		
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessAuditField t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessLookUpField t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 
@@ -50,42 +50,42 @@ begin
 		select t.ProcessUid 
 		from api.InProcessHisUpdExeLog t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessHisUpdField t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessLookUpFieldType t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 		
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessLookUpTempField t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessLookUpTempFieldMulti t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		insert into #ex 
 		select t.ProcessUid 
 		from api.InProcessAssetIDFieldTypeID t 
 		left join #ex ex on t.ProcessUid = ex.ProcessUid
-		where ex.ProcessUid is null and DATEDIFF(day, t.Processdatetime, getutcdate()) > @numberOfDaysOlderThan
+		where ex.ProcessUid is null and DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
 		group by t.ProcessUid;
 
 		if exists(select 1 from #ex)
@@ -154,6 +154,41 @@ begin
 		IF @@TRANCOUNT > 0
 		BEGIN
 			ROLLBACK TRANSACTION ApiDeleteSavePoint; -- rollback to MySavePoint
+		END
+	END CATCH
+	
+		BEGIN TRANSACTION;
+	SAVE TRANSACTION ApiDeleteSavePointR;
+
+	BEGIN TRY
+		-- delete records from child tables
+		drop table if exists #exr;
+
+		create table #exr (ProcessUid uniqueidentifier)
+		create clustered index cx_temp_ex_Id on #exr (ProcessUid);
+
+		insert into #exr 
+		select t.ProcessUid 
+		from InProcessRelationAuditLog t 
+		where DATEDIFF(HOUR, t.Processdatetime, getutcdate()) > @numberOfHoursOlderThan
+		group by t.ProcessUid;
+
+		if exists(select 1 from #exr)
+		begin
+			delete t from InProcessRelationAuditLog t inner join #exr exr on t.ProcessUid = exr.ProcessUid;
+		end
+		COMMIT TRANSACTION 
+		
+		-- truncate table if no record exists
+		if not exists(select 1 from InProcessRelationAuditLog)
+		begin
+			truncate table api.InProcessPostAssetPath
+		end
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+		BEGIN
+			ROLLBACK TRANSACTION ApiDeleteSavePointR; -- rollback to MySavePoint
 		END
 	END CATCH
 end
