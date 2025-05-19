@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogData-v1">
+  <changeSet author="PuneetGupta" id="Procedure.api.PostAuditLogData-v1.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure api.PostAuditLogData
@@ -65,8 +65,8 @@ begin
 						select t.ID TransID,
 								Max(i_a.ID) MaxAuditID
 						from api.InProcessAuditField t
-						inner join reporting.Global_Audit i_a on i_a.Object = t.Object  and i_a.ObjectID = t.ObjectID
-						inner join reporting.Global_FieldAudit i_f on i_f.AuditID = i_a.ID  and i_f.FieldtypeID = t.FieldtypeID
+						inner join reporting.Global_Audit i_a with(index(IX_ReportingAudit_Object_ActionObject_Include)) on i_a.Object = t.Object  and i_a.ObjectID = t.ObjectID
+						inner join reporting.Global_FieldAudit i_f with(index(PK_ReportingFieldAudit)) on i_f.AuditID = i_a.ID  and i_f.FieldtypeID = t.FieldtypeID
 						where t.ProcessUid = @processGuid and t.ProcessId = @ProcessID and t.FieldtypeID > 0
 						group by t.id;
 					end
