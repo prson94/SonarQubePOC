@@ -243,8 +243,14 @@ namespace d360.core
 			text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 			return text;
 		}
-    
+
 		public static bool IsValidForTag(this string text)
+		{
+			string pattern = "^[A-Za-zÀ-ú0-9ა-ჰ一-蠼赋 _-]+$";
+			return Regex.IsMatch(text, pattern);
+		}
+
+		public static bool IsValidForTagType(this string text)
 		{
 			string pattern = "^[A-Za-zÀ-ú0-9ა-ჰ一-蠼赋]+$";
 			return Regex.IsMatch(text, pattern);
