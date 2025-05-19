@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -16,20 +15,32 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task CreateSemanticType();
-
 		Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid);
 
 		Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value);
 
-		Task<Asset> GetAsset(Guid? assetUid);
+		Task<HttpStatusCode> DeleteSemanticAsync(string qualifier);
 
-		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+		Task<Asset> GetAsset(Guid? assetUid);
 
 		Task<dynamic> GetAssetCopyOption(Guid uid, int assetId);
 
+		Task<IEnumerable<long>> GetAssetUids(List<Guid> childrenUids);
+
 		Task<dynamic> GetAssetIgnoredRelationships(Guid targetAssetUid);
 
+		Task<IEnumerable<dynamic>> GetPossibleCreators();
+
+		Task<IEnumerable<dynamic>> GetPossibleRedactors();
+
+		Task<List<GetSemantic>> GetSemanticVersionsByQualifierAsync(string qualifier, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
+		
+		Task<List<GetSemantic>> PatchSemanticsAsync(List<PatchSemantic> semantics);
+
+		Task<List<GetSemantic>> PostSemanticsAsync(List<PostSemantic> semantics);
+
+		Task<List<GetSemantic>> PutSemanticsAsync(List<PutSemantic> semantics);	
+		
 		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
 		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
@@ -51,13 +62,6 @@ namespace repositories
 		Task ReadRelationTypeDefinition();
 
 		Task<RepositoryResponse<PagedApiBaseViewModel<GetSemantic>>> ReadSemanticTypesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
-		Task<List<GetSemantic>> PutSemanticsAsync(List<PutSemantic> semantics);
-		Task<List<GetSemantic>> PostSemanticsAsync(List<PostSemantic> semantics);
-		Task<HttpStatusCode> DeleteSemanticAsync(string qualifier);
-		Task<List<GetSemantic>> GetSemanticVersionsByQualifierAsync(string qualifier, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
-		Task<IEnumerable<dynamic>> GetPossibleCreators();
-		Task<IEnumerable<dynamic>> GetPossibleRedactors();
-		Task<List<GetSemantic>> PatchSemanticsAsync(List<PatchSemantic> semantics);
 
 		Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid);
 
@@ -71,15 +75,11 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId, int tagTypeId);
 
-		Task<RepositoryResponse<string>> RemoveSemanticType();
-
 		Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags);
 
 		Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes);
 		
 		Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams);
-
-		Task<RepositoryResponse<Semantic>> UpdateSemanticType();
 
 		Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value);
 

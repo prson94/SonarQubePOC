@@ -44,7 +44,7 @@ export class Roles extends AdminBaseComponent implements OnInit, OnDestroy {
 
 		this.secondaryNavService.clearItems();
 		this.secondaryNavService.showItem(new SecondaryNavItem(`Roles`, 'Roles', null, `/admin/security/roles`, null, 1));
-		this.secondaryNavService.showItem(new SecondaryNavItem(`Policies`, 'SecurityPolicies', null, `/admin/security/policies`, null, 2));
+		this.secondaryNavService.showItem(new SecondaryNavItem(`Security Policies`, 'SecurityPolicies', null, `/admin/security/policies`, null, 2));
 		this.secondaryNavService.showHeader(true);
     }
 

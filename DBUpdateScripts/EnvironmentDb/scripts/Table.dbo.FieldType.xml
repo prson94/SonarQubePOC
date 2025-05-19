@@ -4,13 +4,20 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="Pappas" id="Table.dbo.FieldType-v12">
+  <changeSet author="Pappas" id="Table.dbo.FieldType-v13.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldType')
 BEGIN
 	CREATE TABLE [dbo].[FieldType](
 		[ID] int IDENTITY(1,1) not null,
+		AssetTypeID int sparse,
+		GroupTypeID int sparse,
+		IntersectTypeID int sparse,
+		IssueTypeID int sparse,
+		ResourceTypeID int sparse,
+		[Object] varchar(50) constraint CK_FieldType_Object default('') not null,
+		[ObjectID] int constraint CK_FieldType_ObjectID default(0) not null,
 		[Name] nvarchar(128) not null,
 		FriendlyName nvarchar(250) not null,
 		Description nvarchar(4000) null,
@@ -24,8 +31,6 @@ BEGIN
 		MaximumLength decimal(38, 18) null,
 		[Length] int null,
 		[Pattern] varchar(1000) null,
-		[Object] varchar(50) constraint CK_FieldType_Object default('') not null,
-		ObjectID int constraint CK_FieldType_ObjectID default(0) not null,
 		SortOrder int constraint CK_FieldType_SortOrder default(0) not null,
 		IsRequired bit constraint CK_FieldType_IsRequired default(0) not null,
 		IsListable bit constraint CK_FieldType_IsListable default(0) not null,
@@ -44,7 +49,6 @@ BEGIN
 		ColumnWidth int null,
 		LookupObjectFieldTypeID int null,
 		AllowMultipleValues bit constraint DF_FieldType_AllowMultipleValues default(0) not null,
-		AssetTypeID int sparse,
 		ParentFieldTypeID int constraint DF_FieldType_ParentFieldTypeID default(0) not null,
 		UpdatedBy int constraint DF_FieldType_UpdatedBy default(0) not null,
 		[Increment] decimal(38, 18) null,
@@ -63,40 +67,31 @@ BEGIN
 		CounterInitialIndex int null,
 		DisplayInColumn bit null,
 		SortByAscending bit constraint DF_FieldType_SortByAscending default(1) not null,
-		IntersectTypeID int sparse,
-		IssueTypeID int sparse,
 		UseDisplayFormat bit constraint DF_FieldType_UseDisplayFormat default(0) not null,
 		IsSubject bit constraint DF_FieldType_IsSubject default(1) not null,
 		TagTypeID int sparse
 		constraint [PK_FieldType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'TagTypeID')
+BEGIN
+	alter table dbo.FieldType add [TagTypeID] int sparse
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'GroupTypeID')
+BEGIN
+	alter table dbo.FieldType add [GroupTypeID] int sparse
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'ResourceTypeID')
+BEGIN
+	alter table dbo.FieldType add [ResourceTypeID] int sparse
+END
 ]]>
     </sql>
   </changeSet>
-    <changeSet author="TKlok" id="Table.dbo.FieldType-to-v12">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'TagTypeID')
-		BEGIN
-			alter table dbo.FieldType
-			add [TagTypeID] int sparse
-		END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-		IF  EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'TagTypeID')
-		BEGIN
-			DROP COLUMN IF EXISTS
-				TagTypeID
-		END
-	  ]]>
-    </rollback>
-  </changeSet>   
+  
  <changeSet author="Pappas" id="Index.dbo.FieldType-v11">
   <comment>GOV-28372</comment>
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">

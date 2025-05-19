@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace d360.core.queue
 {
@@ -29,18 +28,6 @@ namespace d360.core.queue
         public ScoreQueueChangeType ChangeType { get; set; }
 
 		public object Payload { get; set; }
-    }
-
-    public class CheckTypeDependencyRemovedModel
-    {
-        public List<Guid> VersionUids { get; set; }
-    }
-
-    public class RollupPathChangedModel
-    {
-        public int? IntersectTypeId { get; set; }
-        
-        public int? AssetTypeId { get; set; }
     }
 
     public class RuleAssetRemovedModel

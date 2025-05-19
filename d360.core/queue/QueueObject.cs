@@ -2,8 +2,6 @@
 {
     public class QueueObject
     {
-        public QueueAction To { get; set; }
-
         public int CompanyID { get; set; }
     }
 }

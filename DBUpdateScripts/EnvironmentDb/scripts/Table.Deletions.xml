@@ -5,10 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.Deletions-v11">
+  <changeSet author="Pappas" id="Table.Deletions-v12">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
+drop table if exists [api].ExecutionAssetCrossReference
+GO
 drop table if exists [api].ExecutionGroup
+GO
+drop table if exists [api].ExecutionResponsibilityRule
+GO
+drop table if exists [api].ExecutionResponsibilityType
+GO
+drop table if exists [api].ExecutionResponsibilityTypeRelationOverrideItem
 GO
 drop table if exists [api].ExecutionUser
 GO
@@ -23,6 +31,26 @@ GO
 drop table if exists [dbo].[Setting]
 GO
 drop table if exists [dbo].AssetCrossReference
+GO
+drop table if exists [dbo].SearchBoost
+GO
+drop table if exists [dbo].ResourceTheme
+GO
+drop table if exists [dbo].Theme
+GO
+drop table if exists [dbo].AssetField
+GO
+drop table if exists [dbo].GroupField
+GO
+drop table if exists [dbo].IntersectField
+GO
+drop table if exists [dbo].IssueField
+GO
+drop table if exists [dbo].ResourceField
+GO
+drop table if exists [queue].ResponsibilityIndex
+GO
+drop table if exists [queue].[Search]
 GO
 ]]>
   </sql>

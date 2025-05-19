@@ -1822,13 +1822,6 @@ where   ER.ExecutionID = @ExecutionID
 				case ApiExecutionAction.PutRelationships:
 					apiTableName = "ExecutionRelationship";
 					break;
-				case ApiExecutionAction.PostResponsibilityOverride:
-					apiTableName = "ExecutionResponsibilityTypeRelationOverrideItem";
-					break;
-				case ApiExecutionAction.PostResponsibilityTypes:
-				case ApiExecutionAction.PutResponsibilityTypes:
-					apiTableName = "ExecutionResponsibilityType";
-					break;
 				case ApiExecutionAction.UpsertUsers:
 					apiTableName = "ExecutionUser";
 					break;
@@ -3881,7 +3874,9 @@ where ProcessUid = @ProcessUid;
 					}
 
 					Connection.Close();
-					
+
+					QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID, IsDeleteAction = false });
+
 					sw.Restart();
 					if (sendWorkflowEvents)
 					{
@@ -5223,6 +5218,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					Connection.Close();
 
 					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID, IsDeleteAction = false });
 
 					sw.Restart();
 

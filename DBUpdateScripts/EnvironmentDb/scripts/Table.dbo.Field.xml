@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.dbo.Field-v6">
+ <changeSet author="Pappas" id="Table.dbo.Field-v7">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
@@ -13,8 +13,10 @@ BEGIN
 	create table [dbo].[Field](
 		[ID] bigint identity not null,
 		AssetID bigint sparse,
+		GroupID int sparse,
 		IntersectID int sparse,
 		IssueID int sparse,
+		ResourceID int sparse,
 		ReferenceListID int sparse,
 		FieldTypeID int not null,
 		ObjectType varchar(50) null,
@@ -39,6 +41,25 @@ BEGIN
     alter table [dbo].[Field] add [ReferenceListID] int sparse
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Field]') AND name = 'GroupID')
+BEGIN
+    alter table [dbo].[Field] add [GroupID] int sparse
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Field]') AND name = 'IntersectID')
+BEGIN
+    alter table [dbo].[Field] add [IntersectID] int sparse
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Field]') AND name = 'IssueID')
+BEGIN
+    alter table [dbo].[Field] add [IssueID] int sparse
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Field]') AND name = 'ResourceID')
+BEGIN
+    alter table [dbo].[Field] add [ResourceID] int sparse
+END
 
 ]]>
   </sql>

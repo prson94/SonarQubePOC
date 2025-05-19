@@ -95,15 +95,27 @@ export class AppComponent implements AfterContentInit, OnDestroy {
 						[angularPlugin.identifier]: { router: this.router }
 						// *** Add the Click Analytics plug-in. ***
 						// [clickPluginInstance.identifier]: clickPluginConfig
+					},
+				}
+			});
+			appInsights.addTelemetryInitializer((envelope) => {
+				if (envelope.data.baseType === "ExceptionData") {
+					const exceptionData = envelope.data.baseData;
+
+					// Skip exceptions with specific messages
+					if (exceptionData.exceptions.some(e => e.message.includes("Cannot read properties of undefined (reading 'length')"))) {
+						return false; // Prevent this telemetry from being sent
+					}
+
+					// Skip exceptions of a specific type
+					if (exceptionData.exceptions.some(e => e.typeName === "TypeError")) {
+						return false; // Prevent this telemetry from being sent
 					}
 				}
 			});
 			appInsights.loadAppInsights();
 			appInsights.setAuthenticatedUserContext(res.CurrentResourceUid);
-			//appInsights.addTelemetryInitializer((envelope) => {
-			//	envelope.tags = envelope.tags || [];
-			//	envelope.tags['ai.cloud.role'] = 'testTag';
-			//});
+
 		});
 
 
