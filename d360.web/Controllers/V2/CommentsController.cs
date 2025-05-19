@@ -319,7 +319,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetCommentVotes(Guid commentUid)
         {
             var model = await Comments.GetCommentVotesByCommentUid(commentUid);
-            return Ok(model);
+            return Ok(model.Data);
         }
 
         [
