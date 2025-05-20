@@ -429,7 +429,7 @@ export class BaseComponent {
 			if (opts.hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
 				if (this.baseAssetUid) {
 					this.ownershipSidebar = new SecondaryNavItem(
-						$localize`Responsibilities`,
+						$localize`Ownership`,
 						'ownership',
 						['fa-user'],
 						`/asset/${this.baseAssetUid}/owners`, null, 25
@@ -437,7 +437,7 @@ export class BaseComponent {
 				}
 				else {
 					this.ownershipSidebar = new SecondaryNavItem(
-						$localize`Responsibilities`,
+						$localize`Ownership`,
 						'responsibilities',
 						['fa-user'],
 						`/assets/${this.baseAssetTypeUid}/owners`, null, 25

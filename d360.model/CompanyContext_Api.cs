@@ -1822,13 +1822,6 @@ where   ER.ExecutionID = @ExecutionID
 				case ApiExecutionAction.PutRelationships:
 					apiTableName = "ExecutionRelationship";
 					break;
-				case ApiExecutionAction.PostResponsibilityOverride:
-					apiTableName = "ExecutionResponsibilityTypeRelationOverrideItem";
-					break;
-				case ApiExecutionAction.PostResponsibilityTypes:
-				case ApiExecutionAction.PutResponsibilityTypes:
-					apiTableName = "ExecutionResponsibilityType";
-					break;
 				case ApiExecutionAction.UpsertUsers:
 					apiTableName = "ExecutionUser";
 					break;
@@ -2844,6 +2837,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			bool checkCircularRelationships = false;
 			bool checkSemanticRelation = false;
 			bool relationshipTypeHasFieldTypes = false;
+			bool relationshipTypeFieldTypesUpdate = false;
 			bool relationshipTypeHasLookupFieldTypes = false;
 			bool IsUidPassed = false;
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
@@ -2961,6 +2955,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 							if (success)
 							{
+								if (fieldRows.Count > 0)
+								{
+									relationshipTypeFieldTypesUpdate = true;
+								}
 								fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
 								DataRow row = table.NewRow();
@@ -3765,6 +3763,13 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										addMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
 									}
 
+									string noLogWhenNoChangeNoFieldUpdate = "";
+
+									if (!relationshipTypeFieldTypesUpdate)
+									{
+										noLogWhenNoChangeNoFieldUpdate = " and coalesce(i.IsNew,1) = 1 ";
+									}
+
 									#region Execution Log
 
 QueryID = "-Q10000014";
@@ -3780,7 +3785,7 @@ from api.Execution e
 inner join api.ExecutionRelationship i on i.ExecutionID = e.ExecutionID 
 and e.ExecutionID = @ExecutionID 
 and i.ItemNumber between @beginItemNumber and @endItemNumber 
-and i.Success is null;
+and i.Success is null {noLogWhenNoChangeNoFieldUpdate};
 
 exec FillDataIntoInProcessRelationAuditLog @ProcessUid ;
 
@@ -3881,7 +3886,9 @@ where ProcessUid = @ProcessUid;
 					}
 
 					Connection.Close();
-					
+
+					QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID, IsDeleteAction = false });
+
 					sw.Restart();
 					if (sendWorkflowEvents)
 					{
@@ -5223,6 +5230,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					Connection.Close();
 
 					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = SecurityContext.CompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.SecurityPolicy, new SecurityPolicyQueueMessage { CompanyID = SecurityContext.CompanyID, ExecutionUid = execution.ExecutionID, IsDeleteAction = false });
 
 					sw.Restart();
 

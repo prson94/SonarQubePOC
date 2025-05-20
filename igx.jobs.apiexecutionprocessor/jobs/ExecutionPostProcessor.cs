@@ -167,12 +167,12 @@ from	reporting.Global_FieldAudit i_p
 
 				if (!string.IsNullOrEmpty(commandText))
 				{
+					Guid processGuid = Guid.NewGuid();
+					DateTime dt = DateTime.Now;
 					try
 					{
 						if (commandText == "historyUpsertAssets")
 						{
-							Guid processGuid = Guid.NewGuid();
-							DateTime dt = DateTime.Now;
 							await companyConnection.ExecuteAsync("exec api.PostAuditLogAssetUpsert @id, @processGuid, @processDateTime, @actionText, @r ", new { execution.Id, processGuid, r = execution.ResourceID, actionText, processDateTime = execution.ProcessingStartedOn ?? execution.StartedOn }, commandTimeout: 1800);
 
 							await companyConnection.ExecuteAsync("exec api.PostAuditLogData @id, @processGuid, @dt ", new { execution.Id, processGuid, r = execution.ResourceID, actionText, dt }, commandTimeout: 1800);
@@ -189,6 +189,10 @@ from	reporting.Global_FieldAudit i_p
 					catch (Exception ex)
 					{
 						log.LogCritical(ex, "Error when post-processing execution.");
+						if (commandText == "historyUpsertAssets")
+						{
+							await clearInProcessTables(companyConnection, processGuid, execution, log);
+						}
 					}
 				}
 			}

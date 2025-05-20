@@ -5,11 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Table.api.InProcessHisUpdField-v1.2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+ <changeSet author="PuneetGupta" id="Table.api.InProcessHisUpdField-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'InProcessHisUpdField')
 BEGIN
@@ -37,35 +34,24 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[In
 BEGIN
     alter table [api].[InProcessHisUpdField] add [ReferenceListID] int sparse
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="Puneet Gupta" id="Table.api.InProcessHisUpdField-Indices-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.api.InProcessHisUpdField-Indices-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessHisUpdField_ProcessUid')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_InProcessHisUpdField_ProcessUid ON [api].[InProcessHisUpdField] ([ProcessUid],ItemNumber) INCLUDE (FieldTypeID, ID, MaxAuditID)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_InProcessHisUpdField_ProcessUid')
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_InProcessHisUpdField_ProcessUid_FieldType')
 BEGIN
-	DROP INDEX IX_InProcessHisUpdField_ProcessUid ON [api].[InProcessHisUpdField]
+	CREATE NONCLUSTERED INDEX IX_InProcessHisUpdField_ProcessUid_FieldType ON [api].[InProcessHisUpdField] ([ProcessUid], [FieldType], [FieldTypeID]) INCLUDE ([FieldName], [LookupValue], [ObjectID])
 END
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

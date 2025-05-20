@@ -83,12 +83,13 @@
 	</div>
 </owners-sidepanel-wrapper>
 
+
 <owner-create [isModalVisible]="isAdding"
 			  [assetUid]="assetUid"
 			  (onSave)="load(); isAdding=false;"
 			  (onCancel)="isAdding=false;">
 </owner-create>
-
+@if (selectedItem) {
 <owner-delete [isModalVisible]="isDeleting"
 			  [item]="selectedItem"
 			  (onSave)="load(); isDeleting=false;"
@@ -96,8 +97,9 @@
 </owner-delete>
 
 <owner-edit [isModalVisible]="isEditing"
-			[uid]="selectedItem.uid"
+			[uid]="selectedItem?.uid"
 			[model]="selectedItem"
 			(onSave)="load(); isEditing=false;"
 			(onCancel)="isEditing=false;">
 </owner-edit>
+}

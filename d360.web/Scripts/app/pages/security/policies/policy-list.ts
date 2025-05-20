@@ -144,7 +144,7 @@ export class PolicyList extends BaseComponent implements OnChanges {
 	deleteItem($event) {
 		const response: ApiResult = new ApiResult();
 		response.Success = true;
-		response.Message = "Removed policy successfully.";
+		response.Message = "Removed security policy successfully.";
 		this.showMessageForApiResult(this.messagesService, response);
 		this.showDelete = false;
 
@@ -167,10 +167,10 @@ export class PolicyList extends BaseComponent implements OnChanges {
 			if (result.uid) {
 				const updateIx = this.items.findIndex(i => { return i.uid === result.uid; });
 				if (updateIx >= 0) {
-					response.Message = "Updated policy successfully.";
+					response.Message = "Updated security policy successfully.";
 				}
 				else {
-					response.Message = "Created policy successfully.";
+					response.Message = "Created security policy successfully.";
 				}
 			}
 			this.showMessageForApiResult(this.messagesService, response);
@@ -201,7 +201,7 @@ export class PolicyList extends BaseComponent implements OnChanges {
 	}
 
 	get deletePromptText(): string {
-		return $localize`Are you sure you want to delete the policy[${this.selected?.name}]?`;
+		return $localize`Are you sure you want to delete the security policy[${this.selected?.name}]?`;
 	}
 
 	positionContextMenu(

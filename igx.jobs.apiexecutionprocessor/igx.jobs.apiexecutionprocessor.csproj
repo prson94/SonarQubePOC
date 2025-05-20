@@ -93,7 +93,6 @@
     <Compile Include="jobs\NotificationHandler.cs" />
     <Compile Include="jobs\SecurityPolicyProcessor.cs" />
     <Compile Include="jobs\UserProcessor.cs" />
-    <Compile Include="models\ObjectIndexCollectionModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="program\ChangeLogTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

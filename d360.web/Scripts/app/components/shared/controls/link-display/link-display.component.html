@@ -1,7 +1,7 @@
-﻿<a *ngIf="!isRoute" [href]="linkUrl" target="_blank">
+﻿<a *ngIf="hasValue && !isRoute" [href]="linkUrl" target="_blank">
 	{{linkName}}
 	<span *ngIf="showTooltip" style="text-decoration:none !important">&nbsp;&nbsp;<i class="fa fa-external-link" i18n-pTooltip pTooltip="This link will open in a new tab" tooltipStyleClass="ig-tooltip" tooltipPosition="top"></i></span>
 </a>
-<a *ngIf="isRoute" [routerLink]="routeUrl">
+<a *ngIf="hasValue && isRoute" [routerLink]="routeUrl">
 	{{linkName}}
 </a>

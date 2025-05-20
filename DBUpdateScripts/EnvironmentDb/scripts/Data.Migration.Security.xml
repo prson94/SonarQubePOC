@@ -123,7 +123,7 @@ end
     </sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Migration.Security-v1.C.1">
+ <changeSet author="Pappas" id="Data.Migration.Security-v1.C.1a">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 if (OBJECT_ID('[security].[RuleThen]') > 0 and OBJECT_ID('dbo.ResponsibilityTypeRelationRule') > 0)
@@ -132,7 +132,7 @@ begin
 
 	select	cast(r.ID as int) ID,
 			row_number() over(partition by r.Id order by r.Id) as [Position],
-			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', 1, ti.[Operator]) as Operator,
+			1 as Operator,--iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', 1, ti.[Operator]) as Operator,
 			iif(ti.FieldTypeID > 0, ti.FieldTypeID, null) as FieldTypeId,
 			iif(ti.FieldTypeID > 0, ti.[Value], null) as [Value],
 			iif(ti.FieldTypeID = 0 and ti.FieldTypeName = 'Name', ti.[Value], null) as SecurityId
@@ -142,18 +142,13 @@ begin
 				[Then] nvarchar(max) as json
 			) d
 			cross apply openjson(d.[Then]) with (
-				--Object varchar(50),
-				--ObjectID int,
 				Conditions nvarchar(max) as json
 			) t
 			cross apply openjson(t.[Conditions]) with (
 				[Operator] varchar(25),
 				[FieldTypeID] int,
 				FieldTypeName nvarchar(250),
-				[Value] nvarchar(500)--,
-				--IntersectTypeID int,
-				--TargetObject varchar(50),
-				--TargetObjectID int
+				[Value] nvarchar(500)
 			) ti;
 
 	if exists(select 1 from #TempRuleThen_0506)
@@ -178,10 +173,11 @@ begin
 			select	r.ID,
 					r.[Position],
 					r.Operator,
-					r.FieldTypeId,
-					r.[Value],
+					null,--r.FieldTypeId,
+					null,--r.[Value],
 					r.SecurityId
-			from	#TempRuleThen_0506 r;
+			from	#TempRuleThen_0506 r
+			where	r.SecurityId is not null;
 	end
 end
 ]]>

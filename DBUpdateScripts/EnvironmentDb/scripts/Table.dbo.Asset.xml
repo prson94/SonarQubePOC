@@ -90,113 +90,32 @@ end
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v10">
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v11">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-IF EXISTS (select * from sys.indexes where name = 'CIX_Asset')
-BEGIN
-	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
-	BEGIN
-	ALTER TABLE [dbo].[AssetPath]  DROP  CONSTRAINT [FK_AssetPath_Asset];
-	END
-	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
-	BEGIN
-	ALTER TABLE [dbo].[AssetDataProfile]  DROP  CONSTRAINT [FK_AssetDataProfile_Asset];
-	END
-	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
-	BEGIN
-	ALTER TABLE [dbo].[AssetProcessDiagram]  DROP  CONSTRAINT [FK_AssetProcessDiagram_AssetID];
-	END
-	IF EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_ASSETTAG_ASSET')
-	BEGIN
-	ALTER TABLE [dbo].[AssetTag]  DROP  CONSTRAINT [FK_ASSETTAG_ASSET];
-	END
-
-	ALTER TABLE [dbo].[Asset] DROP CONSTRAINT [PK_Asset]
-	DROP INDEX [CIX_Asset] ON [dbo].[Asset]
-	ALTER TABLE [dbo].[Asset] ADD CONSTRAINT [PK_Asset] PRIMARY KEY CLUSTERED ( [ID] ASC )
-
-	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
-	BEGIN
-	ALTER TABLE [dbo].[AssetPath]  WITH CHECK ADD  CONSTRAINT [FK_AssetPath_Asset] FOREIGN KEY([ID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[AssetPath] CHECK CONSTRAINT [FK_AssetPath_Asset]
-	END
-
-	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetDataProfile_Asset')
-	BEGIN
-	ALTER TABLE [dbo].[AssetDataProfile]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[AssetDataProfile] CHECK CONSTRAINT [FK_AssetDataProfile_Asset]
-	END
-
-	IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetProcessDiagram_AssetID')
-	BEGIN
-	ALTER TABLE [dbo].[AssetProcessDiagram]  WITH CHECK ADD  CONSTRAINT [FK_AssetProcessDiagram_AssetID] FOREIGN KEY([AssetID])
-	REFERENCES [dbo].[Asset] ([ID])
-	ON DELETE CASCADE
-
-	ALTER TABLE [dbo].[AssetProcessDiagram] CHECK CONSTRAINT [FK_AssetProcessDiagram_AssetID]
-	END
-
-	IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ASSETTAG_ASSET')
-	BEGIN
-	ALTER TABLE [dbo].[AssetTag]  WITH CHECK ADD  CONSTRAINT [FK_ASSETTAG_ASSET] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[AssetTag] CHECK CONSTRAINT [FK_ASSETTAG_ASSET]
-	END
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_Include')
-BEGIN
-	DROP INDEX [IX_Asset_AssetType_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_KeyHash_Include')
-BEGIN
-	DROP INDEX [IX_Asset_AssetType_KeyHash_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_Include')
-BEGIN
-	DROP INDEX [IX_Asset_AssetTypeID_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_SourceID')
-BEGIN
-	DROP INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_Include')
-BEGIN
-	DROP INDEX [IX_Asset_Object_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_ObjectID_Include')
-BEGIN
-	DROP INDEX [IX_Asset_Object_ObjectID_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_ObjectID_Include')
-BEGIN
-	DROP INDEX [IX_Asset_ObjectID_Include] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_SourceID_Object_ObjectID')
-BEGIN
-	DROP INDEX [IX_Asset_SourceID_Object_ObjectID] ON [dbo].[Asset]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Asset_State_AssetTypeID')
-BEGIN
-	DROP INDEX [IX_Asset_State_AssetTypeID] ON [dbo].[Asset]
-END
-
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
 END
 
+IF EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_Asset_AssetTypeID] ON [dbo].[Asset]
+END
+
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID] ON [dbo].[Asset] ( [AssetTypeID] ASC ) include([State],[SourceID])
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID] ON [dbo].[Asset] ( [AssetTypeID] ) include(KeyHash, [uid], [State], [SourceID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_ObjectId-AssetTypeId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_ObjectId-AssetTypeId] ON [dbo].[Asset] ([ObjectID], [AssetTypeID]) INCLUDE ([Object], [uid]) WITH (ONLINE = ON)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_Object-AssetTypeId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_Object-AssetTypeId] ON [dbo].[Asset] ([AssetTypeID], [Object]) INCLUDE ([CreatedOn], [ObjectID], [SourceID], [uid], [UpdatedOn]) WITH (ONLINE = ON)
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_DisplayValue')
@@ -212,25 +131,6 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_KeyPath')
 BEGIN
 	create nonclustered index [IX_Asset_KeyPath] ON [dbo].[Asset] ( [KeyPath] ASC ) include([AssetTypeID],[Uid],[State])
-END
-
--- clean dupe SourceID before applying unique index below.
-update	T
-set		T.SourceID = null
-from	Asset T
-		inner join	(
-					select	AssetTypeID,
-							SourceID,
-							min(ID) as MinID
-					from	Asset
-					where SourceID is not null
-					group by	AssetTypeID, SourceID
-					having count(1) > 1
-					) S on S.AssetTypeID = T.AssetTypeID and S.SourceID = T.SourceID and t.ID > s.MinID;
-
-IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Asset_SourceID')
-BEGIN
-	CREATE UNIQUE INDEX UQ_Asset_SourceID ON dbo.Asset(AssetTypeID, SourceID) where SourceID is not null;
 END
 ]]>
     </sql>
