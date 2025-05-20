@@ -1,4 +1,5 @@
 ﻿using d360.core.queue;
+using Dapper;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,8 @@ using repositories;
 using repositories.azure;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
@@ -46,24 +49,32 @@ namespace igx.jobs.apiexecutionprocessor
 					switch (info.Action)
 					{
 						case AssetTypeChangeAction.Removal:
-							
 							break;
 						case AssetTypeChangeAction.FieldAddition:
-							//var fieldType = await catalog.ReadFieldByAssetTypeAsync(info.AssetTypeId, info.FieldTypeId);
-
-							// Check if this new field is a Counter. If so, you need to populate all existing assets with a new counter value.
-							// Create a method on the ICatalog repository that calls SQL to populate the counter value on all existing assets, then resets the counter to a new currentIndex.
-							// NOTE: Ensure that you change the save logic so that we do not incur any cost to add the field at CREATION time.
-
-							// If the field has a default value (non-counter) then we should populate all eixsting assets with the default value.
-							// Create a method on the ICatalog repository that calls SQL to populate the default value on all existing assets.
+							(bool isFieldCounterType, int? CounterInitialIndex) = await catalog.IsFieldCounterType(info.FieldTypeId);
+							if (isFieldCounterType)
+							{
+								var assetIds = await catalog.GetAssetsByFieldType(info.AssetTypeId);
+								if (assetIds.Any())
+								{
+									await catalog.InsertAssetWithCounter(
+										CounterInitialIndex ?? default,
+										info.AssetTypeId,
+										info.FieldTypeId ?? default,
+										assetIds);
+								}
+							}
 							break;
 						case AssetTypeChangeAction.FieldRemoval:
 							//var fieldType = await catalog.ReadFieldByAssetTypeAsync(info.AssetTypeId, info.FieldTypeId);
 							// NOTE: Ensure that you change the save logic so that we do not incur any cost to remove the field at DELETION time.
 							//		The field should be logically deleted on DELETION.
 							break;
+						default:
+							Console.WriteLine(info.Action);
+							break;
 					}
+
 				}
 				catch (Exception ex)
 				{
@@ -73,5 +84,49 @@ namespace igx.jobs.apiexecutionprocessor
 			}
 		}
 
+
+		private async Task<int> GetCounterFieldValue(DapperConnectionProvider dapper, int? fieldTypeId)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)dapper.Connect())
+				{
+					var sql = @"
+							Select fc.Value from dbo.FieldCounterValue fc
+							Join dbo.FieldType ft
+							ON  fc.FieldTypeId = ft.ID
+							Where ft.[Name] = 'ProcessCounter' AND fc.FieldTypeId = @fieldTypeId
+							  ";
+
+					return await connection.QueryFirstOrDefaultAsync<int>(sql, new {  fieldTypeId });
+				}
+			}
+			catch (Exception ex)
+			{
+
+				return -1;
+			}
+		}
+
+		private async Task<IEnumerable<int>> GetAssetsByFieldType(DapperConnectionProvider dapper, int? assetTypeId)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)dapper.Connect())
+				{
+					var sql = @"
+							  SELECT a.ID from dbo.Asset a
+							  WHERE a.AssetTypeID = @assetTypeId
+							  ";
+
+					return await connection.QueryAsync<int>(sql, new { assetTypeId });
+				}
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
 	}
 }

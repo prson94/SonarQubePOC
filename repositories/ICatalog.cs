@@ -86,5 +86,14 @@ namespace repositories
 		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 
 		Task<RepositoryResponse<List<AssetApiResultModel>>> UpsertAssetsAsync(int executionId, List<AssetApiModel> models, bool lookupFieldsPassedByValue = false, bool enableJsonAttributes = false);
+
+		#region AssetTypeChangeProcessor
+		Task<(bool isFieldCounterType, int? CounterInitialIndex)> IsFieldCounterType(int? fieldTypeId);
+
+		Task<IEnumerable<int>> GetAssetsByFieldType(int? assetTypeId);
+
+		Task<bool> InsertAssetWithCounter(int counterStartValue, int
+			assetTypeId, int fieldTypeId, IEnumerable<int> assetIds);
+		#endregion
 	}
 }

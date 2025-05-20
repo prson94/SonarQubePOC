@@ -590,5 +590,109 @@ from	#ids a
 
 			return response;
 		}
+
+
+		public async Task<(bool isFieldCounterType, int? CounterInitialIndex)> IsFieldCounterType(int? fieldTypeId)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+							SELECT  * from dbo.FieldType 
+							WHERE Type = 'Counter' AND ID = @fieldTypeId
+							  ";
+
+				var result = await connection.QueryFirstOrDefaultAsync<FieldType>(sql, new { fieldTypeId });
+				if (result != null)
+				{
+					return (true, result.CounterInitialIndex);
+				}
+				return (false, null);
+			}
+		}
+
+		public async Task<IEnumerable<int>> GetAssetsByFieldType(int? assetTypeId)
+		{
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					var sql = @"
+							  SELECT a.ID FROM
+							  dbo.Asset AS a LEFT JOIN dbo.FieldCounterValue AS fcv
+							  ON a.AssetId = fcv.AssetId
+							 WHERE a.AssetTypeID = @assetTypeId AND fcv.AssetId IS NULL;
+							  ";
+
+					return await connection.QueryAsync<int>(sql, new { assetTypeId });
+				}
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
+
+		public async Task<bool> InsertAssetWithCounter(int counterStartValue, int assetTypeId, int fieldTypeId, IEnumerable<int> assetIds)
+		{
+			if (assetIds == null || !assetIds.Any())
+			{
+				Console.WriteLine("No asset IDs provided for insertion.");
+				return false;
+			}
+
+			try
+			{
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					connection.Open();
+					using (var transaction = connection.BeginTransaction())
+					{
+						// Get the current maximum counter value (within the transaction)
+						var maxCounterSql = "SELECT ISNULL(MAX(Value), 0) FROM dbo.FieldCounterValue WITH (UPDLOCK, HOLDLOCK)";
+						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql, transaction: transaction);
+
+						int currentCounterSeed = Math.Max(counterStartValue, existingMaxCounterValue) + 1;
+
+						List<FieldCounterValue> allValuesToInsert = new List<FieldCounterValue>();
+						int currentOffset = 0;
+						foreach (var assetId in assetIds)
+						{
+							allValuesToInsert.Add(new FieldCounterValue
+							{
+								AssetId = assetId,
+								AssetTypeId = assetTypeId,
+								FieldTypeId = fieldTypeId,
+								Value = currentCounterSeed + currentOffset
+							});
+							currentOffset++;
+						}
+						const int batchSize = 25000;
+
+						// Create batches and insert
+						var sql = @"
+                        INSERT INTO dbo.FieldCounterValue
+                        (AssetID, AssetTypeId, FieldTypeId, Value)
+                        VALUES
+                        (@AssetId, @AssetTypeId, @FieldTypeId, @Value);
+                    ";
+
+						for (int i = 0; i < allValuesToInsert.Count; i += batchSize)
+						{
+							var batch = allValuesToInsert.Skip(i).Take(batchSize);
+							await connection.ExecuteAsync(sql, batch, transaction: transaction);
+						}
+
+						transaction.Commit();
+						return true;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// The transaction will be implicitly rolled back if using (transaction) is exited by an exception
+				return false;
+			}
+		}
 	}
 }
