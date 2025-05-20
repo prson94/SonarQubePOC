@@ -813,7 +813,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 					const htmlinnertext = this.getInnerText(this.form.value[p]);
 
-					if (htmlinnertext != field.HtmlInnerText) {
+					if (htmlinnertext !== field.HtmlInnerText) {
 						this.form.value[p] = this.domPurifyService.sanitize(this.form.value[p]);
 					}
 				}
