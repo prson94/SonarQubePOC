@@ -868,9 +868,9 @@ order by SecurityType asc, Name asc;
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> RemoveRoleAsync(Guid uid)
+		public async Task<RepositoryResponse<RoleDeleteResult>> RemoveRoleAsync(Guid uid)
 		{
-			RepositoryResponse<bool> response;
+			RepositoryResponse<RoleDeleteResult> response;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
@@ -901,7 +901,7 @@ order by SecurityType asc, Name asc;
 					new { roleId }
 				);
 
-				response = new(true, 200, true, "Role removed successfully.");
+				response = new(new RoleDeleteResult { Message = "Role removed successfully.", Success = true, Uid = uid }, 200, true, "Role removed successfully.");
 			}
 
 			return response;
@@ -1204,7 +1204,7 @@ order by SecurityType asc, Name asc;
 					new { roleId, model.Name, model.Description, model.Permissions, u = CurrentUserId, dt }
 				);
 
-				response.Data = new() { Description = model.Description, Name = model.Name, Uid = uid, UpdatedOn = dt };
+				response.Data = new() { Description = model.Description, Name = model.Name, Permissions = model.Permissions, Uid = uid, UpdatedOn = dt };
 			}
 
 			return response;
