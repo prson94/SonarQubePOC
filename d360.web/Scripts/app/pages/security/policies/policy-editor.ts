@@ -199,12 +199,16 @@ export class PolicyEditor implements OnChanges, OnInit {
     }
 
 	ngOnChanges(changes: SimpleChanges) {
-		this.securityService
-			.getPolicyEditAssetTypeOptions(this.item.assetTypeUid)
-			.subscribe((o) => {
-				this.selectedAssetTypeOptions = o;
-				this.loadForm();
-			});
+		if (this.item?.assetTypeUid !== undefined) {
+			this.securityService
+				.getPolicyEditAssetTypeOptions(this.item.assetTypeUid)
+				.subscribe((o) => {
+					this.selectedAssetTypeOptions = o;
+					this.loadForm();
+				});
+		} else {
+			this.loadForm();
+		}
 	}
 
 	get whenConditions(): FormArray {
@@ -297,7 +301,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 		this.clearConditions();
 
-		const isEdit = (this.item && this.item.uid);
+		const isEdit = (this.item && this.item.uid !== null);
 
 		//Set UI labels.
 		if (isEdit) {
@@ -355,6 +359,13 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 	get isGroup(): boolean {
 		return (this.policyForm.get("securityType").value === "Group");
+	}
+
+	loadSelectedAssetTypeOptions(assetTypeUid: string) {
+		this.securityService.getPolicyEditAssetTypeOptions(assetTypeUid)
+			.subscribe((o) => {
+				this.selectedAssetTypeOptions = o;
+			});
 	}
 
 	loadWhenValues(item: FormGroup, type: string) {
@@ -441,9 +452,12 @@ export class PolicyEditor implements OnChanges, OnInit {
 			(item as any).operators = this.relationshipOperators;
 
 			(item as any).options = [];
+
+			const selectedAssetTypeUID = this.policyForm.controls["assetTypeUid"].getRawValue();
+
 			if (selectedIntersectType) {
 				if ((item as any).options.length === 0) {
-					this.securityService.getPolicyEditRelationLookupOptions(selectedIntersectType, this.item.assetTypeUid).subscribe((results) => {
+					this.securityService.getPolicyEditRelationLookupOptions(selectedIntersectType, selectedAssetTypeUID).subscribe((results) => {
 						(item as any).options = results;
 						obs.next();
 						//this.cdRef.detectChanges();
