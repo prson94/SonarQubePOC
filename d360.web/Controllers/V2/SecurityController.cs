@@ -82,6 +82,11 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
+			var policyExists = await Security.DoesPolicyExists(model.Name?.Trim());
+			if (policyExists)
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.DuplicateItem);
+			}
 			var result = await Security.CreatePolicyAsync(model);
 			if (result.IsSuccess)
 			{

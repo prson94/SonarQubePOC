@@ -1521,5 +1521,18 @@ order by SecurityType asc, Name asc;
 
 			return null;
 		}
+
+		public async Task<bool> DoesPolicyExists(string policyName)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+						  SELECT * FROM [security].[Rule]
+						  WHERE [Name] = @policyName
+						  ";
+				var result = await connection.QueryFirstOrDefaultAsync(sql, new { policyName });
+				return result != null;
+			}
+		}
 	}
 }
