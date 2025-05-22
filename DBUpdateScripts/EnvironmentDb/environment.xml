@@ -87,6 +87,7 @@
 	<include file="scripts/Table.dbo.Nym.xml"/>
 	<include file="scripts/Table.dbo.NymRelation.xml"/>
 	<include file="scripts/Table.dbo.Color.xml"/>
+	<include file="scripts/Table.dbo.OpenIdRequest.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>

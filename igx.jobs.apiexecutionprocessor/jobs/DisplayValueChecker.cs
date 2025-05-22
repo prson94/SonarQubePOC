@@ -40,43 +40,24 @@ namespace igx.functions.consumption
 		[FunctionName(FUNCTION_NAME)]
         public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)
         {
-			var slot = GetEnvironmentLevelCurrentSlot();
-			var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
-			foreach (var c in tenants)
-			{
-				var logProperties = new Dictionary<string, object> {
-					{ "Function", FUNCTION_NAME },
-					{ "CompanyID", c.CompanyID },
-					{ "UrlPrefix", c.UrlPrefix }
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async c => {
+				var connectionString = CompanyConnectionStringHelper.ConnectionString(c.CompanyID, c.Server, c.Username, c.Password);
+				var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
+
+				var context = new UriSecurityContextProvider
+				{
+					CompanyID = c.CompanyID,
+					CompanyPrefix = c.UrlPrefix,
+					ResourceID = 0,
+					IsAdministrator = true,
 				};
 
-				using (log.BeginScope(logProperties))
+				var rs = await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
+				if (rs.IsSuccess)
 				{
-					try
-					{
-						var connectionString = CompanyConnectionStringHelper.ConnectionString(c.CompanyID, c.Server, c.Username, c.Password);
-						var workspace = new Workspaces(new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString });
-
-						var context = new UriSecurityContextProvider
-						{
-							CompanyID = c.CompanyID,
-							CompanyPrefix = c.UrlPrefix,
-							ResourceID = 0,
-							IsAdministrator = true,
-						};
-
-						var rs = await workspace.UpsertRebuildStatusAsync(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
-						if (rs.IsSuccess)
-						{
-							await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
-						}
-					}
-					catch (Exception ex)
-					{
-						log.LogError(ex, "Error when rebuilding display values.");
-					}
+					await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 				}
-			}
+			});
 		}
     }
 }

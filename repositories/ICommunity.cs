@@ -12,25 +12,21 @@ namespace repositories
 		Task<RepositoryResponse<bool>> ChangePasswordAsync(int resourceId, string newPassword);
 
 		Task<RepositoryResponse<int>> CreateClaimAsync(ClaimMapping claim);
-
-		Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request);
-
+		
 		Task<RepositoryResponse<int>> CreateUserAsync(Resource user);
 
 		Task<RepositoryResponse<bool>> CreateUserInTenantAsync(int companyId, int resourceId, bool isAdministrator, DateTime loggedInOn, AuthenticationMethod authMethod);
+
+		/// <summary>
+		/// Used to generate a state or nonce value.
+		/// </summary>
+		string GenerateRandomString(int length = 5);
 
 		Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users);
 
 		Task<List<UserUpsertValidateModel>> CreateUsersInTenantAsync(int companyId, List<UserUpsertValidateModel> users);
 
-		/// <summary>
-		/// Used to generate a state or nonce value.
-		/// </summary>
-		string GenerateOpenIdRequestValue(int length = 5);
-
 		string GetConnectionStringForTenant(int companyId);
-
-		Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true);
 
 		Task<RepositoryResponse<ClaimMapping>> ReadClaimMappingById(int id);
 
@@ -86,10 +82,6 @@ namespace repositories
 
 		Task<RepositoryResponse<bool>> RemoveClaimAsync(int claimId, int clientId, int companyId, int domainSettingId);
 
-		Task<bool> RemoveOldOpenIdRequestsAsync();
-
-		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
-
 		Task<RepositoryResponse<int>> RemoveUsersFromTenantAsync(int companyId, List<Guid> resourceUids);
 
 		Task<RepositoryResponse<bool>> ResetUserPassword(int resourceId, string currentPassword, string newPassword);
@@ -107,9 +99,7 @@ namespace repositories
 		Task UpsertWorkflowDigestStatusAsync(int companyId, Guid invocationId, int? existingId);
 
 		Task<Resource> ValidateResourceAsync(string username, string password, int? companyId);
-
-
-
+		
 		Task<RepositoryResponse<bool>> RemoveSettingAsync(int companyId, Setting setting);
 
 		Task<RepositoryResponse<bool>> UpsertSettingAsync(int companyId, Setting setting, string value);

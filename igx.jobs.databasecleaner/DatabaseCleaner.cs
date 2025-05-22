@@ -23,80 +23,55 @@ namespace igx.jobs.databasecleaner
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)] TimerInfo myTimer, ILogger log)
 		{
-			try
-			{
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async c => {
+				string overrideValue = await Community.ReadSettingValueAsync<string>(c.CompanyID, Setting.AssetDataProfileLifespan);
 
-				foreach (var c in tenants)
+				try
 				{
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", c.CompanyID },
-						{ "UrlPrefix", c.UrlPrefix }
-					};
-
-					string overrideValue = await Community.ReadSettingValueAsync<string>(c.CompanyID, Setting.AssetDataProfileLifespan);
-
-					using (log.BeginScope(logProperties))
+					using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
 					{
-						try
-						{
-							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-							{
-								company.Open();
-								//remove any old api execution records
-								await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
-							}
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error occured for company(Deleteing Execution Records).");
-						}
-
-						try
-						{
-							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-							{
-								company.Open();
-								var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
-								settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
-
-								//remove any old data profile records
-								await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
-							}
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error occured for company(Deleting Asset DataProfile Records).");
-						}
-
-
-						try
-						{
-							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-							{
-								company.Open();
-								//remove any old data inprocess tables
-								await company.ExecuteAsync("[api].[DeleteInProcessRecords]", commandTimeout: 1800);
-							}
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error occured for company(Deleting in process records).");
-						}
-
-						finally
-						{
-							log.LogInformation("Finished run for company.");
-						}
+						company.Open();
+						//remove any old api execution records
+						await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				log.LogCritical(ex, "Web job failed.");
-			}
+				catch (Exception ex)
+				{
+					log.LogError(ex, "Error occured for company(Deleteing Execution Records).");
+				}
+
+				try
+				{
+					using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+					{
+						company.Open();
+						var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
+						settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
+
+						//remove any old data profile records
+						await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
+					}
+				}
+				catch (Exception ex)
+				{
+					log.LogError(ex, "Error occured for company(Deleting Asset DataProfile Records).");
+				}
+
+				try
+				{
+					using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+					{
+						company.Open();
+						//remove any old data inprocess tables
+						await company.ExecuteAsync("[api].[DeleteInProcessRecords]", commandTimeout: 1800);
+					}
+				}
+				catch (Exception ex)
+				{
+					log.LogError(ex, "Error occured for company(Deleting in process records).");
+				}
+
+			});
 		}
 	}
 }

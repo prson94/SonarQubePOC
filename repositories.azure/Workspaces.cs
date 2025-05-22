@@ -5,6 +5,7 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
+using Dapper.Contrib.Extensions;
 using DocumentFormat.OpenXml;
 using Newtonsoft.Json.Linq;
 using repositories.azure.extensions;
@@ -13,119 +14,21 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace repositories.azure
 {
-	public class Workspaces : Repository, IWorkspaces
+	public partial class Workspaces : Repository, IWorkspaces
 	{
 		public int CompanyId { get; set; }
 		
 		public string WorkspaceId { get; set; }
 
 		private readonly string GROUP_RESULTS_SQL = @"select ItemNumber, ExecutionItemUid, cast(JSON_VALUE(Properties, '$.Uid') as uniqueidentifier) as uid, Message, Success from api.ExecutionItem where ExecutionID = @executionId order by ItemNumber;";
-		private readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 
 		public Workspaces(DapperConnectionProvider provider): base(provider) { }
-
-
-		FieldValidationResult isFieldValid(FieldTypeValidation ft, string value)
-		{
-			FieldValidationResult result;
-			DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
-
-			result = type.ValidateRestricted(ft.Name, ft.Type);
-			if (!result.IsValid)
-			{
-				return result;
-			}
-			result = type.ValidateRequirement(ft.Name, ft.IsRequired, value);
-			if (!result.IsValid)
-			{
-				return result;
-			}
-
-			switch (type)
-			{
-				case DataType.Boolean:
-					result = type.ValidateBoolean(ft.Name, value);
-					break;
-				case DataType.Date:
-					result = type.ValidateDate(ft.Name, value);
-					break;
-				case DataType.DateTime:
-					result = type.ValidateDateTime(ft.Name, value);
-					break;
-				case DataType.Decimal:
-					result = type.ValidateDecimal(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
-					break;
-				case DataType.Html:
-					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
-					break;
-				case DataType.Lookup:
-					result = type.ValidateList(ft.Name, ft.AllowMultipleValues, value);
-					break;
-				case DataType.Number:
-					result = type.ValidateNumber(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, value);
-					break;
-				default:
-					result = type.ValidateText(ft.Name, ft.Length, ft.MinimumLength, ft.MaximumLength, ft.Pattern, value);
-					break;
-			}
-
-			if (result.IsValid && string.IsNullOrEmpty(result.CorrectedValue))
-			{
-				result.CorrectedValue = value;
-			}
-
-			return result;
-		}
-
-		(bool, List<string>) parseFieldAndAddToRow(DataRow row, List<FieldTypeValidation> fieldTypes, Dictionary<string, string> fields)
-		{
-			var jsonArray = JArray.Parse("[]");
-			bool fieldsAreValid = true;
-			List<string> validationMessages = [];
-			foreach (var key in fields.Keys)
-			{
-				var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
-				if (ft != null)
-				{
-					FieldValidationResult validationResult = new FieldValidationResult();
-					DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
-
-					if (type == DataType.Boolean || type == DataType.Date || 
-						type == DataType.DateTime || type == DataType.Decimal || type == DataType.Number)
-					{
-						validationResult = isFieldValid(ft, fields[key]);
-					}
-					else
-					{
-						validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
-					}
-					if (validationResult.IsValid)
-					{
-						var jsonObject = JObject.Parse("{}");
-
-						jsonObject.Add("FieldName", key.Trim());
-						jsonObject.Add("FieldValue", validationResult.CorrectedValue);
-						jsonObject.Add("FieldTypeID", ft.ID);
-
-						jsonArray.Add(jsonObject);
-					}
-					else
-					{
-						fieldsAreValid = false;
-						validationMessages.Add(validationResult.Message);
-					}
-				}
-			}
-			row["CustomProperties"] = jsonArray.ToString();
-
-			return (fieldsAreValid, validationMessages);
-		}
-
 
 		public async Task<RepositoryResponse<bool>> AddMembersToGroupAsync(Guid groupUid, List<Guid> userUids)
 		{
@@ -217,6 +120,31 @@ where	g.id = @groupId;
 			}
 
 			return response;
+		}
+
+		public async Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request)
+		{
+			bool success = false;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				int recordsCount = await connection.InsertAsync(request);
+				success = recordsCount > 0;
+			}
+			return success;
+		}
+
+		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true)
+		{
+			OpenIdRequest model = null;
+
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("@state", state);
+			using (var connection = ConnectionProvider.Connect(fromSecondary))
+			{
+				model = await connection.QueryFirstOrDefaultAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
+			}
+
+			return model;
 		}
 
 		public async Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadGroupsAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -465,7 +393,6 @@ from	[Group] G
 			return true;
 		}
 
-
 		public async Task<RepositoryResponse<IEnumerable<GroupResponseResult>>> RemoveGroupsAsync(int executionId, List<Guid> uids)
 		{
 			RepositoryResponse<IEnumerable<GroupResponseResult>> response = new(null, 200, true);
@@ -558,6 +485,33 @@ end";
 			return response;
 		}
 
+		public async Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request)
+		{
+			bool success = false;
+
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("@state", request.State);
+			using (var connection = ConnectionProvider.Connect())
+			{
+				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where State = @state", dbArgs);
+				success = recordsCount > 0;
+			}
+
+			return success;
+		}
+
+		public async Task<bool> RemoveOldOpenIdRequestsAsync()
+		{
+			bool success = false;
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where CreatedOn < @dt", new { dt = DateTime.UtcNow.AddMinutes(-30) });
+				success = recordsCount > 0;
+			}
+
+			return success;
+		}
 
 		public async Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids)
 		{
@@ -789,7 +743,6 @@ end";
 
 			return response;
 		}
-
 
 		public async Task<RepositoryResponse<List<UserApiUpsertResult>>> UpsertUsersAsync(int executionId, List<UserUpsertValidateModel> users, bool lookupFieldsPassedByValue = false)
 		{
