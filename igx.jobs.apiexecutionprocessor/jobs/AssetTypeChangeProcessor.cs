@@ -58,9 +58,9 @@ namespace igx.jobs.apiexecutionprocessor
 								if (assetIds.Any())
 								{
 									await catalog.InsertAssetWithCounter(
-										CounterInitialIndex ?? default,
+										CounterInitialIndex,
 										info.AssetTypeId,
-										info.FieldTypeId ?? default,
+										info.FieldTypeId,
 										assetIds);
 								}
 							}

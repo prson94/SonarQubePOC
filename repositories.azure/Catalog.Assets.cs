@@ -633,14 +633,8 @@ from	#ids a
 		}
 
 
-		public async Task<bool> InsertAssetWithCounter(int counterStartValue, int assetTypeId, int fieldTypeId, IEnumerable<int> assetIds)
+		public async Task<bool> InsertAssetWithCounter(int? counterStartValue, int? assetTypeId, int? fieldTypeId, IEnumerable<int> assetIds)
 		{
-			if (assetIds == null || !assetIds.Any())
-			{
-				Console.WriteLine("No asset IDs provided for insertion.");
-				return false;
-			}
-
 			try
 			{
 				using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -652,7 +646,7 @@ from	#ids a
 						var maxCounterSql = "SELECT ISNULL(MAX(Value), 0) FROM dbo.FieldCounterValue WITH (UPDLOCK, HOLDLOCK)";
 						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql, transaction: transaction);
 
-						int currentCounterSeed = Math.Max(counterStartValue, existingMaxCounterValue) + 1;
+						int currentCounterSeed = Math.Max(counterStartValue.Value, existingMaxCounterValue) + 1;
 
 						List<FieldCounterValue> allValuesToInsert = new List<FieldCounterValue>();
 						int currentOffset = 0;
@@ -661,8 +655,8 @@ from	#ids a
 							allValuesToInsert.Add(new FieldCounterValue
 							{
 								AssetId = assetId,
-								AssetTypeId = assetTypeId,
-								FieldTypeId = fieldTypeId,
+								AssetTypeId = assetTypeId.Value,
+								FieldTypeId = fieldTypeId.Value,
 								Value = currentCounterSeed + currentOffset
 							});
 							currentOffset++;

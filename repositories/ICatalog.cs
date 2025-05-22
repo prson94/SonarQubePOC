@@ -92,8 +92,7 @@ namespace repositories
 
 		Task<IEnumerable<int>> GetAssetsByFieldType(int? assetTypeId);
 
-		Task<bool> InsertAssetWithCounter(int counterStartValue, int
-			assetTypeId, int fieldTypeId, IEnumerable<int> assetIds);
+		Task<bool> InsertAssetWithCounter(int? counterStartValue, int? assetTypeId, int? fieldTypeId, IEnumerable<int> assetIds);
 		#endregion
 	}
 }
