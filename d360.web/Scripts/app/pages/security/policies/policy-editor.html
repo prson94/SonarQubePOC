@@ -55,6 +55,7 @@
 													[options]="options?.assetTypes"
 													[alwaysShowFilter]="true"
 													required
+													appendTo="body"
 													(onChange)="loadSelectedAssetTypeOptions($event.value)">
 										</p-dropdown>
 									</div>
@@ -71,7 +72,8 @@
 													optionLabel="label"
 													optionValue="value"
 													[options]="options?.roles"
-													required></p-dropdown>
+													required
+													appendTo="body"></p-dropdown>
 									</div>
 								</div>
 							</div>
@@ -242,6 +244,7 @@
 													formControlName="securityUid"
 													[ngModelOptions]="{standalone: true}"
 													[options]="thenOptions"
+													appendTo="body"
 													[filter]="true"></p-dropdown>
 									</div>
 								</div>
