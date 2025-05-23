@@ -40,5 +40,6 @@ namespace repositories
 		Task<RepositoryResponse<bool>> UpdateOverrideAsync(Guid uid, UpdateSecurityPolicyOverride model);
 		Task<RepositoryResponse<ReadRole>> UpdateRoleAsync(Guid uid, CreateRole model);
 		Task<RepositoryResponse<bool>> UpsertOverridesByAssetRoleAndUsersAsync(long assetId, int roleId, List<Guid> users);
+		Task<bool> DoesPolicyExists(string policyName);
 	}
 }
