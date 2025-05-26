@@ -54,7 +54,7 @@ namespace igx.jobs.apiexecutionprocessor
 							(bool isFieldCounterType, int? CounterInitialIndex) = await catalog.IsFieldCounterType(info.FieldTypeId);
 							if (isFieldCounterType)
 							{
-								var assetIds = await catalog.GetAssetsByFieldType(info.AssetTypeId);
+								var assetIds = await catalog.GetAssetsByType(info.AssetTypeId);
 								if (assetIds.Any())
 								{
 									await catalog.InsertAssetWithCounter(
@@ -81,51 +81,6 @@ namespace igx.jobs.apiexecutionprocessor
 					log.LogError(ex, "Error while processing asset type change.");
 					throw;
 				}
-			}
-		}
-
-
-		private async Task<int> GetCounterFieldValue(DapperConnectionProvider dapper, int? fieldTypeId)
-		{
-			try
-			{
-				using (var connection = (SqlConnection)dapper.Connect())
-				{
-					var sql = @"
-							Select fc.Value from dbo.FieldCounterValue fc
-							Join dbo.FieldType ft
-							ON  fc.FieldTypeId = ft.ID
-							Where ft.[Name] = 'ProcessCounter' AND fc.FieldTypeId = @fieldTypeId
-							  ";
-
-					return await connection.QueryFirstOrDefaultAsync<int>(sql, new {  fieldTypeId });
-				}
-			}
-			catch (Exception ex)
-			{
-
-				return -1;
-			}
-		}
-
-		private async Task<IEnumerable<int>> GetAssetsByFieldType(DapperConnectionProvider dapper, int? assetTypeId)
-		{
-			try
-			{
-				using (var connection = (SqlConnection)dapper.Connect())
-				{
-					var sql = @"
-							  SELECT a.ID from dbo.Asset a
-							  WHERE a.AssetTypeID = @assetTypeId
-							  ";
-
-					return await connection.QueryAsync<int>(sql, new { assetTypeId });
-				}
-			}
-			catch (Exception)
-			{
-
-				throw;
 			}
 		}
 	}

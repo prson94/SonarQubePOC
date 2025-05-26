@@ -90,7 +90,7 @@ namespace repositories
 		#region AssetTypeChangeProcessor
 		Task<(bool isFieldCounterType, int? CounterInitialIndex)> IsFieldCounterType(int? fieldTypeId);
 
-		Task<IEnumerable<int>> GetAssetsByFieldType(int? assetTypeId);
+		Task<IEnumerable<int>> GetAssetsByType(int? assetTypeId);
 
 		Task<bool> InsertAssetWithCounter(int? counterStartValue, int? assetTypeId, int? fieldTypeId, IEnumerable<int> assetIds);
 		#endregion

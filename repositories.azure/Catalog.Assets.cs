@@ -610,7 +610,7 @@ from	#ids a
 			}
 		}
 
-		public async Task<IEnumerable<int>> GetAssetsByFieldType(int? assetTypeId)
+		public async Task<IEnumerable<int>> GetAssetsByType(int? assetTypeId)
 		{
 			try
 			{
