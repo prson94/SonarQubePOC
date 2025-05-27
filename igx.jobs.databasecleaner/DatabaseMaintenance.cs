@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using repositories;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace igx.jobs.databasecleaner
@@ -26,101 +25,76 @@ namespace igx.jobs.databasecleaner
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = RUN_ON_STARTUP)] TimerInfo myTimer, ILogger log)
 		{
-			try
-			{
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
-
-				foreach (var c in tenants)
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async c => {
+				try
 				{
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", c.CompanyID },
-						{ "UrlPrefix", c.UrlPrefix }
-					};
+					bool allowOffHourRun = false;
 
-					using (log.BeginScope(logProperties))
+					string timezoneId = "";
+
+					switch (c.Region)
 					{
-						try
+						case "AustraliaEast":
+							timezoneId = "AUS Eastern Standard Time";
+							break;
+						case "SouthEastAsia":
+							timezoneId = "Singapore Standard Time";
+							break;
+						case "FranceCentral":
+							timezoneId = "W. Europe Standard Time";
+							break;
+						case "UKSouth":
+							timezoneId = "GMT Standard Time";
+							break;
+						case "EastUS":
+							timezoneId = "Eastern Standard Time";
+							break;
+						case "CentralUS":
+							timezoneId = "Central Standard Time";
+							break;
+						default:
+							timezoneId = "Eastern Standard Time";
+							break;
+					}
+
+					TimeZoneInfo timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+					var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timezone).TimeOfDay.Hours;
+					allowOffHourRun = (now <= 6 || now >= 19);
+
+					if (allowOffHourRun)
+					{
+						using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
 						{
-							bool allowOffHourRun = false;
-
-							string timezoneId = "";
-
-							switch (c.Region)
-							{
-								case "AustraliaEast":
-									timezoneId = "AUS Eastern Standard Time";
-									break;
-								case "SouthEastAsia":
-									timezoneId = "Singapore Standard Time";
-									break;
-								case "FranceCentral":
-									timezoneId = "W. Europe Standard Time";
-									break;
-								case "UKSouth":
-									timezoneId = "GMT Standard Time";
-									break;
-								case "EastUS":
-									timezoneId = "Eastern Standard Time";
-									break;
-								case "CentralUS":
-									timezoneId = "Central Standard Time";
-									break;
-								default:
-									timezoneId = "Eastern Standard Time";
-									break;
-							}
-							
-							TimeZoneInfo timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
-							var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timezone).TimeOfDay.Hours;
-							allowOffHourRun = (now <= 6 || now >= 19);
-
-							if (allowOffHourRun)
-							{ 
-								using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-								{
-									company.Open();
-									var metrics = await company.QuerySingleAsync<dynamic>(@"
+							company.Open();
+							var metrics = await company.QuerySingleAsync<dynamic>(@"
 SELECT	top 1
 		avg_data_io_percent AS DataPct,
 		avg_cpu_percent as CpuPct
 FROM	sys.dm_db_resource_stats
 order by end_time desc");
 
-									decimal cpuPct = (decimal)metrics.CpuPct;
-									decimal dataPct = (decimal)metrics.DataPct;
+							decimal cpuPct = (decimal)metrics.CpuPct;
+							decimal dataPct = (decimal)metrics.DataPct;
 
-									if (cpuPct <= 50 && dataPct < 50)
-									{ 
-										// Re-organize indexes for database.
-										await company.ExecuteAsync("exec AzureSQLMaintenance @From = 50, @To = 100", commandTimeout: 7200);
-									}
-
-									if (cpuPct <= 90 && dataPct < 75)
-									{
-										// Update database statistics.
-										await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
-									}
-								}							
+							if (cpuPct <= 50 && dataPct < 50)
+							{
+								// Re-organize indexes for database.
+								await company.ExecuteAsync("exec AzureSQLMaintenance @From = 50, @To = 100", commandTimeout: 7200);
 							}
 
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error occured for company.");
-						}
-						finally
-						{
-							log.LogInformation("Finished run for company.");
+							if (cpuPct <= 90 && dataPct < 75)
+							{
+								// Update database statistics.
+								await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
+							}
 						}
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				log.LogCritical(ex, "Web job failed.");
-			}
+				catch (Exception ex)
+				{
+					log.LogError(ex, "Error occured for company.");
+				}
+			});
 		}
 	}
 }

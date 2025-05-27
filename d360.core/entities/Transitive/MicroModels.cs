@@ -67,8 +67,8 @@ namespace d360.core.entities
 
         public int Priority { get; set; }
 
-		public string GetConnectionString() {
-			return CompanyConnectionStringHelper.ConnectionString(CompanyID, Server, Username, Password);
+		public string GetConnectionString(bool readOnly = false) {
+			return CompanyConnectionStringHelper.ConnectionString(CompanyID, Server, Username, Password, readOnly);
 		}
     }
 

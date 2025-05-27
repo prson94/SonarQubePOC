@@ -622,8 +622,6 @@ namespace d360.web.Controllers
             switch (SecurityContext.AuthenticationType)
             {
                 case AuthenticationType.Saml:
-					#region
-
 					var saml = await Community.ReadIdpSamlSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
                     var authnRequestXml = createAuthnRequest(saml);
 
@@ -670,8 +668,6 @@ namespace d360.web.Controllers
                     }
 
                     return new EmptyResult();
-
-                #endregion
                 case AuthenticationType.OpenId:
 
 					var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
@@ -681,12 +677,12 @@ namespace d360.web.Controllers
                         return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, core.resources.Error.MissingConfigInfo);
                     }
 
-                    var state = Community.GenerateOpenIdRequestValue();
-                    var nonce = Community.GenerateOpenIdRequestValue();
+                    var state = Community.GenerateRandomString();
+                    var nonce = Community.GenerateRandomString();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
 					var openIdRequest = new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow };
-                    await Community.CreateOpenIdRequestAsync(openIdRequest);
+                    await Workspace.CreateOpenIdRequestAsync(openIdRequest);
 					Cache.SetItemInListByID("openid", state, openIdRequest);
 
 					var client = new HttpClient();
@@ -893,12 +889,12 @@ namespace d360.web.Controllers
 			openIdRequest = Cache.GetItemInListByID<OpenIdRequest, string>("openid", state);	// Read from machine cache.
 			if (openIdRequest == null)
 			{
-				openIdRequest = await Community.GetOpenIdRequestAsync(state);					// Read from secondary
+				openIdRequest = await Workspace.GetOpenIdRequestAsync(state);					// Read from secondary
 			}
 			if (openIdRequest == null)
 			{
 				Log.LogError($"Could not find openIdRequest(fromSecondary).");
-				openIdRequest = await Community.GetOpenIdRequestAsync(state, false);			// Read from primary
+				openIdRequest = await Workspace.GetOpenIdRequestAsync(state, false);			// Read from primary
 			}
 
 			if (openIdRequest == null)
@@ -969,7 +965,7 @@ namespace d360.web.Controllers
 
             try
             {
-                await Community.RemoveOpenIdRequestAsync(openIdRequest);
+                await Workspace.RemoveOpenIdRequestAsync(openIdRequest);
             }
             catch (Exception ex)
             {

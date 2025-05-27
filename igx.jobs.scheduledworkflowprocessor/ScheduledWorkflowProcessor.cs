@@ -40,77 +40,42 @@ namespace igx.jobs.scheduledworkflowprocessor
 		}
 
 		[Singleton(Mode = SingletonMode.Function)]
-		public async Task Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
-        {
-			try
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)
+		{
+			//add random delay so instances run at an offset to each other.
+			var rand = new Random();
+			Thread.Sleep(rand.Next(30) * 1000);
+
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async c =>
 			{
-				//add random delay so instances run at an offset to each other.
-				var rand = new Random();
-				Thread.Sleep(rand.Next(30) * 1000);
+				var settings = Community.ReadSettingsAsync(c.CompanyID).Result;
+				var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
+				var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
 
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = (await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot)).ToList();
-
-				tenants.ForEach(c =>
+				var context = new UriSecurityContextProvider
 				{
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", c.CompanyID },
-						{ "UrlPrefix", c.UrlPrefix }
-					};
+					CompanyID = c.CompanyID,
+					CompanyPrefix = c.UrlPrefix,
+					ResourceID = 0,
+					IsAdministrator = true
+				};
+				using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
+				{
+					// Load all workflows of type schedule.
+					var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
 
-					
-					var settings = Community.ReadSettingsAsync(c.CompanyID).Result;
-					var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
-					var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
-
-					using (log.BeginScope(logProperties))
+					foreach (var registration in scheduledWorkflows)
 					{
-						try
+						// If the registration applies fire of the workflow and break if not go to the next one.
+						if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId, fromName, fromEmail).Result)
 						{
-							var context = new UriSecurityContextProvider
-							{
-								CompanyID = c.CompanyID,
-								CompanyPrefix = c.UrlPrefix,
-								ResourceID = 0,
-								IsAdministrator = true
-							};
-							using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() }))
-							{
-
-							// Load all workflows of type schedule.
-								var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
-
-								foreach (var registration in scheduledWorkflows)
-								{
-									// If the registration applies fire of the workflow and break if not go to the next one.
-									if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId, fromName, fromEmail).Result)
-									{
-										break;
-									}
-								}
-
-								company.ExecuteTimerSteps();
-							}
-						}
-						catch (Exception ex)
-						{
-							log.LogError(ex, "Error processing scheduled workflows for this environment.");
+							break;
 						}
 					}
-				});
-			}
-			catch (Exception ex)
-			{
-				var logProperties = new Dictionary<string, object> {
-					{ "Function", FUNCTION_NAME }
-				};
 
-				using (log.BeginScope(logProperties))
-				{
-					log.LogCritical(ex, "Critical error when running scheduled workflows.");
+					company.ExecuteTimerSteps();
 				}
-			}
-        }
+			});
+		}
     }
 }

@@ -292,7 +292,18 @@ namespace repositories.azure
 				var ft = fieldTypes.FirstOrDefault(o => o.Name == key.Trim());
 				if (ft != null)
 				{
-					var validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					FieldValidationResult validationResult = new FieldValidationResult();
+					DataType type = (DataType)Enum.Parse(typeof(DataType), ft.Type);
+
+					if (type == DataType.Boolean || type == DataType.Date ||
+						type == DataType.DateTime || type == DataType.Decimal || type == DataType.Number)
+					{
+						validationResult = isFieldValid(ft, fields[key]);
+					}
+					else
+					{
+						validationResult = isFieldValid(ft, (fields[key] ?? "").Trim());
+					}
 					if (validationResult.IsValid)
 					{
 						var jsonObject = JObject.Parse("{}");
