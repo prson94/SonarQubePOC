@@ -98,9 +98,9 @@ namespace repositories
 		Task<RepositoryResponse<AssetDataProfileByTypeQualifierApiViewModel>> ReadAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
 		Task<RepositoryResponse<IEnumerable<DataProfileExportModel>>> GetMatchedAssetsForExport(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
 		Task<RepositoryResponse<bool>> ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert);
-		Task<RepositoryResponse<Exception>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
-		Task<RepositoryResponse<Exception>> RemoveDataProfileAsync(Guid assetUid, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
-		Task<RepositoryResponse<Exception>> RemoveDataProfileAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<List<DataProfileUpsertResponse>>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
+		Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
+		Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
 		Task<RepositoryResponse<Exception>> RemoveDataProfilesAsync(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
 		Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId);
 		Task<List<DataProfileDeleteResponse>> GetExecutionDataProfileDeleteResultsAsync(Guid executionId);

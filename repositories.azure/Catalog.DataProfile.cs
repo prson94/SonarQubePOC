@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using System.Diagnostics;
@@ -13,6 +14,8 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.Security;
+using System.Transactions;
 
 
 namespace repositories.azure
@@ -905,25 +908,37 @@ namespace repositories.azure
 		}
 
 
-		public async Task<RepositoryResponse<Exception>> RemoveDataProfileAsync(Guid assetUid, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
+		public async Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
 		{
-			RepositoryResponse<Exception> response = new RepositoryResponse<Exception>(null, 200, true);
+			RepositoryResponse<List<DataProfileDeleteResponse>> response = new RepositoryResponse<List<DataProfileDeleteResponse>>(null, 200, true, null, null);
 
-			Asset asset;
+			if (!CurrentUserIsAdmin)
+			{
+				var Permissions = await HasAssetPermissionByUid(assetUid, Permission.EditAsset,true);
+
+				if (!Permissions)
+				{
+					response.StatusCode = 403;
+					response.IsSuccess = false;
+					response.Message = Error.Non_Auth_Mess;
+					return response;
+				}
+			}
+
+			var asset = await ReadAssetwithAssetTypeAsync(assetUid);
+
+			if (asset == null)
+			{
+				response.StatusCode = 400;
+				response.IsSuccess = false;
+				response.Message = string.Format(Error.AssetUidIsNotValid, assetUid.ToString());
+
+				return response;
+			}
+
 			string sqlqry = "";
 			using (var connection = ConnectionProvider.Connect(true))
 			{
-				sqlqry = "select * from asset where uid = @assetUid";
-				asset = await connection.QueryFirstOrDefaultAsync<Asset>(sqlqry, new {assetUid}, commandTimeout: CommandTimeout);
-
-				if (asset == null)
-				{
-					response.StatusCode = 400;
-					response.IsSuccess = false;
-					response.Message = string.Format(Error.AssetUidIsNotValid, assetUid.ToString());
-
-					return response;
-				}
 
 				sqlqry = "select count(1) from AssetDataProfile where AssetId = @AssetID and ProfileSetDate between @startDateDate and @endDateDate";
 				int recordCount = await connection.QueryFirstAsync<int>(sqlqry, new { AssetID = asset.ID, @startDateDate = startDate.Date, @endDateDate =endDate.Date }, commandTimeout: CommandTimeout);
@@ -961,10 +976,15 @@ namespace repositories.azure
 			{
 				if (responseresult.Data != null)
 				{
-					response.Data = responseresult.Data;
+					response.Ex = responseresult.Data;
 				}
 				await UpdateExecutionWithErrorFromException(execution, responseresult.Data);
 			}
+
+			await completeApiExecutionAndGetCounts(ApiExecutionAction.DeleteDataProfile, execution.Id, execution.ExecutionID);
+			var results = await GetExecutionDataProfileDeleteResultsAsync(execution.ExecutionID);
+			response.Data = results;
+
 			response.StatusCode = responseresult.StatusCode;
 			response.IsSuccess = responseresult.IsSuccess;
 			response.Message = responseresult.Message;
@@ -1598,9 +1618,9 @@ namespace repositories.azure
 			return response;
 		}
 
-		public async Task<RepositoryResponse<Exception>> RemoveDataProfileAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			RepositoryResponse<Exception> response = new RepositoryResponse<Exception>(null, 200, true);
+			RepositoryResponse<List<DataProfileDeleteResponse>> response = new RepositoryResponse<List<DataProfileDeleteResponse>> (null, 200, true);
 
 			DateTime? startDate = null;
 			DateTime? endDate = null;
@@ -1664,8 +1684,10 @@ namespace repositories.azure
 			{
 				using (var connection = ConnectionProvider.Connect(true))
 				{
-					string sqlqry = "Select * from AssetDataProfile where AssetId = @assetid order by ProfileSetDate desc";
-					AssetDataProfile dataprofile = await connection.QueryFirstOrDefaultAsync<AssetDataProfile>(sqlqry, new { @assetid = asset.ID }, commandTimeout: CommandTimeout);
+					string sqlqry = $@" declare @assetid bigint;
+										select @assetid = id from asset where uid = @assetUid;
+									   Select * from AssetDataProfile where AssetId = @assetid order by ProfileSetDate desc";
+					AssetDataProfile dataprofile = await connection.QueryFirstOrDefaultAsync<AssetDataProfile>(sqlqry, new { assetUid }, commandTimeout: CommandTimeout);
 					if (dataprofile != null)
 					{
 						startDate = endDate = dataprofile.ProfileSetDate;
@@ -1679,22 +1701,10 @@ namespace repositories.azure
 
 					startDate = startDate ?? new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
 					endDate = endDate ?? DateTime.MaxValue;
-
-					sqlqry = "select count(1) from AssetDataProfile where AssetId = @AssetID and ProfileSetDate between @startDateDate and @endDateDate";
-					int recordCount = await connection.QueryFirstAsync<int>(sqlqry, new { AssetID = asset.ID, @startDateDate = startDate, @endDateDate = endDate }, commandTimeout: CommandTimeout);
-
-					if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-					{
-						response.StatusCode = 400;
-						response.IsSuccess = false;
-						response.Message = string.Format(Error.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString());
-						return response;
-					}
-
 				}
 			}
 			
-			response =  await RemoveDataProfileAsync(asset.uid,startDate.Value, endDate.Value, execution, cascade);
+			response =  await RemoveDataProfileAsync(assetUid, startDate.Value, endDate.Value, execution, cascade);
 
 			return response;
 		}
@@ -1838,9 +1848,9 @@ namespace repositories.azure
 		}
 
 
-		public async Task<RepositoryResponse<Exception>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600)
+		public async Task<RepositoryResponse<List<DataProfileUpsertResponse>>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600)
 		{
-			RepositoryResponse<Exception> response = new RepositoryResponse<Exception>(null, 200, true);
+			RepositoryResponse<List<DataProfileUpsertResponse>> response = new RepositoryResponse<List<DataProfileUpsertResponse>>(null,200, true, null,null);
 
 			bool generalChecksCompleted = false;
 			int itemNumber = 1;
@@ -1848,6 +1858,39 @@ namespace repositories.azure
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			Stopwatch sw = Stopwatch.StartNew();
 			int step = 0;
+
+			if (!CurrentUserIsAdmin)
+			{
+				bool isPermissions = await HasAssetPermissionByUid(request.Select(s => s.assetUid).Distinct().ToList(), Permission.EditAsset, true);
+
+				if (!isPermissions)
+				{
+					response.StatusCode = 403;
+					response.IsSuccess = false;
+					response.Message = Error.Non_Auth_Mess;
+					return response;
+				}
+			}
+
+			var validationResult = await ValidateDataProfileUpsertRequest(request, isInsert);
+
+			if (!validationResult.IsSuccess)
+			{
+				response.StatusCode = validationResult.StatusCode;
+				response.IsSuccess = validationResult.IsSuccess;
+				response.Message = validationResult.Message;
+				return response;
+			}
+
+			if (request.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				response.StatusCode =400;
+				response.IsSuccess = false;
+				response.Message = string.Format(Error.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString());
+				return response;
+			}
+
+			await UpsertApiExecution(execution);
 
 			var dups = request.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
@@ -2527,7 +2570,7 @@ namespace repositories.azure
 					await UpdateExecutionWithErrorFromExceptionCount(execution, generalEx,0, request.Count());
 					response.IsSuccess = false;
 					response.Message = ReadExceptionMessage(generalEx);
-					response.Data = generalEx;
+					response.Ex = generalEx;
 				}
 
 				if (generalChecksCompleted && response.IsSuccess)
@@ -2816,7 +2859,7 @@ namespace repositories.azure
 											sw.Restart();
 											response.IsSuccess = false;
 											response.Message = ReadExceptionMessage(ex);
-											response.Data = ex;
+											response.Ex = ex;
 											LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAssetDataProfile", ReadExceptionMessage(ex), timeout);
 											addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 											sw.Restart();
@@ -2831,6 +2874,12 @@ namespace repositories.azure
 					}
 				}
 			}
+
+			await completeApiExecutionAndGetCounts(isInsert ? ApiExecutionAction.PostDataProfile : ApiExecutionAction.PutDataProfile, execution.Id, execution.ExecutionID);
+
+			var results = await GetExecutionDataProfileResultsAsync(execution.ExecutionID);
+			response.Data = results;
+
 			return response;
 		}
 
@@ -3679,6 +3728,103 @@ namespace repositories.azure
 				var sqlqry = "select count(1) from Semantic where qualifier = @qualifier";
 				int results = (await connection.QueryFirstOrDefaultAsync<int>(sqlqry, new { qualifier }, commandTimeout: CommandTimeout));
 				return results > 0 ? true : false;
+			}
+		}
+
+		private async Task<bool> HasAssetPermissionByUid(Guid assetuid, Permission p, bool checkHasNoPermission)
+		{
+			using (var connection = ConnectionProvider.Connect())
+			{
+				connection.Open();
+
+				var sqlqry = @"exec [dbo].[HasPermission] @resourceid, @p, @CheckHasNoPermission, @assetuid;";
+				var results = (await connection.QueryFirstOrDefaultAsync<dynamic>(sqlqry, new { resourceid  = CurrentUserId, p, checkHasNoPermission, assetuid}, commandTimeout: CommandTimeout));
+				if (results != null)
+				{
+					if (results.IsPermission ?? false)
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+
+		private async Task<bool> HasAssetPermissionByUid(List<Guid> assetUidList, Permission p, bool checkHasNoPermission)
+		{
+			if (assetUidList != null && assetUidList.Count() > 0)
+			{
+				int itemNumber = 1; 
+				DataTable table = new DataTable();
+				table.Columns.Add("ItemNumber", typeof(int));
+				table.Columns.Add("AssetUid", typeof(Guid));
+				table.Columns.Add("Assetid", typeof(long));
+				table.Columns.Add("Permission", typeof(int));
+
+				foreach (Guid item in assetUidList)
+				{
+					DataRow row = table.NewRow();
+					row["ItemNumber"] = itemNumber;
+					row["AssetUid"] = item;
+					table.Rows.Add(row);
+
+					itemNumber++;
+				}
+
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					connection.Open();
+					await connection.ExecuteAsync(
+						sql: @"IF OBJECT_ID('tempdb..#TempAssetUid') IS NOT NULL
+												DROP TABLE #TempAssetUid;
+
+												CREATE TABLE #TempAssetUid(
+													ItemNumber int NOT NULL,
+													AssetUid Uniqueidentifier,
+													AssetId bigint,
+													Permission int,
+													PRIMARY KEY CLUSTERED ( [ItemNumber] ASC)
+												);"
+					);
+
+					if (table.Rows.Count > 0)
+					{
+						SqlBulkCopy bulkCopy = connection.CreateBulkCopy("#TempAssetUid", table.Rows.Count, SqlBulkBatchTimeout);
+						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+						bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+						bulkCopy.WriteToServer(table);
+
+					}
+
+					var sqlqry = @"exec [dbo].[HasPermission] @resourceid, @p, @CheckHasNoPermission, null;";
+					var results = (await connection.QueryFirstOrDefaultAsync<dynamic>(sqlqry, new { resourceid = CurrentUserId, p, checkHasNoPermission }, commandTimeout: CommandTimeout));
+					if (results != null)
+					{
+						if (results.IsPermission ?? false)
+						{
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
+			else 
+			{ 
+				return false; 
 			}
 		}
 

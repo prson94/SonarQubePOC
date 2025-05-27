@@ -1,10 +1,7 @@
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
-using d360.core.validators;
-using d360.model.helpers.filters;
 using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
@@ -12,14 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
-using repositories.azure;
 using SpreadsheetLight;
-using Swashbuckle.Swagger;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -256,45 +250,16 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-			if (!SecurityContext.IsAdministrator)
-			{
-				var noPermissions = models.Select(s => s.assetUid).Distinct().ToList().Any(x =>
-					!Company.HasAssetPermissionByUid(x, Permission.EditAsset)
-				);
-
-				if (noPermissions)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.BadRequest, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
-			}
-			var validationResult = await Catalog.ValidateDataProfileUpsertRequest(models, true);
-
-			if (!validationResult.IsSuccess)
-			{
-				return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-			}
-
-			if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-			}
-
 			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
-
-			Company.Add(execution);
-
-			List<DataProfileUpsertResponse> results = null;
 
 			var response = await Catalog.UpsertDataProfilesAsync(models, execution, true);
 			if (response.IsSuccess)
 			{
-				results = await Catalog.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostDataProfile);
-				return Ok(results);
+				return Ok(response.Data);
 			}
 			else
 			{
-				Log.LogError(exception: response.Data, "Execution error: {ExecutionID}", execution.ExecutionID);
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
 				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
 		}
@@ -316,44 +281,16 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
         {
-			if (!SecurityContext.IsAdministrator)
-			{
-				var noPermissions = models.Select(s => s.assetUid).Distinct().ToList().Any(x =>
-					!Company.HasAssetPermissionByUid(x, Permission.EditAsset)
-				);
-
-				if (noPermissions)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.BadRequest, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
-			}
-			var validationResult = await Catalog.ValidateDataProfileUpsertRequest(models, false);
-
-			if (!validationResult.IsSuccess)
-			{
-				return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-			}
-
-			if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-			}
-
 			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PutDataProfile);
-			Company.Add(execution);
-
-			List<DataProfileUpsertResponse> results = null;
 
 			var response = await Catalog.UpsertDataProfilesAsync(models, execution, false);
 			if (response.IsSuccess)
 			{
-				results = await Catalog.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutDataProfile);
-				return Ok(results);
+				return Ok(response.Data);
 			}
 			else
 			{
-				Log.LogError(exception: response.Data, "Execution error: {ExecutionID}", execution.ExecutionID);
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
 				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
 		}
@@ -380,27 +317,15 @@ namespace d360.web.Controllers.V2
         {
             var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
-			if (!SecurityContext.IsAdministrator)
-			{
-				var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
-
-				if (noPermissions)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
-			}
-
 			var response = await Catalog.RemoveDataProfileAsync(assetUid, startDate, endDate, execution, cascade);
 
 			if (response.IsSuccess)
 			{
-				List<DataProfileDeleteResponse> results = await Catalog.GetExecutionDataProfileDeleteResultsAsync(execution.ExecutionID);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteDataProfile);
-				return Ok(results);
+				return Ok(response.Data);
 			}
 			else
 			{
-				Log.LogError(exception: response.Data, "Execution error: {ExecutionID}", execution.ExecutionID);
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
 				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
 		}
@@ -430,42 +355,17 @@ namespace d360.web.Controllers.V2
 
 			var queryParams = Request.GetQueryNameValuePairs();
 
-			var prefix = "DataProfiles.PostDataProfiles => ";
 			var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
-			if (!SecurityContext.IsAdministrator)
-			{
-				var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
-
-				if (noPermissions)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
-			}
-				
-			if(assetUid == Guid.Empty)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()));
-			}
-
-			Asset asset = await Catalog.GetAsset(assetUid);
-
-			if (asset == null)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetNotFoundError, assetUid.ToString()))).ConfigureAwait(false);
-			}
-
-			var response = await Catalog.RemoveDataProfileAsync(asset, execution, queryParams);
+			var response = await Catalog.RemoveDataProfileAsync(assetUid, execution, queryParams);
 
 			if (response.IsSuccess)
 			{
-				List<DataProfileDeleteResponse> results = await Catalog.GetExecutionDataProfileDeleteResultsAsync(execution.ExecutionID);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteDataProfile);
-				return Ok(results);
+				return Ok(response.Data);
 			}
 			else
 			{
-				Log.LogError(exception: response.Data, "Execution error: {ExecutionID}", execution.ExecutionID);
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
 				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
 		}

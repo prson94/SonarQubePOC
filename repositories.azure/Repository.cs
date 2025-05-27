@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
 using Dapper;
 using Newtonsoft.Json.Linq;
 
@@ -394,6 +395,106 @@ namespace repositories.azure
 
 			}
 		}
+
+		protected async Task completeApiExecutionAndGetCounts(ApiExecutionAction action, int? id, Guid? uid)
+		{
+			string apiTableName = null;
+			string whereIdJoin = "ExecutionID";
+			switch (action)
+			{
+				case ApiExecutionAction.DeleteAssets:
+					apiTableName = "ExecutionDeletedAsset";
+					break;
+				case ApiExecutionAction.DeleteAssetTypes:
+					apiTableName = "ExecutionDeletedAssetType";
+					break;
+				case ApiExecutionAction.DeleteDataProfile:
+					apiTableName = "ExecutionDeleteAssetDataProfile";
+					break;
+				case ApiExecutionAction.DeleteDataQualityResults:
+					apiTableName = "ExecutionDeleteAssetResult";
+					break;
+				case ApiExecutionAction.DeleteFieldTypes:
+					apiTableName = "Execution";
+					break;
+				case ApiExecutionAction.DeleteGroups:
+					apiTableName = "ExecutionDeletedGroup";
+					break;
+				case ApiExecutionAction.DeleteRelationships:
+					apiTableName = "ExecutionDeletedRelationship";
+					break;
+				case ApiExecutionAction.PatchCatalog:
+					apiTableName = "ExecutionCatalogItem";
+					break;
+				case ApiExecutionAction.PostAssets:
+				case ApiExecutionAction.PutAssets:
+					apiTableName = "ExecutionAsset";
+					break;
+				case ApiExecutionAction.PostCrossReferences:
+					apiTableName = "ExecutionAssetCrossReference";
+					break;
+				case ApiExecutionAction.PostDataProfile:
+				case ApiExecutionAction.PutDataProfile:
+					apiTableName = "ExecutionAssetDataProfile";
+					break;
+				case ApiExecutionAction.PostDataQualityResults:
+				case ApiExecutionAction.PutDataQualityResults:
+					apiTableName = "ExecutionAssetResult";
+					break;
+				case ApiExecutionAction.PostGroups:
+				case ApiExecutionAction.PutGroups:
+					apiTableName = "ExecutionGroup";
+					break;
+				case ApiExecutionAction.PostRelationships:
+				case ApiExecutionAction.PutRelationships:
+					apiTableName = "ExecutionRelationship";
+					break;
+				case ApiExecutionAction.UpsertUsers:
+					apiTableName = "ExecutionUser";
+					break;
+				case ApiExecutionAction.DeleteUsers:
+				case ApiExecutionAction.PostAssetTypes:
+				case ApiExecutionAction.PutAssetTypes:
+				default:
+					apiTableName = null;
+					break;
+			}
+
+			string whereId = "ExecutionID";
+			string paramId = "@uid";
+			if (id.HasValue && id.Value > 0)
+			{
+				whereId = "Id";
+				paramId = "@id";
+			}
+
+			if (!string.IsNullOrEmpty(apiTableName))
+			{
+				string sqlstmt = $@"
+	update	E 
+	set		E.[State] = 4,
+			E.CompletedOn = @dt,
+			E.[Total] = case when Tc.Cnt = 0 then E.[Total] else Tc.Cnt end,
+			E.Processed = case when Pc.Cnt = 0 then E.Processed else Pc.Cnt end,
+			E.[Error] = case when Ec.Cnt = 0 then E.[Error] else Ec.Cnt end
+	from	api.Execution E
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin} and Success = 0 
+			) Ec
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin} and Success = 1
+			) Pc
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin}
+			) Tc
+	where	E.{whereId} = {paramId}";
+				using (var connection = ConnectionProvider.Connect())
+				{
+					await connection.ExecuteAsync(sqlstmt, new { uid, id, dt = DateTime.UtcNow }, commandTimeout: 540);
+				}
+			}
+		}
+
 
 		protected async Task UpsertApiExecution(ApiExecution execution)
 		{
