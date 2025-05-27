@@ -770,9 +770,10 @@ namespace d360.model.helpers
 							selectField = $"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20)))";
 							break;
 						case "path":
-							selectField = "Node.DisplayPath";
-							if(!joins.Any(j => j.Contains("AssetPath Node"))) {
-								joins.Add("left outer join AssetPath Node on Node.ID = A.ID");
+							var prefix = ft.Name.Split('_')[0];
+							selectField = $"{prefix}_Node.DisplayPath";
+							if(!joins.Any(j => j.Contains($"AssetPath {prefix}_Node"))) {
+								joins.Add($"left outer join AssetPath {prefix}_Node on {prefix}_Node.ID = A.ID");
 							}
 							break;
 						default:
