@@ -324,7 +324,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 				MenuItems: [],
 				name: '',
 				roleName: '', roleUid: '',
-				securityType: "Group",
+				securityType: this.policyForm.get("securityType").value,
 				thenConditions: [], visible: true, whenConditions: [],
 				uid: null
 			};
