@@ -1,13 +1,11 @@
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
-using d360.core.validators;
-using d360.model.helpers.filters;
 using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using repositories;
@@ -16,7 +14,6 @@ using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -74,26 +71,28 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfilesByAsset(Guid assetUid)
-        {	
+        {
 			var queryParams = Request.GetQueryNameValuePairs();
-            var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
+			var isValid = isPageSizeAndNumValid(queryParams);
+			var validationResult = await Catalog.ValidateDataProfileGetParameters(assetUid, queryParams, isValid);
 
-            if (validationResult.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-            }
-
-            var results = await DataProfiles.GetDataProfiles(assetUid, queryParams);
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-        }
+			if (!validationResult.IsSuccess)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+			}
 
 
-        /// <summary>
-        /// Retrieves Data Profile results for a identifier.
-        /// </summary>
-        /// <param name="profileIdentifier">The profile identifier.</param>
-        /// <returns>A list of Data Profile results</returns>
-        [
+			var results = await Catalog.ReadDataProfilesAsync(assetUid, queryParams);
+			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
+		}
+
+
+		/// <summary>
+		/// Retrieves Data Profile results for a identifier.
+		/// </summary>
+		/// <param name="profileIdentifier">The profile identifier.</param>
+		/// <returns>A list of Data Profile results</returns>
+		[
             HttpGet,
             Route("identifier/{profileIdentifier}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
@@ -108,114 +107,19 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetDataProfilesByIdentifier(string profileIdentifier)
-        {            
-            var queryParams = Request.GetQueryNameValuePairs();
-            var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
-
-            if (validationResult.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-            }
-
-            var results = await DataProfiles.GetDataProfiles(profileIdentifier, queryParams);
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-        }
-
-        private WorkHttpStatus ValidateDataProfileGetParameters(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if (string.IsNullOrWhiteSpace(profileIdentifier))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidProfileIdentifier);
-            }
+			var queryParams = Request.GetQueryNameValuePairs();
+			var isValid = isPageSizeAndNumValid(queryParams);
+			var validationResult = await Catalog.ValidateDataProfileGetParameters(profileIdentifier, queryParams, isValid);
 
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_assetuid"))
-            {
-                if (!Guid.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_assetuid").Value, out Guid assetUid))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
-                }
-                else
-                {
-                    var asset = AssetRepository.GetAssetByUID(assetUid);
-                    if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
-                    }
-                }
-            }
+			if (!validationResult.IsSuccess)
+			{
+				return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+			}
 
-            return ValidateDataProfileBaseParameters(queryParams);
-        }
-
-        private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, assetUid.ToString()));
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
-            {
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out _))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidStartDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
-            {
-
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out _))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidEndDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out _))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.Invalid_includeChildAssetsProvided);
-                }
-            }
-
-            return ValidateDataProfileBaseParameters(queryParams);
-        }
-
-        private WorkHttpStatus ValidateDataProfileBaseParameters(IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-            var isValid = isPageSizeAndNumValid(queryParams);
-
-            if (!string.IsNullOrEmpty(isValid))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, isValid);
-            }
-
-            if (isValid.Length > 0)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, isValid);
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out _))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidIncludeTotal);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includesamples"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out _))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, "_includeSamples"));
-                }
-            }
-
-            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
+			var results = await Catalog.ReadDataProfilesAsync(profileIdentifier, queryParams);
+			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
+		}
 
         /// <summary>
         /// Retrieves list of unique series contained in an environment.
@@ -270,30 +174,12 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_assetUid", "Allows filtering results based on an asset uid", DataType = "string", ParameterType = "query", Required = false),
 		]
         public async Task<IHttpActionResult> GetDataProfiles()
-        {            
-            try
-            {
-                var queryParams = Request.GetQueryNameValuePairs();
+        {
+			var queryParams = Request.GetQueryNameValuePairs();
 
-                var results = await DataProfiles.GetDataProfiles(queryParams);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (ArgumentException ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage));
-            }
-            catch (FilterExpressionParserException ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-            }
-        }
+			var results = await Catalog.ReadDataProfilesAsync(queryParams);
+			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
+		}
 
 		/// <summary>
 		/// Retrieves list of unique series contained in an environment.
@@ -342,29 +228,11 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_filter", "The filter expression used to filter ProfileSeries by assetUid (Uid),profileSetDate (DateTime),typeQualifier (Text),type (Text),ftaVersion (Text),freshness (Number),ProfileSource (Text)and ProfileType (Number) fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 		]
 		public async Task<IHttpActionResult> GetDataProfilesSeries()
-		{			
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
+		{
+			var queryParams = Request.GetQueryNameValuePairs();
 
-				var results = await DataProfiles.GetDataProfilesSeries(queryParams);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-			}
-			catch (ArgumentException ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, errorMessage));
-			}
-			catch (FilterExpressionParserException ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage));
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, errorMessage));
-			}
+			var results = await Catalog.ReadDataProfilesSeriesAsyn(queryParams);
+			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
 		}
 		/// <summary>
 		/// Provides support for adding Data Profile records.
@@ -382,29 +250,26 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            var validationResult = ValidateDataProfileUpsertRequest(models, true);
-            if (validationResult.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-            }
+			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
 
-            if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-            }
+			var response = await Catalog.UpsertDataProfilesAsync(models, execution, true);
+			if (response.IsSuccess)
+			{
+				return Ok(response.Data);
+			}
+			else
+			{
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+		}
 
-            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
-            var results = await DataProfiles.UpsertAsync(models, execution, true);
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-        }
-
-        /// <summary>
-        /// Provides support for updating Data Profile records.
-        /// </summary>
-        /// <param name="models">Data Profile record collection.</param>
-        /// <returns>Results response stating the success or failure or the request.</returns>
-        [
+		/// <summary>
+		/// Provides support for updating Data Profile records.
+		/// </summary>
+		/// <param name="models">Data Profile record collection.</param>
+		/// <returns>Results response stating the success or failure or the request.</returns>
+		[
             HttpPut,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -416,33 +281,29 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
         {
-			var validationResult = ValidateDataProfileUpsertRequest(models, false);
+			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PutDataProfile);
 
-            if (validationResult.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
-            }
+			var response = await Catalog.UpsertDataProfilesAsync(models, execution, false);
+			if (response.IsSuccess)
+			{
+				return Ok(response.Data);
+			}
+			else
+			{
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+		}
 
-            if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-            }
-
-            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PutDataProfile);
-            var results = await DataProfiles.UpsertAsync(models, execution, false);
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-        }
-
-        /// <summary>
-        /// Removes Data Profile results for a given asset. 
-        /// </summary>
-        /// <param name="assetUid">The unique identifier of an asset.</param>
-        /// <param name="startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
-        /// <param name="endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
-        /// <param name="cascade">True/false flag used to indicate if assets children should be deleted.</param>
-        /// <returns>Results response with the count of records deleted.</returns>
-        [
+		/// <summary>
+		/// Removes Data Profile results for a given asset. 
+		/// </summary>
+		/// <param name="assetUid">The unique identifier of an asset.</param>
+		/// <param name="startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
+		/// <param name="endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
+		/// <param name="cascade">True/false flag used to indicate if assets children should be deleted.</param>
+		/// <returns>Results response with the count of records deleted.</returns>
+		[
             HttpDelete,
             Route("{assetUID:Guid}/{startDate}/{endDate}/{cascade}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -456,39 +317,18 @@ namespace d360.web.Controllers.V2
         {
             var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
-			if (!SecurityContext.IsAdministrator)
+			var response = await Catalog.RemoveDataProfileAsync(assetUid, startDate, endDate, execution, cascade);
+
+			if (response.IsSuccess)
 			{
-				var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
-
-				if (noPermissions)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
+				return Ok(response.Data);
 			}
-
-			Asset asset = AssetRepository.GetAssetByUID(assetUid);
-
-            if (asset == null)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()))).ConfigureAwait(false);
-            }
-
-            var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
-
-            if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-            }
-
-            if (startDate > endDate)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.StartEndDateValidation)).ConfigureAwait(false);
-            }
-
-            var results = await DataProfiles.DeleteAsync(asset, startDate, endDate, execution, cascade);
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
-        }
+			else
+			{
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
+			}
+		}
 
 		/// <summary>
 		/// Removes Data Profile results for a given asset. 
@@ -513,114 +353,20 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid)
 		{
 
-			DateTime? startDate = null;
-			DateTime? endDate = null;
-			bool cascade = false;
-
 			var queryParams = Request.GetQueryNameValuePairs();
 
-			var prefix = "DataProfiles.PostDataProfiles => ";
 			var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
-			try
+			var response = await Catalog.RemoveDataProfileAsync(assetUid, execution, queryParams);
+
+			if (response.IsSuccess)
 			{
-				if (!SecurityContext.IsAdministrator)
-				{
-					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
-
-					if (noPermissions)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-					}
-				}
-				if(assetUid == Guid.Empty)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidIsNotValid, assetUid.ToString()));
-				}
-
-				Asset asset = AssetRepository.GetAssetByUID(assetUid);
-
-				if (asset == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetNotFoundError, assetUid.ToString()))).ConfigureAwait(false);
-				}
-
-				if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
-				{
-					if (!DateTime.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_startdate").Value, out DateTime outStartDate))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidStartDate, assetUid.ToString()))).ConfigureAwait(false);
-					}
-					else
-					{
-						startDate = outStartDate;
-					}
-				}
-
-				if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
-				{
-					if (!DateTime.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_enddate").Value, out DateTime outEndDate))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidEndDate, assetUid.ToString()))).ConfigureAwait(false);
-					}
-					else
-					{
-						endDate = outEndDate;
-					}
-				}
-
-				if (queryParams.Any(qp => qp.Key.ToLower() == "_cascade"))
-				{
-					if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_cascade").Value, out cascade))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidEndDate, assetUid.ToString()))).ConfigureAwait(false);
-					}
-				}
-
-				if (startDate.HasValue && endDate.HasValue && startDate > endDate)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.StartEndDateValidation)).ConfigureAwait(false);
-				}
-
-				if(!startDate.HasValue && !endDate.HasValue)
-				{
-					var currentProfile = await Company.AssetDataProfile.Where(ADP=> ADP.AssetId == asset.ID).OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
-					if(currentProfile!= null)
-					{
-						startDate = endDate = currentProfile.ProfileSetDate;
-					}
-					else
-					{
-						return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, 0));
-					}
-				}
-
-				startDate = startDate ?? new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
-				endDate = endDate ?? DateTime.MaxValue;
-
-				var recordCount = Company.AssetDataProfile.Count(x => x.AssetId == asset.ID && x.ProfileSetDate >= startDate && x.ProfileSetDate <= endDate);
-
-				if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidRequest, string.Format(Error.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-				}				
-
-				var results = await DataProfiles.DeleteAsync(asset, execution, queryParams);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
+				return Ok(response.Data);
 			}
-			catch (GenericException ex)
+			else
 			{
-				throw;
-			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
+				Log.LogError(exception: response.Ex, "Execution error: {ExecutionID}", execution.ExecutionID);
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
 		}
 
@@ -767,71 +513,83 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
-            try
-            {              
-                var queryParams = Request.GetQueryNameValuePairs();
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
-                }
+			var asset = await Catalog.GetAsset(assetUid);
+			if (asset == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, assetUid))).ConfigureAwait(false);
+			}
 
-                HttpResponseMessage response;
+			if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetUid, assetUid))).ConfigureAwait(false);
+			}
 
-                if (isStreamResponse)
-                {
-                    var results = await DataProfiles.GetMatchedAssetsForExport(assetUid, similarType, queryParams).ConfigureAwait(false);
+			var isValid = isPageSizeAndNumValid(queryParams);
 
-                    int pageNum = Company.ParsePageNumber(queryParams, 1);
-                    int pageSize = Company.ParsePageSize(queryParams, 200000);
-                    var assetPath = AssetRepository.GetAssetPath(assetUid);
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+			}
 
-                    SLDocument document = CreateResponseDocumentForExport(results.ToList(), similarType, pageNum, pageSize);
-                    var stream = new MemoryStream();
-                    document.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
-                    var filename = $"Filtered {assetPath.Result[0].Key[0]} {{0}} Fields List _{DateTime.Now:ddd MMM dd yyyy}_.xlsx";
+			var validationResult = await Catalog.ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
-                    if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        filename = string.Format(Label.MatchedAssetExportFileName, assetPath.Result[0].Key[0], "Duplicate", DateTime.Now.ToString("ddd MMM dd yyyy"));
-                    }
-                    else
-                    {
-                        filename = string.Format(filename, "Similar");
-                    }
-
-                    response = createFileResponseMessage(HttpStatusCode.OK, filename, bytes);
-                }
-                else
-                {
-                    var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams).ConfigureAwait(false);
-                    response = Request.CreateResponse(HttpStatusCode.OK, results);
-                }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
-            }
-            catch (FilterExpressionParserException ex)
+            if (!validationResult.IsSuccess)
             {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+            }
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
-            }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
+            HttpResponseMessage response;
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }
+            if (isStreamResponse)
+            {
+                var results = await Catalog.GetMatchedAssetsForExport(assetUid, similarType, queryParams).ConfigureAwait(false);
+
+				if (!results.IsSuccess)
+				{
+					return await Task.FromResult(errorMessageResponse((HttpStatusCode)results.StatusCode, Error.BadRequest, results.Message)).ConfigureAwait(false);
+				}
+				else
+				{
+
+					int pageNum = Company.ParsePageNumber(queryParams, 1);
+					int pageSize = Company.ParsePageSize(queryParams, 200000);
+					var assetPath = Catalog.ReadAssetPathsAssetUID(assetUid);
+
+					SLDocument document = CreateResponseDocumentForExport(results.Data.ToList(), similarType, pageNum, pageSize);
+					var stream = new MemoryStream();
+					document.SaveAs(stream);
+					byte[] bytes = stream.ToArray();
+					var filename = $"Filtered {assetPath.Result[0][0]} {{0}} Fields List _{DateTime.Now:ddd MMM dd yyyy}_.xlsx";
+
+					if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase))
+					{
+						filename = string.Format(Label.MatchedAssetExportFileName, assetPath.Result[0][0], "Duplicate", DateTime.Now.ToString("ddd MMM dd yyyy"));
+					}
+					else
+					{
+						filename = string.Format(filename, "Similar");
+					}
+					response = createFileResponseMessage(HttpStatusCode.OK, filename, bytes);
+				}
+			}
+            else
+            {
+				var results = await Catalog.ReadMatchingAssets(assetUid, similarType, queryParams);
+				
+				if (!results.IsSuccess)
+				{
+					return await Task.FromResult(errorMessageResponse((HttpStatusCode)results.StatusCode, Error.BadRequest, results.Message)).ConfigureAwait(false);
+				}
+				else
+				{
+					response = Request.CreateResponse(HttpStatusCode.OK, results.Data);
+				}
+			}
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -854,16 +612,35 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetMatchingAssetCount(Guid assetUid, string similarType)
         {
             var queryParams = Request.GetQueryNameValuePairs();
-            var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
-            if (validationResult.StatusCode != HttpStatusCode.OK)
-            {
-                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
-            }
+			var asset = await Catalog.GetAsset(assetUid);
+			if (asset == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, assetUid))).ConfigureAwait(false);
+			}
 
-            var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
+			if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetUid, assetUid))).ConfigureAwait(false);
+			}
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.total));
+			var isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+			}
+			
+			var validationResult = await Catalog.ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
+
+			if (!validationResult.IsSuccess)
+			{
+				return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+			}
+
+            var results = await Catalog.ReadMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
+
+			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
         }
 
         /// <summary>
@@ -913,63 +690,31 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
-            try
-            {                
-                var queryParams = Request.GetQueryNameValuePairs();
-                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                var isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+            var isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
 
-                if (!string.IsNullOrEmpty(isValid))
-                {
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
-				}
+            if (!string.IsNullOrEmpty(isValid))
+            {
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, isValid)).ConfigureAwait(false);
+			}
 
-				if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
-                {
-                    string[] allowedValues = new[] { "asc", "desc" };
-                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
 
-					if (!allowedValues.Contains(directionFilter))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection)).ConfigureAwait(false);
-					}
-				}
+			var response = await Catalog.ReadAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
 
-                if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
-                {
-                    string[] allowedValues = new[] { "confidence", "path", "assettypepath" };
-                    var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
-
-                    if (!allowedValues.Contains(directionFilter))
-                    {
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.OrderInvalid)).ConfigureAwait(false);
-					}
-				}
-
-                if (string.IsNullOrEmpty(typeQualifier) || typeQualifier.Length > 200)
-                {
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.TypeQualifierInvalid)).ConfigureAwait(false);
-				}
-
-				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
-                {
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, String.Format(Error.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
-				}
-
-				if (minConfidence <= 0 || minConfidence > 1)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, Error.MinConfidenceInvalid)).ConfigureAwait(false);
-                }
-
-				var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);
-
-                if (isStreamResponse)
-                {
-                    var semantic = Company.Semantics.FirstOrDefault(x => x.Qualifier == typeQualifier);
-                    SLDocument document = CreateResponseDocumentForSemanticTypeAssetListExport(results, semantic.Name);
-                    document.SelectWorksheet(Label.Common_ItemsSheetName);
-                    var stream = new MemoryStream();
-                    document.SaveAs(stream);
+			if (!response.IsSuccess)
+			{
+				return await Task.FromResult(errorMessageResponse((HttpStatusCode)response.StatusCode, Error.BadRequest, response.Message)).ConfigureAwait(false);
+			}
+			else
+			{
+				if (isStreamResponse)
+				{
+					var semantic = Company.Semantics.FirstOrDefault(x => x.Qualifier == typeQualifier);
+					SLDocument document = CreateResponseDocumentForSemanticTypeAssetListExport(response.Data, semantic.Name);
+					document.SelectWorksheet(Label.Common_ItemsSheetName);
+					var stream = new MemoryStream();
+					document.SaveAs(stream);
 
 					var result = new HttpResponseMessage(HttpStatusCode.OK)
 					{
@@ -982,208 +727,13 @@ namespace d360.web.Controllers.V2
 					result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
 					return ResponseMessage(result);
-                }
-                else
-                {
-					return Ok(results);
-                }
-            }
-            catch (FilterExpressionParserException ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
-            }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }
-        }
-
-        public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
-        {
-			if (!SecurityContext.IsAdministrator)
-			{
-				var noPermissions = models.Select(s => s.assetUid).Distinct().ToList().Any(x =>
-					!Company.HasAssetPermissionByUid(x, Permission.EditAsset)
-				);
-
-				if (noPermissions)
+				}
+				else
 				{
-					return new WorkHttpStatus(HttpStatusCode.Forbidden, Error.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE);
+					return Ok(response.Data);
 				}
 			}
-
-			if (models == null || models.Count == 0)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.JSONValidMessage);
-            }
-
-            //Key Field Validation
-            if (models.Any(dp => dp.profileSetDate == null || dp.assetUid == null))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, BAD_REQUEST_GENERIC_MESSAGE);
-            }
-
-            var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
-
-            if (dupRecords.Any())
-            {
-                var ErrorMessage = string.Format(Error.DuplicateRecordBatchProfile, string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})")));
-
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, ErrorMessage);
-            }
-
-            List<ValidationResult> validationResults = new List<ValidationResult>();
-            foreach (var model in models)
-            {
-                validationResults.Clear();
-                Asset asset = AssetRepository.GetAssetByUID(model.assetUid);
-
-                if (asset == null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetUid, model.assetUid.ToString()));
-                }
-
-                if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.ProfilingNotSupportAssetClass, asset.AssetType.Class.ToString()));
-                }
-
-				bool success = Enum.IsDefined(typeof(ProfileType), model.ProfileType);
-				if (!success)
-				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.ValidProfiletype, (int)model.ProfileType));
-				}
-
-				var recordExists = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).ToList().Any(x => x.ProfileSetDate == model.profileSetDate);
-
-                //check insert
-                if (recordExists && IsInsert)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff")));
-                }
-
-                //check update
-                if (!recordExists && !IsInsert)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.AssetUidProfileSetDateRecordNotfound, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss.fff")));
-                }
-
-                if (model.topK != null && model.topK.Any(x => x.Trim() == string.Empty))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.ElementTopKNotEmpty);
-                }
-
-                if (model.bottomK != null && model.bottomK.Any(x => x.Trim() == string.Empty))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.ElementBottomKNotEmpty);
-                }
-
-                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-
-                if (!isValid)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, validationResults.First().ErrorMessage);
-                }
-
-                if (model.ProfileSource != null && model.ProfileSource?.Length > 100)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidProfileSourceLength);
-                }
-
-                if (model.ProfileSeries != null && model.ProfileSeries?.Length > 100)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidProfileSeriesLength);
-                }
-            }
-
-            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
-
-        private WorkHttpStatus ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-
-            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
-            {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetUidIsNotValid, assetUid));
-            }
-
-            if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
-            {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.InvalidAssetUid, assetUid));
-            }
-
-            var isValid = isPageSizeAndNumValid(queryParams);
-
-            if (!string.IsNullOrEmpty(isValid))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, isValid);
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidIncludeTotal);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
-            {
-                string[] allowedValues = new[] { "path", "tags" };
-                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
-
-                if (!allowedValues.Contains(directionFilter))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidOrder);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_direction"))
-            {
-                string[] allowedValues = new[] { "asc", "desc" };
-                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
-
-                if (!allowedValues.Contains(directionFilter))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Error.InvalidDirection);
-                }
-            }
-
-            if (similarType != null)
-            {
-                string[] allowedValues = new[] { "structure", "data" };
-
-                if (!allowedValues.Contains(similarType.ToLowerInvariant()))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidSimilarType, similarType));
-                }
-            }
-            else
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.BadRequest, Label.RequiredSimilarType);
-            }
-
-            AssetDataProfile dataprofile = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
-
-            if (dataprofile == null || similarType.ToLowerInvariant() == "structure" && dataprofile.StructureSignature == null || similarType.ToLowerInvariant() == "data" && dataprofile.DataSignature == null)
-            {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.NoSimilarTypeForAssetUid, similarType, assetUid));
-            }
-
-            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
+		}
 
         /// <summary>
         /// Create the Excel document for export

@@ -40,7 +40,7 @@
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
     <UseGlobalApplicationHostFile />
     <Use64BitIISExpress>
-    </Use64BitIISExpress>
+	</Use64BitIISExpress>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>

@@ -3607,6 +3607,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [_cascade] provided.
+        /// </summary>
+        public static string InvalidCascade {
+            get {
+                return ResourceManager.GetString("InvalidCascade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} provided..
         /// </summary>
         public static string InvalidClass {
@@ -6312,6 +6321,15 @@ namespace d360.core.resources {
         public static string NoModelFound {
             get {
                 return ResourceManager.GetString("NoModelFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not authorized to perform this action..
+        /// </summary>
+        public static string Non_Auth_Mess {
+            get {
+                return ResourceManager.GetString("Non_Auth_Mess", resourceCulture);
             }
         }
         

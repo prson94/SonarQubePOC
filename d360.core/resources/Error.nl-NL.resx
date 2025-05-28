@@ -3225,4 +3225,7 @@
   <data name="ReferenceListNotSupported" xml:space="preserve">
     <value>[ReferenceList]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
+  <data name="Non_Auth_Mess" xml:space="preserve">
+    <value />
+  </data>
 </root>

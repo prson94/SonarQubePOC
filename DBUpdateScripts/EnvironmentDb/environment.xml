@@ -358,6 +358,7 @@
 	<include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
+	<include file="scripts/Procedure.dbo.HasPermission.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
 using Dapper;
 using Newtonsoft.Json.Linq;
 
@@ -23,6 +24,12 @@ namespace repositories.azure
 		// Commonly used sql expressions in thr repositories.
 		internal readonly string FIELD_VALIDATION_COLUMNS = "f.ID, f.Name, f.Type, f.AllowMultipleValues, f.MinimumLength, f.MaximumLength, f.Length, f.Pattern, f.IsRequired";
 		internal readonly int MAX_PERMISSIONS_MASK = 15854;
+
+		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
+		internal const int API_V2_RETRY_LIMIT = 10;
+		internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
+
+		public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
 
 		protected Repository(DapperConnectionProvider provider)
 		{
@@ -347,6 +354,159 @@ namespace repositories.azure
 			}
 		}
 
+		protected string ReadExceptionMessage(Exception ex, int maxsize = 2000)
+		{
+			string message = GetFullExceptionData(ex, false);
+			if (message == null)
+			{
+				return string.Empty;
+			}
+			else if (message.Length > maxsize)
+			{
+				return message.Substring(0, maxsize);
+			}
+			else
+			{
+				return message;
+			}
+		}
+
+		protected async Task UpdateExecutionWithErrorFromExceptionCount(ApiExecution execution, Exception ex, int processed, int error)
+		{
+			try
+			{
+				string message = GetFullExceptionData(ex, false);
+				execution.ErrorMessage = message;
+				execution.CompletedOn = DateTime.UtcNow;
+				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				{
+					await connection.ExecuteAsync($@"
+					update api.execution
+					set ErrorMessage = @message, Processed = @processed, Error = @error
+					where executionid = @ExecutionID", new { execution.ExecutionID, message, processed, error });
+				}
+			}
+			catch (Exception)
+			{
+				throw;
+			}
+		}
+
+		protected async Task SetApiExecutionProcessingStartTime(Guid ExecutionId)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				string sql = "update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null";
+
+				await connection.ExecuteAsync(sql, new
+				{
+					startedOn = DateTime.UtcNow,
+					ExecutionId
+				});
+
+			}
+		}
+
+		protected async Task completeApiExecutionAndGetCounts(ApiExecutionAction action, int? id, Guid? uid)
+		{
+			string apiTableName = null;
+			string whereIdJoin = "ExecutionID";
+			switch (action)
+			{
+				case ApiExecutionAction.DeleteAssets:
+					apiTableName = "ExecutionDeletedAsset";
+					break;
+				case ApiExecutionAction.DeleteAssetTypes:
+					apiTableName = "ExecutionDeletedAssetType";
+					break;
+				case ApiExecutionAction.DeleteDataProfile:
+					apiTableName = "ExecutionDeleteAssetDataProfile";
+					break;
+				case ApiExecutionAction.DeleteDataQualityResults:
+					apiTableName = "ExecutionDeleteAssetResult";
+					break;
+				case ApiExecutionAction.DeleteFieldTypes:
+					apiTableName = "Execution";
+					break;
+				case ApiExecutionAction.DeleteGroups:
+					apiTableName = "ExecutionDeletedGroup";
+					break;
+				case ApiExecutionAction.DeleteRelationships:
+					apiTableName = "ExecutionDeletedRelationship";
+					break;
+				case ApiExecutionAction.PatchCatalog:
+					apiTableName = "ExecutionCatalogItem";
+					break;
+				case ApiExecutionAction.PostAssets:
+				case ApiExecutionAction.PutAssets:
+					apiTableName = "ExecutionAsset";
+					break;
+				case ApiExecutionAction.PostCrossReferences:
+					apiTableName = "ExecutionAssetCrossReference";
+					break;
+				case ApiExecutionAction.PostDataProfile:
+				case ApiExecutionAction.PutDataProfile:
+					apiTableName = "ExecutionAssetDataProfile";
+					break;
+				case ApiExecutionAction.PostDataQualityResults:
+				case ApiExecutionAction.PutDataQualityResults:
+					apiTableName = "ExecutionAssetResult";
+					break;
+				case ApiExecutionAction.PostGroups:
+				case ApiExecutionAction.PutGroups:
+					apiTableName = "ExecutionGroup";
+					break;
+				case ApiExecutionAction.PostRelationships:
+				case ApiExecutionAction.PutRelationships:
+					apiTableName = "ExecutionRelationship";
+					break;
+				case ApiExecutionAction.UpsertUsers:
+					apiTableName = "ExecutionUser";
+					break;
+				case ApiExecutionAction.DeleteUsers:
+				case ApiExecutionAction.PostAssetTypes:
+				case ApiExecutionAction.PutAssetTypes:
+				default:
+					apiTableName = null;
+					break;
+			}
+
+			string whereId = "ExecutionID";
+			string paramId = "@uid";
+			if (id.HasValue && id.Value > 0)
+			{
+				whereId = "Id";
+				paramId = "@id";
+			}
+
+			if (!string.IsNullOrEmpty(apiTableName))
+			{
+				string sqlstmt = $@"
+	update	E 
+	set		E.[State] = 4,
+			E.CompletedOn = @dt,
+			E.[Total] = case when Tc.Cnt = 0 then E.[Total] else Tc.Cnt end,
+			E.Processed = case when Pc.Cnt = 0 then E.Processed else Pc.Cnt end,
+			E.[Error] = case when Ec.Cnt = 0 then E.[Error] else Ec.Cnt end
+	from	api.Execution E
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin} and Success = 0 
+			) Ec
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin} and Success = 1
+			) Pc
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereIdJoin}
+			) Tc
+	where	E.{whereId} = {paramId}";
+				using (var connection = ConnectionProvider.Connect())
+				{
+					await connection.ExecuteAsync(sqlstmt, new { uid, id, dt = DateTime.UtcNow }, commandTimeout: 540);
+				}
+			}
+		}
+
+
 		protected async Task UpsertApiExecution(ApiExecution execution)
 		{
 			try
@@ -560,6 +720,95 @@ namespace repositories.azure
 			}
 
 		}
+		protected void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
+		{
+			int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Execute($@"
+								update	api.Execution
+								set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
+								where	ExecutionID = @executionID; 
+
+								update	{targetTable} 
+								set		Success = 0,
+										[Message] = LEFT(@msg,@characterLimit)
+								where	ExecutionID = @executionID 
+										 and ItemNumber between @beginItemNumber and @endItemNumber;",
+				new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
+			}
+		}
+
+		protected async Task<CurrentExecutionLocationModel> GetCurrentExecutionLocation(Guid executionID, string targetTable)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
+			{
+				return await connection.QueryFirstOrDefaultAsync<CurrentExecutionLocationModel>($@"select E.ExecutionID,
+																coalesce(T.HighestItemNumber, 0) as HighestItemNumber,
+																coalesce(T.HighestItemNumberProcessed, 0) as HighestItemNumberProcessed
+														from	api.Execution E
+																outer apply (
+																	select	max(ItemNumber) as HighestItemNumber,
+																		max(case when Success is not null then ItemNumber else 0 end) as HighestItemNumberProcessed
+																	from	{targetTable} A
+																	where	ExecutionID = E.ExecutionID
+																) T
+														where	E.ExecutionID = @executionID;", new { executionID });
+			}
+		}
+
+
+
+		protected void addMeasurement(Dictionary<string, double> metrics, string key, double value, int stepNumber)
+		{
+			metrics[$"{stepNumber}-{key}"] = value;
+		}
+
+		protected class CurrentExecutionLocationModel
+		{
+			public Guid ExecutionID { get; set; }
+			public int HighestItemNumber { get; set; }
+
+			public int HighestItemNumberProcessed { get; set; }
+		}
+
+		protected async Task<AssetWithAssetTypeResult> ReadAssetwithAssetTypeAsync(Guid assetUid)
+		{
+			var sql = $@"Select a.ID, att.Class AssetTypeClass,a.Object,a.ObjectID, a.uid from Asset a inner join AssetType att on a.assettypeid = att.id where a.uid = @assetUid";
+
+			var model = new AssetWithAssetTypeResult();
+
+			using (var connection = ConnectionProvider.Connect((true)))
+			{
+				model = await connection.QueryFirstOrDefaultAsync<AssetWithAssetTypeResult>(sql, new { assetUid });
+			}
+			return model;
+		}
+
+		public string GetEscapedFilterString(string filter, bool isContains = false)
+		{
+
+			char[] escapeChars = new char[] { '%', '_', '^', '[' };
+			string escapedValue = "";
+
+			foreach (char c in filter)
+			{
+				if (escapeChars.Contains(c))
+				{
+					escapedValue += $"[{c}]";
+				}
+				else
+				{
+					escapedValue += c;
+				}
+			}
+
+			escapedValue = escapedValue.Replace("*", "%").Replace("?", "_");
+			escapedValue = isContains ? $"%{escapedValue}%" : $"{escapedValue}%";
+
+			return escapedValue;
+		}
+
 	}
 }
 
