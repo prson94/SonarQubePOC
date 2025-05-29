@@ -642,8 +642,13 @@ from	#ids a
 					connection.Open();
 					using (var transaction = connection.BeginTransaction())
 					{
-						var maxCounterSql = "SELECT ISNULL(MAX(Value), 0) FROM dbo.FieldCounterValue WITH (UPDLOCK, HOLDLOCK)";
-						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql, transaction: transaction);
+						var maxCounterSql = @"
+										SELECT ISNULL(MAX(Value), 0)
+										FROM dbo.FieldCounterValue WITH (UPDLOCK, HOLDLOCK)
+										WHERE AssetTypeId = @assetTypeId
+										AND FieldTypeId = @fieldTypeId";
+						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql,
+							new { assetTypeId, fieldTypeId },transaction: transaction);
 
 						int currentCounterSeed = Math.Max(counterStartValue.Value, existingMaxCounterValue) + 1;
 
