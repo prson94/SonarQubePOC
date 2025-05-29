@@ -642,17 +642,18 @@ from	#ids a
 					connection.Open();
 					using (var transaction = connection.BeginTransaction())
 					{
-						// Get the current maximum counter value (within the transaction)
 						var maxCounterSql = "SELECT ISNULL(MAX(Value), 0) FROM dbo.FieldCounterValue WITH (UPDLOCK, HOLDLOCK)";
 						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql, transaction: transaction);
 
 						int currentCounterSeed = Math.Max(counterStartValue.Value, existingMaxCounterValue) + 1;
 
-						List<FieldCounterValue> allValuesToInsert = new List<FieldCounterValue>();
+						const int batchSize = 25000;
+						List<FieldCounterValue> currentBatch = new List<FieldCounterValue>(batchSize);
 						int currentOffset = 0;
+
 						foreach (var assetId in assetIds)
 						{
-							allValuesToInsert.Add(new FieldCounterValue
+							currentBatch.Add(new FieldCounterValue
 							{
 								AssetId = assetId,
 								AssetTypeId = assetTypeId.Value,
@@ -660,21 +661,26 @@ from	#ids a
 								Value = currentCounterSeed + currentOffset
 							});
 							currentOffset++;
+
+							if (currentBatch.Count >= batchSize)
+							{
+								await connection.ExecuteAsync(
+									@"INSERT INTO dbo.FieldCounterValue (AssetID, AssetTypeId, FieldTypeId, Value) VALUES (@AssetId, @AssetTypeId, @FieldTypeId, @Value);",
+									currentBatch,
+									transaction: transaction
+								);
+								currentBatch.Clear(); // Clear the batch for the next set
+							}
 						}
-						const int batchSize = 25000;
 
-						// Create batches and insert
-						var sql = @"
-                        INSERT INTO dbo.FieldCounterValue
-                        (AssetID, AssetTypeId, FieldTypeId, Value)
-                        VALUES
-                        (@AssetId, @AssetTypeId, @FieldTypeId, @Value);
-                    ";
-
-						for (int i = 0; i < allValuesToInsert.Count; i += batchSize)
+						// Insert any remaining items in the last batch
+						if (currentBatch.Any())
 						{
-							var batch = allValuesToInsert.Skip(i).Take(batchSize);
-							await connection.ExecuteAsync(sql, batch, transaction: transaction);
+							await connection.ExecuteAsync(
+								@"INSERT INTO dbo.FieldCounterValue (AssetID, AssetTypeId, FieldTypeId, Value) VALUES (@AssetId, @AssetTypeId, @FieldTypeId, @Value);",
+								currentBatch,
+								transaction: transaction
+							);
 						}
 
 						transaction.Commit();
@@ -684,7 +690,7 @@ from	#ids a
 			}
 			catch (Exception ex)
 			{
-				// The transaction will be implicitly rolled back if using (transaction) is exited by an exception
+				// Log the exception
 				return false;
 			}
 		}
