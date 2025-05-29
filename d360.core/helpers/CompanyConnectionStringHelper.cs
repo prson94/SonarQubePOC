@@ -13,7 +13,7 @@
         /// <summary>
         /// Returns the database connection string for the provided govern environment id, server, username and password.
         /// </summary>        
-        public static string ConnectionString(int id, string server, string username, string password)
+        public static string ConnectionString(int id, string server, string username, string password, bool readOnly = false)
         {
             if (string.IsNullOrEmpty(server))
             {
@@ -25,7 +25,11 @@
                 throw new System.Exception("Please specify a valid database username to generate a Govern connection string for.");
             }
 
-            return $"server={server};Database={GOVERN_ENVIRONMENT_DATABASE_NAME_PREFIX}_{id};User ID={username};Password={password};MultipleActiveResultSets={CONNECTION_ENABLE_MARS};ConnectRetryCount={CONNECTION_RETRY_COUNT};ConnectRetryInterval={CONNECTION_RETRY_INTERVAL};Connection Timeout={CONNECTION_TIMEOUT};Max Pool Size=2500;";
+			string connectionString = $"server={server};Database={GOVERN_ENVIRONMENT_DATABASE_NAME_PREFIX}_{id};User ID={username};Password={password};MultipleActiveResultSets={CONNECTION_ENABLE_MARS};ConnectRetryCount={CONNECTION_RETRY_COUNT};ConnectRetryInterval={CONNECTION_RETRY_INTERVAL};Connection Timeout={CONNECTION_TIMEOUT};Max Pool Size=2500;";
+
+			connectionString += readOnly ? "ApplicationIntent=ReadOnly;" : "ApplicationIntent=ReadWrite;";
+
+			return connectionString;
         }
     }
 }

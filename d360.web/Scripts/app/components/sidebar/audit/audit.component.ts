@@ -235,13 +235,10 @@ export class AuditComponent implements OnInit, OnDestroy {
 
 	public getValueDisplayType(item) {
 		const type = (item.fieldType ? item.fieldType : '').toLowerCase();
-		if (['date, datetime'].includes(type)) {
+		if (['date, datetime', 'html'].includes(type)) {
 			return type;
 		}
-		if (item['actionObject'] === 'Tag') {
-			return 'text';
-		}
-		return 'html'
+		return 'text';
 	}
 
     public setAdvancedFilters(): void {

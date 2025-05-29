@@ -40,7 +40,7 @@
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
     <UseGlobalApplicationHostFile />
     <Use64BitIISExpress>
-    </Use64BitIISExpress>
+	</Use64BitIISExpress>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
@@ -1317,7 +1317,6 @@
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\fields\reference-item-type-fields.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\items\referrence-item-type-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\log\reference-item-type-log.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\relationships\referemce-item-type-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\shared\reference-header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\shared\reference-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference-v2\tabs\workflow\reference-item-type-workflow.component.ts" />
@@ -2094,7 +2093,6 @@
     <None Include="Scripts\app\components\reference-v2\tabs\fields\reference-item-type-fields.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\items\reference-item-type-items.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\log\reference-item-type-log.component.html" />
-    <None Include="Scripts\app\components\reference-v2\tabs\relationships\reference-item-type-relationships.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\shared\reference-header.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\shared\reference-tabs.component.html" />
     <None Include="Scripts\app\components\reference-v2\tabs\workflow\reference-item-type-workflow.component.html" />

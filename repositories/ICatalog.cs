@@ -51,6 +51,8 @@ namespace repositories
 
 		Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
 
+		Task<List<string[]>> ReadAssetPathsAssetUID(Guid assetUId);
+
 		Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadAssetsAsync(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000);
@@ -93,6 +95,26 @@ namespace repositories
 		Task<IEnumerable<int>> GetAssetsByType(int? assetTypeId);
 
 		Task<bool> InsertAssetWithCounter(int? counterStartValue, int? assetTypeId, int? fieldTypeId, IEnumerable<int> assetIds);
+		#endregion
+
+		#region "DataProfile"
+		Task<RepositoryResponse<AssetDataProfilesApiViewModel>> ReadDataProfilesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<AssetDataProfilesApiViewModel>> ReadDataProfilesAsync(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<AssetDataProfilesApiViewModel>> ReadDataProfilesAsync(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<List<ProfilesSeriesApiViewModel>>> ReadDataProfilesSeriesAsyn(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<AssetDataProfilesMatchingAssetsApiViewModel>> ReadMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams, bool onlyTotal = false);
+		Task<RepositoryResponse<AssetDataProfileByTypeQualifierApiViewModel>> ReadAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
+		Task<RepositoryResponse<IEnumerable<DataProfileExportModel>>> GetMatchedAssetsForExport(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<bool>> ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert);
+		Task<RepositoryResponse<List<DataProfileUpsertResponse>>> UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
+		Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
+		Task<RepositoryResponse<List<DataProfileDeleteResponse>>> RemoveDataProfileAsync(Guid assetUid, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<RepositoryResponse<Exception>> RemoveDataProfilesAsync(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
+		Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId);
+		Task<List<DataProfileDeleteResponse>> GetExecutionDataProfileDeleteResultsAsync(Guid executionId);
+		Task<RepositoryResponse<bool>> ValidateDataProfileGetParameters(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams, string isValid);
+		Task<RepositoryResponse<bool>> ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams, string isValid);
+		Task<RepositoryResponse<bool>> ValidateMatchAssetGetParameters(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
 		#endregion
 	}
 }

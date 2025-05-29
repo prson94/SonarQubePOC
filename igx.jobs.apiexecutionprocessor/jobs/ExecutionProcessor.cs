@@ -77,7 +77,15 @@ namespace igx.jobs.apiexecutionprocessor
 					var fieldsRepository = new FieldsRepository(company, context, Queue, Storage);
 					var assetRepository = new AssetRepository(company, context, Queue, Storage);
 					var relationshipRepository = new RelationshipRepository(company, context, Queue, Storage);
-						
+
+					var dapperProvider = new DapperConnectionProvider
+					{
+						ReadOnlyConnectionString = $"{connectionString}ApplicationIntent=ReadOnly",
+						ReadWriteConnectionString = $"{connectionString}ApplicationIntent=ReadWrite"
+					};
+
+					var catalog = new Catalog(dapperProvider);
+
 					var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
 					List<DatabaseBulkAssetResult> resultdata = new List<DatabaseBulkAssetResult>();
 					try
@@ -93,11 +101,6 @@ namespace igx.jobs.apiexecutionprocessor
 
 							if (executeJob)
 							{
-								var dapperProvider = new DapperConnectionProvider { 
-									ReadOnlyConnectionString = $"{connectionString}ApplicationIntent=ReadOnly",
-									ReadWriteConnectionString = $"{connectionString}ApplicationIntent=ReadWrite"
-								};
-
 								var action = info.Action ?? dbExecutionItem.Action;
 
 								string resultsSql = "";
@@ -245,17 +248,17 @@ namespace igx.jobs.apiexecutionprocessor
 										break;
 									case ApiExecutionAction.PostDataProfile:
 										var postDataProfile = await Storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(info.StorageFolder, info.RequestFileName);
-										await company.UpsertDataProfilesAsync(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
+										await catalog.UpsertDataProfilesAsync(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
 										resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 										break;
 									case ApiExecutionAction.PutDataProfile:
 										var putDataProfile = await Storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(info.StorageFolder, info.RequestFileName);
-										await company.UpsertDataProfilesAsync(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
+										await catalog.UpsertDataProfilesAsync(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
 										resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 										break;
 									case ApiExecutionAction.DeleteDataProfile:
 										var deleteDataProfile = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(info.StorageFolder, info.RequestFileName);
-										await company.DeleteDataProfilesAsync(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
+										await catalog.RemoveDataProfilesAsync(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
 										resultsSql = @"select [ItemNumber], [ExecutionItemUid], AssetUid as [uid], StartDate, EndDate, [Cascade], [Message], [Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 										break;
 									case ApiExecutionAction.DeleteFieldTypes:

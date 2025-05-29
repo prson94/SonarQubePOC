@@ -1,60 +1,12 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
-using Dapper.Contrib.Extensions;
-using System;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace repositories.azure
 {
 	public partial class Community: ICommunity
 	{
-		public async Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request)
-		{
-			bool success = false;
-			using (var connection = Connect())
-			{
-				int recordsCount = await connection.InsertAsync(request);
-				success = recordsCount > 0;
-			}
-			return success;
-		}
-
-		public string GenerateOpenIdRequestValue(int length = 5)
-		{
-			var builder = new StringBuilder(length);
-
-			// Unicode/ASCII Letters are divided into two blocks (Letters 65–90 / 97–122):
-			// The first group containing the uppercase letters and the second group containing the lowercase.
-			char offset = 'a';
-			const int lettersOffset = 26; // A...Z or a..z: length=26
-
-			Random _random = new Random();
-
-			for (var i = 0; i < length; i++)
-			{
-				var @char = (char)_random.Next(offset, offset + lettersOffset);
-				builder.Append(@char);
-			}
-
-			return builder.ToString().ToLower();
-		}
-
-		public async Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true)
-		{
-			OpenIdRequest model = null;
-
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@state", state);
-			using (var connection = Connect(fromSecondary))
-			{
-				model = await connection.QueryFirstOrDefaultAsync<OpenIdRequest>("select * from OpenIdRequest where State = @state", dbArgs);
-			}
-
-			return model;
-		}
-
 		public async Task<RepositoryResponse<AuthenticationType>> ReadAuthenticationTypeByTenantUrlAsync(int companyId, string urlPrefix)
 		{
 			var response = new RepositoryResponse<AuthenticationType>(AuthenticationType.Forms, 200, true, "");
@@ -126,34 +78,6 @@ where	u.UrlPrefix = @prefix",
 			}
 
 			return response;
-		}
-
-		public async Task<bool> RemoveOldOpenIdRequestsAsync()
-		{
-			bool success = false;
-
-			using (var connection = Connect())
-			{
-				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where CreatedOn < @dt", new { dt = DateTime.UtcNow.AddMinutes(-30) });
-				success = recordsCount > 0;
-			}
-
-			return success;
-		}
-
-		public async Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request)
-		{
-			bool success = false;
-
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("@state", request.State);
-			using (var connection = Connect())
-			{
-				int recordsCount = await connection.ExecuteAsync("delete OpenIdRequest where State = @state", dbArgs);
-				success = recordsCount > 0;
-			}
-
-			return success;
 		}
 	}
 }

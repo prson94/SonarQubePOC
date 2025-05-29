@@ -58,6 +58,10 @@ namespace repositories.azure
 					simpleFilter = simpleFilter.Replace("*", "%");
 					var possibleEnumStringValue = simpleFilter.Replace("%", "");
 
+					if (!simpleFilter.EndsWith("%"))
+					{
+						simpleFilter += "%";
+					}
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
 					var simpleFilters = new List<string>

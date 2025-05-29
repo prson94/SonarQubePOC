@@ -1,13 +1,12 @@
-﻿using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.enums;
-using d360.utils.company;
-using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using repositories;
+using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs
 {
@@ -48,6 +47,31 @@ namespace igx.jobs
 			}
 
 			return lvl;
+		}
+
+		public async Task LoopThroughTenantsAsync(ILogger log, string functionName, Func<CompanyWithDatabaseServerSettings, Task> action)
+		{
+			var slot = GetEnvironmentLevelCurrentSlot();
+			var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
+			foreach (var c in tenants.OrderBy(t => t.Priority).Where(c => c.CompanyID == 2))
+			{
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", functionName },
+					{ "CompanyID", c.CompanyID },
+					{ "UrlPrefix", c.UrlPrefix }
+				};
+				using (log.BeginScope(logProperties))
+				{
+					try
+					{
+						await action(c);
+					}
+					catch (Exception ex)
+					{
+						log.LogCritical(ex, "Web job failed.");
+					}
+				}
+			}
 		}
 	}
 }

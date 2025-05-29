@@ -32,57 +32,31 @@ namespace igx.jobs.databaseindexrebuilder
         {
             int commandTimeout = int.TryParse(Configuration["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
 
-            try
-            {
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
-                foreach (var item in tenants.OrderBy(x => x.Priority))
-                {
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", item.CompanyID },
-						{ "UrlPrefix", item.UrlPrefix }
-					};
-
-					using (log.BeginScope(logProperties)) 
-					{
-						try
-						{
-							var start = DateTime.Now;
-							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID, item.Server, item.Username, item.Password))
-							{
-								await companyConnection.OpenAsync();
-								await companyConnection.ExecuteAsync(
-									"EXEC [dbo].[AzureSQLMaintenance]", 
-									new { 
-										Operation = "reindex", 
-										MinReorganize = 5, 
-										From = 15, 
-										To = 100, 
-										MinNumberOfPages = 10 
-									}, null, commandTimeout);
-							}
-							TimeSpan end = DateTime.Now - start;
-							log.LogInformation($"Completed database index rebuild. Time taken: {end.TotalMinutes}");
-						}
-						catch (Exception e)
-						{
-							log.LogError(e, "Error during DB index rebuild.");
-						}					
-					}
-                }
-            }
-            catch (Exception ex)
-            {
-				var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME }
-					};
-
-				using (log.BeginScope(logProperties))
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async item => {
+				try
 				{
-					log.LogCritical(ex, "DatabaseReindexWebJob critical job error.");
+					var start = DateTime.Now;
+					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID, item.Server, item.Username, item.Password))
+					{
+						await companyConnection.OpenAsync();
+						await companyConnection.ExecuteAsync(
+							"EXEC [dbo].[AzureSQLMaintenance]", 
+							new { 
+								Operation = "reindex", 
+								MinReorganize = 5, 
+								From = 15, 
+								To = 100, 
+								MinNumberOfPages = 10 
+							}, null, commandTimeout);
+					}
+					TimeSpan end = DateTime.Now - start;
+					log.LogInformation($"Completed database index rebuild. Time taken: {end.TotalMinutes}");
 				}
-			}
+				catch (Exception e)
+				{
+					log.LogError(e, "Error during DB index rebuild.");
+				}	
+			});
 		}
     }
 }

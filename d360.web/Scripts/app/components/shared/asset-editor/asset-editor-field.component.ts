@@ -510,6 +510,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
+
+        // L3REQ-72993
+        if (this.field.FieldType?.toLowerCase() === "text") {
+            const textValidationRegexString = this.field.Validations?.[0]?.regex;
+            const currentTextValue = this.form.controls[this.field.FieldName]?.value;
+            if (textValidationRegexString) {
+                const textValidatorRegex = new RegExp(textValidationRegexString);
+                return textValidatorRegex.test(currentTextValue);
+            }
+
+        }
         return this.form.controls[this.field.FieldName].valid;
     }
 
