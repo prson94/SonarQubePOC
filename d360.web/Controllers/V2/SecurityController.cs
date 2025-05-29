@@ -235,7 +235,6 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of owners.", typeof(IEnumerable<ReadRole>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden"),
-			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> ReadOwnersByAssetAsync(Guid assetUid)
 		{
@@ -307,7 +306,7 @@ namespace d360.web.Controllers.V2
 		/// BFF-style endpoint that is used internally and hidden from Swagger.
 		/// </summary>
 		/// <returns>An object with all groups for the Security Policy Editor after selecting an asset type.</returns>
-		[HttpGet, Route("policy-editor/options/group"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		[HttpGet, Route("policy-editor/options/group"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<IHttpActionResult> ReadPolicyEditGroupOptionsAsync()
 		{
 			var result = await Security.ReadPolicyEditGroupOptionsAsync();
@@ -318,7 +317,7 @@ namespace d360.web.Controllers.V2
 		/// BFF-style endpoint that is used internally and hidden from Swagger.
 		/// </summary>
 		/// <returns>An object with all users for the Security Policy Editor after selecting an asset type.</returns>
-		[HttpGet, Route("policy-editor/options/user"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
+		[HttpGet, Route("policy-editor/options/user"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<IHttpActionResult> ReadPolicyEditUserOptionsAsync()
 		{
 			var result = await Security.ReadPolicyEditUserOptionsAsync();
