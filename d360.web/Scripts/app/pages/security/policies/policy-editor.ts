@@ -199,7 +199,7 @@ export class PolicyEditor implements OnChanges, OnInit {
     }
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (this.item?.assetTypeUid !== undefined) {
+		if (this.item?.assetTypeUid !== undefined && this.item?.assetTypeUid !== "") {
 			this.securityService
 				.getPolicyEditAssetTypeOptions(this.item.assetTypeUid)
 				.subscribe((o) => {
@@ -362,10 +362,12 @@ export class PolicyEditor implements OnChanges, OnInit {
 	}
 
 	loadSelectedAssetTypeOptions(assetTypeUid: string) {
-		this.securityService.getPolicyEditAssetTypeOptions(assetTypeUid)
-			.subscribe((o) => {
-				this.selectedAssetTypeOptions = o;
-			});
+		if (assetTypeUid !== undefined && assetTypeUid !== "") {
+			this.securityService.getPolicyEditAssetTypeOptions(assetTypeUid)
+				.subscribe((o) => {
+					this.selectedAssetTypeOptions = o;
+				});
+		}
 	}
 
 	loadWhenValues(item: FormGroup, type: string) {
