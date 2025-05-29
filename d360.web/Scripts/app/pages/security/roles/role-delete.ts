@@ -37,7 +37,7 @@ export class RoleDelete {
 		this.securityService.deleteRole(this.item.uid)
 			.subscribe((result) => {
 				this.deleteInProgress = false;
-				if (result != undefined) {
+				if (result !== undefined) {
 					result = result[0];
 					this.onDelete.emit(result);
 				}
