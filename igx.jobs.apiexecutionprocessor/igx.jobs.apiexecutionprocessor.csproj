@@ -91,6 +91,7 @@
     <Compile Include="jobs\ExecutionPostProcessor.cs" />
     <Compile Include="jobs\ExecutionProcessor.cs" />
     <Compile Include="jobs\NotificationHandler.cs" />
+    <Compile Include="jobs\AssetTypeChangeProcessor.cs" />
     <Compile Include="jobs\SecurityPolicyProcessor.cs" />
     <Compile Include="jobs\UserProcessor.cs" />
     <Compile Include="Program.cs" />

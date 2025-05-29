@@ -466,6 +466,17 @@ namespace d360.web.Controllers.V2
 				var old = existingFieldsNotMutated.FirstOrDefault(x => x.Name == @new.Name);
 				if (old == null)
 				{
+					if (@new.AssetTypeID.HasValue)
+					{
+						await Queue.CreateMessageAsync(constants.Queue.AssetTypeChange, new AssetTypeChangeMessage
+						{
+							AssetTypeId = @new.AssetTypeID.Value,
+							Action = AssetTypeChangeAction.FieldAddition,
+							CompanyID = SecurityContext.CompanyID,
+							FieldTypeId = @new.ID
+						});
+					}
+
 					await AuditRepository.CreateHistoryJob(new ObjectInfo
 					{
 						Object = SystemObjects.FieldType.ToString(),
@@ -552,6 +563,17 @@ namespace d360.web.Controllers.V2
 
 			foreach (var field in currentFieldTypes.Where(x => fieldNamesToDelete.Contains(x.Name)))
 			{
+				if (field.AssetTypeID.HasValue)
+				{
+					await Queue.CreateMessageAsync(constants.Queue.AssetTypeChange, new AssetTypeChangeMessage
+					{
+						AssetTypeId = field.AssetTypeID.Value,
+						Action = AssetTypeChangeAction.FieldRemoval,
+						CompanyID = SecurityContext.CompanyID,
+						FieldTypeId = field.ID
+					});
+				}
+
 				await AuditRepository.CreateHistoryJob(new ObjectInfo
 				{
 					Object = SystemObjects.FieldType.ToString(),
@@ -586,7 +608,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
-		public async Task<IHttpActionResult> DeleteFieldTypesBacthAsync(FieldTypesApiDeleteModel model)
+		public async Task<IHttpActionResult> DeleteFieldTypesBatchAsync(FieldTypesApiDeleteModel model)
 		{
 			(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
 
