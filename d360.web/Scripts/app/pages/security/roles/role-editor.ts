@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Subscription } from 'rxjs';
 import { ReadRole } from '../../../models/security.model';
 import { SecurityService } from '../../../services/security.service';
-import { D3SSharedModule } from '../../../components/shared/shared.module';
+import { DirectivesModule } from '../../../directives/directives.module';
 import { FormFeedbackBadgesModule } from '../../../components/shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { PropertyGroupModule } from '../../../components/shared/controls/property-group/property-group.component';
 import { IgMessageBoxModule } from '../../../components/shared/controls/message-box/message-box.module';
@@ -32,7 +32,7 @@ import { SiteModalModule } from '../../../components/shared/modal/gov-modal.modu
 		CheckboxModule,
 		DataCyModule,
 		SiteModalModule,
-		D3SSharedModule,
+		DirectivesModule,
 		FormFeedbackBadgesModule,
 		IgMessageBoxModule,
 		LoadingComponent,

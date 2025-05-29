@@ -36,9 +36,14 @@ export class RoleDelete {
 		this.deleteInProgress = true;
 		this.securityService.deleteRole(this.item.uid)
 			.subscribe((result) => {
-				result = result[0];
 				this.deleteInProgress = false;
-				this.onDelete.emit(result);
+				if (result !== undefined) {
+					result = result[0];
+					this.onDelete.emit(result);
+				}
+				else {
+					this.deleteInProgress = false;
+				}
 				this.onCancel.emit();
 			});
 	}

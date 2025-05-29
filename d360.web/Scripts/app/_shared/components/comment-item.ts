@@ -95,7 +95,11 @@ export class CommentItem extends BaseComponent implements OnInit {
 
     private deleteCommentClick() {
         this.delete.emit({ comment: this.comment });
-    }
+	}
+
+	private deleteReplyClick(response) {
+		this.delete.emit({ comment: response });
+	}
 
     private changeUrl(route) {
         this.router.navigate([route]);

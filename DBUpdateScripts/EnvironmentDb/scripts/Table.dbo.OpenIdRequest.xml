@@ -1,0 +1,30 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.dbo.OpenIdRequest-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'OpenIdRequest')
+BEGIN
+	CREATE TABLE [dbo].[OpenIdRequest](
+		[State] [varchar](5) not null,
+		[Nonce] [varchar](5) not null,
+		[RedirectUrl] [varchar](2000) not null,
+		[CreatedOn] datetime constraint DF_OpenIdRequest_CreatedOn default(getutcdate()) not null,
+		CONSTRAINT [PK_OpenIdRequest] PRIMARY KEY NONCLUSTERED ( [State] ASC )
+	)
+END
+
+if not exists (select 1 from information_schema.[columns] where table_Schema= 'dbo' and table_name = 'OpenIdRequest' and column_name = 'CreatedOn')
+begin 
+	alter table dbo.OpenIdRequest add [CreatedOn] datetime constraint DF_OpenIdRequest_CreatedOn default(getutcdate()) not null;
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

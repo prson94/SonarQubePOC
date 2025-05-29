@@ -75,7 +75,7 @@
 					<p-dropdown [options]="scoreTypes"
 								[ngModel]="model.Event.ScoreType"
 								(ngModelChange)="selectScoreType($event); validate();"
-								[style]="{'width': '95%'}"
+								[style]="{'min-height': '30px','width': '95%'}"
 								filterPlaceholder="Choose a value"
 								i18n-filterPlaceholder
 								[filter]="true">

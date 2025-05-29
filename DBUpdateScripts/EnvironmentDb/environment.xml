@@ -87,6 +87,7 @@
 	<include file="scripts/Table.dbo.Nym.xml"/>
 	<include file="scripts/Table.dbo.NymRelation.xml"/>
 	<include file="scripts/Table.dbo.Color.xml"/>
+	<include file="scripts/Table.dbo.OpenIdRequest.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
@@ -357,6 +358,7 @@
 	<include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.FillDataIntoInProcessRelationAuditLog.xml"/>
+	<include file="scripts/Procedure.dbo.HasPermission.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>

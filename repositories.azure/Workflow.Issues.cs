@@ -41,7 +41,7 @@ namespace repositories.azure
 		{
 			try
 			{
-				using (var connection = (SqlConnection)ConnectionProvider.Connect())
+				using (var connection = (SqlConnection)ConnectionProvider.Connect(true))
 				{
 					var result = await connection.QuerySingleOrDefaultAsync<Issue>(@"
 					SELECT * from dbo.Issue i

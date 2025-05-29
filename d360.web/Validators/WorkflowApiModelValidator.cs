@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using repositories;
+using System.Threading.Tasks;
 
 namespace d360.web.validators
 {
@@ -228,7 +229,8 @@ namespace d360.web.validators
 				string assettypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
 				if (Guid.TryParse(assettypeUIDString, out Guid actiontypeUID))
 				{
-					core.entities.IssueType issueType = IssueRepository.GetIssueTypeByUIDAsync(actiontypeUID).Result;
+					core.entities.IssueType issueType = Task.Run(() => IssueRepository.GetIssueTypeByUIDAsync(actiontypeUID)).GetAwaiter().GetResult();
+
 					if (issueType == null)
 					{
 						isValid = false;
@@ -392,7 +394,7 @@ namespace d360.web.validators
 
 				if (Guid.TryParse(assetUIDString, out Guid actionUID))
 				{
-					core.entities.Issue issueType = IssueRepository.GetIssueByUIDAsync(actionUID).Result;
+					core.entities.Issue issueType = Task.Run(() => IssueRepository.GetIssueByUIDAsync(actionUID)).GetAwaiter().GetResult();
 
 					if (issueType == null)
 					{

@@ -44,80 +44,55 @@ namespace igx.jobs.workflowdigestprocessor
 		[Singleton(Mode = SingletonMode.Function)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
 		{
-			try
-			{
-				//add random delay so instances run at an offset to each other.
-				var rand = new Random();
-				Thread.Sleep(rand.Next(30) * 1000);
+			//add random delay so instances run at an offset to each other.
+			var rand = new Random();
+			Thread.Sleep(rand.Next(30) * 1000);
 
-				var slot = GetEnvironmentLevelCurrentSlot();
-				var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
-				var lastestDigestExecutions = (await Community.ReadMostRecentWorkflowDigestStatusBySlotAsync(slot)).ToList();
+			var slot = GetEnvironmentLevelCurrentSlot();
+			var lastestDigestExecutions = (await Community.ReadMostRecentWorkflowDigestStatusBySlotAsync(slot)).ToList();
 
-				foreach (var c in tenants)
+			await LoopThroughTenantsAsync(log, FUNCTION_NAME, async c => {
+				var settings = await Community.ReadSettingsAsync(c.CompanyID);
+				int digestDays = int.Parse(settings.Single(o => o.ID == Setting.WorkflowDigestEmailDays).Value);
+				var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
+				var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
+
+				try
 				{
-					var logProperties = new Dictionary<string, object> {
-						{ "Function", FUNCTION_NAME },
-						{ "CompanyID", c.CompanyID },
-						{ "UrlPrefix", c.UrlPrefix }
-					};
-
-					var settings = await Community.ReadSettingsAsync(c.CompanyID);
-					int digestDays = int.Parse(settings.Single(o => o.ID == Setting.WorkflowDigestEmailDays).Value);
-					var fromEmail = settings.Single(o => o.ID == Setting.WorkflowFromEmail).Value;
-					var fromName = settings.Single(o => o.ID == Setting.WorkflowFromName).Value;
-
-					using (log.BeginScope(logProperties))
-					{
-						try
-						{
-							var latestExecution = lastestDigestExecutions.SingleOrDefault(o => o.CompanyID == c.CompanyID);
+					var latestExecution = lastestDigestExecutions.SingleOrDefault(o => o.CompanyID == c.CompanyID);
 							
-							// Check if digest was already sent today
-							bool shouldContinueProcessing = (latestExecution == null) || 
-								(latestExecution != null && latestExecution?.LastExecuted?.DayOfWeek != DateTime.UtcNow.DayOfWeek);
+					// Check if digest was already sent today
+					bool shouldContinueProcessing = (latestExecution == null) || 
+						(latestExecution != null && latestExecution?.LastExecuted?.DayOfWeek != DateTime.UtcNow.DayOfWeek);
 
-							if (shouldContinueProcessing)
-							{ 								
-								int? id = null;
-								if (latestExecution == null)
-								{
-									id = latestExecution.ID;
-								}
-								await Community.UpsertWorkflowDigestStatusAsync(c.CompanyID, executionContext.InvocationId, id);
-
-								var context = new UriSecurityContextProvider
-								{
-									CompanyID = c.CompanyID,
-									CompanyPrefix = c.UrlPrefix,
-									PrimaryCompanyPrefix = c.UrlPrefix,
-									ResourceID = 0,
-									IsAdministrator = true
-								};
-								using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() } ))
-								{
-									await company.SendDigestEmails(c.EnvironmentLevel, fromName, fromEmail, digestDays);
-								}
-							}
-						}
-						catch (Exception ex)
+					if (shouldContinueProcessing)
+					{ 								
+						int? id = null;
+						if (latestExecution == null)
 						{
-							log.LogError(ex, "Error while processing workflow digests for this environment.");
+							id = latestExecution.ID;
+						}
+						await Community.UpsertWorkflowDigestStatusAsync(c.CompanyID, executionContext.InvocationId, id);
+
+						var context = new UriSecurityContextProvider
+						{
+							CompanyID = c.CompanyID,
+							CompanyPrefix = c.UrlPrefix,
+							PrimaryCompanyPrefix = c.UrlPrefix,
+							ResourceID = 0,
+							IsAdministrator = true
+						};
+						using (var company = new CompanyContext(Cache, Queue, Mail, context, log, new TenantConnectionInfo { ConnectionString = c.GetConnectionString() } ))
+						{
+							await company.SendDigestEmails(c.EnvironmentLevel, fromName, fromEmail, digestDays);
 						}
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				var logProperties = new Dictionary<string, object> {
-					{ "Function", FUNCTION_NAME }
-				};
-
-				using (log.BeginScope(logProperties))
+				catch (Exception ex)
 				{
-					log.LogCritical(ex, "Critical error while running this web job.");
+					log.LogError(ex, "Error while processing workflow digests for this environment.");
 				}
-			}
+			});
 		}
 	}
 }

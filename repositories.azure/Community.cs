@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace repositories.azure
@@ -48,8 +49,8 @@ namespace repositories.azure
 		public async Task<RepositoryResponse<int>> CreateUserAsync(Resource user)
 		{
 			RepositoryResponse<int> response = new(400);
-			user.APIPublicKey = GenerateOpenIdRequestValue(25);
-			user.APIPrivateKey = GenerateOpenIdRequestValue(50);
+			user.APIPublicKey = GenerateRandomString(25);
+			user.APIPrivateKey = GenerateRandomString(50);
 			user.Password = PasswordHelper.HashPassword(user.Password);
 			user.UpdatedOn = DateTime.UtcNow;
 			using (var connection = Connect())
@@ -99,6 +100,26 @@ values (@companyId, @resourceId, @authMethod, @loggedInOn);";
 			}
 
 			return response;
+		}
+
+		public string GenerateRandomString(int length = 5)
+		{
+			var builder = new StringBuilder(length);
+
+			// Unicode/ASCII Letters are divided into two blocks (Letters 65–90 / 97–122):
+			// The first group containing the uppercase letters and the second group containing the lowercase.
+			char offset = 'a';
+			const int lettersOffset = 26; // A...Z or a..z: length=26
+
+			Random _random = new Random();
+
+			for (var i = 0; i < length; i++)
+			{
+				var @char = (char)_random.Next(offset, offset + lettersOffset);
+				builder.Append(@char);
+			}
+
+			return builder.ToString().ToLower();
 		}
 
 		public async Task<List<UserApiModel>> GetUsersInTenantAsync(int companyId, List<UserApiModel> users)

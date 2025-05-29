@@ -1,0 +1,84 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.HasPermission-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER PROCEDURE [dbo].[HasPermission]
+(	
+	@resourceid int,
+	@p int,
+	@CheckHasNoPermission bit,
+	@AssetUid Uniqueidentifier = null
+)
+AS
+begin
+
+	DECLARE @tbl TABLE 
+	(
+		AssetUid Uniqueidentifier,
+		AssetID  bigint,	
+		Permission int,
+		IsPermission bit,
+		Index idx_tbl clustered(AssetID)
+	);
+
+	declare @assetid bigint,
+	@permission int;
+	
+	if (@AssetUid is not null)
+		begin
+			select @assetid = a.id
+			from asset a
+			where uid = @AssetUid;
+	
+			select @permission = dbo.GetCombinedPermissionsForUserByAssetId(@assetid, @resourceid);
+			
+			insert into @tbl
+			select @AssetUid, @assetid, @permission,cast(get_bit(coalesce(@Permission,0), @p) as bit) IsPermission
+		end
+	else
+		begin
+			if (OBJECT_ID('tempdb..#TempAssetUid') IS NOT NULL)
+			begin
+				if (@CheckHasNoPermission = 1)
+					begin
+						insert into @tbl
+						select top 1 I.AssetUid, A.ID, 0, 0
+						from #TempAssetUid I
+						left join Asset A on I.AssetUid = A.Uid
+						where dbo.GetCombinedPermissionsForUserByAssetId(A.ID, @resourceid) & @P = 0;
+					end
+				else
+					begin
+						update t
+						set Permission = dbo.GetCombinedPermissionsForUserByAssetId(A.ID, @resourceid),
+							AssetId = A.ID
+						from #TempAssetUid t
+						inner join Asset A on A.Uid = t.AssetUid;
+						
+						insert into @tbl
+						SELECT	I.AssetUid, I.AssetID, I.Permission, cast(get_bit(coalesce(Permission,0), @p) as bit) IsPermission
+						FROM	#TempAssetUid I;					
+					end
+			end
+	end
+	select * from  @tbl;
+end
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

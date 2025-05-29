@@ -62,7 +62,7 @@
 	@if (!isReply) {
 		<div class="threads">
 			@for(response of comment?.Comments; track response) {
-			<comment-item [comment]="response" [isReply]="true" [assetUid]="assetUid" [commentsEnabled]="commentsEnabled" [isAdmin]="isAdmin"></comment-item>
+			<comment-item [comment]="response" [isReply]="true" [assetUid]="assetUid" [commentsEnabled]="commentsEnabled" [isAdmin]="isAdmin" (delete)="deleteReplyClick(response)"></comment-item>
 			}
 		</div>
 		
