@@ -321,7 +321,7 @@ namespace d360.web.Controllers.V2
 
 			if (response.IsSuccess)
 			{
-				return Ok(response.Data);
+				return Ok(response.Data.FirstOrDefault().DeletedCount);
 			}
 			else
 			{
@@ -361,7 +361,7 @@ namespace d360.web.Controllers.V2
 
 			if (response.IsSuccess)
 			{
-				return Ok(response.Data);
+				return Ok(response.Data.FirstOrDefault().DeletedCount);
 			}
 			else
 			{
@@ -640,7 +640,7 @@ namespace d360.web.Controllers.V2
 
             var results = await Catalog.ReadMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
 
-			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
+			return results.IsSuccess ? Ok(results.Data.total) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
         }
 
         /// <summary>
