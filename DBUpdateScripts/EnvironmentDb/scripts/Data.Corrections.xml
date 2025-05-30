@@ -1462,6 +1462,75 @@ and at2.Name = f.FormattedValue
 	</rollback>
   </changeSet>
 
+<changeSet author="Pappas" id="Data.Corrections.GOV-38364">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+declare @uid uniqueidentifier = newid(),
+        @dt datetime = getutcdate(),
+        @userId int = 0,
+				@assetTypeId int,
+				@objectTypeId int;
+
+if exists (select 1 from FieldType where LookupObjectType = 'TaxonomyType')
+begin
+	INSERT INTO [dbo].[AssetType] ([Name],[Class],[DisplayFormat],[State],[HierarchyMaximumDepth],[Object],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid],[UseAsTransformation],[CanEditParent],[IsDescriptionEnabled],[IsDescriptionVisibleByDefault],[DefaultPermissions])
+	VALUES ('Subject Area',9,'{Code}',1,1,'ReferenceItemType',@dt,@userId,@dt,@userId,@uid,0,1,1,0,1);
+	select @assetTypeId = SCOPE_IDENTITY();
+
+	select @objectTypeId = ObjectID from AssetType where ID = @assetTypeId;
+
+	declare @fieldTypeId int;
+	insert into FieldType (
+		Name, FriendlyName, [Type], Object, ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable, AllowAllValue, IsPrimaryFilter, IsPartOfKey, ColumnOrder, AllowMultipleValues, AssetTypeId, ParentFieldTypeID, UpdatedBy, ShowIfEmpty, Definition, SearchAddToResult, SortByAscending, UseDisplayFormat, IsSubject
+	) values (
+		'Code', 'Code', 'System', 'ReferenceItemType', @objectTypeId, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, @assetTypeId, 0, @userId, 1, '{}', 0, 1, 0, 1
+	)
+	select @fieldTypeID = SCOPE_IDENTITY();
+
+	insert into Asset (AssetTypeID, Object, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid, Code, [Level], [Path], DisplayValue)
+		select	@assetTypeId, 'ReferenceItem', @dt, @userId, @dt, @userId, newid(), Name, 1, '<path />', Name
+		from	AssetType 
+		where	Object = 'TaxonomyType'
+
+	insert into Field (AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue, UpdatedOn)
+		select	ID, Object, ObjectID, @fieldTypeId, [Code], [Code], @dt
+		from	Asset
+		where	AssetTypeID = @assetTypeId
+
+	insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValuePRefix, UpdatedOn)
+		select	ID, [Code], [Code], @dt
+		from	Asset
+		where	AssetTypeID = @assetTypeId;
+
+	exec [api].[MergeAssetPaths] @class = 9, @begin = 1, @end = 50, @assetTypeUid = @uid, @onlyInsert = 1, @AssetTypeID = @assetTypeId
+
+	update	t
+	set		t.[Value] = s.ObjectID
+	from	Field t
+			inner join (
+				select	f.ID,
+						--f.FieldTypeID,
+						--f.[Value],	
+						--f.FormattedValue,
+						--mt.Name,
+						la.ObjectID
+				from	Field f
+						inner join FieldType ft on ft.Id = f.FieldTypeId and ft.LookupObjectType = 'TaxonomyType'
+						inner join AssetType mt on mt.ObjectId = f.[Value] and mt.Object = 'TaxonomyType'
+						inner join Asset la on la.AssetTypeID = @assetTypeId and la.Code = mt.Name
+			) s on s.ID = t.ID
+
+	update	t
+	set		t.LookupObjectType = 'ReferenceItem',
+			t.LookupObjectID = @objectTypeId,
+			t.LookupDisplayFormat = '{Code}'
+	from	FieldType t
+	where	t.LookupObjectType = 'TaxonomyType'
+end
+]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>
 
 
