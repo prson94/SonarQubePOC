@@ -234,8 +234,12 @@ values (@auditID,0,'Name',@Value,Null)
 			{
 				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeLong);
 			}
-			if (!value.IsValidForTag())
+			if (!value.IsValidForTag(out bool isMaxLengthExceeded))
 			{
+				if (isMaxLengthExceeded)
+				{
+					return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.MaxLengthExceeded);
+				}
 				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, Error.InvalidTagTypeCharacters);
 			}
 
@@ -1051,8 +1055,12 @@ drop table if exists #TempTagValues;
 			{
 				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeLong);
 			}
-			if (!value.IsValidForTag())
+			if (!value.IsValidForTag(out bool isMaxLengthExceeded))
 			{
+				if (isMaxLengthExceeded)
+				{
+					new RepositoryResponse<bool>(400, Error.MaxLengthExceeded);
+				}
 				return new RepositoryResponse<bool>(400, Error.InvalidTagTypeCharacters);
 			}
 

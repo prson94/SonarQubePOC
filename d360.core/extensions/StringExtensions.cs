@@ -244,8 +244,15 @@ namespace d360.core
 			return text;
 		}
 
-		public static bool IsValidForTag(this string text)
+		public static bool IsValidForTag(this string text, out bool isMaxLengthExceeded)
 		{
+			const int ALLOWED_TAG_MAX_LENGTH = 100;
+			isMaxLengthExceeded = false;
+			if(text?.Length > ALLOWED_TAG_MAX_LENGTH)
+			{
+				isMaxLengthExceeded = true;
+				return false;
+			}
 			string pattern = "^[A-Za-zÀ-ú0-9ა-ჰ一-蠼赋 _-]+$";
 			return Regex.IsMatch(text, pattern);
 		}
