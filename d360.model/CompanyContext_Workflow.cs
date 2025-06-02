@@ -21,6 +21,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -2935,7 +2936,7 @@ namespace d360.model
 						{
 							if (supportHtml)
 							{
-								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{HttpUtility.HtmlEncode(item.Name)}</a></b>";
 							}
 							else
 							{
@@ -2961,7 +2962,7 @@ namespace d360.model
 								{
 									if (supportHtml)
 									{
-										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
+										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{HttpUtility.HtmlEncode(assetDetail.DisplayValue)}</a></b>";
 									}
 									else
 									{
@@ -2989,7 +2990,7 @@ namespace d360.model
 								{
 									if (supportHtml)
 									{
-										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
+										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{HttpUtility.HtmlEncode(assetDetail.DisplayValue)}</a></b>";
 									}
 									else
 									{
@@ -3017,14 +3018,14 @@ namespace d360.model
 							if (item != null)
 							{
 								issueInfo.Clear();
-								issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.");
+								issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{HttpUtility.HtmlEncode(item.Name)}</b>.");
 							}
 
 							GlobalReportingResource creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
 
 							if (creator != null)
 							{
-								issueInfo.Append($"<br>Created By <b>{creator.FullName}</b>");
+								issueInfo.Append($"<br>Created By <b>{HttpUtility.HtmlEncode(creator.FullName)}</b>");
 							}
 
 							//get any field values for this issue
