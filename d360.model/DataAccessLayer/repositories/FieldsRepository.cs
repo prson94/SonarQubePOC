@@ -1677,20 +1677,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
 						{
-							if (f.Type.Lookup.List.Class.Value == AssetTypeClass.Model)
-							{
-								newFieldType.LookupObjectType = "TaxonomyType";
-								newFieldType.LookupObjectID = 0;
-							}
-							else if (f.Type.Lookup.List.Class.Value == AssetTypeClass.ReferenceItemType)
-							{
-								newFieldType.LookupObjectType = "ReferenceItemType";
-								newFieldType.LookupObjectID = 0;
-							}
-							else
-							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeListNotSpecified, Error.LookupFieldTypeIsIncomplete);
-							}
+							return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.FieldTypeListNotSpecified, Error.LookupFieldTypeIsIncomplete);
 						}
 						else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
 						{

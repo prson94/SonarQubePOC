@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward, tklok" id="Procedure.utility.GetFieldTypeLookupList-v5">
+  <changeSet author="bhoward, tklok" id="Procedure.utility.GetFieldTypeLookupList-v5.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -38,10 +38,6 @@ begin
 			convert(nvarchar(50), Uid) as value,
 			'Model : ' + Name as title
 	FROM	AssetType where [Object] = 'TaxonomyType'
-	UNION
-	SELECT	'L' as type,
-			'TaxonomyType' as value,
-			'Model Type' as title
 END
 		]]>
     </sql>
