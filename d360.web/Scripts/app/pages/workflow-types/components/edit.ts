@@ -25,12 +25,13 @@ import { WorkflowDiagramModule } from '../../../components/shared/diagram/workfl
 import { CheckboxModule } from 'primeng/checkbox';
 import { EditorModule } from 'primeng/editor';
 import { CoreModule } from '../../../components/shared/core.module';
+import { DayOfWeekInputModule } from '../../../components/shared/small-widgets/dayofweek-input/dayofweek-input.component';
 
 @Component({
     selector: 'workflow-type-edit',
 	templateUrl: './edit.html',
 	standalone: true,
-	imports: [CheckboxModule, CoreModule, DropdownModule, EditorModule, FormsModule, LoadingComponent, WorkflowDiagramModule]
+	imports: [CheckboxModule, CoreModule, DayOfWeekInputModule, DropdownModule, EditorModule, FormsModule, LoadingComponent, WorkflowDiagramModule]
 })
 
 export class WorkflowTypeEdit extends BaseComponent implements OnInit, OnDestroy, AfterViewChecked {
