@@ -53,7 +53,7 @@ namespace igx.jobs
 		{
 			var slot = GetEnvironmentLevelCurrentSlot();
 			var tenants = await Community.ReadTenantConnectionSettingsByCurrentSlotAsync(slot);
-			foreach (var c in tenants.OrderBy(t => t.Priority).Where(c => c.CompanyID == 2))
+			foreach (var c in tenants.OrderBy(t => t.Priority))
 			{
 				var logProperties = new Dictionary<string, object> {
 					{ "Function", functionName },
