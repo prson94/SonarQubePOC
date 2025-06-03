@@ -127,8 +127,8 @@
                                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                                 </div>
 
-                                <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
-                                <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"
+                                <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerText]="item.label ?? item.Text"></span>
+                                <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerText]="item.label ?? item.Text"
                                       i18n-pTooltip pTooltip="You do not have permission to view the details of this item."
                                       tooltipStyleClass="ig-tooltip"
                                       tooltipPosition="top"></span>
@@ -153,8 +153,8 @@
                                 <div class="ig-colorfield-item-label">{{item.label}}</div>
                             </div>
 
-                            <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
-                            <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"
+                            <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerText]="item.label ?? item.Text"></span>
+                            <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerText]="item.label ?? item.Text"
                                   i18n-pTooltip pTooltip="You do not have permission to view the details of this item."
                                   tooltipStyleClass="ig-tooltip"
                                   tooltipPosition="top"></span>
