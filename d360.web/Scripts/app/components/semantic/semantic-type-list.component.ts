@@ -459,9 +459,10 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     changeSemanticDisabledStatus(item: SemanticType) {
         this.isLoading = true;
         this.dataProfileService.changeSemanticDisabledStatus(item.qualifier, !item.isDisabled)
-            .subscribe((res) => {
+			.subscribe((res) => {
                 this.showDisableDialog = false;
-                this.getData();
+				this.getData();
+				this.selectedType = res[0];
 
             },
                 (err) => {
