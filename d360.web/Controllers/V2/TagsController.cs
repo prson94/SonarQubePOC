@@ -172,10 +172,15 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PostTag(TagApiUpsertModel model)
 		{
+			bool isMaxLengthExceeded = false;
 			if (model == null ||
 				string.IsNullOrWhiteSpace(model.Value) ||
-				!model.Value.IsValidForTag())
+				!model.Value.IsValidForTag(out isMaxLengthExceeded))
 			{
+				if (isMaxLengthExceeded)
+				{
+					return errorMessageArgumentResponse(Error.MaxLengthExceeded);
+				}
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 
@@ -203,12 +208,17 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> Put(string tagUid, TagApiUpsertModel model)
 		{
+			bool isMaxLengthExceeded = false;
 			Guid tagId;
 
 			if (model == null ||
 				string.IsNullOrWhiteSpace(model.Value) ||
-				!model.Value.IsValidForTag())
+				!model.Value.IsValidForTag(out isMaxLengthExceeded))
 			{
+				if (isMaxLengthExceeded)
+				{
+					return errorMessageArgumentResponse(Error.MaxLengthExceeded);
+				}
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
 

@@ -39,7 +39,7 @@ namespace d360.model.validators
 				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeLong}");
 			}
 
-			if(!model.Value.IsValidForTag())
+			if(!model.Value.IsValidForTag(out bool isMaxLengthExceeded))
 			{
 				return new WorkHttpStatus(HttpStatusCode.BadRequest, Error.InvalidRequestHttpErrorTitle, $"{Error.InvalidTagTypeCharacters}");
 			}
