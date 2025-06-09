@@ -277,6 +277,14 @@ export class PolicyEditor implements OnChanges, OnInit {
 		this.whenConditions.clear();
 	}
 
+	isNotAppliesToTypeAndHasWhenConditions() {
+		const applyToType = this.policyForm.controls["applyToType"].getRawValue() as boolean;
+		if (!applyToType && (this.policyForm.controls["whenConditions"] as FormArray).controls.length === 0) {
+			return false;
+		}
+		return true;
+	}
+
 	isInputTypeForWhenField(item: FormGroup, targetTypes: string[]) {
 		if (this.selectedAssetTypeOptions?.fields) {
 			const formFieldValue: string = item.get('fieldName').value; 
@@ -293,7 +301,9 @@ export class PolicyEditor implements OnChanges, OnInit {
 		if (applyToType) {
 			return false;
 		}
-		//return true;
+		if ((this.policyForm.controls["whenConditions"] as FormArray).controls.length === 0) {
+			return true;
+		}
 		return (this.policyForm.controls["whenConditions"].valid);
 	}
 
@@ -533,6 +543,9 @@ export class PolicyEditor implements OnChanges, OnInit {
 	}
 
 	get isSubmitDisabled(): boolean {
+		if (!this.isNotAppliesToTypeAndHasWhenConditions()) {
+			return true;
+		}
 		return !this.policyForm.valid || (this.item && !this.isDataAltered);
 	}
 }
