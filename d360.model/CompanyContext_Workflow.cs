@@ -863,10 +863,13 @@ namespace d360.model
 					if (requestSettings?.Headers?.Any() == true)
 					{
 						List<string> contentHeaderKeys = new List<string> { "content-type", "content-md5", "content-length", "content-encoding" };
+						var headerError = false;
 						requestSettings.Headers.ForEach(async h =>
 						{
 							string value = await ProcessMessageTokens(h.Value, info, prefix, item, defaultGroup, false);
 
+							try
+							{
 							if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
 							{
 								if (request.Content.Headers.Contains(h.Key))
@@ -883,7 +886,30 @@ namespace d360.model
 								}
 								request.Headers.TryAddWithoutValidation(h.Key, value);
 							}
+							}
+							catch (Exception)
+							{
+								headerError = true;
+							}
 						});
+
+						if (headerError)
+						{
+							item.State = StepState.HTTPRequestError;
+
+							WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+							{
+								itemStepID = item.ID,
+								Message = $"Http request failed with header error(s)",
+								State = StepState.HTTPRequestError
+							};
+
+							WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+							await SaveChangesAsync();
+
+							return false;
+						}
 					}
 
 					string uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, defaultGroup, false);
