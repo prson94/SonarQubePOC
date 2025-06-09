@@ -709,17 +709,11 @@ namespace d360.model.DataAccessLayer
 							{
 								var sqlQuery = @"select 1
 												 from security.role r
-												 inner join security.[Rule] rr on rr.RoleID = r.Id
-												 inner join AssetType att on att.ID = rr.AssetTypeId
-												 where r.Uid = @ResponsibilityTypeUid
-												 and att.Object = @Object
-												 and att.ObjectID = @ObjectID";
+												 where r.Uid = @ResponsibilityTypeUid";
 
 								var parameters = new
 								{
 									ResponsibilityTypeUid = gov.Owner.ResponsibilityTypeUid,
-									Object = targetAssetType.Object,
-									ObjectID = targetAssetType.ObjectID
 								};
 
 								var governanceCheckResponsibilityTypeExists = connection.QueryFirstOrDefault<int>(sqlQuery, parameters);
