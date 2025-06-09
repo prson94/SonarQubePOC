@@ -1,22 +1,22 @@
 ﻿<div #item class="{{additionalCssClasses}} header-search" (keyup)="checkKey($event,ac)">
-    <div class="header-search-input">
-        <p-autoComplete #ac size="300"
-                        styleClass="global-search-typeahead"
-                        scrollHeight="400px"
-                        [igDataCy]="'Header_Typeahead_Search'"
-                        [(ngModel)]="result"
-                        [suggestions]="results"
-                        field="Name"
-                        (completeMethod)="search($event)"
-                        [placeholder]="autocompletePlaceholder"
-                        [minLength]="1"
-                        maxlength="255"
-                        (onBlur)="blurHandler()"
-                        (onFocus)="focusHandler()"
-                        (onClear)="clearValue()"
-                        (onSelect)="selectItem(ac)"
-                        (onKeyUp)="syncSearchText($event)">
-            <ng-template let-result pTemplate="item">
+	<div class="header-search-input input-search">
+		<p-autoComplete #ac size="300"
+						styleClass="global-search-typeahead"
+						scrollHeight="400px"
+						[igDataCy]="'Header_Typeahead_Search'"
+						[(ngModel)]="result"
+						[suggestions]="results"
+						field="Name"
+						(completeMethod)="search($event)"
+						[placeholder]="autocompletePlaceholder"
+						[minLength]="1"
+						maxlength="255"
+						(onBlur)="blurHandler()"
+						(onFocus)="focusHandler()"
+						(onClear)="clearValue()"
+						(onSelect)="selectItem(ac)"
+						(onKeyUp)="syncSearchText($event)">
+			<ng-template let-result pTemplate="item">
 				<div>
 					@if (result?.Type == endSearchAllTypeToken) {
 					<div class="search-typeahead-suggestion"
@@ -64,10 +64,14 @@
 					}
 
 				</div>
-            </ng-template>
-        </p-autoComplete>
-        <span class="search-button {{showBigButton ? 'big' : ''}}" (click)="openSearch()">
-            <i class="fa" [class]="searchInProgressCss"></i>
-        </span>
-    </div>
+			</ng-template>
+		</p-autoComplete>
+		
+		<span pTooltip="{{searchInfoTooltip}}" tooltipPosition="left">
+			<i class="fa fa-question-circle info-icon-container color-change"></i>
+		</span>
+		<span class="search-button {{showBigButton ? 'big' : ''}}" (click)="openSearch()">
+			<i class="fa" [class]="searchInProgressCss"></i>
+		</span>
+	</div>
 </div>

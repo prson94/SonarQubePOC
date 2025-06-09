@@ -22,13 +22,15 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FormsModule } from '@angular/forms';
 import { PipesModule } from '../../pipes/pipes.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
     selector: 'typeahead-search',
-    templateUrl: 'typeahead-search.html',
+	templateUrl: 'typeahead-search.html',
+	styleUrls: ["typeahead-search.less"],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	standalone: true,
-	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule, PipesModule]
+	imports: [AutoCompleteModule, AssetPath, CoreModule, DataCyModule, FormsModule, PipesModule,TooltipModule]
 })
 export class TypeaheadSearch implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
@@ -37,7 +39,7 @@ export class TypeaheadSearch implements OnDestroy, OnInit {
     @Input() showBigButton: boolean = false;
     @Input() defaultValue: string;
     @Input() isExactMatch: boolean = undefined;
-    @Input() keepFilter: boolean = false;
+	@Input() keepFilter: boolean = false;
 
     public result: SearchResult;
     public searchText: string;
@@ -52,9 +54,14 @@ export class TypeaheadSearch implements OnDestroy, OnInit {
 
     private typeAheadQuery$ = new Subject<string>();
 
-    isSearchInProgress: boolean = false;
+	isSearchInProgress: boolean = false;
 
-    constructor(
+	searchInfoTooltip: string = `Type to provide a search term.
+To match terms starting or ending with a certain term, use the * wildcard character, such as 'cust*' to find 'custom' and 'custard'
+All matches are case insensitive.
+`;
+
+	constructor(
         private router: Router,
         settingsService: CompanySettingsService,
         private searchService: SearchService,
