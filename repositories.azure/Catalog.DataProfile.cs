@@ -1698,12 +1698,13 @@ namespace repositories.azure
 						response.IsSuccess = true;
 						return response;
 					}
-
-					startDate = startDate ?? new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
-					endDate = endDate ?? DateTime.MaxValue;
 				}
 			}
-			
+
+			startDate = startDate ?? new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
+			endDate = endDate ?? DateTime.MaxValue;
+
+
 			response =  await RemoveDataProfileAsync(assetUid, startDate.Value, endDate.Value, execution, cascade);
 
 			return response;
