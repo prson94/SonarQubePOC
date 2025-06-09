@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.bulkload.FillParentUid-v1">
+  <changeSet author="PuneetGupta" id="Procedure.bulkload.FillParentUid-v1.1">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure bulkload.FillParentUid
@@ -56,7 +56,7 @@ begin
 		update LIC
 		set [Value] = replace([Value],ft.CounterPrefix,'')
 		from LoadItemColumn LIC 
-		inner join LoadColumn LC on LC.LoadID = LIC.LoadID
+		inner join LoadColumn LC on LC.LoadID = LIC.LoadID and LIC.ColumnIndex = LC.ColumnIndex 
 		inner join fieldtype ft on ft.Name = LC.Name and ft.Type = 'Counter' and ft.AssetTypeID = @assetTypeID
 		where LIC.LoadId = @loadId and coalesce(LIC.[Value],'') != '' and ft.CounterPrefix is not null;
 
