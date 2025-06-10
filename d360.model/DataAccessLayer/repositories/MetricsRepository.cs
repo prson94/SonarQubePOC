@@ -704,17 +704,24 @@ namespace d360.model.DataAccessLayer
 						}
 						else if (gov.Owner != null)
 						{
-							var governanceCheckResponsibilityTypeExists = (
-																			from r in CompanyContext.ResponsibilityTypes
-																			from a in r.ResponsibilityTypeRelations
-																			where r.UID == gov.Owner.ResponsibilityTypeUid
-																			where a.ObjectType == targetAssetType.Object
-																			where a.ObjectID == targetAssetType.ObjectID
-																			select r
-																			).Any();
-							if (!governanceCheckResponsibilityTypeExists)
+
+							using (var connection = new SqlConnection(CompanyContext.CompanyConnectionString))
 							{
-								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.UidGovernanceOwnerCheck);
+								var sqlQuery = @"select 1
+												 from security.role r
+												 where r.Uid = @ResponsibilityTypeUid";
+
+								var parameters = new
+								{
+									ResponsibilityTypeUid = gov.Owner.ResponsibilityTypeUid,
+								};
+
+								var governanceCheckResponsibilityTypeExists = connection.QueryFirstOrDefault<int>(sqlQuery, parameters);
+
+								if (governanceCheckResponsibilityTypeExists == 0)
+								{
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, Error.UidGovernanceOwnerCheck);
+								}
 							}
 
 							var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Owner.Operator, gov.Check);
