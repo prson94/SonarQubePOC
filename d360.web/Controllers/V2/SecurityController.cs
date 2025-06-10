@@ -82,6 +82,11 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
+			if(string.IsNullOrWhiteSpace(model?.Name))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
+			}
+
 			var policyExists = await Security.DoesPolicyExists(model.Name?.Trim());
 			if (policyExists)
 			{
@@ -407,6 +412,10 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model)
 		{
+			if(string.IsNullOrWhiteSpace(model?.Name))
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
+			}
 			var result = await Security.UpdatePolicyAsync(uid, model);
 			if (result.IsSuccess)
 			{
