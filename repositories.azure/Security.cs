@@ -1534,5 +1534,21 @@ order by SecurityType asc, Name asc;
 				return result != null;
 			}
 		}
+
+
+		public async Task<IEnumerable<Guid>> FindRolesByUidAsync(IEnumerable<Guid> roles)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var sql = @"
+							SELECT Uid FROM security.[Role]
+							WHERE Uid in @roles
+							";
+				var result = await connection.QueryAsync<Guid>(sql, new { roles });
+
+				return result;
+
+			}
+		}
 	}
 }

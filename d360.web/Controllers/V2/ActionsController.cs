@@ -41,12 +41,14 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository assetRepository;
 		private readonly ISocial commentRepository;
 		private readonly IWorkflow Workflow;
+		private readonly ISecurity Security;
 
-		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets): base(set)
+		public ActionsController(ICoreComponentSet set, ISocial comments, IWorkflow workflow, IAssetRepository assets, ISecurity security) : base(set)
 		{
 			assetRepository = assets;
 			commentRepository = comments;
 			Workflow = workflow;
+			Security = security;
 		}
 
 		/// <summary>
@@ -1187,6 +1189,8 @@ namespace d360.web.Controllers.V2
 				return errorMessageArgumentResponse(Error.EmptyAllocationRequest);
 			}
 
+
+
 			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
 
 			foreach (var assetTypeUid in assetTypeUids.Distinct())
@@ -1348,6 +1352,13 @@ namespace d360.web.Controllers.V2
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
 				return errorMessageArgumentResponse(Error.InvalidActionTypeUid);
+			}
+
+			var existingRoles = await Security.FindRolesByUidAsync(model.responsibilityTypeUid);
+			var nonExistingRoles = model.responsibilityTypeUid.Except(existingRoles).ToList();
+			if (nonExistingRoles.Any())
+			{
+				return errorMessageArgumentResponse(Error.InvalidResponsibilityUid);
 			}
 
 			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);

@@ -36,7 +36,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 		public ActionsControllerTest()
 		{
-			actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository())
+			actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetSecurityRepository())
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()
