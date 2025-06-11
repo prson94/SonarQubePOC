@@ -509,7 +509,14 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public IWorkflowRepository GetWorkflowRepository()
+		public ISecurity GetSecurityRepository()
+		{
+			var mock = new Mock<ISecurity>();
+
+			return mock.Object;
+		}
+
+		public IWorkflowRepository GetWorkflowRepository()
         {
             var mock = new Mock<IWorkflowRepository>();
 
