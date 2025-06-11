@@ -3315,4 +3315,7 @@
   <data name="Non_Auth_Mess" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
+  <data name="AssetFiltersRequired" xml:space="preserve">
+    <value>No asset filters found. When targeting only certain assets within a type, you must provide filters.</value>
+  </data>
 </root>
