@@ -7,6 +7,7 @@ using d360.core.security;
 using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Web.Http;
 using repositories;
 using Swashbuckle.Swagger.Annotations;
@@ -85,6 +86,11 @@ namespace d360.web.Controllers.V2
 			if(string.IsNullOrWhiteSpace(model?.Name))
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
+			}
+
+			if(!model.ApplyToType && model.When.IsNullOrEmpty())
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetFiltersRequired);
 			}
 
 			var policyExists = await Security.DoesPolicyExists(model.Name?.Trim());
@@ -415,6 +421,11 @@ namespace d360.web.Controllers.V2
 			if(string.IsNullOrWhiteSpace(model?.Name))
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
+			}
+
+			if (!model.ApplyToType && model.When.IsNullOrEmpty())
+			{
+				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetFiltersRequired);
 			}
 			var result = await Security.UpdatePolicyAsync(uid, model);
 			if (result.IsSuccess)

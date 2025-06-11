@@ -448,6 +448,14 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No asset filters found. When targeting only certain assets within a type, you must provide filters..
+        /// </summary>
+        public static string AssetFiltersRequired {
+            get {
+                return ResourceManager.GetString("AssetFiltersRequired", resourceCulture);
+            }
+        }
+        /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
         public static string AssetIdentifierDoesnotValidAsset {
