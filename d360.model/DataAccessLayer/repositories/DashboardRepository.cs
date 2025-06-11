@@ -232,6 +232,7 @@ namespace d360.model.DataAccessLayer
 			bool isTypePage = false;
 			Asset asset = null;
 			int assetTypeId = 0;
+			bool isHasFilter = false;
 
 			if (filters.AssetTypeUid.HasValue)
 			{
@@ -268,9 +269,15 @@ namespace d360.model.DataAccessLayer
 				whereStatements.Add("r.id = @id");
 			}
 
+
+			if (filters.AssetTypeUid.HasValue || filters.AssetUid.HasValue)
+			{
+				isHasFilter = true;
+			}
+
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
-			var data = (await CompanyContext.Database.Connection
-				.QueryAsync<DashboardApiGetModel>(@$"select r.Id, 
+
+			string baseqry = @$"select r.Id, 
 					r.uid, 
 					r.Name, 
 					r.Description, 
@@ -280,18 +287,74 @@ namespace d360.model.DataAccessLayer
 					Definition as '_definitionJson',
 					Responsibilities.val as '_responsibilities'
 					from dbo.Report r
+					<temptable>
 					left join assettype at on at.id = r.AssetTypeID
 					outer apply (select string_agg(cast(uid as nvarchar(36)),',') from ResponsibilityType rt 
 								inner join dbo.ReportResponsibility rrt on rrt.ResponsibilityTypeID = rt.ID and rrt.ReportID = r.ID
 								)Responsibilities(val)
-					{whereSql}", dbArgs)).ToList();
+					{whereSql}";
+
+			string sql = "";
+
+			if (isHasFilter || SecurityContext.IsAdministrator)
+			{
+				sql = baseqry.Replace("<temptable>","");
+			}
+			else
+			{
+				dbArgs.Add("resourceid", SecurityContext.ResourceID);
+
+				sql = $@"
+									drop table if exists #tempreport;
+									drop table if exists #tempqualifiedreport;
+									create table #tempqualifiedreport(id int);
+									create clustered index cx_remp on #tempqualifiedreport(id);
+
+								    select distinct r.id,
+									rrt.ResponsibilityTypeID,
+									r.AssetTypeID,
+									case when rrt.ReportID is null then 1 else 0 end IsRead
+									into #tempreport
+									from report r
+									left join dbo.ReportResponsibility rrt on rrt.ReportID = r.ID
+									left join assettype at on at.id = r.AssetTypeID
+									{whereSql};
+
+									insert into #tempqualifiedreport
+									select distinct r.id
+									from #tempreport r
+									inner join responsibilitydetail rd on r.ResponsibilityTypeID = rd.ResponsibilityTypeID
+												and (rd.assettypeid = r.AssetTypeID and rd.resourceid = @resourceid)
+									where r.IsRead = 0;
+									
+									update t
+									set IsRead = 1
+									from #tempreport t
+									inner join #tempqualifiedreport tr on t.id = tr.id;
+
+									delete from #tempqualifiedreport;
+
+									insert into #tempqualifiedreport
+									select distinct t.id
+									from #tempreport t
+									where t.isread = 1;
+
+									{baseqry.Replace("<temptable>", "inner join #tempqualifiedreport qr on qr.id = r.id")}
+
+									drop table if exists #tempreport;
+									drop table if exists #tempqualifiedreport;
+								   ";
+			}
+
+			var data = (await CompanyContext.Database.Connection
+				.QueryAsync<DashboardApiGetModel>(sql, dbArgs)).ToList();
 
 			data.ForEach(data =>
 			{
 				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x => Guid.Parse(x)).ToList();
 			});
 
-			if (filters.AssetTypeUid.HasValue || filters.AssetUid.HasValue)
+			if (isHasFilter && !SecurityContext.IsAdministrator )
 			{
 				FilterDashboardsByResponsibilities(isTypePage, asset, assetTypeId, data);
 			}
