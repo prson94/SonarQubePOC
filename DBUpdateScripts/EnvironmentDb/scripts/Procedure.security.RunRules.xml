@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.security.RunRules-v1">
+ <changeSet author="Pappas,PuneetGupta" id="Procedure.security.RunRules-v1.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure security.RunRules
@@ -15,6 +15,7 @@ create or alter procedure security.RunRules
 as
 begin
 	set nocount on;
+	declare @Isassets bit = 0;
 
 	drop table if exists #tbl;
 	drop table if exists #assets;
@@ -32,7 +33,13 @@ begin
 		insert into #assets
 			select	a.AssetId
 			from	api.ExecutionAsset a
-					inner join api.Execution e on e.Id = @executionId and e.ExecutionId = a.ExecutionId and e.CompletedOn is not null and a.Success = 1;
+					inner join api.Execution e on e.Id = @executionId and e.ExecutionId = a.ExecutionId and e.CompletedOn is not null and a.Success = 1
+			where a.assetId > 0;
+	end
+	
+	if exists(select 1 from #assets)
+	begin
+		set @Isassets = 1;
 	end
 
 	select	r.Id as RuleId,
@@ -42,11 +49,9 @@ begin
 	from	security.[Rule] r
 			inner join security.[Role] ro on ro.Id = r.RoleId and ( (@ruleId is null) or (@ruleId is not null and r.Id = @ruleId) )
 			inner join Asset a on a.AssetTypeId = r.AssetTypeId 
-				and ( 
-					not exists(select 1 from #assets) or 
+				and ( @Isassets = 0 or 
 					(
-						exists(select 1 from #assets) and 
-						a.Id in (select Id from #assets)
+						@Isassets = 1 and a.Id in (select Id from #assets)
 					) 
 				)
 				and r.ApplyToType = 0
@@ -148,8 +153,7 @@ begin
 					r.AssetTypeId,
 					cast(0 as bigint) as AssetId
 			from	[security].[Rule] r
-					inner join [security].[Role] ro on ro.Id = r.RoleId and r.ApplyToType = 1 
-			where	r.Id = @ruleId;
+			where	r.Id = @ruleId and r.ApplyToType = 1;
 	end
 
 
@@ -164,12 +168,12 @@ begin
 
 
 	-- We need to perform very targeted deletes here.
-	if exists(select 1 from #assets)
+	if (@Isassets = 1)
 	begin
 		delete	t
 		from	[security].[RuleAssignment] t
 				left join #tbl s on s.RuleId = t.RuleId and s.AssetTypeId = t.AssetTypeId and s.AssetId = t.AssetId
-		where	s.RuleId is null
+		where	s.RuleId is null and t.AssetId > 0
 				and t.AssetId in (select Id from #assets);
 	end
 
@@ -182,12 +186,12 @@ begin
 				and t.RuleId = @ruleId;
 	end
 
-	if not exists(select 1 from #assets) and @ruleId is null
+	if @Isassets = 0 and @ruleId is null
 	begin
 		delete	t
 		from	[security].[RuleAssignment] t
 				left join #tbl s on s.RuleId = t.RuleId and s.AssetTypeId = t.AssetTypeId and s.AssetId = t.AssetId
-		where	s.RuleId is null;
+		where	s.RuleId is null and t.assetId > 0;
 	end
 end
 ]]>
