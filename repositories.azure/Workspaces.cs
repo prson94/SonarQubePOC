@@ -5,7 +5,6 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.resources;
 using Dapper;
-using Dapper.Contrib.Extensions;
 using DocumentFormat.OpenXml;
 using Newtonsoft.Json.Linq;
 using repositories.azure.extensions;
@@ -14,7 +13,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -127,7 +125,10 @@ where	g.id = @groupId;
 			bool success = false;
 			using (var connection = ConnectionProvider.Connect())
 			{
-				int recordsCount = await connection.InsertAsync(request);
+				int recordsCount = await connection.ExecuteAsync(
+					"insert into dbo.OpenIdRequest ([State], Nonce, RedirectUrl, CreatedOn) values (@State, @Nonce, @RedirectUrl, @CreatedOn)", 
+					request
+				);
 				success = recordsCount > 0;
 			}
 			return success;
