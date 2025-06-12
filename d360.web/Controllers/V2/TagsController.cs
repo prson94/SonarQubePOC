@@ -179,7 +179,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (isMaxLengthExceeded)
 				{
-					return errorMessageArgumentResponse(Error.MaxLengthExceeded);
+					return errorMessageArgumentResponse(string.Format(Error.MaxLengthExceeded, "TagValue", 100));
 				}
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
@@ -217,7 +217,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (isMaxLengthExceeded)
 				{
-					return errorMessageArgumentResponse(Error.MaxLengthExceeded);
+					return errorMessageArgumentResponse(string.Format(Error.MaxLengthExceeded, "TagValue", 100));
 				}
 				return errorMessageArgumentResponse(Error.ErrorInvalidDatasetMessage);
 			}
