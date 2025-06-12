@@ -2108,8 +2108,11 @@ namespace d360.model
 
 			ScheduledWorkflowExecution lastExecution = Query<ScheduledWorkflowExecution>("Select * from [workflow].[ScheduledWorkflowExecution] where eventID = @eventID order by ExecutionDate desc", new { eventID = registration.ID }).FirstOrDefault();
 
+			//Add check to see if registration is cleared and last execution is outside cron window
+			var notPreviouslyRun = registration.LastExecuted == null && (lastExecution?.ExecutionDate == null || lastExecution?.ExecutionDate.AddMinutes(14) <= DateTime.UtcNow);
+
 			//Add a check here to see if currently being executed. 
-			if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow && (lastExecution?.ExecutionDate == null || settings.GetNextExecution(lastExecution?.ExecutionDate) <= DateTime.UtcNow))
+			if (notPreviouslyRun || (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow && (lastExecution?.ExecutionDate == null || settings.GetNextExecution(lastExecution?.ExecutionDate) <= DateTime.UtcNow)))
 			{
 				//register which instance is running it. 
 				Connection.Execute("Insert into [workflow].[ScheduledWorkflowExecution] (EventID, InstanceID, ExecutionDate) Values (@eventID, @instanceID, @executionDate)", new { EventID = registration.ID, instanceID = executionContextInstanceId, ExecutionDate = DateTime.UtcNow });
