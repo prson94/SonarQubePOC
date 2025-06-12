@@ -830,9 +830,9 @@ order by SecurityType asc, Name asc;
 			return response;
 		}
 
-		public async Task<RepositoryResponse<bool>> RemovePolicyAsync(Guid uid, bool softDelete = true)
+		public async Task<RepositoryResponse<SecurityPolicyDeleteResponse>> RemovePolicyAsync(Guid uid, bool softDelete = true)
 		{
-			RepositoryResponse<bool> response;
+			RepositoryResponse<SecurityPolicyDeleteResponse> response;
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
@@ -862,7 +862,10 @@ order by SecurityType asc, Name asc;
 					);
 				}
 
-				response = new(true, 200, true, "Policy removed successfully.");
+				response = new(
+					new SecurityPolicyDeleteResponse { Message = "Policy removed successfully.", Success = true, Uid = uid }, 
+					200, true, "Policy removed successfully."
+					);
 			}
 
 			return response;
@@ -1011,6 +1014,16 @@ order by SecurityType asc, Name asc;
 					return new(409, "Another rule found with this name and role.");
 				}
 
+				if (model.ApplyToType && model.When.Count > 0)
+				{
+					return new(400, "No asset filter conditions may be set when the policy applies to all assets of the type.");
+				}
+
+				if (!model.ApplyToType && (model.When == null || model.When.Count == 0))
+				{
+					return new(400, "Policy requires asset filter conditions when it does not apply to all assets of the type.");
+				}
+
 				var rawWhens = new List<RuleWhen>();
 				if (response == null && model.When.Count > 0)
 				{
@@ -1032,8 +1045,8 @@ order by SecurityType asc, Name asc;
 					using (var trans = connection.BeginTransaction())
 					{ 
 						connection.Execute(
-							"update [security].[Rule] set Name = @Name, IsVisible = @IsVisible, RoleId = @roleId, SecurityType = @securityType, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
-							new { roleId, model.Name, model.IsVisible, ruleId, securityType = (int)securityType, assetTypeId, u = CurrentUserId, dt }, 
+							"update [security].[Rule] set Name = @Name, ApplyToType = @ApplyToType, IsVisible = @IsVisible, RoleId = @roleId, SecurityType = @securityType, AssetTypeId = @assetTypeId, [UpdatedBy] = @u, [UpdatedOn] = @dt where Id = @ruleId; ",
+							new { roleId, model.Name, model.ApplyToType, model.IsVisible, ruleId, securityType = (int)securityType, assetTypeId, u = CurrentUserId, dt }, 
 							transaction: trans
 						);
 

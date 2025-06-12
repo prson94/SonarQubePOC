@@ -76,7 +76,7 @@ namespace d360.web.Controllers.V2
 			Route("policies"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ReadSecurityPolicy>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
@@ -118,7 +118,7 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> CreatePolicyOverrideAsync(CreateSecurityPolicyOverride model)
@@ -168,10 +168,10 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(ICollection<ResponsibilityRuleDeleteResponse>)),
+			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(SecurityPolicyDeleteResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Authorization has been denied for this request.", typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> DeletePolicyAsync(Guid uid)
 		{
@@ -198,7 +198,7 @@ namespace d360.web.Controllers.V2
 			SwaggerRequestExample(typeof(ResponsibilityOverrideDeleteModel), typeof(ResponsibilitiesDeleteExample)),
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> DeletePolicyOverrideAsync(Guid uid)
@@ -449,7 +449,7 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> UpdatePolicyOverrideAsync(Guid uid, UpdateSecurityPolicyOverride model)
@@ -470,7 +470,7 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the PUT request.", typeof(ReadRole)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> UpdateRoleAsync(Guid uid, CreateRole model)
@@ -483,89 +483,5 @@ namespace d360.web.Controllers.V2
 			var result = await Security.UpdateRoleAsync(uid, model);
 			return sendRepositoryOkResponse(result);
 		}
-
-
-		/// <summary>
-		/// Test a responsibility rule definition to see which assets it will apply to.
-		/// </summary>
-		/// 
-		/// <remarks>
-		///###Rules###
-		/// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource or Group)
-		/// <table>
-		/// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
-		/// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
-		/// <tr><td>Then</td><td>List of conditions which specify to which Resrouce or Group rule applies to</td><td>Cannot be empty</td></tr>
-		///</table>
-		/// <br/>
-		/// <table>
-		/// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
-		/// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
-		/// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
-		/// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
-		/// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
-		/// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource or Group</td><td>Type must match to AssigneeTypeUid.</td></tr>
-		/// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType or GroupType</td><td>Must be valid UID</td></tr>
-		/// </table>
-		/// <br/>
-		/// **Notes:** 
-		/// * Only administrators can use this endpoint.
-		/// 
-		/// </remarks>
-		/// <param name="testType">The type of test to perform. Valid values are 'when' and 'then'</param>
-		/// <param name="responsibilityRule">A responsibility rule definition to test.</param>
-		/// <returns>An HTTP status code and message.</returns>
-		//[
-		//	HttpPost,
-		//	RequireAdminPermissions,
-		//	Route("test/{testType}"),
-		//	SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-		//	SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-		//	SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-		//	SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-		//	SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is excluded.", DataType = "boolean", ParameterType = "query", Required = false),
-		//	SwaggerParameter("_simpleFilter", SIMPLE_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-		//	SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-		//	SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
-		//	SwaggerResponse(HttpStatusCode.OK, "A list of assets which are applicable to the rule definition.", typeof(ResponsibilityRuleTestResponseModel)),
-		//	SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		//]
-		//public async Task<IHttpActionResult> TestResponsibilityRules(string testType, [FromBody] ResponsibilityRuleUpsertModel responsibilityRule)
-		//{
-		//	var allowedTests = new[] { "when", "then" };
-
-		//	if (!allowedTests.Contains(testType.ToLower()))
-		//	{
-		//		throw new ArgumentException(ResponsibilityApiMessages.InvalidTestType);
-		//	}
-
-		//	var hideD3SUsers = await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
-		//	var queryParams = Request.GetQueryNameValuePairs();
-		//	var includeThen = testType.ToLower() == "then";
-
-		//	var pageValid = isPageSizeAndNumValid(queryParams);
-
-		//	if (!string.IsNullOrEmpty(pageValid))
-		//	{
-		//		throw new ArgumentException(pageValid);
-		//	}
-
-		//	var allowedValues = new[] { "asc", "desc" };
-		//	var direction = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value ?? "asc";
-
-		//	if (!allowedValues.Contains(direction.Trim().ToLower()))
-		//	{
-		//		throw new ArgumentException(ApiMessages.InvalidDirection);
-		//	}
-
-		//	var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams, testType);
-
-		//	if (!results.Success)
-		//	{
-		//		throw new ArgumentException(results.Message);
-		//	}
-
-		//	return Ok(results);
-		//}
 	}
 }
