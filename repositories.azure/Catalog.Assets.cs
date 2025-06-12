@@ -645,7 +645,7 @@ from	#ids a
 					var sql = @"
 							  SELECT a.ID FROM
 							  dbo.Asset AS a LEFT JOIN dbo.FieldCounterValue AS fcv
-							  ON a.AssetId = fcv.AssetId
+							  ON a.ID = fcv.AssetId
 							 WHERE a.AssetTypeID = @assetTypeId AND fcv.AssetId IS NULL;
 							  ";
 
