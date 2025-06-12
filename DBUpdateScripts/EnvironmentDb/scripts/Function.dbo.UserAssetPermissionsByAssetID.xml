@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v5">
+ <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v5.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [dbo].[UserAssetPermissionsByAssetID] 
@@ -31,7 +31,7 @@ return
 			A.ID as AssetID,
 			A.AssetTypeID
 	from	dbo.ResponsibilitySummary S
-			inner join dbo.Asset A on A.AssetTypeID = S.AssetTypeID and A.ID = @AssetTypeID and A.ID = @AssetID and S.ResourceID = @ResourceID and S.ApplyToType = 1
+			inner join dbo.Asset A on A.AssetTypeID = S.AssetTypeID and A.AssetTypeID = @AssetTypeID and S.AssetID = 0 and S.ResourceID = @ResourceID and S.ApplyToType = 1
 	union all
 	select	A.PermissionsBitMask,
 			A.AssetID,
