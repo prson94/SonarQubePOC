@@ -1,4 +1,5 @@
-﻿import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿/* eslint-disable no-debugger */
+import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -339,9 +340,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 			return;
 		}
         
-        
-        
-
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
@@ -442,7 +440,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
             .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == null) {
-                    msg = $localize`${result.Value} succesfully created`;
+					msg = $localize`${result.Value} succesfully created`;
+					this.getTags(result.TagTypeUID);
                 }
                 else {
                     msg = $localize`${result.Value} succesfully updated`;
