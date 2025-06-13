@@ -3356,137 +3356,93 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					#region Cardinality Validation
 
 					if (rt.SubjectCardinality == Cardinality.One)
-					{
+					{	// This means that the OBJECT can only belong to one SUBJECT, for this relation type.
+						
 						sw.Restart();
 						QueryID = "-Q10000006";
 
 						Connection.Execute(@"
-											drop table if exists #tempobjectone;
-											create table #tempobjectone(ItemNumber int, ExecutionID uniqueidentifier);
+drop table if exists #cardinality;
+create table #cardinality (ObjectUid uniqueidentifier);
 
-											insert into #tempobjectone(ItemNumber,ExecutionID)
-											select	distinct ER.ItemNumber,ER.ExecutionID
-											from	api.ExecutionRelationship ER
-											inner join Asset O on O.Uid = ER.ObjectUid 
-											inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.ObjectAssetID = O.ID
-											inner join Asset S on S.Uid <> ER.SubjectUid and S.ID = I.SubjectAssetID 
-											where ER.ExecutionID = @ExecutionID;
+insert into #cardinality (ObjectUid)
+	select	ObjectUid
+	from	api.ExecutionRelationship
+	where	ExecutionID = @ExecutionID
+	group by ObjectUid having count(1) > 1;
 
-											create nonclustered index idx_tempobjectone on #tempobjectone(ItemNumber, ExecutionID);
+create nonclustered index ix_cardinality on #cardinality(ObjectUid);
 
-											if exists (select 1 from #tempobjectone)
-											begin
-												update	T
-												set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
-													T.Success = 0
-												from	api.ExecutionRelationship T
-												inner join #tempobjectone S on S.ItemNumber = T.ItemNumber and S.ExecutionID = T.ExecutionID
-												where T.ExecutionID = @ExecutionID;
-											end
+if exists (select 1 from #cardinality)
+begin
+	update	T
+	set		T.Message = coalesce(T.Message + '; ', '') + 'Object already referenced in this batch and cannot be used again due to cardinality restrictions.',
+			T.Success = 0
+	from	api.ExecutionRelationship T
+			inner join #cardinality S on S.ObjectUid = T.ObjectUid and T.ExecutionID = @ExecutionID;
+end
 
-											drop table if exists #tempobjectone;
+truncate table #cardinality;
 
-											drop table if exists #tempobjectexists;
-											create table #tempobjectexists
-											( 
-											ObjectUid uniqueidentifier,
-											ExecutionID uniqueidentifier,
-											ItemNumber int,
-											RecCount bigint
-											);
-											
-											insert into #tempobjectexists(ExecutionID,ObjectUid,ItemNumber,RecCount)
-											select	ER.ExecutionID,
-													ER.ObjectUid,
-													min(ER.ItemNumber) as ItemNumber,
-													Count(1) RecCount
-											from	api.ExecutionRelationship ER
-													inner join Asset O on O.Uid = ER.ObjectUid
-											where	ER.ExecutionID = @ExecutionID
-											group by ER.ExecutionID, ER.ObjectUid
-											having count(1) > 1
+insert into #cardinality (ObjectUid)
+	select	r.ObjectUid
+	from	api.ExecutionRelationship r
+			inner join dbo.Asset o on o.Uid = r.ObjectUid and r.ExecutionID = @ExecutionID
+			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.ObjectAssetID = o.ID;
 
-											create clustered index idx_tempobjectexists on #tempobjectexists(ObjectUid, ExecutionID);
-											if exists (select 1 from #tempobjectexists)
-											begin
-												update	T
-												set		T.Message = coalesce(T.Message + '; ', '') + 'Object already referenced in this batch and cannot be used again due to cardinality restrictions.',
-													T.Success = 0
-												from	api.ExecutionRelationship T
-												inner join	#tempobjectexists  S on S.ObjectUid = T.ObjectUid and S.ExecutionID = T.ExecutionID  and S.ItemNumber < T.ItemNumber
-												where T.ExecutionID = @ExecutionID;
-											end
-											drop table if exists #tempobjectexists;
-											", new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+if exists (select 1 from #cardinality)
+begin
+	update	T
+	set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
+			T.Success = 0
+	from	api.ExecutionRelationship T
+			inner join #cardinality S on S.ObjectUid = T.ObjectUid and T.ExecutionID = @ExecutionID;
+end", new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
 						addMeasurement(metrics, "SubjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);
 					}
 
 					if (rt.ObjectCardinality == Cardinality.One)
-					{
+					{   // This means that the SUBJECT can only belong to one OBJECT, for this relation type.
 						sw.Restart();
 						QueryID = "-Q10000007";
 
 						Connection.Execute(@"
-											drop table if exists #tempsubjectone;
-											create table #tempsubjectone(ItemNumber int, ExecutionID uniqueidentifier);
+drop table if exists #cardinality;
+create table #cardinality (SubjectUid uniqueidentifier);
 
-											insert into #tempsubjectone(ItemNumber,ExecutionID)
-											select	distinct ER.ItemNumber,ER.ExecutionID
-											from	api.ExecutionRelationship ER
-											inner join Asset S on S.Uid = ER.SubjectUid 
-											inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.SubjectAssetID = S.ID 
-											inner join Asset O on O.Uid <> ER.ObjectUid and O.ID = I.ObjectAssetID
-											where ER.ExecutionID = @ExecutionID;
+insert into #cardinality (SubjectUid)
+	select	SubjectUid
+	from	api.ExecutionRelationship
+	where	ExecutionID = @ExecutionID
+	group by SubjectUid having count(1) > 1;
 
-											create nonclustered index idx_tempsubjectone on #tempsubjectone(ItemNumber, ExecutionID);
+create nonclustered index ix_cardinality on #cardinality(SubjectUid);
 
+if exists (select 1 from #cardinality)
+begin
+	update	T
+	set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already referenced in this batch and cannot be used again due to cardinality restrictions.',
+			T.Success = 0
+	from	api.ExecutionRelationship T
+			inner join #cardinality S on S.SubjectUid = T.SubjectUid and T.ExecutionID = @ExecutionID;
+end
 
-											if exists (select 1 from #tempsubjectone)
-											begin
-												update	T
-												set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
-													T.Success = 0
-												from	api.ExecutionRelationship T
-												inner join	#tempsubjectone S on S.ItemNumber = T.ItemNumber and S.ExecutionID = T.ExecutionID 
-												where T.ExecutionID = @ExecutionID;
-											end
+truncate table #cardinality;
 
-											drop table if exists #tempsubjectone;
+insert into #cardinality (SubjectUid)
+	select	r.SubjectUid
+	from	api.ExecutionRelationship r
+			inner join dbo.Asset s on s.Uid = r.SubjectUid and r.ExecutionID = @ExecutionID
+			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.SubjectAssetID = s.ID;
 
-											drop table if exists #tempsubjectexists;
-											create table #tempsubjectexists
-											( 
-											SubjectUid uniqueidentifier,
-											ExecutionID uniqueidentifier,
-											ItemNumber int,
-											RecCount bigint
-											);
-
-											insert into #tempsubjectexists(ExecutionID,SubjectUid,ItemNumber,RecCount)
-											select	ER.ExecutionID,
-													ER.SubjectUid,
-													min(ER.ItemNumber) as ItemNumber,
-													Count(1) RecCount
-											from	api.ExecutionRelationship ER
-													inner join Asset O on O.Uid = ER.SubjectUid 
-											where	ER.ExecutionID = @ExecutionID
-											group by ER.ExecutionID ,ER.SubjectUid
-											having count(1) > 1;
-
-											create clustered index idx_tempsubjectexists on #tempsubjectexists(SubjectUid, ExecutionID);
-
-											if exists (select 1 from #tempsubjectexists)
-											begin
-												update	T
-												set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already referenced in this batch and cannot be used again due to cardinality restrictions.',
-													T.Success = 0
-												from	api.ExecutionRelationship T
-												inner join	#tempsubjectexists S on S.SubjectUid = T.SubjectUid and S.ExecutionID = T.ExecutionID and S.ItemNumber < T.ItemNumber
-												Where T.ExecutionID = @ExecutionID;
-											End
-											drop table if exists #tempsubjectexists;
-											",
-				new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+if exists (select 1 from #cardinality)
+begin
+	update	T
+	set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
+			T.Success = 0
+	from	api.ExecutionRelationship T
+			inner join #cardinality S on S.SubjectUid = T.SubjectUid and T.ExecutionID = @ExecutionID;
+end", new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
 						addMeasurement(metrics, "ObjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);
 					}
 
