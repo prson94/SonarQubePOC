@@ -682,8 +682,11 @@ namespace d360.web.Controllers
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
 
 					var openIdRequest = new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state, CreatedOn = DateTime.UtcNow };
-                    await Workspace.CreateOpenIdRequestAsync(openIdRequest);
+                    var success = await Workspace.CreateOpenIdRequestAsync(openIdRequest);
 					Cache.SetItemInListByID("openid", state, openIdRequest);
+
+					string storedStateStatusMessage = (success ? "Successfully" : "Unsuccessfully") + " stored the OpenIdRequest.";
+					Log.LogCritical($"Created openIdRequest with state: [{state}] and nonce: [{nonce}]. {storedStateStatusMessage}");
 
 					var client = new HttpClient();
 					var discoveryUri = string.IsNullOrEmpty(oidc.discoveryUri) ? oidc.baseUri : oidc.discoveryUri;
@@ -875,6 +878,11 @@ namespace d360.web.Controllers
 				Log.LogCritical($"Code and/or State is empty or null.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, core.resources.Error.OpenIdCodeOrStateIsNotPresent);
             }
+
+			// Remove any whitespace that may have been introduced.
+			state = state.Trim();
+
+			Log.LogCritical($"Locating openIdRequest with state: [{state}]");
 
 			var oidc = await Community.ReadIdpOidcSettingsByTenantPrefix(SecurityContext.CompanyPrefix);
 
