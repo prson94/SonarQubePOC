@@ -272,6 +272,11 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetTypeaheads(string query, string categories = null, int? num = null)
 		{
+			if(!query.EndsWith("*"))
+			{
+				query += "*";
+			}
+
 			//query = cleanPhrase(query);
 			List<AssetTypeClass> limitedeCategories = null;
 			if (!string.IsNullOrWhiteSpace(categories))
