@@ -339,9 +339,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 			return;
 		}
         
-        
-        
-
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
@@ -442,7 +439,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
             .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == null) {
-                    msg = $localize`${result.Value} succesfully created`;
+					msg = $localize`${result.Value} succesfully created`;
+					this.getTags(result.TagTypeUID);
                 }
                 else {
                     msg = $localize`${result.Value} succesfully updated`;
@@ -460,7 +458,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 this.selected = [];
                 event.item.UseCount = 0;
-                //this.selected.push(event.item);
                 this.showEditor = false;
             });
     }
