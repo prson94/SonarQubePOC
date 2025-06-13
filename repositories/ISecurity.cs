@@ -29,7 +29,7 @@ namespace repositories
 		Task<RepositoryResponse<IEnumerable<ReadRole>>> ReadRolesAsync();
 		Task<RepositoryResponse<IEnumerable<dynamic>>> ReadGroupsAndUsersAsSecurityAsync(Guid assetUid, bool includeInternalUsers = false);
 		Task<RepositoryResponse<Role>> ReadRawRoleAsync(Guid uid);
-		Task<RepositoryResponse<bool>> RemovePolicyAsync(Guid uid, bool softDelete = true);
+		Task<RepositoryResponse<SecurityPolicyDeleteResponse>> RemovePolicyAsync(Guid uid, bool softDelete = true);
 		Task<RepositoryResponse<bool>> RemoveOverrideAsync(Guid uid);
 		Task<RepositoryResponse<bool>> RemoveOverridesByGroupAsync(int groupId);
 		Task<RepositoryResponse<bool>> RemoveOverridesByUserAsync(int userId);

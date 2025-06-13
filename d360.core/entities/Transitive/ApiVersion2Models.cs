@@ -1203,7 +1203,7 @@ namespace d360.core.entities
 	}
 
 	[DataContract]
-	public class ResponsibilityRuleDeleteResponse
+	public class SecurityPolicyDeleteResponse
 	{
 		[DataMember]
 		public Guid? Uid { get; set; }
