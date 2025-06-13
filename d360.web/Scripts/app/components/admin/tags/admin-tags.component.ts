@@ -1,5 +1,4 @@
-﻿/* eslint-disable no-debugger */
-import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -459,7 +458,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 this.selected = [];
                 event.item.UseCount = 0;
-                //this.selected.push(event.item);
                 this.showEditor = false;
             });
     }
