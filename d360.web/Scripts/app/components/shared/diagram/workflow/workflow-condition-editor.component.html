@@ -35,7 +35,7 @@
 
             <div *ngIf="selectedType == 'date' || selectedType == 'datetime'">
                 <div class="FieldName" i18n>
-                    Days Since
+                    Days Until
                 </div>
                 <div>
                     <input type="number" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)" style="width: 95%" />

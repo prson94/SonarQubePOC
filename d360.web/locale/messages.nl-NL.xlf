@@ -18427,7 +18427,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="eeb8e78ddcafb54c72c348827d65c126b8f7277e" datatype="html">
-        <source> Days Since </source><target> Dagen sinds </target>
+        <source> Days Until </source><target> Dagen tot </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/workflow/workflow-condition-editor.component.html</context>
           <context context-type="linenumber">37,39</context>

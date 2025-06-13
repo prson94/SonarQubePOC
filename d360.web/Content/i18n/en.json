@@ -560,7 +560,7 @@
   "day_wed": "Wed",
   "day_wednesday": "Wednesday",
   "days_open": "Days Open",
-  "days_since": " Days Since ",
+  "days_until": " Days Until ",
   "decimal": "Decimal",
   "decimal_place_accuracy_error": " Please enter a value with a maximum of 3 decimal places of accuracy. ",
   "decimal_place_accuracy_error_short": " Please enter a value with a maximum of 3 decimal places of accuracy. ",

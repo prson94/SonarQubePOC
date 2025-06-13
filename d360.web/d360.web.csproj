@@ -40,7 +40,7 @@
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
     <UseGlobalApplicationHostFile />
     <Use64BitIISExpress>
-	</Use64BitIISExpress>
+    </Use64BitIISExpress>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
@@ -966,6 +966,12 @@
     <Content Include="Scripts\app\_shared\components\scroller-widget.less" />
     <Content Include="Scripts\app\_shared\components\hero-search.less" />
     <Content Include="Scripts\app\_shared\components\paginator.less" />
+    <Content Include="locale\messages.de-DE.xlf" />
+    <Content Include="locale\messages.es-ES.xlf" />
+    <Content Include="locale\messages.fr-FR.xlf" />
+    <Content Include="locale\messages.it-IT.xlf" />
+    <Content Include="locale\messages.nl-NL.xlf" />
+    <Content Include="locale\messages.xlf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
