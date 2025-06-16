@@ -476,7 +476,7 @@ namespace igx.UnitTests
 			).Returns(Task.FromResult(new RepositoryResponse<TagTypeApiModel>(new TagTypeApiModel(), 200, true, "")));
 
 			mock.Setup(x =>
-				x.ReadTagTypesAsync()
+				x.ReadTagTypesAsync(It.IsAny<bool>())
 			).Returns(Task.FromResult(new List<TagTypeApiModel>().AsEnumerable()));
 
 			mock.Setup(x =>

@@ -722,7 +722,7 @@ where	t.Uid = @uid
 			return response;
 		}
 
-		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync()
+		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync(bool excludeGeneral = true)
 		{
 			IEnumerable<TagTypeApiModel> models = null;
 
@@ -741,7 +741,8 @@ select	t.uid,
 from	TagType t
 		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
-where	t.State = {(int)State.Active} AND Lower(t.Value) != 'general'
+where	t.State = {(int)State.Active} 
+{(excludeGeneral ? "AND Lower(t.Value) != 'general'" : "")}
 order by	t.[value]");
 			}
 
