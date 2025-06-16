@@ -7,7 +7,4 @@
     <!-- Folder where production build objects will be placed -->
     <PublishAssetsDirectory>$(MSBuildProjectDirectory)\dist\monolith.client\</PublishAssetsDirectory>
   </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="src\app\_shared\models\" />
-  </ItemGroup>
 </Project>

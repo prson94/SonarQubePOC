@@ -1,0 +1,4 @@
+{
+  "greeting": "Hello",
+  "salutation":  "Are you {{name}}?"
+}

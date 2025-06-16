@@ -1,16 +1,13 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'asset-index',
-  templateUrl: './index.html'
+    selector: 'asset-index',
+    templateUrl: './index.html',
+    imports: []
 })
-export class AssetIndex implements OnInit {
+export class AssetIndex {
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-  }
+  //constructor() {}
 
   title = 'Govern: Asset';
 }

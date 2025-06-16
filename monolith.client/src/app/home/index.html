@@ -1,20 +1,31 @@
 <h1 id="tableLabel">Asset Types</h1>
 
-<p *ngIf="!assetTypes"><em>Loading... </em></p>
+<h2>
+  From Transloco Translation :
+  {{'greeting' | transloco }}
+</h2>
 
-<table *ngIf="assetTypes">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Class</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let o of assetTypes">
-            <td>{{ o.name }}</td>
-            <td [innerHtml]="o.description"></td>
-            <td>{{ o.class.name }}</td>
-        </tr>
-    </tbody>
+<div>{{ 'salutation' | transloco: { name : "Mike" } }}</div>
+
+@if (assetTypes) {
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Class</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (o of assetTypes; track o) {
+    <tr>
+      <td [innerText]="o.name"></td>
+      <td [innerHtml]="o.description"></td>
+      <td [innerText]="o.class.name"></td>
+    </tr>
+    }
+  </tbody>
 </table>
+} @else {
+<p><em>Loading... </em></p>
+}

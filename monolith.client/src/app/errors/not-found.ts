@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'not-found-page',
-  templateUrl: './not-found.html'
+    selector: 'not-found-page',
+    templateUrl: './not-found.html',
+    imports: []
 })
 export class NotFoundPage {
   title = 'Govern: Not Found';
