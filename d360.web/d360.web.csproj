@@ -2248,6 +2248,7 @@
     <None Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <None Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.html" />
     <None Include="Scripts\app\_shared\components\typeahead-search.html" />
+    <None Include="Scripts\app\_shared\components\typeahead-search.less" />
     <None Include="Scripts\app\components\shared\semantic-editor\semantic-editor.component.html" />
     <None Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <None Include="Scripts\app\components\shared\sidepanel\side-panel.component.html" />
