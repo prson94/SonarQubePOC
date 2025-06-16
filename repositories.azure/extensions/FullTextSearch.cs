@@ -698,6 +698,8 @@ namespace repositories.azure.extensions
 			fts.StopWords.Add("be");
 			fts.StopWords.Add("been");
 			fts.StopWords.Add("being");
+			fts.StopWords.Add("of");
+			fts.StopWords.Add("for");
 			return fts.ToFtsQuery(phrase);
 		}
 	}
