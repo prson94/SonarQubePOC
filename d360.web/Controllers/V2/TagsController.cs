@@ -699,9 +699,9 @@ namespace d360.web.Controllers.V2
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagTypeApiModel>))]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))]
-		public async Task<IHttpActionResult> GetTagTypes()
+		public async Task<IHttpActionResult> GetTagTypes(bool excludeGeneral = true)
 		{
-				var models = await Catalog.ReadTagTypesAsync();
+				var models = await Catalog.ReadTagTypesAsync(excludeGeneral);
 				return Ok(models);
 		}
 
