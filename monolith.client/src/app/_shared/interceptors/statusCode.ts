@@ -2,13 +2,9 @@ import { HttpEvent, HttpEventType, HttpHandlerFn, HttpRequest } from "@angular/c
 import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { Observable, tap } from "rxjs";
-export function antiforgeryInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+
+export function statusCodeInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
   const router = inject(Router);
-
-  // https://v17.angular.io/guide/http-security-xsrf-protection
-
-  // XSRF-TOKEN is the default cookie name for CSRF tokens in Angular
-  // X-XSRF-TOKEN is the default header name for CSRF tokens in Angular
 
   return next(req).pipe(tap(event => {
     if (event.type === HttpEventType.Response) {

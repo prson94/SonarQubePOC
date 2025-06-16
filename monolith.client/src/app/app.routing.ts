@@ -1,29 +1,39 @@
-import { RouterModule, Routes } from "@angular/router";
-import { NgModule } from "@angular/core";
+import { Routes } from "@angular/router";
 import { AuthorizedRoot } from "./authorized";
 import { AnonymousRoot } from "./anonymous";
 import { NotFoundPage } from "./errors/not-found";
+import { CanLoadAsAuthorized } from './_shared/guards/CanLoadAsAuthorized';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'login',
     component: AnonymousRoot,
-    loadChildren: () => import('./login/_module').then(m => m.LoginModule)
+    children: [
+      { path: '', loadComponent: () => import('./login/index').then(m => m.LoginIndex) }
+    ]
   },
   {
     path: '',
+    canActivate: [CanLoadAsAuthorized],
     component: AuthorizedRoot,
     children: [
-      { path: 'asset', loadChildren: () => import('./asset/_module').then(m => m.AssetModule) },
-      { path: 'assets', loadChildren: () => import('./assets/_module').then(m => m.AssetsModule) },
-      { path: '', loadChildren: () => import('./home/_module').then(m => m.HomeModule) }
+      { path: 'asset', loadComponent: () => import('./asset/index').then(m => m.AssetIndex) },
+      { path: 'assets', loadComponent: () => import('./assets/index').then(m => m.AssetsIndex) },
+      { path: '', loadComponent: () => import('./home/index').then(m => m.HomeIndex) }
     ]
   },
-  { path: '**', component: NotFoundPage }
+  {
+    path: 'forbidden',
+    component: AnonymousRoot,
+    children: [
+      { path: '', loadComponent: () => import('./errors/forbidden').then(m => m.ForbiddenPage) }
+    ]
+  },
+  {
+    path: '**',
+    component: AnonymousRoot,
+    children: [
+      { path: '', loadComponent: () => import('./errors/not-found').then(m => m.NotFoundPage) }
+    ]
+  },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRouter { }

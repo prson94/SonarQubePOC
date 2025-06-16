@@ -1,16 +1,13 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'login-index',
-  templateUrl: './index.html'
+    selector: 'login-index',
+    templateUrl: './index.html',
+    imports: []
 })
-export class LoginIndex implements OnInit {
+export class LoginIndex {
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-  }
+  //constructor() {}
 
   title = 'Govern: Login';
 }
