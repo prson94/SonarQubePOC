@@ -78,7 +78,7 @@ namespace repositories.azure
 	select		2000 as [Rank],
 				a.AssetId as Id
 	from		AssetDisplayValue a
-				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1 and a.DisplayValue = @sqlPhrase
+				inner join dbo.Asset a_state on a.AssetID = a_state.ID and a_state.State = 1 and a.DisplayValue like @sqlPhrase
 				{appliedFilter} {permissionJoin}
 	union
 	select		s.[Rank]*4 as [Rank],
@@ -277,7 +277,7 @@ order by r.[Rank] desc;";
 			}
 
 			bool isFreeText = false;
-			var sqlPhrase = phrase.CleanForSql();
+			var sqlPhrase = phrase.EscapeForLike().Replace("*", "%");
 			phrase = phrase.ConvertPhraseToFullTextSearch();
 
 
