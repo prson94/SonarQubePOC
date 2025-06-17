@@ -314,7 +314,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAsList') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAsList',
 										case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAssignmentSource',
 										case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
-										case when FT.Type = 'OwnershipLookup' then (select uid FROM ResponsibilityType where id = try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int)) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid',
+										case when FT.Type = 'OwnershipLookup' then (select uid FROM security.[Role] where id = try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int)) else null end as 'Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid',
 										case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 										case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 										case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
@@ -1001,7 +1001,7 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
 					{
-						int relationshipsTypeId = CompanyContext.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
+						int relationshipsTypeId = CompanyContext.Query<int>(@"SELECT id FROM [security].[Role] WHERE uid = @uid", new
 						{
 							uid = f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid
 						}).FirstOrDefault();

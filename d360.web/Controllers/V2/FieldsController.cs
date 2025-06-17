@@ -944,10 +944,7 @@ namespace d360.web.Controllers.V2
 			if (AssetTypeUid != null)
 			{
 				Field_ResponsibilityTypes = Company.Query<dynamic>(@"SELECT rt.name AS title, rt.uid AS value
-				FROM ResponsibilityType rt
-				INNER JOIN ResponsibilityTypeRelation rtr ON rtr.ResponsibilityTypeID = rt.ID
-				INNER JOIN AssetType at ON rtr.ObjectType = at.Object AND rtr.ObjectID = at.ObjectID
-				WHERE at.uid = @uid
+				FROM security.[Role] rt
 				ORDER BY rt.name", new { uid = AssetTypeUid }).ToList();
 			}
 
