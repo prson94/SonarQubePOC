@@ -3767,6 +3767,23 @@ namespace d360.web.Controllers.V2
 			return Ok(results);
 		}
 
+
+		/// <summary>
+		/// Gets the descendents for a given asset.
+		/// </summary>
+		/// <param name="assetUid">The unique identifier of an asset.</param>
+		/// <returns>A list of descendent asset uids</returns>
+		[
+			HttpGet,
+			Route("counterFieldCount/{assetTypeUid}"),
+			
+		]
+		public async Task<IHttpActionResult> GetCounterFieldCount(Guid assetTypeUid)
+		{
+			int count = await AssetRepository.GetCounterFieldCountAsync(assetTypeUid);
+			return Ok(new { counterFieldCount = count });
+		}
+
 		private WorkHttpStatus ValidateGetDescendentParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			var isValid = isPageSizeAndNumValid(queryParams);
@@ -3901,6 +3918,8 @@ namespace d360.web.Controllers.V2
 
 			return Ok(items);
 		}
+
+
 
 		#region Request / Response models
 

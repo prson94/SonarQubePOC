@@ -338,4 +338,9 @@ export class AssetService extends BaseObservableService {
 				catchError((err) => this.handleError(err))
 			);
 	}
+
+	getCounterFieldCount(assetTypeUid: string): Observable<{counterFieldCount: number }> {
+		return this.http.get<{ counterFieldCount: number }>(`api/v2/assets/counterFieldCount/${assetTypeUid}`);
+	}
+
 }

@@ -12,6 +12,7 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
+using DocumentFormat.OpenXml.InkML;
 using MoreLinq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,6 +21,7 @@ using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -5674,6 +5676,20 @@ drop table if exists #tempAssetsIds;
 			{
 				document.SetCellStyle(rowNumber, index, styleGray);
 			}
+		}
+
+		public async Task<int> GetCounterFieldCountAsync(Guid assetTypeUid)
+		{
+			string sqlQuery = @"
+            DECLARE @AssetTypeID INT = (SELECT Id FROM AssetType WHERE Uid = @AssetTypeUid)
+            SELECT COALESCE(MIN(fc.Value), 0) 
+			FROM dbo.FieldCounterValue fc
+			JOIN dbo.Asset a ON fc.AssetId = a.ID
+			JOIN dbo.FieldType ft ON fc.FieldTypeId = ft.ID
+			WHERE a.AssetTypeId = @AssetTypeId
+			AND ft.Type = 'Counter';";
+
+			return await CompanyContext.Database.Connection.ExecuteScalarAsync<int>(sqlQuery, new { AssetTypeUid = assetTypeUid });
 		}
 	}
 }

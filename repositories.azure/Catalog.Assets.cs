@@ -676,7 +676,7 @@ from	#ids a
 						int existingMaxCounterValue = await connection.QuerySingleOrDefaultAsync<int>(maxCounterSql,
 							new { assetTypeId, fieldTypeId },transaction: transaction);
 
-						int currentCounterSeed = Math.Max(counterStartValue.Value, existingMaxCounterValue) + 1;
+						int currentCounterSeed = Math.Max(counterStartValue.Value, existingMaxCounterValue + 1);
 
 						const int batchSize = 25000;
 						List<FieldCounterValue> currentBatch = new List<FieldCounterValue>(batchSize);

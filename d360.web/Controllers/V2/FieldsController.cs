@@ -347,7 +347,23 @@ namespace d360.web.Controllers.V2
 
 					if (ft.Type.Counter != null)
 					{
-						if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
+
+						string sqlQuery = @"
+            --DECLARE @AssetTypeID INT = (SELECT Id FROM AssetType WHERE Uid = @AssetTypeUid)
+            SELECT COALESCE(MIN(fc.Value), 0) 
+			FROM dbo.FieldCounterValue fc
+			JOIN dbo.Asset a ON fc.AssetId = a.ID
+			JOIN dbo.FieldType ft ON fc.FieldTypeId = ft.ID
+			WHERE a.AssetTypeId = @AssetTypeId
+			AND ft.Type = 'Counter';";
+
+						var a = Company.Query<int>(sqlQuery, new { AssetTypeId = assetTypeIdentifierInfoModel.ID });
+
+
+						if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex &&
+							ft.Type.Counter.CounterInitialIndex.HasValue &&
+							a?.FirstOrDefault() is int firstValue &&
+							ft.Type.Counter.CounterInitialIndex <= firstValue)
 						{
 							throw new RestApiException(HttpStatusCode.BadRequest, Error.FieldTypeError, string.Format(Error.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
 						}
