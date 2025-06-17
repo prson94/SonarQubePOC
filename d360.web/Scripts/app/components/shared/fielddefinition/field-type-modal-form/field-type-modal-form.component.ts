@@ -53,6 +53,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	computedRelationshipLookupInitialDefinition: ComputedRelationshipLookupDefinition;
 
 	relationshipTypes: RelationshipType[];
+	counterFieldCount: number;
 
 	title = 'unset';
 	subTitle = 'unset';
@@ -186,7 +187,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.assetTypeUid ? this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid) : of([]),
 			this.assetTypeUid ? this.fieldsService.getAvailableScoreTypes(this.assetTypeUid) : of([]),
-			this.assetTypeUid ? this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true) : of([])
+			this.assetTypeUid ? this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true) : of([]),
+			this.assetTypeUid ? this.assetService.getCounterFieldCount(this.assetTypeUid) : of([])
 		).subscribe((results) => {
 			//fields
 			if (results[0]) {
@@ -266,6 +268,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (results[4].length > 0) {
 				this.relationshipTypes = results[4];
 			}
+
+			
+			const counterFieldResponse = results[5] as { counterFieldCount: number };
+				if (counterFieldResponse.counterFieldCount === 0) {
+					this.counterFieldCount = counterFieldResponse.counterFieldCount + 1;
+				}
+				else {
+					this.counterFieldCount = counterFieldResponse.counterFieldCount; 
+				}
 
 			this.setForm();
 			this.areFieldTypesLoaded = true;
@@ -646,7 +657,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
-				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.numberOfAssetsForType);
+				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.counterFieldCount);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;

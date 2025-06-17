@@ -1,3 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Drawing;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Xml.Linq;
 using AngleSharp.Text;
 using d360.core;
 using d360.core.entities;
@@ -17,17 +28,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
 using SpreadsheetLight;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Xml.Linq;
 
 namespace d360.model.DataAccessLayer
 {
@@ -5674,6 +5674,20 @@ drop table if exists #tempAssetsIds;
 			{
 				document.SetCellStyle(rowNumber, index, styleGray);
 			}
+		}
+
+		public async Task<int> GetCounterFieldCountAsync(Guid assetTypeUid)
+		{
+			string sqlQuery = @"
+            DECLARE @AssetTypeID INT = (SELECT Id FROM AssetType WHERE Uid = @AssetTypeUid)
+            SELECT COALESCE(MIN(fc.Value), 0) 
+			FROM dbo.FieldCounterValue fc
+			JOIN dbo.Asset a ON fc.AssetId = a.ID
+			JOIN dbo.FieldType ft ON fc.FieldTypeId = ft.ID
+			WHERE a.AssetTypeId = @AssetTypeId
+			AND ft.Type = 'Counter';";
+
+			return await CompanyContext.Database.Connection.ExecuteScalarAsync<int>(sqlQuery, new { AssetTypeUid = assetTypeUid });
 		}
 	}
 }
