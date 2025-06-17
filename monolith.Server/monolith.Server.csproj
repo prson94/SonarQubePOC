@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Jobs\" />
     <Folder Include="Properties\ServiceDependencies\" />
   </ItemGroup>
 
