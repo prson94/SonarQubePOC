@@ -536,9 +536,9 @@ namespace d360.web.Controllers.V2
 
 			var validationResult = await Catalog.ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
 
-            if (!validationResult.IsSuccess)
+            if (!validationResult.IsSuccess) // No need to throw error just return an empty array;
             {
-                return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+				return Ok(new AssetDataProfilesMatchingAssetsApiViewModel());
             }
 
             HttpResponseMessage response;
@@ -549,19 +549,15 @@ namespace d360.web.Controllers.V2
 
 				if (!results.IsSuccess)
 				{
-					return await Task.FromResult(errorMessageResponse((HttpStatusCode)results.StatusCode, Error.BadRequest, results.Message)).ConfigureAwait(false);
+					return errorMessageResponse((HttpStatusCode)results.StatusCode, Error.BadRequest, results.Message);
 				}
 				else
 				{
-
 					int pageNum = Company.ParsePageNumber(queryParams, 1);
 					int pageSize = Company.ParsePageSize(queryParams, 200000);
 					var assetPath = Catalog.ReadAssetPathsAssetUID(assetUid);
 
 					SLDocument document = CreateResponseDocumentForExport(results.Data.ToList(), similarType, pageNum, pageSize);
-					var stream = new MemoryStream();
-					document.SaveAs(stream);
-					byte[] bytes = stream.ToArray();
 					var filename = $"Filtered {assetPath.Result[0][0]} {{0}} Fields List _{DateTime.Now:ddd MMM dd yyyy}_.xlsx";
 
 					if (similarType.Equals("data", StringComparison.InvariantCultureIgnoreCase))
@@ -572,24 +568,15 @@ namespace d360.web.Controllers.V2
 					{
 						filename = string.Format(filename, "Similar");
 					}
-					response = createFileResponseMessage(HttpStatusCode.OK, filename, bytes);
+
+					return Excel(document, filename);
 				}
 			}
             else
             {
 				var results = await Catalog.ReadMatchingAssets(assetUid, similarType, queryParams);
-				
-				if (!results.IsSuccess)
-				{
-					return await Task.FromResult(errorMessageResponse((HttpStatusCode)results.StatusCode, Error.BadRequest, results.Message)).ConfigureAwait(false);
-				}
-				else
-				{
-					response = Request.CreateResponse(HttpStatusCode.OK, results.Data);
-				}
+				return sendRepositoryOkResponse(results);
 			}
-
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -632,10 +619,9 @@ namespace d360.web.Controllers.V2
 			}
 			
 			var validationResult = await Catalog.ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
-
-			if (!validationResult.IsSuccess)
+			if (!validationResult.IsSuccess) // No need to throw an error here, just return 0 matching assets.
 			{
-				return await Task.FromResult(errorMessageResponse((HttpStatusCode)validationResult.StatusCode, Error.BadRequest, validationResult.Message)).ConfigureAwait(false);
+				return Ok(0);
 			}
 
             var results = await Catalog.ReadMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
