@@ -3769,10 +3769,10 @@ namespace d360.web.Controllers.V2
 
 
 		/// <summary>
-		/// Gets the descendents for a given asset.
+		/// Gets the count of counter field with a particular asset.
 		/// </summary>
 		/// <param name="assetUid">The unique identifier of an asset.</param>
-		/// <returns>A list of descendent asset uids</returns>
+		/// <returns>Count of counter field</returns>
 		[
 			HttpGet,
 			Route("counterFieldCount/{assetTypeUid}"),

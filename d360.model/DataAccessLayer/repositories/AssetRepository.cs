@@ -1,3 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Drawing;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Xml.Linq;
 using AngleSharp.Text;
 using d360.core;
 using d360.core.entities;
@@ -12,24 +23,11 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
-using DocumentFormat.OpenXml.InkML;
 using MoreLinq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
 using SpreadsheetLight;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Xml.Linq;
 
 namespace d360.model.DataAccessLayer
 {
