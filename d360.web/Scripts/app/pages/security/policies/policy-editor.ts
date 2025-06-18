@@ -54,6 +54,12 @@ import { DropdownModule } from 'primeng/dropdown';
 			padding-right: 8px;
 		}
 
+		div:nth-child(3) {
+			.p-dropdown-panel.p-component.ig-dropdown-overlay.ig-dropdown-ellipsis-ltr {
+				max-width: unset !important;
+			}
+		}
+
 		div:nth-child(5) {
 			text-align:right;
 
@@ -266,6 +272,16 @@ export class PolicyEditor implements OnChanges, OnInit {
 			operator: ['', Validators.required],
 			value: ['',],
 			assetUid: ['',]
+		});
+
+		group.controls['operator'].valueChanges.subscribe(value => {
+			const hide = (value === Operator[Operator.Populated] || value === Operator[Operator.NotPopulated]);
+			(group as any).hideValueField = hide;
+			if (hide) {
+				group.controls['value'].removeValidators([Validators.required]);
+			} else {
+				group.controls['value'].addValidators([Validators.required]);
+			}
 		});
 
 		if (!condition) {
