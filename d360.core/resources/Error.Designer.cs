@@ -455,6 +455,7 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("AssetFiltersRequired", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
@@ -4790,6 +4791,15 @@ namespace d360.core.resources {
         public static string InvalidResponsibilityUid {
             get {
                 return ResourceManager.GetString("InvalidResponsibilityUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have not provided a valid role(s) uid for this request..
+        /// </summary>
+        public static string InvalidRoleUid {
+            get {
+                return ResourceManager.GetString("InvalidRoleUid", resourceCulture);
             }
         }
         

@@ -13,6 +13,7 @@ using repositories;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -91,6 +92,19 @@ namespace d360.web.Controllers.V2
 			if(!model.ApplyToType && model.When.IsNullOrEmpty())
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetFiltersRequired);
+			}
+
+			if(!model.Then.IsNullOrEmpty())
+			{
+				var allSecurityUids =  model.Then.Select(x => x.SecurityUid)
+					.Where(x => x.HasValue)
+					.Select(x => x.Value);
+				var foundSecurityUids = await Security.FindRolesByUidAsync(allSecurityUids);
+
+				if (allSecurityUids.Except(foundSecurityUids).Any())
+				{
+					return errorMessageArgumentResponse(Error.InvalidRoleUid);
+				}
 			}
 
 			var policyExists = await Security.DoesPolicyExists(model.Name?.Trim());

@@ -3318,4 +3318,7 @@
   <data name="AssetFiltersRequired" xml:space="preserve">
     <value>No asset filters found. When targeting only certain assets within a type, you must provide filters.</value>
   </data>
+  <data name="InvalidRoleUid" xml:space="preserve">
+    <value>You have not provided a valid role(s) uid for this request.</value>
+  </data>
 </root>
