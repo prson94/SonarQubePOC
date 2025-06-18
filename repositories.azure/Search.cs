@@ -276,10 +276,25 @@ order by r.[Rank] desc;";
 				searchByUid = true;
 			}
 
+			HashSet<string> noiseWords;
+			using (var connection = ConnectionProvider.Connect(true))
+			{
+				noiseWords = (await connection.QueryAsync<string>("SELECT stopword FROM sys.fulltext_system_stopwords where language_id = (select value_in_use from sys.configurations where name = 'default full-text language')")).ToHashSet();
+			}
+
 			bool isFreeText = false;
 			var sqlPhrase = phrase.EscapeForLike().Replace("*", "%");
-			phrase = phrase.ConvertPhraseToFullTextSearch();
+			phrase = phrase.ConvertPhraseToFullTextSearch(noiseWords);
 
+			//If search phrase is all stop/noise words, force the LIKE DisplayValue search to be a starts-with
+			if (phrase == "")
+			{
+				phrase = "\"\"";
+				if(!sqlPhrase.EndsWith("%"))
+				{
+					sqlPhrase += "%";
+				}
+			}
 
 			// Generate the SQL to run.
 			var sql = buildFullTextSql(searchByUid, includeAggregations, isFreeText, includeFields, includePath, includeScore, classes, types);

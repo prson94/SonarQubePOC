@@ -681,25 +681,16 @@ namespace repositories.azure.extensions
 		/// </summary>
 		/// <param name="phrase">The raw phrase.</param>
 		/// <returns>The converted phrase for FT search.</returns>
-		public static string ConvertPhraseToFullTextSearch(this string phrase)
+		public static string ConvertPhraseToFullTextSearch(this string phrase, HashSet<string> stopWords = null)
 		{
 			if (string.IsNullOrEmpty(phrase))
 				return string.Empty;
 			var fts = new EasyFts();
 			// Add stop words
-			fts.StopWords.Add("a");
-			fts.StopWords.Add("an");
-			fts.StopWords.Add("the");
-			fts.StopWords.Add("is");
-			fts.StopWords.Add("in");
-			fts.StopWords.Add("are");
-			fts.StopWords.Add("was");
-			fts.StopWords.Add("were");
-			fts.StopWords.Add("be");
-			fts.StopWords.Add("been");
-			fts.StopWords.Add("being");
-			fts.StopWords.Add("of");
-			fts.StopWords.Add("for");
+			if (stopWords != null)
+			{
+				fts.StopWords = stopWords;
+			}
 			return fts.ToFtsQuery(phrase);
 		}
 	}
