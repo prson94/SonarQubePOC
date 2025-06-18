@@ -47,7 +47,7 @@
 										<p-dropdown igDropdown
 													igSize="full"
 													[igDataCy]="'Policy_Dropdown_AssetType'"
-													[ellipsisDirection]="'rtl'"
+													[ellipsisDirection]="'ltr'"
 													filter="true"
 													formControlName="assetTypeUid"
 													optionLabel="label"
@@ -67,7 +67,7 @@
 										<p-dropdown igDropdown
 													igSize="full"
 													[igDataCy]="'Policy_Dropdown_Role'"
-													[ellipsisDirection]="'rtl'"
+													[ellipsisDirection]="'ltr'"
 													formControlName="roleUid"
 													optionLabel="label"
 													optionValue="value"
@@ -224,11 +224,11 @@
 
 							<div class="form-row-spacer" style="margin-top: 16px;">
 								<span style="margin-right: 12px">
-									<p-radioButton [inputId]="securityType" [value]="'Group'" formControlName="securityType" (onClick)="loadThenOptions()" />
+									<p-radioButton [inputId]="securityType" [value]="'Group'" formControlName="securityType" />
 									<label [for]="securityType">Group</label>
 								</span>
 								<span>
-									<p-radioButton [inputId]="securityType" [value]="'User'" formControlName="securityType" (onClick)="loadThenOptions()" />
+									<p-radioButton [inputId]="securityType" [value]="'User'" formControlName="securityType" />
 									<label [for]="securityType">User</label>
 								</span>
 							</div>
@@ -236,18 +236,39 @@
 							<div formArrayName="thenConditions">
 								@for (w of thenConditions.controls; track w; let i = $index) {
 								<div>
-									<div formGroupName="{{i}}">
-										<input type="hidden" formControlName="operator" />
-										<p-dropdown igDropdown required
-													igSize="full"
-													formControlName="securityUid"
-													[ngModelOptions]="{standalone: true}"
-													[options]="thenOptions"
-													appendTo="body"
-													[filter]="true"></p-dropdown>
+									<div formGroupName="{{i}}" class="then-condition-row">
+										<div>
+											<input type="hidden" formControlName="operator" />
+											<input type="hidden" formControlName="securityType" />
+											@if (w.get('securityType').value === 'User') {
+											<span title="User" class="then-condition-type">U</span>
+											}
+											@if (w.get('securityType').value === 'Group') {
+											<span title="Group" class="then-condition-type">G</span>
+											}
+										</div>
+										<div>
+											<p-dropdown igDropdown required
+														igSize="full"
+														formControlName="securityUid"
+														[ngModelOptions]="{standalone: true}"
+														[options]="w?.options"
+														appendTo="body"
+														[filter]="true"></p-dropdown>
+										</div>
+										<div>
+											<a (click)="deleteThenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a>
+										</div>
 									</div>
 								</div>
 								}
+
+								<div>
+									<a (click)="addThen(policyForm.get('securityType').value)">
+										<i class='fa fa-plus-circle' title='{{addThenTitle}}'></i>&nbsp;{{addThenTitle}}
+									</a>
+								</div>
+
 							</div>
 
 						</div>

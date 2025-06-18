@@ -1,7 +1,7 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { ReadSecurityPolicy, PolicyEditOptionsModel, PolicyEditAssetTypeOptionsModel, SecurityPolicyWhen } from '../../../models/security.model';
+import { ReadSecurityPolicy, PolicyEditOptionsModel, PolicyEditAssetTypeOptionsModel, SecurityPolicyWhen, SecurityPolicyThen } from '../../../models/security.model';
 import { SecurityService } from '../../../services/security.service';
 import { Operator } from '../../../models/operator.model';
 import { FormFeedbackBadgesModule } from '../../../components/shared/controls/form-feedback-badges/form-feedback-badges.component';
@@ -66,6 +66,38 @@ import { DropdownModule } from 'primeng/dropdown';
 		}
 	}
 
+	div.then-condition-row {
+		display: grid;
+		grid-template-columns: 24px 1fr 32px;
+		margin-bottom: 8px;
+
+		div:nth-child(1) {
+
+			.then-condition-type {
+				background-color: var(--buttonBackColor);
+				color: var(--calculatedButtonTextColor);
+				font-weight: 600;
+				padding: 1px 3px;
+				border-radius: 2px;
+				font-size: .9em;
+				line-height: 32px;
+				vertical-align: middle;
+				cursor: pointer;
+			}
+		}
+
+		div:nth-child(3) {
+			text-align:right;
+
+			a {
+				text-decoration:none; 
+				color:#000; 
+				cursor: pointer; 
+				font-size:1.5em;
+			}
+		}
+	}
+	
 	.form-row-spacer {
 		margin-bottom: 12px;
 
@@ -107,6 +139,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 	editInstructions: string = $localize`Updating this security policy that may alter role assignments on assets.`;
 	addFieldCheckTitle = $localize`Add Field Condition`;
 	addRelationCheckTitle = $localize`Add Relation Condition`;
+	addThenTitle = $localize`Add`;
 
 	saveLabel: string;
 	cancelLabel: string;
@@ -188,13 +221,15 @@ export class PolicyEditor implements OnChanges, OnInit {
 			applyToType: [false],
 			visible: [true],
 			whenConditions: this.fb.array([]),
-			thenConditions: this.fb.array([
-				this.fb.group({
-					operator: [Operator.Equals],
-					securityType: ['Group', Validators.required],
-					securityUid: ['', Validators.required]
-				})
-			])
+			thenConditions: this.fb.array([], { validators: [Validators.required] })
+		});
+
+		this.policyForm.controls['securityType'].valueChanges.subscribe(value => {
+			const old = this.policyForm.value['securityType'];
+			if (value !== old) {
+				this.thenConditions.clear();
+				this.addThen(value);
+			}
 		});
     }
 
@@ -268,6 +303,33 @@ export class PolicyEditor implements OnChanges, OnInit {
 		this.whenConditions.removeAt(ix);
 	}
 
+	addThen(type: string, condition: SecurityPolicyThen = null): void {
+		const group: FormGroup = this.fb.group({
+			operator: [Operator[Operator.Equals]],
+			securityType: [type, Validators.required],
+			securityUid: ['', Validators.required]
+		});
+
+		group.patchValue(condition);
+
+		let obs: Observable<boolean>;
+		if (type === "User") {
+			obs = this.loadThenOptionsUser(group);
+		}
+		else {
+			obs = this.loadThenOptionsGroup(group);
+		}
+
+		obs.subscribe((o) => {
+			this.thenConditions.push(group);
+		});
+
+	}
+
+	deleteThenCondition(ix: number) {
+		this.thenConditions.removeAt(ix);
+	}
+
 	async cancel() {
 		await this.loadForm();
 		this.onCancel.emit();
@@ -310,6 +372,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 	loadForm() {
 
 		this.clearConditions();
+		this.policyForm.reset();
 
 		const isEdit = (this.item && this.item.uid !== null);
 
@@ -334,7 +397,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 				MenuItems: [],
 				name: '',
 				roleName: '', roleUid: '',
-				securityType: this.policyForm.get("securityType").value,
+				securityType: 'Group',
 				thenConditions: [], visible: true, whenConditions: [],
 				uid: null
 			};
@@ -347,23 +410,18 @@ export class PolicyEditor implements OnChanges, OnInit {
 					this.addWhen(wC.checkType, wC);
 				})
 			}
-			if (this.item && this.item.thenConditions && this.thenConditions) {
-				if (this.item.thenConditions.length > 0 && this.thenConditions.length > 0) {
-					const securityUid = this.item.thenConditions[0].securityUid;
-					const securityType = this.item.thenConditions[0].securityType ;
-					this.thenConditions.clear();
-					this.thenConditions.push(
-						this.fb.group({
-							operator: [Operator.Equals],
-							securityType: [securityType, Validators.required],
-							securityUid: [securityUid, Validators.required]
-						})
-					);
+			if (this.item && this.item.thenConditions) {
+				this.thenConditions.clear();
+				this.item.thenConditions.forEach((tC) => {
+					this.addThen(tC.securityType, tC)
+				});
+
+				if (this.thenConditions.length === 0) {
+					this.addThen(this.item.securityType);
 				}
 			}
 		};
 
-		this.loadThenOptions();
 		loadFormValues();
 	}
 
@@ -479,32 +537,36 @@ export class PolicyEditor implements OnChanges, OnInit {
 		});
 	}
 
-	loadThenOptions() {
-		if (this.isGroup) {
-			if (this.securityGroupsLoaded) {
-				this.thenOptions = this.securityGroups;
-			}
-			else {
+	loadThenOptionsGroup(item: FormGroup): Observable<boolean> {
+		return new Observable<boolean>(obs => {
+			if (!this.securityGroupsLoaded) {
 				this.securityService.getPolicyEditGroupOptions().subscribe((o) => {
 					this.securityGroups = o;
-					this.thenOptions = this.securityGroups;
 					this.securityGroupsLoaded = true;
+					(item as any).options = this.securityGroups;
+					obs.next();
 				});
+			} else {
+				(item as any).options = this.securityGroups;
+				obs.next();
 			}
-			
-		}
-		else {
-			if (this.securityUsersLoaded) {
-				this.thenOptions = this.securityUsers;
-			}
-			else {
+		});
+	}
+
+	loadThenOptionsUser(item: FormGroup): Observable<boolean> {
+		return new Observable<boolean>(obs => {
+			if (!this.securityUsersLoaded) {
 				this.securityService.getPolicyEditUserOptions().subscribe((o) => {
 					this.securityUsers = o;
-					this.thenOptions = this.securityUsers;
 					this.securityUsersLoaded = true;
+					(item as any).options = this.securityUsers;
+					obs.next();
 				});
+			} else {
+				(item as any).options = this.securityUsers;
+				obs.next();
 			}
-		}
+		});
 	}
 
 	onSubmit() {
@@ -538,7 +600,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 	get isDataAltered(): boolean {
 		return (
-			!this.policyForm.untouched
+			this.policyForm.touched || this.policyForm.dirty
 		);
 	}
 
@@ -547,5 +609,9 @@ export class PolicyEditor implements OnChanges, OnInit {
 			return true;
 		}
 		return !this.policyForm.valid || (this.item && !this.isDataAltered);
+	}
+
+	debug() {
+		console.log(this.policyForm);
 	}
 }
