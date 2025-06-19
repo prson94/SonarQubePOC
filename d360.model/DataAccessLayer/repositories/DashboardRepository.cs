@@ -381,7 +381,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var responsibilitySQL = @$"select distinct rt.uid from dbo.responsibilitydetail rd
-inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {responsibilityWhereStatement}";
+inner join [Security].[Role] rt on rt.ID = rd.ResponsibilityTypeID where {responsibilityWhereStatement}";
 
 			var currentUserResponsibilityTypeUidList = CompanyContext.Database.Connection.Query<Guid>(responsibilitySQL, dbArgs).ToList();
 
@@ -426,7 +426,7 @@ inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {r
 					delete from dbo.ReportResponsibility where ReportID = @reportId;
 
 					insert into dbo.ReportResponsibility (ReportID, ResponsibilityTypeID)
-					select @reportId, rt.ID as responsibilitytypeid from dbo.ResponsibilityType rt
+					select @reportId, rt.ID as responsibilitytypeid from [Security].[Role] rt
 					where rt.uid in @Responsibilities",
 					new { reportId = report.ID, responsibilities });
 			}
