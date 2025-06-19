@@ -657,7 +657,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
-				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.counterFieldCount);
+				if (this.isEditing) {
+					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.editedFieldType.Type.Counter.CounterInitialIndex);
+				}
+				else {
+					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.counterFieldCount);
+				}
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -795,7 +800,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				//Counter
 				if (this.selectedFieldType === 'Counter') {
-					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
+					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.counterFieldCount);
 					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);
 				}
 
@@ -1219,7 +1224,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				return {};
 			}
 
-			if (+control.value < this.numberOfAssetsForType) {
+			if (+control.value < this.counterFieldCount) {
 				return {
 					minValue: { value: control.value }
 				};
@@ -1248,7 +1253,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (control.value == null || control.value === '' || !this.fieldTypeForm) {
 				return {};
 			}
-
 			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
 			const minValue = this.fieldTypeForm.get("MinimumValue").value;
 
