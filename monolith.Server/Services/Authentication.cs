@@ -36,13 +36,19 @@ namespace monolith.Server.Services
 			});
 
 			// OIDC authentication
-			group.MapPost("sso/openid", (monolith.Server.Models.LoginRequest loginRequest) =>
+			group.MapPost("sso/openid", (HttpContext ctx, monolith.Server.Models.LoginRequest loginRequest) =>
 			{
 				// Validate the Code / state.
 
 				// Retrieve JWT.
 
 				// Create Cookie.
+				ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(), new AuthenticationProperties
+				{
+					IsPersistent = true,
+					AllowRefresh = true,
+					ExpiresUtc = DateTime.UtcNow.AddDays(1)
+				});
 
 				// Test code below
 				var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@1;superSecretKey@1;superSecretKey@1; This is so olleklrj kr kltjhkj thjk yyhkrtjhy;fdsfrwerrwerewrwerwqeqqwe"));
@@ -56,24 +62,6 @@ namespace monolith.Server.Services
 				);
 				var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 				return TypedResults.Ok(new { Token = tokenString });
-			});
-
-			group.MapPost("login/cookie", async (IHttpContextAccessor httpContext, monolith.Server.Models.LoginRequest loginRequest) => {
-				var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
-				identity.AddClaim(new Claim(ClaimTypes.Name, loginRequest.Username ?? string.Empty));
-				var principal = new ClaimsPrincipal(identity);
-
-				await httpContext.HttpContext.SignInAsync(
-					CookieAuthenticationDefaults.AuthenticationScheme,
-					principal,
-					new AuthenticationProperties
-					{
-						IsPersistent = true,
-						AllowRefresh = true,
-						ExpiresUtc = DateTime.UtcNow.AddDays(1)
-					});
-
-				return Results.Ok();
 			});
 
 			return group;

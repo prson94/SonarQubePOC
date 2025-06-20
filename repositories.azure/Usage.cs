@@ -2,7 +2,6 @@
 using d360.core.entities.Usage;
 using d360.core.resources;
 using Dapper;
-using DocumentFormat.OpenXml;
 using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;

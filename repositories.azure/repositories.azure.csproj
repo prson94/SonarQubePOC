@@ -17,7 +17,6 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\d360.model\d360.model.csproj" />
     <ProjectReference Include="..\repositories\repositories.csproj" />
   </ItemGroup>
 

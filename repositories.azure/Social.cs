@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.core.resources;
 using Dapper;
 using repositories.azure.extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace repositories.azure
 {

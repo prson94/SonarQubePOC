@@ -1,10 +1,9 @@
-﻿using System.Data.SqlClient;
-using System.Threading.Tasks;
+﻿using Dapper;
 using System;
-using Dapper;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace repositories.azure
 {

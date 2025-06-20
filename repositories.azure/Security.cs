@@ -4,8 +4,6 @@ using d360.core.entities.ChangeLog;
 using d360.core.enums;
 using d360.core.security;
 using Dapper;
-using DocumentFormat.OpenXml.EMMA;
-using MoreLinq;
 using Newtonsoft.Json;
 using repositories.azure.extensions;
 using System;
