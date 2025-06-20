@@ -4795,6 +4795,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have not provided a valid role(s) uid for this request..
+        /// </summary>
+        public static string InvalidRoleUid {
+            get {
+                return ResourceManager.GetString("InvalidRoleUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid [scoreType] provided, please provide a valid score type..
         /// </summary>
         public static string InvalidScoreType {
