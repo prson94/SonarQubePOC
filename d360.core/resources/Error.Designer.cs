@@ -4615,6 +4615,33 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No valid data to create security policy..
+        /// </summary>
+        public static string InvalidPolicyModel {
+            get {
+                return ResourceManager.GetString("InvalidPolicyModel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No asset filters allowed when security policy applies to entire type..
+        /// </summary>
+        public static string InvalidPolicyNoAssetFiltersAllowed {
+            get {
+                return ResourceManager.GetString("InvalidPolicyNoAssetFiltersAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must provide a valid user or group assignment to this security policy..
+        /// </summary>
+        public static string InvalidPolicyUserAssignments {
+            get {
+                return ResourceManager.GetString("InvalidPolicyUserAssignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Predicate doesn&apos;t exist..
         /// </summary>
         public static string InvalidPredicate {
@@ -6087,6 +6114,15 @@ namespace d360.core.resources {
         public static string NameMaxLength250Char {
             get {
                 return ResourceManager.GetString("NameMaxLength250Char", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name must longer than three characters and less than 250 characters..
+        /// </summary>
+        public static string NameMin3Max250 {
+            get {
+                return ResourceManager.GetString("NameMin3Max250", resourceCulture);
             }
         }
         

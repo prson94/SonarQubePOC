@@ -2,10 +2,9 @@
 using d360.core.entities;
 using d360.core.entities.ChangeLog;
 using d360.core.enums;
+using d360.core.resources;
 using d360.core.security;
 using Dapper;
-using DocumentFormat.OpenXml.EMMA;
-using MoreLinq;
 using Newtonsoft.Json;
 using repositories.azure.extensions;
 using System;
@@ -84,17 +83,38 @@ from	security.[Rule] ru
 			{
 				return response;
 			}
-			model.Name = (model.Name ?? "").Trim();
 
-			var IntersectTypeUids = model.When.Where(w => w.IntersectTypeUid.HasValue).Select(w => w.IntersectTypeUid.Value).ToList();
-			var AssetUids = model.When.Where(w => w.AssetUid.HasValue).Select(w => w.AssetUid.Value).ToList();
-			var SecurityUids = model.Then.Where(w => w.SecurityUid.HasValue).Select(w => w.SecurityUid.Value).ToList();
+			if (response == null)
+			{
+				if (model.AssetTypeUid == Guid.Empty)
+				{
+					response = new(400, Error.AssetTypeNotFound);
+					return response;
+				}
+			}
+
+			List<Guid> IntersectTypeUids = [];
+			List<Guid> AssetUids = [];
+			List<Guid> SecurityUids = [];
+			if (model.When != null)
+			{
+				IntersectTypeUids = model.When.Where(w => w.IntersectTypeUid.HasValue).Select(w => w.IntersectTypeUid.Value).ToList();
+				AssetUids = model.When.Where(w => w.AssetUid.HasValue).Select(w => w.AssetUid.Value).ToList();
+				SecurityUids = model.Then.Where(w => w.SecurityUid.HasValue).Select(w => w.SecurityUid.Value).ToList();
+			}
+			else 
+			{
+				IntersectTypeUids = [Guid.Empty];
+				AssetUids = [Guid.Empty];
+				SecurityUids = [Guid.Empty];
+			}
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				// Data for validation.
 				var qryData = await connection.QueryMultipleAsync(
 					"select Id from AssetType where Uid = @AssetTypeUid; " +
 					"select Id from [security].[Role] where Uid = @RoleUid; " +
+					"select count(1) from [security].[Rule] where Name = @Name; " +
 					"select f.* from FieldType f inner join AssetType a on a.ID = f.AssetTypeID and a.Uid = @AssetTypeUid; " +
 					"select i.* from IntersectType i inner join AssetType a on (a.ID = i.SubjectAssetTypeID or a.ID = i.ObjectAssetTypeID) and a.Uid = @AssetTypeUid and I.Uid in @IntersectTypeUids; " +
 					"select * from FieldType where Object in ('GroupType'); " +
@@ -102,10 +122,11 @@ from	security.[Rule] ru
 					"select * from Asset where Uid in @AssetUids; " +
 					"select * from [Group] where Uid in @SecurityUids; " +
 					"select * from reporting.Global_Resource where Uid in @SecurityUids;",
-					new { model.AssetTypeUid, model.RoleUid, IntersectTypeUids, AssetUids, SecurityUids }
+					new { model.AssetTypeUid, model.RoleUid, model.Name, IntersectTypeUids, AssetUids, SecurityUids }
 				);
-				var assetTypeId = await qryData.ReadFirstAsync<int>();
+				var assetTypeId = await qryData.ReadFirstOrDefaultAsync<int>();
 				var roleId = await qryData.ReadFirstAsync<int>();
+				var matchingPoliciesByName = await qryData.ReadFirstAsync<int>();
 				var assetTypeFields = await qryData.ReadAsync<FieldType>();
 				var intersectTypes = await qryData.ReadAsync<IntersectType>();
 				var groupFields = await qryData.ReadAsync<FieldType>();
@@ -123,9 +144,14 @@ from	security.[Rule] ru
 
 				if (response == null && roleId == 0)
 				{
-					response = new(404, "Could not find role based on RoleUid provided.");
+					response = new(404, Error.InvalidRoleUid);
 				}
-				
+
+				if (response == null && matchingPoliciesByName > 0)
+				{
+					response = new(404, string.Format(Error.NameConflicit, model.Name));
+				}
+
 				var rawWhens = new List<RuleWhen>();
 				if (response == null && model.When.Count > 0)
 				{
@@ -146,20 +172,22 @@ from	security.[Rule] ru
 						long ruleId = connection.QuerySingle<long>(
 							"insert into [security].[Rule] (Uid, Name, RoleId, SecurityType, AssetTypeId, ApplyToType, IsVisible, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) " +
 							"values (@Uid, @Name, @roleId, @securityType, @assetTypeId, @ApplyToType, @IsVisible, @u, @dt, @u, @dt); " +
-							"select SCOPE_IDENTITY();", 
-							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType = (int)securityType, assetTypeId, model.ApplyToType, model.IsVisible, u = CurrentUserId, dt = DateTime.UtcNow }, 
+							"select SCOPE_IDENTITY();",
+							new { Uid = Guid.NewGuid(), model.Name, roleId, securityType = (int)securityType, assetTypeId, model.ApplyToType, model.IsVisible, u = CurrentUserId, dt = DateTime.UtcNow },
 							trans);
 
-						rawWhens.ForEach(w => {
+						rawWhens.ForEach(w =>
+						{
 							w.Id = ruleId;
 							connection.Execute(
 								"insert into [security].RuleWhen (Id, [Position], CheckType, FieldTypeId, IntersectTypeId, [Operator], [Value], AssetId) " +
-								"values (@Id, @Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)", 
-								new { w.Id, w.Position, w.CheckType, w.FieldTypeId, w.IntersectTypeId, Operator = (int)w.Operator, w.Value, w.AssetId }, 
+								"values (@Id, @Position, @CheckType, @FieldTypeId, @IntersectTypeId, @Operator, @Value, @AssetId)",
+								new { w.Id, w.Position, w.CheckType, w.FieldTypeId, w.IntersectTypeId, Operator = (int)w.Operator, w.Value, w.AssetId },
 								trans);
 						});
 
-						rawThens.ForEach(t => {
+						rawThens.ForEach(t =>
+						{
 							t.Id = ruleId;
 							connection.Execute(
 								"insert into [security].RuleThen (ID, [Position], FieldTypeId, [Operator], [Value], SecurityId) " +
@@ -174,7 +202,6 @@ from	security.[Rule] ru
 							$@"{READ_POLICY_SQL_BASE} where ru.Id = @ruleId for json path, WITHOUT_ARRAY_WRAPPER;", new { ruleId }
 						);
 						var jsonPayload = string.Concat(jsons);
-
 
 						var policy = JsonConvert.DeserializeObject<ReadSecurityPolicy>(jsonPayload);
 						response = new(policy, 201, true, "Policy created successfully.");
@@ -1258,43 +1285,61 @@ order by SecurityType asc, Name asc;
 
 			if (model == null)
 			{
-				result = new(400, "No valid data to create security policy.");
+				result = new(400, Error.InvalidPolicyModel);
 			}
 
-			if (result != null)
+			if (result == null)
 			{
 				model.Name = (model.Name ?? "").Trim();
 				if (string.IsNullOrEmpty(model.Name))
 				{
-					result = new(400, "Name must be populated.");
+					result = new(400, Error.InvalidName);
 				}
 			}
 
-			if (result != null)
+			if (result == null)
 			{
 				if (model.Name.Length < 3 || model.Name.Length > 250)
 				{
-					result = new(400, "Name must longer than three characters and less than 250 characters.");
+					result = new(400, Error.NameMin3Max250);
 				}
 			}
 
-			if (result != null)
+			if (result == null)
 			{
-				if (!model.ApplyToType && (model.When == null || (model.When != null && model.When.Count == 0)))
+				if (model.RoleUid == Guid.Empty)
 				{
-					result = new(400, "If rule does not apply to entire type, then you must apply asset filtering.");
+					result = new(400, Error.InvalidRoleUid);
 				}
 			}
 
-			if (result != null)
+			if (result == null)
+			{
+				if (model.ApplyToType)
+				{
+					if (model.When != null && model.When.Count > 0)
+					{
+						result = new(400, Error.InvalidPolicyNoAssetFiltersAllowed);
+					}
+				}
+				else 
+				{
+					if (model.When == null || (model.When != null && model.When.Count == 0))
+					{
+						result = new(400, Error.AssetFiltersRequired);
+					}
+				}
+			}
+
+			if (result == null)
 			{
 				if (model.Then == null || (model.Then != null && model.Then.Count == 0))
 				{
-					result = new(400, "You must apply user/group assignments.");
+					result = new(400, Error.InvalidPolicyUserAssignments);
 				}
 			}
 
-			if (result != null)
+			if (result == null)
 			{
 				if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && w.IntersectTypeUid.HasValue))
 				{
@@ -1302,7 +1347,7 @@ order by SecurityType asc, Name asc;
 				}
 			}
 
-			if (result != null)
+			if (result == null)
 			{
 				if (model.When != null && model.When.Any(w => w.IntersectTypeUid.HasValue && !w.AssetUid.HasValue))
 				{
@@ -1310,7 +1355,7 @@ order by SecurityType asc, Name asc;
 				}
 			}
 
-			if (result != null)
+			if (result == null)
 			{
 				if (model.When != null && model.When.Any(w => !string.IsNullOrEmpty(w.FieldName) && (!w.AssetUid.HasValue && string.IsNullOrEmpty(w.Value))))
 				{
@@ -1511,13 +1556,14 @@ order by SecurityType asc, Name asc;
 
 		RepositoryResponse<ReadRole> validateRole(CreateRole model)
 		{
+			model.Name = (model.Name ?? "").Trim();
 			if (model.Permissions <= 0)
 			{
 				return new(400, "Permissions must have a value greater than 0.");
 			}
-			if (model.Name.Length > 250)
+			if (model.Name.Length < 3 || model.Name.Length > 250)
 			{
-				return new(400, "Name property must be less than 250 characters.");
+				return new(400, Error.NameMin3Max250);
 			}
 			if ((model.Description??"").Length > 4000)
 			{
@@ -1526,10 +1572,6 @@ order by SecurityType asc, Name asc;
 			if (string.IsNullOrEmpty(model.Name))
 			{
 				return new(400, "Name must be populated.");
-			}
-			if (model.Name.Length < 3)
-			{
-				return new(400, "Name must longer than three characters.");
 			}
 
 			return null;
