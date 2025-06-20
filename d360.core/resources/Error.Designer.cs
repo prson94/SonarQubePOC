@@ -455,6 +455,7 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("AssetFiltersRequired", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   Looks up a localized string similar to Asset identifier with value {0} does not correspond to a valid asset..
         /// </summary>
@@ -8943,7 +8944,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Uid Governance Owner Check does not correspond to a known responsibility type..
+        ///   Looks up a localized string similar to The Uid Governance Owner Check does not correspond to a known role..
         /// </summary>
         public static string UidGovernanceOwnerCheck {
             get {

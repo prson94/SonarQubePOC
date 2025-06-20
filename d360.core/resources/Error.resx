@@ -1306,7 +1306,7 @@
     <value>[Threshold] must be a value between 0 and 1</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
-    <value>The Uid Governance Owner Check does not correspond to a known responsibility type.</value>
+    <value>The Uid Governance Owner Check does not correspond to a known role.</value>
   </data>
   <data name="UidGovernancePredicateCheck" xml:space="preserve">
     <value>The Uid Governance Predicate Check does not correspond to a known predicate.</value>
