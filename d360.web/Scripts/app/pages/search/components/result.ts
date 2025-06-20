@@ -144,7 +144,7 @@ export class ResultItem extends BaseComponent implements OnInit {
 					break;
 				case 'boolean':
 					if (!forTitle) {
-						if (field.Value === 'True') { val = '<i class="fa fa-check enabled"></i>'; }
+						if (field.Value.toLowerCase() === 'true') { val = '<i class="fa fa-check enabled"></i>'; }
 						else { val = '<i class="fa fa-times disabled"></i>'; }
 					}
 					break;
