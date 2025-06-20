@@ -276,6 +276,7 @@ export class PolicyEditor implements OnChanges, OnInit {
 
 		group.controls['operator'].valueChanges.subscribe(value => {
 			const hide = (value === Operator[Operator.Populated] || value === Operator[Operator.NotPopulated]);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(group as any).hideValueField = hide;
 			if (hide) {
 				group.controls['value'].removeValidators([Validators.required]);
