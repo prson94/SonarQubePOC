@@ -142,7 +142,16 @@
 														placeholder="Value Required"></p-dropdown>
 										</div>
 										<div>
+										@if (!w.hideValueField) {
 											@if (w.get('checkType').value === 'F' && isInputTypeForWhenField(w, ['Text', 'Html'])) {
+											<input igInput required
+												   [ngModelOptions]="{standalone: true}"
+												   formControlName="value"
+												   type="text"
+												   placeholder="Value Required" />
+											}
+
+											@if (w.get('checkType').value === 'F' && isInputTypeForWhenField(w, ['Decimal', 'Number'])) {
 											<input igInput required
 												   [ngModelOptions]="{standalone: true}"
 												   formControlName="value"
@@ -178,7 +187,7 @@
 														[filter]="true"
 														placeholder="Value Required"></p-dropdown>
 											}
-
+										}
 										</div>
 										<div>
 											<a (click)="deleteWhenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a>
