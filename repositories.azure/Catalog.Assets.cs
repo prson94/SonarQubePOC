@@ -2,7 +2,6 @@
 using d360.core.enums;
 using d360.core.resources;
 using Dapper;
-using DocumentFormat.OpenXml.EMMA;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories.azure.extensions;

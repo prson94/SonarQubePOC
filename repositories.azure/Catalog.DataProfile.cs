@@ -3,20 +3,16 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using Dapper;
-using System.Diagnostics;
 using Newtonsoft.Json;
 using repositories.azure.extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
-using System.Security;
-using System.Transactions;
-
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace repositories.azure
 {

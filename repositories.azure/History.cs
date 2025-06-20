@@ -2,7 +2,6 @@
 using d360.core.entities.ChangeLog;
 using Dapper;
 using repositories.azure.extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
