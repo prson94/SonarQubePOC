@@ -302,7 +302,7 @@ FROM 	reporting.global_audit ga with (index(IX_ReportingAudit_Date_Include))
 			where ((ga.Object = 'IntersectType' and IT.id = ga.ObjectID) or (ga.ActionObject = 'IntersectType' and IT.id = ga.ActionObjectID))
 			union  all
 			select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass 
-			from dbo.ResponsibilityType rt where ((ga.Object = 'ResponsibilityType' and rt.id = ga.ObjectID) or (ga.ActionObject = 'ResponsibilityType' and rt.id = ga.ActionObjectID))
+			from [security].[role] rt where ((ga.Object = 'ResponsibilityType' and rt.id = ga.ObjectID) or (ga.ActionObject = 'ResponsibilityType' and rt.id = ga.ActionObjectID))
 			union all
 			select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass 
 			from dbo.[Report] r where ((ga.Object = 'Report' and r.id = ga.ObjectID) or (ga.ActionObject = 'Report' and r.id = ga.ActionObjectID))
