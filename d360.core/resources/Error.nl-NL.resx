@@ -1306,7 +1306,7 @@
     <value>[Threshold] moet een waarde tussen 0 en 1 zijn</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
-    <value>De UID-controle van de governance-eigenaar resulteert niet in een bekend verantwoordelijkheidstype.</value>
+    <value>De controle van de UID-governance-eigenaar komt niet overeen met een bekende rol.</value>
   </data>
   <data name="UidGovernancePredicateCheck" xml:space="preserve">
     <value>De UID-controle van het governancepredicaat resulteert niet in een bekend predicaat.</value>

@@ -1306,7 +1306,7 @@
     <value>El [Threshold] debe tener un valor de entre 0 y 1</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
-    <value>Comprobación del propietario Gestión del UID no se corresponde con un tipo de responsabilidad conocido.</value>
+    <value>Comprobación del propietario Gestión del UID no se corresponde con un tipo de rol conocido.</value>
   </data>
   <data name="UidGovernancePredicateCheck" xml:space="preserve">
     <value>Comprobación del predicado Gestión del UID no se corresponde con un predicado conocido.</value>
