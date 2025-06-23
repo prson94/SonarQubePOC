@@ -3321,4 +3321,16 @@
   <data name="InvalidRoleUid" xml:space="preserve">
     <value>You have not provided a valid role(s) uid for this request.</value>
   </data>
+  <data name="InvalidPolicyModel" xml:space="preserve">
+    <value>No valid data to create security policy.</value>
+  </data>
+  <data name="InvalidPolicyNoAssetFiltersAllowed" xml:space="preserve">
+    <value>No asset filters allowed when security policy applies to entire type.</value>
+  </data>
+  <data name="InvalidPolicyUserAssignments" xml:space="preserve">
+    <value>You must provide a valid user or group assignment to this security policy.</value>
+  </data>
+  <data name="NameMin3Max250" xml:space="preserve">
+    <value>Name must longer than three characters and less than 250 characters.</value>
+  </data>
 </root>

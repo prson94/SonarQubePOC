@@ -84,34 +84,6 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreatePolicyAsync(CreateSecurityPolicy model)
 		{
-			if(string.IsNullOrWhiteSpace(model?.Name))
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
-			}
-
-			if(!model.ApplyToType && model.When.IsNullOrEmpty())
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetFiltersRequired);
-			}
-
-			if(!model.Then.IsNullOrEmpty())
-			{
-				var allSecurityUids =  model.Then.Select(x => x.SecurityUid)
-					.Where(x => x.HasValue)
-					.Select(x => x.Value);
-				var foundSecurityUids = await Security.FindRolesByUidAsync(allSecurityUids);
-
-				if (allSecurityUids.Except(foundSecurityUids).Any())
-				{
-					return errorMessageArgumentResponse(Error.InvalidRoleUid);
-				}
-			}
-
-			var policyExists = await Security.DoesPolicyExists(model.Name?.Trim());
-			if (policyExists)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.DuplicateItem);
-			}
 			var result = await Security.CreatePolicyAsync(model);
 			if (result.IsSuccess)
 			{
@@ -432,15 +404,6 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> UpdatePolicyAsync(Guid uid, ReadSecurityPolicy model)
 		{
-			if(string.IsNullOrWhiteSpace(model?.Name))
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.InvalidName);
-			}
-
-			if (!model.ApplyToType && model.When.IsNullOrEmpty())
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, Error.AssetFiltersRequired);
-			}
 			var result = await Security.UpdatePolicyAsync(uid, model);
 			if (result.IsSuccess)
 			{
