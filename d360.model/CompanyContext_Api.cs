@@ -3388,7 +3388,8 @@ insert into #cardinality (ObjectUid)
 	select	r.ObjectUid
 	from	api.ExecutionRelationship r
 			inner join dbo.Asset o on o.Uid = r.ObjectUid and r.ExecutionID = @ExecutionID
-			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.ObjectAssetID = o.ID;
+			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.ObjectAssetID = o.ID
+			inner join Asset s on s.ID = I.SubjectAssetID and s.Uid <> r.SubjectUid ;
 
 if exists (select 1 from #cardinality)
 begin
@@ -3433,7 +3434,8 @@ insert into #cardinality (SubjectUid)
 	select	r.SubjectUid
 	from	api.ExecutionRelationship r
 			inner join dbo.Asset s on s.Uid = r.SubjectUid and r.ExecutionID = @ExecutionID
-			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.SubjectAssetID = s.ID;
+			inner join [Intersect] i on i.IntersectTypeID = @IntersectTypeID and i.SubjectAssetID = s.ID
+			inner join Asset o on O.ID = I.ObjectAssetID and o.Uid <> r.ObjectUid ;
 
 if exists (select 1 from #cardinality)
 begin
