@@ -96,6 +96,13 @@ namespace d360.model.DataAccessLayer.repositories
 					viewnamerepl = await GetAuditDateRangeQuery();
 				}
 			}
+			else if (startDate.HasValue && endDate.HasValue)
+			{
+				if ((endDate.Value - startDate.Value).TotalDays <= 2)
+				{
+					viewnamerepl = await GetAuditDateRangeQuery();
+				}
+			}
 
 			var viewName = @$"SELECT * 
 							  FROM {viewnamerepl}

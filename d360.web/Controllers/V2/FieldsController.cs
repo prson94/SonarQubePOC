@@ -2637,10 +2637,18 @@ namespace d360.web.Controllers.V2
 
 				if (isForAssetForm)
 				{
-					hasColor = Company.Connection.Query<int>(@"select count(1) from fieldtype ft
-					inner join assettype at on at.Object = ft.LookupObjectType + 'Type' and at.ObjectID = ft.LookupObjectID
-					inner join asset a on a.AssetTypeID = at.ID
-					where ft.id = @fieldTypeId and a.color is not null", new { fieldTypeId }).FirstOrDefault() > 0;
+					hasColor = Company.Connection.Query<int>($@"
+					declare @assettypeid int = null;
+					
+					select top 1 @assettypeid = att.id
+					from fieldtype ft
+					inner join assettype att on att.Object = ft.LookupObjectType + 'Type' and att.ObjectID = ft.LookupObjectID
+					where ft.id = @fieldTypeId
+
+					select count(1) 
+					from asset a 
+					where a.AssetTypeID = @assettypeid and a.color is not null
+					option(recompile)", new { fieldTypeId }).FirstOrDefault() > 0;
 
 					if (hasColor)
 					{
