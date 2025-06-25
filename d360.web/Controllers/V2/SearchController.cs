@@ -443,12 +443,11 @@ namespace d360.web.Controllers.V2
 			document.SetCellValue(1, index++, "Category");
 			document.SetCellValue(1, index++, "Type");
 			document.SetCellValue(1, index++, "Name");
-			document.SetCellValue(1, index++, "Status");
 			document.SetCellValue(1, index++, "Data Quality Score");
 			document.SetCellValue(1, index++, "Governance Score");
-			document.SetCellValue(1, index++, "Asset Path");
-			document.SetCellValue(1, index++, "Asset Type Path");
-			document.SetCellValue(1, index++, "Tags");
+			//document.SetCellValue(1, index++, "Asset Path");
+			//document.SetCellValue(1, index++, "Asset Type Path");
+			//document.SetCellValue(1, index++, "Tags");
 
 			fieldTypes?.ToList().ForEach(ft =>
 			{
