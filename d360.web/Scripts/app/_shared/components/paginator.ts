@@ -83,8 +83,8 @@ export class Paginator implements OnChanges, OnInit {
 		return (this.page === cpage) ? 'selected' : '';
 	}
 
-    changePageNumber(newItemsPerPage: number) {
-		this.page = Math.floor((this.page * this.rows) / newItemsPerPage);
+	changePageNumber(newItemsPerPage: number) {
+		this.page = Math.max(Math.floor(((this.page - 1) * this.rows + 1) / newItemsPerPage) + 1, 1);
 		this.rows = newItemsPerPage;
 		this.paginate(this.rows, this.page);
     }
@@ -155,7 +155,7 @@ export class Paginator implements OnChanges, OnInit {
 
     checkVisibleNumbers() {
         this.pageOptions = [];
-        const currentPage = this.page + 1, totalPages = this.getPageCount();
+        const currentPage = this.page, totalPages = this.getPageCount();
         const step = 2; // Current page +- step
         const paging = [];
 
