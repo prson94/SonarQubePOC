@@ -2691,6 +2691,9 @@
   <data name="RestrictVoteRemove" xml:space="preserve">
     <value>Fehler beim Entfernen Ihrer Abstimmung zum Kommentar auf Basis dieses Emoji</value>
   </data>
+	<data name="NoVoteForComment" xml:space="preserve">
+    <value>No vote is found for this comment</value>
+  </data>
   <data name="RollupCountPermission" xml:space="preserve">
     <value>Sie verfügen nicht über die Berechtigung zum Anzeigen von zusammengefassten Zählungen nach Kommentartyp.</value>
   </data>

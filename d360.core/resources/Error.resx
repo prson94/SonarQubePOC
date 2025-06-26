@@ -2727,6 +2727,9 @@
   <data name="RestrictVoteRemove" xml:space="preserve">
     <value>Error while removing your vote on the comment using this emoji</value>
   </data>
+	<data name="NoVoteForComment" xml:space="preserve">
+    <value>No vote is found for this comment</value>
+  </data>
   <data name="RollupCountPermission" xml:space="preserve">
     <value>You do not have permissions to see rolled up counts by comment type.</value>
   </data>
