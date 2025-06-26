@@ -5,13 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric,Puneet,AmitYadav" id="Procedure.bulkload.GetLoadColumns-v26">
-    <comment>GOV-29084</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+  <changeSet author="Papas" id="Procedure.bulkload.GetLoadColumns-v27">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 create or alter procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
@@ -284,15 +280,14 @@ begin
 		from	IntersectTypeDetail
 		where	ID = @id
 		
+		if not (@subjectClass = 9 and @subjectTypeID = 0)
+		begin
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
+		end
 
 		if not (@objectClass = 9 and @objectTypeID = 0)
 		begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
-		end
-
-		if not (@subjectClass = 9 and @subjectTypeID = 0)
-		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
 		end
 	end 
 	
@@ -400,13 +395,8 @@ begin
 	from	@fields F
 	for json path
 end
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 ]]>
-	</rollback>
+    </sql>
   </changeSet>
 
 </databaseChangeLog>

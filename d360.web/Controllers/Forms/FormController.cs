@@ -753,14 +753,14 @@ order by Sort, title";
 				case "U":   // Unrelation
 					#region
 					sql = $@"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, 
-							 CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path) as title
+							 CONCAT(SName.Path,' ', P.Name,' ',OName.Path) as title
 							 from intersecttypedetail itd 
 								cross apply dbo.GetAssetTypeTextPathById (itd.SubjectAssetTypeId,' > ') SName 
 								cross apply dbo.GetAssetTypeTextPathById (itd.ObjectAssetTypeId,' > ') OName 
 								inner join [Predicate] P on P.ID = itd.PredicateID
 							 where (itd.IsSystem = 0 or (itd.SubjectClass = {(int)AssetTypeClass.Reference} and itd.ObjectClass = {(int)AssetTypeClass.Reference})) 
 							 and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) 
-							 order by CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path)";
+							 order by CONCAT(SName.Path,' ',P.Name,' ',OName.Path)";
 					break;
 				#endregion
 				case "M":   // Users/Groups
