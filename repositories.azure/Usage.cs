@@ -23,9 +23,6 @@ namespace repositories.azure
 		{
 			var response = new RepositoryResponse<PagedApiBaseViewModel<dynamic>>(new PagedApiBaseViewModel<dynamic>(), 200, true);
 
-			response.Data.pageNum = queryParams.CheckForPageNumber();
-			response.Data.pageSize = queryParams.CheckForPageSize();
-
 			var dbArgs = new DynamicParameters();
 
 			var orderBySql = "";
@@ -54,6 +51,20 @@ namespace repositories.azure
 				};
 
 			#region handle queryparams
+			
+			if (!queryParams.IsQueryParameterValidInteger("_pagenum"))
+			{
+				return new(400, Error.InvalidpageNumNumberValue);
+			}
+
+			if (!queryParams.IsQueryParameterValidInteger("_pagesize"))
+			{
+				return new(400, Error.InvalidpageSizeNumberValue);
+			}
+
+			response.Data.pageNum = queryParams.CheckForPageNumber();
+			response.Data.pageSize = queryParams.CheckForPageSize();
+			
 			if (queryParams.IsQueryParameterPresent("_direction"))
 			{
 				string[] allowedDirections = { "asc", "desc" };
@@ -251,6 +262,8 @@ namespace repositories.azure
 				return new((int)code, errorMessage);
 			}
 
+			#endregion
+			
 			if (pageSize > 0 || pageNum > 0)
 			{
 				if (pageSize < 1) { pageSize = 1; }
@@ -264,8 +277,6 @@ namespace repositories.azure
 			{
 				whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray())} ";
 			}
-
-			#endregion
 
 			Func<string, string> contains = delegate (string p)
 			{

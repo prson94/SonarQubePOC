@@ -511,13 +511,12 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_assetUid", "Filter by the provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_assetTypeUid", "Filter by the provided asset type uid", DataType = "string", ParameterType = "query", Required = false),
 			RequireAdminPermissions
-
 		]
 		public async Task<IHttpActionResult> GetUsageDetails()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 			var results = await Usage.ReadUsageDetailAsync(queryParams);
-			return results.IsSuccess ? Ok(results.Data) : errorMessageResponse((HttpStatusCode)results.StatusCode, results.Message);
+			return sendRepositoryOkResponse(results);
 		}
 
 		/// <summary>
