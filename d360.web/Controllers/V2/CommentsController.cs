@@ -279,7 +279,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetComments()
-        {
+        { 
             var queryParams = Request.GetQueryNameValuePairs();
             var comments = await Comments.GetCommentDetails(queryParams);
 
