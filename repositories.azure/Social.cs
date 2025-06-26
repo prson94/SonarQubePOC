@@ -568,6 +568,8 @@ namespace repositories.azure
 			var advancefilters = queryParams.ParseODataFilters();
 			var (dbArgs, wheres) = advancefilters.ConvertToSqlFilters(queryFieldOptions);
 
+			whereStatements.AddRange(wheres);
+
 			Guid assetUid = Guid.Empty;
 			bool assetUidPresent = false;
 
@@ -686,11 +688,12 @@ namespace repositories.azure
 
 				baseCommentWheres.Add(@"(C.CreatedOn between @rangeStart and @rangeEnd)");
 			}
-			#endregion
 
-			if (assetUidPresent)
+			#endregion
+		
+			using (var connection = ConnectionProvider.Connect(true))
 			{
-				using (var connection = ConnectionProvider.Connect(true))
+				if (assetUidPresent)
 				{
 					var query = @"
 			SELECT a.*, at.*
@@ -709,7 +712,7 @@ namespace repositories.azure
 
 					if (asset == null)
 					{
-						return new RepositoryResponse<CommentDetails>(null, (int)HttpStatusCode.NotFound, false, Error.AssetUidNotFound);
+						return new(null, 404, false, Error.AssetUidNotFound);
 					}
 
 					if (
@@ -717,140 +720,137 @@ namespace repositories.azure
 						!HasAssetTypePermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)
 						)
 					{
-						return new RepositoryResponse<CommentDetails>(null, (int)HttpStatusCode.Forbidden, false, Error.RestrictReadAssettype);
+						return new (null, 403, false, Error.RestrictReadAssettype);
 					}
 
 					dbArgs.Add("@assetId", asset.ID);
 					baseCommentWheres.Add(@"( (C.AssetID = @assetId) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetID = @assetId)) )");
+				}
 
-					if (assetTypeUidPresent)
+				if (assetTypeUidPresent)
+				{
+					var assetType = connection.Query<AssetType>("SELECT * FROM AssetType WHERE uid = @assetTypeUid", new { assetTypeUid }).FirstOrDefault();
+					if (assetType == null)
 					{
-						var assetType = connection.Query<AssetType>("SELECT * FROM AssetType WHERE uid = @assetTypeUid",
-							new { assetTypeUid }).FirstOrDefault();
+						return new(404, Error.AssetUidNotFound);
+					}
+					if (!HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+					{
+						return new(403, Error.RestrictReadAssettype);
+					}
 
-						if (assetType == null)
-						{
-							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.NotFound, Error.AssetUidNotFound);
-						}
-
-						if (!HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
-						{
-							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.Forbidden, Error.RestrictReadAssettype);
-						}
-
-						dbArgs.Add("@assetTypeId", assetType.ID);
-						baseCommentWheres.Add(@"( 
-					(C.ID in ( 
-							 select ic.ID 
-							 from	Comment ic 
-									inner join Asset ia on ia.ID = ic.AssetID 
-									inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
-							 )
-					) 
-					or (C.ID in (
-							select	coalesce(ic.ParentID, ic.ID) 
-							from	CommentRelation ir 
-									inner join Comment ic on ic.ID = ir.CommentID 
-									inner join Asset ia on ia.ID = ir.AssetID 
-									inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
+					dbArgs.Add("@assetTypeId", assetType.ID);
+					baseCommentWheres.Add(@"( 
+				(C.ID in ( 
+							select ic.ID 
+							from	Comment ic 
+								inner join Asset ia on ia.ID = ic.AssetID 
+								inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
 							)
-					) 
-				)");
-					}
+				) 
+				or (C.ID in (
+						select	coalesce(ic.ParentID, ic.ID) 
+						from	CommentRelation ir 
+								inner join Comment ic on ic.ID = ir.CommentID 
+								inner join Asset ia on ia.ID = ir.AssetID 
+								inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
+						)
+				) 
+			)");
+				}
 
-					int followerresourceID = -1;
+				int followerresourceID = -1;
 
-					if (followerUidPresent)
+				if (followerUidPresent)
+				{
+					var selectQuery = @"SELECT TOP 1 * FROM GlobalReportingResources WHERE Uid = @FollowerUid";
+					var parameters = new { FollowerUid = followerUid };
+					var follower = connection.QueryFirstOrDefault<GlobalReportingResource>(selectQuery, parameters);
+
+					if (follower == null)
 					{
-						var selectQuery = @"SELECT TOP 1 * FROM GlobalReportingResources WHERE Uid = @FollowerUid";
-						var parameters = new { FollowerUid = followerUid };
-						var follower = connection.QueryFirstOrDefault<GlobalReportingResource>(selectQuery, parameters);
-
-						if (follower == null)
-						{
-							return new RepositoryResponse<CommentDetails>((int)HttpStatusCode.NotFound,Error.UserUidNotFound);
-						}
-						else
-						{
-							followerresourceID = follower.ResourceID;
-						}
+						return new(404, Error.UserUidNotFound);
 					}
-					else if (followerCurrResUidPresent)
+					else
 					{
-						followerresourceID = CurrentUserId;
+						followerresourceID = follower.ResourceID;
 					}
+				}
+				else if (followerCurrResUidPresent)
+				{
+					followerresourceID = CurrentUserId;
+				}
 
-					if (followerresourceID > -1)
-					{
-						dbArgs.Add("@followerId", followerresourceID);
+				if (followerresourceID > -1)
+				{
+					dbArgs.Add("@followerId", followerresourceID);
 
-						baseCommentWheres.Add(@"(
+					baseCommentWheres.Add(@"(
 (exists (select f.AssetID from FollowDetail f where f.ResourceID = @followerId and f.AssetID = C.AssetID  union all select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId and r.AssetID = C.AssetID)) 
 or (exists (select cp.ParentID from Comment cp where cp.ParentID is not null and cp.CreatedBy = @followerId and cp.ParentID = C.ID ))
 or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 )");
-					}
+				}
 
-					dbArgs.Add("@currentUser", CurrentUserId);
-					whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where (PermissionsBitMask & {(int)Permission.ReadAsset}) = 0 and AssetID is not null)");
-					whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
+				dbArgs.Add("@currentUser", CurrentUserId);
+				whereStatements.Add($@"O.ID not in (select AssetID from dbo.UserAssetPermissions(@currentUser,T.ID) where (PermissionsBitMask & {(int)Permission.ReadAsset}) = 0 and AssetID is not null)");
+				whereStatements.Add(@"T.ID not in (select AssetTypeID from dbo.AssetTypesUserCantRead(@currentUser))");
 
-					var cteSql = $@"           
-							with P as (
-								select		C.ID,
-											C.ParentID,
-											C.AssetID
-								from		Comment C 
-								where		{string.Join(" and ", baseCommentWheres)}
-								union all
-								select		C.ID,
-											C.ParentID,
-											P.AssetID
-								from		Comment C
-											inner join P on P.ID = C.ParentID
-							)";
+				var cteSql = $@"           
+						with P as (
+							select		C.ID,
+										C.ParentID,
+										C.AssetID
+							from		Comment C 
+							where		{string.Join(" and ", baseCommentWheres)}
+							union all
+							select		C.ID,
+										C.ParentID,
+										P.AssetID
+							from		Comment C
+										inner join P on P.ID = C.ParentID
+						)";
 
-					var whereSql = (whereStatements.Count > 0) ? "where " + string.Join(" and ", whereStatements) : "";
+				var whereSql = (whereStatements.Count > 0) ? "where " + string.Join(" and ", whereStatements) : "";
 
-					var tableSql = @"from	Comment C
-								inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy
-								inner join P ON C.ID = P.ID
-								inner join Asset O on O.ID = P.AssetID
-								inner join AssetType T on T.ID = O.AssetTypeID
-								inner join dbo.AssetPath AP on AP.ID = O.ID
-								outer apply [dbo].[GetAssetUrlById](O.ID) AUrl";
+				var tableSql = @"from	Comment C
+							inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy
+							inner join P ON C.ID = P.ID
+							inner join Asset O on O.ID = P.AssetID
+							inner join AssetType T on T.ID = O.AssetTypeID
+							inner join dbo.AssetPath AP on AP.ID = O.ID
+							outer apply [dbo].[GetAssetUrlById](O.ID) AUrl";
 
-					var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
-					var countSql = $@"
-							{cteSql}
-							select	count(1) as [Count]
-							{tableSql} {countWhereSql}";
+				var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
+				var countSql = $@"
+						{cteSql}
+						select	count(1) as [Count]
+						{tableSql} {countWhereSql}";
 
-					var sql = $@"
-							{cteSql}
-							select	{COMMENT_TABLE_COLUMNS},
-									O.Uid as AssetUid,
-									T.Uid as AssetTypeUid,
-									AUrl.Url as Url,
-									AP.DisplayPath as AssetPath,
-									R.FirstName + ' ' + R.LastName as ResourceName,
-									{TAGS_JSON_SQL},
-									{EMOJIS_JSON_SQL} 
-							{tableSql} {whereSql} {orderBySql}";
+				var sql = $@"
+						{cteSql}
+						select	{COMMENT_TABLE_COLUMNS},
+								O.Uid as AssetUid,
+								T.Uid as AssetTypeUid,
+								AUrl.Url as Url,
+								AP.DisplayPath as AssetPath,
+								R.FirstName + ' ' + R.LastName as ResourceName,
+								{TAGS_JSON_SQL},
+								{EMOJIS_JSON_SQL} 
+						{tableSql} {whereSql} {orderBySql}";
 
-					var countRequest = await connection.QueryAsync<int>(countSql, dbArgs);
+				var countRequest = await connection.QueryAsync<int>(countSql, dbArgs);
 
-					count = countRequest.Single();
+				count = countRequest.Single();
 
-					var request = await connection.QueryAsync<CommentDetail>(sql, dbArgs);
-					var flatComments = request.ToList();
-					var rootComments = flatComments.Where(c => !c.ParentID.HasValue);
+				var request = await connection.QueryAsync<CommentDetail>(sql, dbArgs);
+				var flatComments = request.ToList();
+				var rootComments = flatComments.Where(c => !c.ParentID.HasValue);
 
-					foreach (var commentDetail in rootComments)
-					{
-						loadCommentDetailDescendants(flatComments, commentDetail);
-						returnedComments.Add(commentDetail);
-					}
+				foreach (var commentDetail in rootComments)
+				{
+					loadCommentDetailDescendants(flatComments, commentDetail);
+					returnedComments.Add(commentDetail);
 				}
 			}
 

@@ -206,7 +206,14 @@ namespace repositories.azure.extensions
 									{
 										rawValue = rawValue + "%";
 									}
-
+									if (rawOperator.Equals("ct"))
+									{
+										rawValue = "%" + rawValue + "%";
+									}
+									if (rawOperator.Equals("nct"))
+									{
+										rawValue = "%" + rawValue + "%";
+									}
 									dbArgs.Add($"@{filterOption.PropertyName}", rawValue);
 									wheres.Add($"{filterOption.DatabaseColumn} {convertedOperator} @{filterOption.PropertyName}");
 									break;
