@@ -203,6 +203,23 @@ namespace repositories.azure.extensions
 			return defaultValue;
 		}
 
+		public static bool IsQueryParameterValidInteger(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagenum")
+		{
+			bool value = true;
+
+			if (queryParams.IsQueryParameterPresent(parameterName))
+			{
+				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
+				if (!string.IsNullOrEmpty(rawValue))
+				{
+					int parsedValue;
+					value = int.TryParse(rawValue, out parsedValue);
+				}
+			}
+
+			return value;
+		}
+
 		public static bool IsQueryParameterPresent(this IEnumerable<KeyValuePair<string, string>> queryParams, string name)
 		{
 			return queryParams.ToList().Any(x => x.Key.ToLower() == name.ToLower());
