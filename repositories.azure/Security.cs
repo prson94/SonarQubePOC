@@ -186,13 +186,15 @@ from	security.[Rule] ru
 								trans);
 						});
 
+						int thenPosition = 0;
 						rawThens.ForEach(t =>
 						{
 							t.Id = ruleId;
+							thenPosition++;
 							connection.Execute(
 								"insert into [security].RuleThen (ID, [Position], FieldTypeId, [Operator], [Value], SecurityId) " +
 								"values (@Id, @Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
-								new { t.Id, t.Position, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
+								new { t.Id, Position = thenPosition, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
 								trans);
 						});
 
@@ -1127,12 +1129,14 @@ order by SecurityType asc, Name asc;
 						#endregion When Processing
 
 						connection.Execute("delete [security].RuleThen where Id = @ruleId; ", new { ruleId }, transaction: trans);
+						int thenPosition = 0;
 						rawThens.ForEach(t => {
 							t.Id = ruleId;
+							thenPosition++;
 							connection.Execute(
 								"insert into [security].RuleThen (Id, [Position], FieldTypeId, [Operator], [Value], SecurityId) " +
 								"values (@Id, @Position, @FieldTypeId, @Operator, @Value, @SecurityId)",
-								new { t.Id, t.Position, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
+								new { t.Id, Position = thenPosition, t.FieldTypeId, Operator = (int)t.Operator, t.Value, t.SecurityId },
 								transaction: trans);
 						});
 
@@ -1379,79 +1383,88 @@ order by SecurityType asc, Name asc;
 			if (conditions.Count > 0)
 			{
 				int position = 0;
-				conditions.ForEach(t =>
+				var anyDuplicates = conditions.GroupBy(o => o.SecurityUid).Any(o => o.Count() > 1);
+				if (anyDuplicates)
 				{
-					position++;
-					if (response == null) // Once we have an error, just stop.
+					response = new(409, "Duplicate security assignments in this policy. Assignments must be unique.");
+				}
+
+				if (response == null)
+				{ 
+					conditions.ForEach(t =>
 					{
-						var rawThen = new RuleThen { Operator = t.Operator, Position = position };
-
-						if (t.SecurityUid.HasValue)
+						position++;
+						if (response == null) // Once we have an error, just stop.
 						{
-							// Direct security object assignment.
+							var rawThen = new RuleThen { Operator = t.Operator, Position = position };
 
-							if (securityType == RuleSecurityType.Group)
+							if (t.SecurityUid.HasValue)
 							{
-								// Check groups
-								var group = groups.SingleOrDefault(g => g.Uid == t.SecurityUid);
-								if (group != null)
+								// Direct security object assignment.
+
+								if (securityType == RuleSecurityType.Group)
 								{
-									rawThen.SecurityId = group.ID;
+									// Check groups
+									var group = groups.SingleOrDefault(g => g.Uid == t.SecurityUid);
+									if (group != null)
+									{
+										rawThen.SecurityId = group.ID;
+									}
+									else
+									{
+										response = new(404, "Could not find group based on SecurityUid provided.");
+									}
 								}
 								else
 								{
-									response = new(404, "Could not find group based on SecurityUid provided.");
+									// Check users
+									var user = users.SingleOrDefault(u => u.Uid == t.SecurityUid);
+									if (user != null)
+									{
+										rawThen.SecurityId = user.ResourceID;
+									}
+									else
+									{
+										response = new(404, "Could not find user based on SecurityUid provided.");
+									}
 								}
 							}
 							else
 							{
-								// Check users
-								var user = users.SingleOrDefault(u => u.Uid == t.SecurityUid);
-								if (user != null)
+								// Filter security object assign (non-direct)
+								FieldType field = null;
+								if (securityType == RuleSecurityType.Group)
 								{
-									rawThen.SecurityId = user.ResourceID;
+									field = groupFields.SingleOrDefault(f => f.Name == t.FieldName);
 								}
 								else
 								{
-									response = new(404, "Could not find user based on SecurityUid provided.");
+									field = userFields.SingleOrDefault(f => f.Name == t.FieldName);
 								}
-							}
-						}
-						else
-						{
-							// Filter security object assign (non-direct)
-							FieldType field = null;
-							if (securityType == RuleSecurityType.Group)
-							{
-								field = groupFields.SingleOrDefault(f => f.Name == t.FieldName);
-							}
-							else
-							{
-								field = userFields.SingleOrDefault(f => f.Name == t.FieldName);
-							}
-							if (field != null)
-							{
-								if (VALID_FIELDS.Contains(field.Type))
+								if (field != null)
 								{
-									rawThen.FieldTypeId = field.ID;
+									if (VALID_FIELDS.Contains(field.Type))
+									{
+										rawThen.FieldTypeId = field.ID;
+									}
+									else
+									{
+										response = new(409, "Selected field not supported in security object filters based on its type.");
+									}
 								}
 								else
 								{
-									response = new(409, "Selected field not supported in security object filters based on its type.");
+									response = new(404, "Could not find field based on FieldName provided.");
 								}
 							}
-							else
-							{
-								response = new(404, "Could not find field based on FieldName provided.");
-							}
-						}
 
-						if (response == null)
-						{
-							rawThens.Add(rawThen);
+							if (response == null)
+							{
+								rawThens.Add(rawThen);
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 
 			return (rawThens, response);
