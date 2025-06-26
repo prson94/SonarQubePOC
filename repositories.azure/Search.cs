@@ -270,7 +270,8 @@ order by r.[Rank] desc;";
 
 			// If user passed in a Uid, pass it into the sql to NOT bother performing a full-text search and instead, return the asset directly. In same format as search.
 			bool searchByUid = false;
-			if (Guid.TryParse(phrase, out Guid uid))
+			string testUidSegment = phrase.Replace("*", "");
+			if (Guid.TryParse(testUidSegment, out Guid uid))
 			{
 				parameters.Add("@uid", uid);
 				searchByUid = true;
