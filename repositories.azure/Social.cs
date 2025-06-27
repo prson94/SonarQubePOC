@@ -126,7 +126,8 @@ namespace repositories.azure
 
 							if (commentAsset == null)
 							{
-								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.AssetUidNotFound);
+								string message = string.Format(Error.AssetUidNotFound, comment.AssetUid);
+								return new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, message );
 							}
 
 							if (!commentAsset.AssetType.Class.AsInfoModel().AllowCommentsOnAsset)
@@ -291,7 +292,8 @@ namespace repositories.azure
 
 						if (dbComment == null)
 						{
-							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, Error.CommentNotFound);
+							string message = string.Format(Error.CommentNotFound, commentUid);
+							return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, message);
 						}
 
 						if (dbComment.CreatedBy != CurrentUserId && !CurrentUserIsAdmin)
@@ -385,11 +387,12 @@ namespace repositories.azure
 							return new RepositoryResponse<bool>(true,(int)HttpStatusCode.OK,true, ""); 
 						}
 					}
-					return new RepositoryResponse<bool>(false,(int)HttpStatusCode.OK,false, Error.NotFound); 
+					return new RepositoryResponse<bool>(false,(int)HttpStatusCode.NotFound,false, Error.NoVoteForComment); 
 				}
 				else
 				{
-					return new RepositoryResponse<bool>(false,(int)HttpStatusCode.NotFound,false, Error.NotFound);
+					string message = string.Format(Error.CommentNotFound, commentUid);
+					return new RepositoryResponse<bool>(false, (int)HttpStatusCode.NotFound, false, message);
 				}
 			}
 		}
@@ -412,7 +415,8 @@ namespace repositories.azure
 
 					if (dbComment == null)
 					{
-						return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, Error.comment), null);
+						string message = string.Format(Error.CommentNotFound, commentUid);
+						return (new RepositoryResponse<CommentDetail>(null, (int)HttpStatusCode.NotFound, false, message), null);
 
 					}
 
@@ -968,11 +972,22 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 							order by V.Emoji";
 
 					var request = await connection.QueryAsync<CommentVoterDetail>(sql, new { commentUid, emoji = (int)emoji });
-					return new RepositoryResponse<List<CommentVoteDetail>>((List<CommentVoteDetail>)request, (int)HttpStatusCode.OK, true, "");
+					if (!request.Any())
+					{
+						return new RepositoryResponse<List<CommentVoteDetail>>(null, (int)HttpStatusCode.NotFound, true, Error.NotFound);
+					}
+					var mappedList = request.Select(v => new CommentVoteDetail
+					{
+						resourceUid = v.resourceUid,
+						userDisplayName = v.userDisplayName,
+					}).ToList();
+					
+					return new RepositoryResponse<List<CommentVoteDetail>>((List<CommentVoteDetail>)mappedList, (int)HttpStatusCode.OK, true, "");
 				}
 				else
 				{
-					return new RepositoryResponse<List<CommentVoteDetail>>(null, (int)HttpStatusCode.NotFound, false, Error.comment);
+					string message = string.Format(Error.CommentNotFound, commentUid);
+					return new RepositoryResponse<List<CommentVoteDetail>>(null, (int)HttpStatusCode.NotFound, false, message);
 				}
 			}
 		}

@@ -10,7 +10,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
-using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
@@ -142,16 +141,14 @@ namespace d360.web.Controllers.V2
 			}
 			else
 			{
-				if (Comments.DeleteComment(commentUid).IsSuccess)
+				var delete = Comments.DeleteComment(commentUid);
+				if (delete.IsSuccess)
 				{
 					return Ok();
 				}
-				else
-				{
-					return errorMessageResponse(HttpStatusCode.InternalServerError, Error.UnknownError, Error.CommentRetryRemove);
-				}
+				return sendRepositoryOkResponse(delete);
 			}
-        }
+		}
 
         /// <summary>
         /// Use this endpoint to unregister your vote for a particular comment.
@@ -179,10 +176,7 @@ namespace d360.web.Controllers.V2
 				{
 					return Ok(); 
 				}
-				else
-				{
-					return errorMessageResponse((HttpStatusCode)delete.StatusCode, delete.Message);
-				}
+				return sendRepositoryOkResponse(delete);
 			}
 		}
 
@@ -301,8 +295,12 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetCommentVotersByEmoji(Guid commentUid, Emoji emoji)
         {
             var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
-            return Ok(model);
-        }
+			if(model.IsSuccess)
+			{
+				return Ok(model);
+			}
+			return sendRepositoryOkResponse(model);
+		}
 
         /// <summary>
         /// Returns an array of votes for a specific comment.

@@ -6802,6 +6802,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No vote is found for this comment.
+        /// </summary>
+        public static string NoVoteForComment {
+            get {
+                return ResourceManager.GetString("NoVoteForComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid {0} value provided. Must be a numeric value..
         /// </summary>
         public static string NumberValueMessage {
