@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.22">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.24">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -431,7 +431,7 @@ begin
 						end
 	from	@tbl m
 			cross apply openjson([Owner]) with (ResponsibilityTypeUid uniqueidentifier, [Operator] varchar(25)) c
-			left join dbo.ResponsibilityType rt on rt.Uid = c.ResponsibilityTypeUid
+			left join [security].[Role] rt on rt.Uid = c.ResponsibilityTypeUid
 			outer apply (select max(Present) Present
 						 from (select 1 as Present
 								from [dbo].[ResponsibilitySummary] rsa
