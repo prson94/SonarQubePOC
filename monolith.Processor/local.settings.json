@@ -1,10 +1,21 @@
 {
-    "IsEncrypted": false,
+	"IsEncrypted": false,
 	"Values": {
 		"AzureWebJobsStorage": "UseDevelopmentStorage=true",
 		"FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 		"AzureWebJobs.BulkLoader.Disabled": false,
 		"StorageConnection": "UseDevelopmentStorage=true",
 		"APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=540e47d4-1cf5-4647-86b1-3c5478eaf78e;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/"
+	},
+	"MailProviderOptions": {
+		"ApiKey": "",
+		"SubAccount": "",
+		"ReplyAddress": ""
+	},
+	"StorageProviderOptions": {
+		"ConnectionString": ""
+	},
+	"QueueProviderOptions": {
+		"ConnectionString": ""
 	}
 }

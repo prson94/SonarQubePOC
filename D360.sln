@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Common", "1. Common", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.extensions", "d360.extensions\d360.extensions.csproj", "{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Applications", "4. Applications", "{2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Applications", "5. Applications", "{2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Tests", "5. Tests", "{F2954AF7-C35D-4A24-8D64-CFF2D2030528}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6. Tests", "6. Tests", "{F2954AF7-C35D-4A24-8D64-CFF2D2030528}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs", "igx.jobs\igx.jobs.csproj", "{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE}"
 EndProject
@@ -58,9 +58,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "repositories", "repositorie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "repositories.azure", "repositories.azure\repositories.azure.csproj", "{B11EC76E-2791-4EE9-85E4-55C79241163D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Extensions", "3. Extensions", "{32994FD4-F6B3-4317-ADFC-563C96979B23}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Extensions", "2. Extensions", "{32994FD4-F6B3-4317-ADFC-563C96979B23}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Data Access", "2. Data Access", "{01388603-040F-4997-9AE7-E273E6F8E195}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Data Access", "3. Data Access", "{01388603-040F-4997-9AE7-E273E6F8E195}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.extensions.storage", "d360.extensions.storage\d360.extensions.storage.csproj", "{B355E1BC-0512-4DCC-B04A-5D90018EA9F9}"
 EndProject
@@ -77,6 +77,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.indexer", "igx.jobs.indexer\igx.jobs.indexer.csproj", "{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monolith.Processor", "monolith.Processor\monolith.Processor.csproj", "{FEA19866-92D9-FE05-9BC4-78AD450B1452}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "services", "services\services.csproj", "{97207750-6972-232F-BB7B-6106666106AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "repositories.domain", "repositories.domain\repositories.domain.csproj", "{751728FF-B0A1-4198-A8E2-F9D5C16D234E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.Services", "4.Services", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "services.domain", "services.domain\services.domain.csproj", "{F7AED21E-796D-4A58-B574-2B49EC9838BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -194,6 +202,18 @@ Global
 		{FEA19866-92D9-FE05-9BC4-78AD450B1452}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEA19866-92D9-FE05-9BC4-78AD450B1452}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEA19866-92D9-FE05-9BC4-78AD450B1452}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97207750-6972-232F-BB7B-6106666106AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97207750-6972-232F-BB7B-6106666106AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97207750-6972-232F-BB7B-6106666106AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97207750-6972-232F-BB7B-6106666106AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{751728FF-B0A1-4198-A8E2-F9D5C16D234E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{751728FF-B0A1-4198-A8E2-F9D5C16D234E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{751728FF-B0A1-4198-A8E2-F9D5C16D234E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{751728FF-B0A1-4198-A8E2-F9D5C16D234E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7AED21E-796D-4A58-B574-2B49EC9838BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7AED21E-796D-4A58-B574-2B49EC9838BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7AED21E-796D-4A58-B574-2B49EC9838BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7AED21E-796D-4A58-B574-2B49EC9838BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -227,9 +247,12 @@ Global
 		{CF258379-3C5F-49A3-8A4E-A3D1D5BFCA72} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490} = {757CF48D-6728-4702-AC12-754629196548}
 		{FEA19866-92D9-FE05-9BC4-78AD450B1452} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
+		{97207750-6972-232F-BB7B-6106666106AF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{751728FF-B0A1-4198-A8E2-F9D5C16D234E} = {01388603-040F-4997-9AE7-E273E6F8E195}
+		{F7AED21E-796D-4A58-B574-2B49EC9838BC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal
