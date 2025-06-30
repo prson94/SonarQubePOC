@@ -77,4 +77,18 @@ END
     </sql>
   </changeSet>
 
+   <changeSet author="Puneet Gupta" id="Table.reporting.Global_Audit.Indices-v1.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ReportingAudit_Date_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ReportingAudit_Date_Include] ON [reporting].[Global_Audit] ( [Date] ASC) INCLUDE([ID])
+END
+]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>
