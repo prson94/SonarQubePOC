@@ -5415,14 +5415,11 @@ drop table if exists #tempAssetsIds;
 
 			string resposibilityTypSql = $@"
 				-- Responsibility Type Assignment
-				select rt.[Name] as ResponsibilityTypeName, 
-					rt.[uid] as ResponsibilityTypeUid,
-					rtr.PermissionsBitMask as PermissionsMask
-				from 
-					[dbo].responsibilitytype rt
-					inner join [dbo].responsibilitytyperelation rtr on (rt.id = rtr.ResponsibilityTypeID)
-					inner join [dbo].assettype att on(att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
-				where att.id = @AssetTypeID 
+				select ResponsibilityTypeName,
+				ResponsibilityTypeUid,
+				[Permissions] PermissionsMask
+				from ResponsibilitySummary
+				where AssetTypeID =  @AssetTypeID 
 				order by 1;";
 
 
