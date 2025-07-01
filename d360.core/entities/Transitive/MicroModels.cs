@@ -55,8 +55,6 @@ namespace d360.core.entities
 
         public string Password { get; set; }
 
-        public string SearchServer { get; set; }
-
 		public string Region { get; set; }
 
 		public string RegionCode { get; set; }

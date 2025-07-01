@@ -1,19 +1,15 @@
-﻿using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.core.security;
-using d360.extensions;
 using d360.web.Filters;
 using d360.web.Models;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Web.Http;
 using repositories;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -123,11 +119,7 @@ namespace d360.web.Controllers.V2
 			RequireAdminPermissions,
 			MapToApiVersion("2.0"),
 			Route("roles"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ReadRole)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add roles.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> CreateRoleAsync([FromBody]CreateRole model)
 		{
@@ -203,11 +195,7 @@ namespace d360.web.Controllers.V2
 			MapToApiVersion("2.0"),
 			Route("roles/{uid:Guid}"),
 			SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(RoleDeleteResult)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility with UID 'provided uid' does not exist.", typeof(ErrorResponse))
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> DeleteRoleAsync(Guid uid)
 		{
@@ -444,11 +432,7 @@ namespace d360.web.Controllers.V2
 			RequireAdminPermissions,
 			MapToApiVersion("2.0"),
 			Route("roles/{uid:Guid}"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the PUT request.", typeof(ReadRole)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> UpdateRoleAsync(Guid uid, CreateRole model)
 		{
