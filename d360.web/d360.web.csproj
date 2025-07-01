@@ -2486,6 +2486,14 @@
       <Project>{c2b66b7d-01ff-4c90-8b3d-5472af1aab9e}</Project>
       <Name>repositories</Name>
     </ProjectReference>
+    <ProjectReference Include="..\services.domain\services.domain.csproj">
+      <Project>{f7aed21e-796d-4a58-b574-2b49ec9838bc}</Project>
+      <Name>services.domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\services\services.csproj">
+      <Project>{97207750-6972-232f-bb7b-6106666106af}</Project>
+      <Name>services</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

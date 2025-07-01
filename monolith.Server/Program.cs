@@ -11,8 +11,8 @@ using monolith.Server.Services;
 using monolith.Server.Utils;
 using repositories;
 using repositories.azure;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using services;
+using services.domain;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -44,7 +44,15 @@ builder.Services.AddScoped(c =>
 	return new DapperConnectionProvider { ReadOnlyConnectionString = connectionString, ReadWriteConnectionString = connectionString };
 });
 
+// This should be removed as we should not have direct access to the Catalog repository in the future.
 builder.Services.AddScoped<ICatalog, Catalog>();
+
+// Govern Service Layer Injection
+builder.Services.Configure<MailProviderOptions>(builder.Configuration.GetSection("MailProviderOptions"));
+builder.Services.Configure<QueueProviderOptions>(builder.Configuration.GetSection("QueueProviderOptions"));
+builder.Services.Configure<StorageProviderOptions>(builder.Configuration.GetSection("StorageProviderOptions"));
+builder.Services.AddServiceLayer();
+
 builder.Services.ConfigureHttpJsonOptions(j =>
 {
 	j.SerializerOptions.Converters.Add(

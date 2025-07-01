@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;net48</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
+	  <PackageReference Include="Azure.Storage.Queues" Version="12.17.1" />
+	  <PackageReference Include="Mandrill.net" Version="9.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\d360.extensions\d360.extensions.csproj" />
+		<ProjectReference Include="..\repositories.domain\repositories.domain.csproj" />
+		<ProjectReference Include="..\repositories\repositories.csproj" />
+		<ProjectReference Include="..\repositories.azure\repositories.azure.csproj" />
+		<ProjectReference Include="..\services.domain\services.domain.csproj" />
+	</ItemGroup>
+
+</Project>
