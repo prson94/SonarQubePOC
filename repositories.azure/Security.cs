@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using ReadSecurityPolicy = d360.core.security.ReadSecurityPolicy;
 using RuleThen = d360.core.security.RuleThen;
@@ -539,7 +540,12 @@ where	((AssetId = @assetId and ApplyToType = 0) OR (AssetTypeId = @assetTypeId a
 		and IsVisible = 1";
 				response.Data = await connection.QueryAsync<AssetOwnerModel>(sql, new { assetUid });
 			}
-
+			if(!response.Data.Any())
+			{
+				response.StatusCode = (int)HttpStatusCode.NotFound;
+				response.IsSuccess = false;
+				response.Message = string.Format(Error.AssetNotFound,assetUid);
+			}
 			return response;
 		}
 
