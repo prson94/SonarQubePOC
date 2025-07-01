@@ -4862,43 +4862,23 @@ drop table if exists #tempAssetsIds;
 			return result;
 		}
 
-		public IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType)
+		public async Task<IEnumerable<dynamic>> GetPossibleOwnersForAssetType(AssetType assetType)
 		{
 			var sql = $@"
-			declare @AssetTypeID int;
+select	distinct	
+		coalesce(Groupuid, ResourceUid) as [Uid],
+		'[' + ResponsibilityTypeName + '] - ' + coalesce(GroupName, ResourceName) as [Name],
+		iif(SecurityType = 1, 'Group', 'Resource') as [Type],
+		coalesce(GroupName, ResourceName) as SecurityAssetName,
+		ResponsibilityTypeId
+from	ResponsibilitySummary 
+where	AssetTypeID = @ID
+		and IsVisible = 1
+		and ResponsibilityTypeName is not null
+		and coalesce(GroupName, ResourceName) is not null
+order by '[' + ResponsibilityTypeName + '] - ' + coalesce(GroupName, ResourceName)";
 
-			select @AssetTypeID = ID
-			from AssetType 
-			where Object = @Object
-			and ObjectID = @id;
-
-			; with owners as (select distinct
-					responsibilityTypeId,
-					securityAssetid,
-					'[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
-					case 
-						when SecurityAsset = 'R' then 'Resource'
-						when SecurityAsset = 'G' then 'Group'
-						else @Object
-					end as [Type],
-					SecurityAssetName
-							from ResponsibilityDetailByAssetTypeID(@AssetTypeID)
-			where IsVisible = 1)
-			select Res.SecurityAssetUid as Uid, o.Name, o.Type, o.SecurityAssetName, o.ResponsibilityTypeId
-			from owners o
-			cross apply(
-			select top 1 * from
-			ResponsibilityDetailByAssetTypeID(@AssetTypeID) rd 
-			where rd.ResponsibilityTypeID = o.responsibilityTypeId
-			and rd.SecurityAssetID = o.SecurityAssetID
-			)Res
-			order by o.[Name]";
-
-			var results = CompanyContext
-							.Query<dynamic>(
-								sql,
-								new { id = assetType.ObjectID, assetType.Object },
-								ApiTimeout);
+			var results = await CompanyContext.QueryAsync<dynamic>(sql, new { assetType.ID }, ApiTimeout);
 
 			return results;
 		}

@@ -101,7 +101,7 @@ namespace repositories
 
 		ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model);
 
-		IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
+		Task<IEnumerable<dynamic>> GetPossibleOwnersForAssetType(AssetType assetType);
 
 		Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 

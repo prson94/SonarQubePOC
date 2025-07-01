@@ -2348,36 +2348,20 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetPossibleOwnersByAssetTypeUid(Guid assetTypeUid)
 		{
-			var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
-			string errorMessage;
-
-			try
+			if (assetTypeUid == Guid.Empty)
 			{
-				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, Error.BadRequest, string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty)));
-				}
-
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.NotFound, string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString())));
-				}
-
-				IEnumerable<dynamic> results = AssetRepository.GetPossibleOwnersForAssetType(assetType);
-
-				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				return errorMessageArgumentResponse(string.Format(Error.InvalidAssetTypeUidParameter, Guid.Empty));
 			}
-			catch (Exception ex)
+
+			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+			if (assetType == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ Label.EndpointMethod, prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, Error.InternalServerError, errorMessage));
+				return errorMessageNotFoundResponse(string.Format(Error.AssetTypeNotFound, assetTypeUid.ToString()));
 			}
+
+			var results = await AssetRepository.GetPossibleOwnersForAssetType(assetType);
+
+			return Ok(results);
 		}
 
 		[

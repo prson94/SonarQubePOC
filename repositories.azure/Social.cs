@@ -645,7 +645,7 @@ namespace repositories.azure
 			#endregion
 
 			var orderColumn = queryParams.CheckForSortColumn(validOrderFields, "C.CreatedOn");
-			string orderDirection = queryParams.CheckForSortDirection();
+			string orderDirection = queryParams.CheckForSortDirection( defaultValue: "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
 			// Parse page size and offset and load into arguments for SQL.
