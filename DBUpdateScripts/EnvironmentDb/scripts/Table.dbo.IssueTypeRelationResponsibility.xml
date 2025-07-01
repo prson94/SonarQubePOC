@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.IssueTypeRelationResponsibility-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.IssueTypeRelationResponsibility-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IssueTypeRelationResponsibility')
 BEGIN
 	CREATE TABLE [dbo].[IssueTypeRelationResponsibility](
@@ -22,20 +19,19 @@ BEGIN
 		[ID] ASC	
 	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 	) ON [PRIMARY]	
-	
-	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
-	WITH CHECK ADD CONSTRAINT [FK_IssueTypeRelation_IssueTypeRelationResponsibility] FOREIGN KEY([IssueTypeRelationID]) REFERENCES [dbo].[IssueTypeRelation] ([ID]) ON DELETE CASCADE
-	
-	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
-	WITH CHECK ADD CONSTRAINT [FK_ResponsibilityType_IssueTypeRelationResponsibility] FOREIGN KEY([ResponsibilityTypeId]) REFERENCES [dbo].[ResponsibilityType] ([ID]) ON DELETE CASCADE
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>  
+if not exists (select 1 from information_schema.table_constraints where table_schema='dbo' AND table_name='IssueTypeRelationResponsibility' AND constraint_name='FK_IssueTypeRelation_IssueTypeRelationResponsibility')
+begin
+	alter table [dbo].[IssueTypeRelationResponsibility] with check add constraint [FK_IssueTypeRelation_IssueTypeRelationResponsibility] FOREIGN KEY([IssueTypeRelationID]) references [dbo].[IssueTypeRelation] ([ID]) on delete cascade
+end
+
+if exists (select 1 from information_schema.table_constraints where table_schema='dbo' AND table_name='IssueTypeRelationResponsibility' AND constraint_name='FK_ResponsibilityType_IssueTypeRelationResponsibility')
+begin
+	alter table [dbo].[IssueTypeRelationResponsibility] drop constraint [FK_ResponsibilityType_IssueTypeRelationResponsibility]	
+end
+]]>
+  </sql>
+ </changeSet>  
 
 </databaseChangeLog>
