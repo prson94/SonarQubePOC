@@ -7,7 +7,6 @@ using d360.core.resources;
 using d360.core.queue;
 using Dapper;
 using Newtonsoft.Json;
-using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,6 +16,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using repositories;
 
 namespace d360.model
 {

@@ -22,8 +22,8 @@ using d360.web.Utilities;
 using FluentAssertions;
 using igx.UnitTests.V2ControllerTests;
 using Moq;
-using repositories;
 using System.Linq;
+using repositories;
 
 namespace igx.UnitTests
 {

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
@@ -40,10 +38,23 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    /// <summary>
-    /// Used in CompanyConnectionUtils.
-    /// </summary>
-    public class CompanyWithDatabaseServerSettings
+	public class TenantBlobConfigurationDatasource
+	{
+		public string Name { get; set; }
+		public string Folder { get; set; }
+	}
+
+	public class TenantBlobConfiguration
+	{
+		public string Credential { get; set; }
+		public string RestUrl { get; set; }
+		public List<TenantBlobConfigurationDatasource> Datasources { get; set; }
+	}
+
+	/// <summary>
+	/// Used in CompanyConnectionUtils.
+	/// </summary>
+	public class CompanyWithDatabaseServerSettings
     {
         public int CompanyID { get; set; }
 
@@ -64,6 +75,13 @@ namespace d360.core.entities
         public EnvironmentLevel EnvironmentLevel { get; set; }
 
         public int Priority { get; set; }
+
+		public string BlobConfiguration { get; set; }
+
+		public TenantBlobConfiguration GetBlobConfigurationModel()
+		{
+			return JsonConvert.DeserializeObject<TenantBlobConfiguration>(BlobConfiguration ?? "{}");
+		}
 
 		public string GetConnectionString(bool readOnly = false) {
 			return CompanyConnectionStringHelper.ConnectionString(CompanyID, Server, Username, Password, readOnly);
@@ -86,54 +104,6 @@ namespace d360.core.entities
 
         [JsonProperty("fullName")]
         public string FullName { get; set; }
-    }
-
-    [DataContract, Table("Global_Resource", Schema = "reporting")]
-    public class GlobalReportingResource : BaseObject
-    {
-        [DataMember, Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int ResourceID { get; set; }
-
-        [DataMember]
-        public string FirstName { get; set; }
-
-        [DataMember]
-        public string LastName { get; set; }
-
-        [DataMember]
-        public DateTime? LastLoggedInOn { get; set; }
-
-        [DataMember]
-        public string Email { get; set; }
-
-        [DataMember]
-        public CompanyResourceState State { get; set; }
-
-        [DataMember]
-        public bool IsAdministrator { get; set; }
-
-        [DataMember]
-        public DateTime? CreatedOn { get; set; }
-
-        [DataMember]
-        public DateTime? UpdatedOn { get; set; }
-
-        [DataMember]
-        public Guid Uid { get; set; }
-
-        [DataMember, NotMapped]
-        public string FullName => FirstName + " " + LastName;
-
-        #region Deprecated
-
-        [NotMapped, DataMember]
-        public DateTime? DateLastLoggedIn { get; set; }
-
-        [NotMapped, DataMember]
-        public string Status { get; set; }
-
-        #endregion
     }
 
     public partial class IntersectTypeOption

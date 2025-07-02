@@ -9,8 +9,6 @@ namespace repositories
 {
 	public interface ICatalog : IConnectorLabelRepository, IProcessRepository
 	{
-		Platform Platform { get; }
-
 		Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge);
 
 		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId, int tagTypeId);

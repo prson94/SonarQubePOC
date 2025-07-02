@@ -9,8 +9,6 @@ namespace repositories
 {
 	public interface ISecurity: IPermission
 	{
-		Platform Platform { get; }
-
 		Task<RepositoryResponse<ReadSecurityPolicy>> CreatePolicyAsync(CreateSecurityPolicy model);
 		Task<RepositoryResponse<ReadSecurityPolicyOverride>> CreateOverrideAsync(CreateSecurityPolicyOverride model);
 		Task<RepositoryResponse<ReadRole>> CreateRoleAsync(CreateRole model);

@@ -62,7 +62,6 @@
     <Compile Include="Core\MockExtensions.cs" />
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="Core\TestException.cs" />
-    <Compile Include="ExtensionsTests\DynamicHelperTests.cs" />
     <Compile Include="ExtensionsTests\DynamicQueryableTests.cs" />
     <Compile Include="FilterParserTests\ComplexFieldsFilteringTests.cs" />
     <Compile Include="FilterParserTests\FieldHelpersTests.cs" />
