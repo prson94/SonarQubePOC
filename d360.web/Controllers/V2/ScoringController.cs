@@ -69,31 +69,20 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("isExternallyCalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by asset type path.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>))
 		]
 		public IHttpActionResult GetAllocations(AssetTypeClass? Class = null)
 		{
-			const string ERROR_HEADING = "Error retrieving allocations";
+			var queryParams = Request.GetQueryNameValuePairs();
+			string errorMessage = string.Empty;
+			List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams, out errorMessage, Class);
 
-			try
+			if (!string.IsNullOrEmpty(errorMessage))
 			{
-
-				var queryParams = Request.GetQueryNameValuePairs();
-				string errorMessage = string.Empty;
-				List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams, out errorMessage, Class);
-
-				if (!string.IsNullOrEmpty(errorMessage))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, errorMessage);
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations));
+				return errorMessageArgumentResponse(errorMessage);
 			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, Error.UnknownErrorInvestigatingMessage);
-			}
+
+			return Ok(allocations);
 		}
 
 		/// <summary>
