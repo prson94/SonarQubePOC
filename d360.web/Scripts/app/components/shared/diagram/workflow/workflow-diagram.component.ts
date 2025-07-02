@@ -1111,7 +1111,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (step != null) {
                         if (step.SettingsObject != null && step.SettingsObject.settings != null && step.SettingsObject.settings.HTTPResponse != null) {
                             const output = step.SettingsObject.settings.HTTPResponse.Outputs.find((o) => o.Id === condition['@FormInputID']);
-                            condition['@FieldName'] = output.StepName + ' :: ' + output.Name;//here
+							if (output !== undefined && output !== null) {
+								condition['@FieldName'] = output.StepName + ' :: ' + output.Name;//here
+							}
                         }
                     }
                     break;
