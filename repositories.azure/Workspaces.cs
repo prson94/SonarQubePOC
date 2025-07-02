@@ -3,9 +3,11 @@ using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using DocumentFormat.OpenXml;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories.azure.extensions;
 using System;
@@ -118,6 +120,31 @@ where	g.id = @groupId;
 			}
 
 			return response;
+		}
+
+		public async Task<ApiExecution> CreateExecutionAsync(ApiExecutionAction action, int total, dynamic fields, string applicationId = null)
+		{
+			var execution = new ApiExecution
+			{
+				ExecutionID = Guid.NewGuid(),
+				StartedOn = DateTime.UtcNow,
+				Action = action,
+				ResourceID = CurrentUserId,
+				Total = total,
+				Fields = JsonConvert.SerializeObject(fields),
+				Error = 0,
+				Processed = 0,
+				ApplicationId = applicationId
+			};
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+				string sql = @"insert into api.Execution (ExecutionID, StartedOn, Action, ResourceID, Total, Fields, Error, Processed, ApplicationId) " +
+							 "values (@ExecutionID, @StartedOn, @Action, @ResourceID, @Total, @Fields, @Error, @Processed, @ApplicationId);" +
+							 "select SCOPE_IDENTITY()";
+				execution.Id = await connection.ExecuteScalarAsync<int>(sql, execution);
+			}
+			return execution;
 		}
 
 		public async Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request)
@@ -577,6 +604,52 @@ end";
 			}
 
 			return response;
+		}
+
+		public async Task<bool> UpsertBlobDataSourcesAsync(TenantBlobConfiguration configuration)
+		{
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				connection.Open();
+
+				// Create or update the credential and set the extended property.
+				await connection.ExecuteAsync(@$"
+if exists (select 1 from sys.database_scoped_credentials where name = 'BlobIdentity')
+begin
+    ALTER DATABASE SCOPED CREDENTIAL BlobIdentity WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '{configuration.Credential}'  
+end
+else
+begin
+	CREATE DATABASE SCOPED CREDENTIAL BlobIdentity WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '{configuration.Credential}';
+end
+
+if exists(select 1 from sys.extended_properties where name = 'RestUrl')
+begin
+	exec sp_updateextendedproperty 'RestUrl', '{configuration.RestUrl}';
+end
+else
+begin
+	exec sp_addextendedproperty 'RestUrl', '{configuration.RestUrl}';
+end
+");
+
+				// Finally, recreate the data sources with the new credential.
+				configuration.Datasources.ForEach(async ds =>
+				{
+					await connection.ExecuteAsync($@"
+if exists (select 1 from sys.external_data_sources where name = '{ds.Name}')
+begin
+	ALTER EXTERNAL DATA SOURCE {ds.Name} SET Location = '{configuration.RestUrl}/{ds.Folder}'
+end
+else
+begin
+	CREATE EXTERNAL DATA SOURCE {ds.Name} WITH ( TYPE = BLOB_STORAGE, LOCATION = '{configuration.RestUrl}/{ds.Folder}', CREDENTIAL = BlobCredential);
+end
+");
+				});
+			}
+
+			return true;
 		}
 
 		public async Task<RepositoryResponse<List<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false)

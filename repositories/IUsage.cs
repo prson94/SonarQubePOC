@@ -9,8 +9,6 @@ namespace repositories
 	{
 		int CompanyId { get; set; }
 		string WorkspaceId { get; set; }
-		Platform Platform { get; }
-
 		Task<RepositoryResponse<PagedApiBaseViewModel<dynamic>>> ReadUsageDetailAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<bool>> CreateUsageAsync(UsageEntry value, string ipAddress);

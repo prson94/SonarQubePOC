@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.enums;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,10 +12,11 @@ namespace repositories
 	{
 		int CompanyId { get; set; }
 		string WorkspaceId { get; set; }
-		Platform Platform { get; }
 
 		Task<RepositoryResponse<bool>> AddMembersToGroupAsync(Guid groupUid, List<Guid> userUids);
-		
+
+		Task<ApiExecution> CreateExecutionAsync(ApiExecutionAction action, int total, dynamic fields, string applicationId = null);
+
 		Task<bool> CreateOpenIdRequestAsync(OpenIdRequest request);
 
 		Task<OpenIdRequest> GetOpenIdRequestAsync(string state, bool fromSecondary = true);
@@ -38,7 +40,9 @@ namespace repositories
 		Task<bool> RemoveOpenIdRequestAsync(OpenIdRequest request);
 
 		Task<RepositoryResponse<int>> RemoveUsersAsync(int executionId, List<Guid> uids);
-		
+
+		Task<bool> UpsertBlobDataSourcesAsync(TenantBlobConfiguration configuration);
+
 		Task<RepositoryResponse<List<GroupResponseResult>>> UpsertGroupsAsync(int executionId, List<UpdateGroupModel> items, bool isInsert, bool lookupFieldsPassedByValue = false);
 		
 		Task<RepositoryResponse<bool>> UpsertRebuildStatusAsync(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);

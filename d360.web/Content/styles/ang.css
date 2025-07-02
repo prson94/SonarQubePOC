@@ -8940,10 +8940,10 @@ as-split.as-horizontal.split > .as-split-gutter[role="separator"][aria-orientati
   content: url(/Content/images/related-assets-icon.svg);
 }
 .d3s .gov-data-catalog-icon:before {
-  content: url(../../../../Content/images/open-book-icon.svg);
+  content: url(../../../../../../../../../Content/images/open-book-icon.svg);
 }
 .d3s .gov-data-catalog-icon-white:before {
-  content: url(../../../../Content/images/open-book-icon-white.svg);
+  content: url(../../../../../../../../../Content/images/open-book-icon-white.svg);
 }
 .d3s .gallery-overlay {
   z-index: 20000;
@@ -9385,13 +9385,3 @@ as-split.as-horizontal.split > .as-split-gutter[role="separator"][aria-orientati
   height: 24px;
   color: #202020;
 }
-
-.custom-tooltip {
-	background-color: #fff !important;
-	color: #fff;
-}
-
-	.custom-tooltip .p-tooltip-text {
-		color: black !important;
-		background-color: #fff !important;
-	}

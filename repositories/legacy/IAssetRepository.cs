@@ -93,7 +93,7 @@ namespace repositories
 
 		Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
 
-		Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
+		Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default, Guid exportTemplateUID = default);
 
 		Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 
@@ -117,7 +117,7 @@ namespace repositories
 
 		bool isAllowDisplayFieldType(string strdatatype, string fieldname);
 
-		void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false);
+		void SetCellStringValue(SLDocument document, int rowNumber, int index, string value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false);
 
 		void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
 

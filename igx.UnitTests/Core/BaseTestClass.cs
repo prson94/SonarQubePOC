@@ -232,7 +232,7 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ICoreComponentSet>();
 			mock.Setup(s => s.Cache).Returns(GetCache());
-			mock.Setup(s => s.Catalogs).Returns(GetCatalogs());
+			mock.Setup(s => s.Catalog).Returns(GetCatalog());
             mock.Setup(s => s.Community).Returns(GetCommunity());
             mock.Setup(s => s.Company).Returns(GetCompany());
 			mock.Setup(s => s.CommunityFlags).Returns(GetCommunityFlags());
@@ -424,11 +424,9 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
-		public IEnumerable<ICatalog> GetCatalogs()
+		public ICatalog GetCatalog()
 		{
 			var mock = new Mock<ICatalog>();
-
-			mock.SetupGet(p => p.Platform).Returns(Platform.Azure);
 
 			mock.Setup(x =>
 				x.ConsolidateTagsAsync(It.IsAny<Guid>(), It.IsAny<List<Guid>>())
@@ -499,7 +497,7 @@ namespace igx.UnitTests
 				x.UpdateTagTypeAsync(It.IsAny<Guid>(), It.IsAny<string>())
 			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
-			return new List<ICatalog> { mock.Object };
+			return mock.Object;
 		}
 
 		public ISocial GetCommentRepository()

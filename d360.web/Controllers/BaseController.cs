@@ -94,7 +94,7 @@ namespace d360.web.Controllers
 
 		IWorkspaces Workspace { get; set; }
 
-		IEnumerable<ICatalog> Catalogs { get; set; }
+		ICatalog Catalog { get; set; }
 
 		ICompanyContext Company { get; set; }
 
@@ -113,14 +113,14 @@ namespace d360.web.Controllers
 		CommunityFeatureFlagService CommunityFlags { get; set; }
 
 		IQueueSource Queue { get; set; }
-
-    IUsage Usage { get; set; }
+		
+		IUsage Usage { get; set; }
 	}
 
 	public class CoreComponentSet : ICoreComponentSet
 	{
 		public ICachingProvider Cache { get; set; }
-		public IEnumerable<ICatalog> Catalogs { get; set; }
+		public ICatalog Catalog { get; set; }
 		public ICompanyContext Company { get; set; }
 		public ICommunity Community { get; set; }
 		public ISecurityContextProvider SecurityContext { get; set; }
@@ -139,7 +139,7 @@ namespace d360.web.Controllers
 			CommunityFeatureFlagService communityFlags,
 			ICompanyContext company,
 			ISecurityContextProvider securityContext,
-			IEnumerable<ICatalog> catalogs,
+			ICatalog catalog,
 			ILogger log,
 			IMailProvider mail,
 			IThemeManager themeManager,
@@ -153,7 +153,7 @@ namespace d360.web.Controllers
 			Company = company;
 			Community = community;
 			CommunityFlags = communityFlags;
-			Catalogs = catalogs;
+			Catalog = catalog;
 			Log = log;
 			Mail = mail;
 			ThemeManager = themeManager;
@@ -210,7 +210,7 @@ namespace d360.web.Controllers
 
 		public BaseApiController(ICoreComponentSet set)
 		{
-			Catalog = set.Catalogs.Single(c => c.Platform == Platform.Azure);
+			Catalog = set.Catalog;
 			Company = set.Company;
 			Community = set.Community;
 			CommunityFlags = set.CommunityFlags;
@@ -220,7 +220,7 @@ namespace d360.web.Controllers
 			Cache = set.Cache;
 			SecurityContext = set.SecurityContext;
 			Queue = set.Queue;
-      Usage = set.Usage;
+			Usage = set.Usage;
 		}
 
 		internal void RecalculateSecurityPolicy(SecurityPolicyArgs e)
@@ -703,7 +703,7 @@ namespace d360.web.Controllers
 
 		public BaseController(ICoreComponentSet set)
 		{
-			Catalog = set.Catalogs.Single(o => o.Platform == Platform.Azure);
+			Catalog = set.Catalog;
 			Community = set.Community;
 			CommunityFlags = set.CommunityFlags;
 			Company = set.Company;

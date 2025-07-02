@@ -8,15 +8,15 @@ namespace services
 	{
 		public static IServiceCollection AddServiceLayer(this IServiceCollection services)
 		{
-			services.AddScoped<ICatalog, Catalog>();
-			services.AddScoped<ICommunity, Community>();
-			services.AddScoped<IHistory, History>();
-			services.AddScoped<IScoring, Scoring>();
-			services.AddScoped<ISearch, Search>();
-			services.AddScoped<ISocial, Social>();
-			services.AddScoped<IUsage, Usage>();
-			services.AddScoped<IWorkflow, Workflow>();
-			services.AddScoped<IWorkspaces, Workspaces>();
+			//services.AddScoped<ICatalog, Catalog>();
+			//services.AddScoped<ICommunity, Community>();
+			//services.AddScoped<IHistory, History>();
+			//services.AddScoped<IScoring, Scoring>();
+			//services.AddScoped<ISearch, Search>();
+			//services.AddScoped<ISocial, Social>();
+			//services.AddScoped<IUsage, Usage>();
+			//services.AddScoped<IWorkflow, Workflow>();
+			//services.AddScoped<IWorkspaces, Workspaces>();
 			//services.AddKeyedScoped<IPotion, HealingPotion>("healing"); // Example of adding a keyed service, if needed.
 
 			services.AddScoped<ICatalogService, CatalogService>();

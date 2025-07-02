@@ -7,7 +7,6 @@ using d360.web.Utilities;
 using Microsoft.Extensions.Logging;
 using Moq;
 using repositories;
-using System.Collections.Generic;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -17,7 +16,7 @@ namespace igx.UnitTests.V2ControllerTests
 		protected readonly Mock<ICommunity> MockCommunity;
 		protected readonly CommunityFeatureFlagService CommunityFlags;
 		protected readonly Mock<ISecurityContextProvider> MockSecurityContext;
-		protected readonly Mock<List<ICatalog>> MockCatalogs;
+		protected readonly Mock<ICatalog> MockCatalog;
 		protected readonly Mock<ILogger> MockLog;
 		protected readonly Mock<IMailProvider> MockMailProvider;
 		protected readonly Mock<IWorkspaces> MockWorkspace;
@@ -33,8 +32,7 @@ namespace igx.UnitTests.V2ControllerTests
 			MockCompanyContext = new Mock<ICompanyContext>();
 			MockCommunity = new Mock<ICommunity>();
 			MockSecurityContext = new Mock<ISecurityContextProvider>();
-			MockCatalogs = new Mock<List<ICatalog>>();
-			MockCatalogs.Object.AddRange(GetCatalogs());
+			MockCatalog = new Mock<ICatalog>();
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
 			MockWorkspace = new Mock<IWorkspaces>();
@@ -52,7 +50,7 @@ namespace igx.UnitTests.V2ControllerTests
 				CommunityFlags,
 				MockCompanyContext.Object,
 				MockSecurityContext.Object,
-				MockCatalogs.Object,
+				MockCatalog.Object,
 				MockLog.Object,
 				MockMailProvider.Object,
 				MockThemeRepository.Object,

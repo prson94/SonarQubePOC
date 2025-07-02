@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
-using d360.core.queue;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace repositories
 {

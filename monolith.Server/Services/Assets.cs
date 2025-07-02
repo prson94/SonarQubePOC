@@ -31,10 +31,9 @@ namespace monolith.Server.Services
 			await Task.CompletedTask;
 		}
 
-		public static async Task<IResult> ReadAssetTypes(IEnumerable<ICatalog> catalogs)
+		public static async Task<IResult> ReadAssetTypes(ICatalog catalog)
 		{
-			var repository = catalogs.Single(o => o.Platform == Platform.Azure);
-			var results = await repository.ReadAssetTypes(0, 100);
+			var results = await catalog.ReadAssetTypes(0, 100);
 			return TypedResults.Ok(results);
 		}
 

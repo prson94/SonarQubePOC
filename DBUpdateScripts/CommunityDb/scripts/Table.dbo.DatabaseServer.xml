@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.dbo.DatabaseServer-v2.1">
+ <changeSet author="Pappas" id="Table.dbo.DatabaseServer-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[DatabaseServer]') and type in (N'U'))
@@ -23,6 +23,7 @@ begin
 		[RegionCode] char(2) CONSTRAINT [DF_DatabaseServer_RegionCode] DEFAULT ('US') NOT NULL,
 		[ResourceGroup] varchar(250) NULL,
 		[ElasticPools] varchar(2500) NULL,
+		BlobConfiguration json constraint DF_DatabaseServer_BlobConfiguration DEFAULT ('{}') null
 		constraint [PK_DatabaseServer] primary key clustered ( [ID] asc )
 	)
 end
@@ -46,6 +47,11 @@ end
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'ElasticPools')
 begin
 	alter table [dbo].[DatabaseServer] add [ElasticPools] [varchar](2500) NULL
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'DatabaseServer' and COLUMN_NAME = 'BlobConfiguration')
+begin
+	alter table [dbo].[DatabaseServer] add [BlobConfiguration] json constraint DF_DatabaseServer_BlobConfiguration DEFAULT ('{}') NULL
 end
 ]]>
   </sql>

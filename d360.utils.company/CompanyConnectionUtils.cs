@@ -81,7 +81,8 @@ namespace d360.utils.company
                             CDS.UrlPrefix,
                             c.Priority,
                             ds.RegionCode,
-							ds.[Region]
+							ds.[Region],
+							ds.BlobConfiguration
                     from    company c 
                             inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
                             inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
