@@ -1,0 +1,116 @@
+name: monolith
+services:
+
+  # governsql:
+  #   image: mcr.microsoft.com/mssql/server:2025-latest
+  #   environment:
+  #     - MSSQL_SA_PASSWORD=G!htY71!
+  #     - ACCEPT_EULA=Y
+  #   volumes:
+  #     - .\govern-db-data:/var/opt/mssql/data
+  #     - .\govern-db-log:/var/opt/mssql/log
+  #     - .\govern-db-secrets:/var/opt/mssql/secrets
+  #   ports:
+  #     - "1433:1433"
+  #   networks:
+  #       - govern-net
+
+  # configsqlcmd:
+  #  image: mcr.microsoft.com/mssql-tools:latest
+  #  hostname: configsqlcmd
+  #  container_name: configsqlcmd
+  #  depends_on:
+  #    - "governsql"
+  #  command: bash -c "/opt/mssql/bin/mssql-conf set memory.memorylimitmb 4096"
+  #  links:
+  #      - governsql
+  #  networks:
+  #     - govern-net
+
+
+  # communitysqlcmd:
+  #  image: mcr.microsoft.com/mssql-tools:latest
+  #  hostname: communitysqlcmd
+  #  container_name: communitysqlcmd
+  #  depends_on:
+  #    - "governsql"
+  #  command: bash -c "sleep 10 && /opt/mssql-tools/bin/sqlcmd -S governsql -U sa -P G!htY71! -Q 'CREATE DATABASE D3S'"
+  #  links:
+  #      - governsql
+  #  networks:
+  #     - govern-net
+
+  # communityliquibase:
+  #  image: liquibase/liquibase
+  #  hostname: communityliquibase
+  #  container_name: communityliquibase
+  #  depends_on:
+  #    - "governsql"
+  #    - "communitysqlcmd"
+  #  volumes:
+  #    - .\..\DBUpdateScripts\CommunityDb:/liquibase/changelog
+  #  command: --url="jdbc:sqlserver://governsql:1433;database=D3S;encrypt=true;trustServerCertificate=true;" --search-path=/liquibase/changelog --changeLogFile=community.xml --username=sa --password=G!htY71! update
+  #  links:
+  #      - governsql
+  #      - communitysqlcmd
+  #  networks:
+  #     - govern-net
+
+  # environmentsqlcmd:
+  #  image: mcr.microsoft.com/mssql-tools:latest
+  #  hostname: environmentsqlcmd
+  #  container_name: environmentsqlcmd
+  #  depends_on:
+  #    - "governsql"
+  #  command: bash -c "sleep 10 && /opt/mssql-tools/bin/sqlcmd -S governsql -U sa -P G!htY71! -Q 'CREATE DATABASE D3S_1'"
+  #  links:
+  #      - governsql
+  #  networks:
+  #     - govern-net
+
+  # environmentliquibase:
+  #  image: liquibase/liquibase
+  #  hostname: environmentliquibase
+  #  container_name: environmentliquibase
+  #  depends_on:
+  #    - "governsql"
+  #    - "environmentsqlcmd"
+  #  volumes:
+  #    - .\..\DBUpdateScripts\EnvironmentDb:/liquibase/changelog
+  #  command: --url="jdbc:sqlserver://governsql:1433;database=D3S_1;encrypt=true;trustServerCertificate=true;" --search-path=/liquibase/changelog --changeLogFile=environment.xml --username=sa --password=G!htY71! update
+  #  links:
+  #      - governsql
+  #      - environmentsqlcmd
+  #  networks:
+  #     - govern-net
+
+  azurestorage:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurestorage
+    container_name: azurestorage
+    volumes:
+      - .\govern-storage-data:/opt/azurite/data
+    command: "azurite --blobPort 10000 --queuePort 10001 --tablePort 10002 --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
+    ports:
+     - 10000:10000
+     - 10001:10001
+     - 10002:10002
+#    environment:
+#        - AZURITE_ACCOUNTS="govern:monolith_storage_key"
+    networks:
+      - govern-net
+
+networks:
+ govern-net:
+  name: govern
+  external: true
+
+volumes:
+    govern-db-data:
+    govern-db-log:
+    govern-db-secrets:
+    govern-storage-data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
