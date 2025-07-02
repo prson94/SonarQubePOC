@@ -933,7 +933,8 @@ order by SecurityType asc, Name asc;
 
 				await connection.ExecuteAsync(
 					"delete o from [security].RuleWhen o inner join [security].[Rule] r on r.Id = o.Id and r.RoleId = @roleId; " +
-					"delete o from [security].RuleThen o inner join [security].[Rule] r on r.Id = o.Id and r.RoleId = @roleId; " + 
+					"delete o from [security].RuleThen o inner join [security].[Rule] r on r.Id = o.Id and r.RoleId = @roleId; " +
+					"delete [dbo].IssueTypeRelationResponsibility where ResponsibilityTypeId = @roleId; " +
 					"delete [security].[Rule] where RoleId = @roleId; " +
 					"delete [security].[Role] where Id = @roleId; ",
 					new { roleId }
