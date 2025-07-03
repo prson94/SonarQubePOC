@@ -1310,7 +1310,15 @@ namespace d360.web.Controllers
 								fld.ParentFieldTypeID = ft.ParentFieldTypeID;
 								fld.MultiSelect = ft.AllowMultipleValues;
 								var lookupType = ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType;
-								fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && ft.LookupObjectID == x.AssetType.ObjectID);
+
+								var colorSQL = @"declare @aid int;
+										select @aid = id from assettype at where at.[Object] = @lookupType
+										and at.ObjectID = @LookupObjectID;
+										SELECT 
+											CASE WHEN ( EXISTS (SELECT 1 AS [C1] from asset a with(index(IX_Asset_AssetTypeID)) where a.color is not null and a.AssetTypeID = @aid))
+											THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
+										FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]";
+								fld.UseColorControl = Company.Query<bool>(colorSQL, new { lookupType, ft.LookupObjectID }).FirstOrDefault();
 
 								if (ft.ParentFieldTypeID > 0)
 								{
