@@ -191,10 +191,10 @@ namespace d360.web.Controllers.V2
 
 			var assetType = AssetRepository.GetAssetTypeByUID(guid);
 
-			if (assetType == null)
+			/*if (assetType == null)
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, Error.InvalidRequestHttpErrorTitle, Error.NotFoundBasedOnUid));
-			}
+			}*/
 
 			if (assetType.Class != AssetTypeClass.BusinessAsset && assetType.Class != AssetTypeClass.TechnicalAsset
 				&& assetType.Class != AssetTypeClass.Policy && assetType.Class != AssetTypeClass.Model
